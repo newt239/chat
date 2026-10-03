@@ -372,7 +372,7 @@ const file_chat_v1_permission_service_proto_rawDesc = "" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\n" +
 	"permission\x12\x18\n" +
 	"\aallowed\x18\x04 \x01(\bR\aallowed\"\x1a\n" +
-	"\x18UpdatePermissionResponse*\x84\x03\n" +
+	"\x18UpdatePermissionResponse*\x9f\x02\n" +
 	"\n" +
 	"Permission\x12\x1a\n" +
 	"\x16PERMISSION_UNSPECIFIED\x10\x00\x12$\n" +
@@ -383,7 +383,7 @@ const file_chat_v1_permission_service_proto_rawDesc = "" +
 	"\x17PERMISSION_PIN_MESSAGES\x10\x06\x12%\n" +
 	"!PERMISSION_DELETE_OTHERS_MESSAGES\x10\a\x12\"\n" +
 	"\x1ePERMISSION_CREATE_CUSTOM_EMOJI\x10\n" +
-	"\"\x04\b\x04\x10\x04\"\x04\b\b\x10\b\"\x04\b\t\x10\t*\x1bPERMISSION_EDIT_USER_GROUPS*\x16PERMISSION_EXPORT_DATA*\x1cPERMISSION_ADD_EXTERNAL_APPS2\xbf\x01\n" +
+	"2\xbf\x01\n" +
 	"\x11PermissionService\x12Q\n" +
 	"\x0eGetPermissions\x12\x1e.chat.v1.GetPermissionsRequest\x1a\x1f.chat.v1.GetPermissionsResponse\x12W\n" +
 	"\x10UpdatePermission\x12 .chat.v1.UpdatePermissionRequest\x1a!.chat.v1.UpdatePermissionResponseB\x97\x01\n" +

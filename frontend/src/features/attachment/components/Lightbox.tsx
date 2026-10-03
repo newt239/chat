@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 import { IconChevronLeft, IconChevronRight, IconDownload, IconX } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button, Dialog, Modal, ModalOverlay } from "react-aria-components";
@@ -7,12 +5,13 @@ import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { cn, focusRing } from "#/components/ui/styles/styles";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 import { transitions } from "#/lib/motion";
 import { toDate } from "#/lib/timestamp";
 
-import { useAttachmentUrl } from "../api/client";
+import { useAttachmentUrl } from "../hooks/useAttachmentUrl";
 import { AttachmentImage } from "./AttachmentImage";
 
 import type { Message, MessageAttachment } from "#/gen/chat/v1/message_pb";
@@ -36,6 +35,7 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
   const { t } = useTranslation();
   const { formatDateTime } = useDateFormat();
   const isMobile = useIsMobile();
+  const displayName = useDisplayName();
   const image = index === null ? undefined : images[index];
   const { data: url } = useAttachmentUrl(image?.id ?? null, false);
   const hasMany = images.length > 1;
@@ -46,29 +46,11 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
     }
   };
 
-  // 左右キーで前後の画像へ移る。Esc で閉じるのは Modal が扱う
-  useEffect(() => {
-    if (index === null || !hasMany) {
-      return undefined;
-    }
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-        onIndexChange(
-          (index + (event.key === "ArrowLeft" ? -1 : 1) + images.length) % images.length,
-        );
-      }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [index, hasMany, images.length, onIndexChange]);
-
   const isTall =
     image?.media?.width !== undefined &&
     image.media.height !== undefined &&
     image.media.height / image.media.width > TALL_RATIO;
-  const authorName = message.user?.displayName ?? "";
+  const authorName = displayName(message.userId, message.user?.displayName ?? "");
 
   return (
     <AnimatePresence>
@@ -76,10 +58,8 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
         <MotionModalOverlay
           isOpen
           isDismissable
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              onIndexChange(null);
-            }
+          onOpenChange={() => {
+            onIndexChange(null);
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -91,6 +71,19 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
             <Dialog
               aria-label={t("attachment.lightbox.label")}
               className="flex size-full flex-col font-sans text-media-fg outline-none"
+              // 左右キーで前後の画像へ移る。Esc で閉じるのは Modal が扱う
+              render={(props) => (
+                // oxlint-disable-next-line jsx-a11y/no-static-element-interactions -- role は props で付く
+                <section
+                  {...props}
+                  onKeyDown={(event) => {
+                    props.onKeyDown?.(event);
+                    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+                      move(event.key === "ArrowLeft" ? -1 : 1);
+                    }
+                  }}
+                />
+              )}
             >
               <header className="flex items-center gap-2.5 px-3.5 pt-[max(10px,env(safe-area-inset-top))] pb-2.5 text-body-sm">
                 <Avatar name={authorName} src={message.user?.avatarUrl} size={30} />
@@ -170,7 +163,6 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
                   )}
                 >
                   <AttachmentImage
-                    thumbnail={false}
                     attachmentId={image.id}
                     alt={image.fileName}
                     className={cn(

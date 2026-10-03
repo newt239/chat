@@ -1,7 +1,4 @@
 export const ui = {
-  avatar: {
-    groupMembers: "{{count}} 人のグループ",
-  },
   calendar: {
     next: "次の月",
     previous: "前の月",
@@ -11,7 +8,6 @@ export const ui = {
     showSuggestions: "候補を表示",
   },
   copyableUrl: {
-    copied: "リンクをコピーしました",
     copy: "コピー",
   },
   iconImage: {
@@ -27,6 +23,11 @@ export const ui = {
   },
   menu: {
     title: "メニュー",
+  },
+  pagination: {
+    next: "次のページ",
+    page: "{{page}} / {{total}} ページ",
+    previous: "前のページ",
   },
   toast: {
     dismiss: "通知を閉じる",

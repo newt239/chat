@@ -4,9 +4,9 @@ import { AnimatePresence, motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
-import { ResizeHandle } from "#/components/ui/ResizeHandle/ResizeHandle";
+import { sidebarWidthRanges, sidebarWidthsAtom } from "#/features/layout/atoms";
+import { ResizeHandle } from "#/features/layout/components/ResizeHandle";
 import { transitions } from "#/lib/motion";
-import { sidebarWidthRanges, sidebarWidthsAtom } from "#/providers/store/ui";
 
 import { useRightPanel } from "../hooks/useRightPanel";
 

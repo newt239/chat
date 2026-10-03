@@ -8,13 +8,11 @@ const EMOJI_ONLY =
 const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 
 // 絵文字だけの短い投稿は大きく表示する。登録済みのカスタム絵文字も 1 文字の絵文字として数える
-export const isJumboEmoji = (body: string, customEmojiNames?: ReadonlyMap<string, object>) => {
-  const replaced =
-    customEmojiNames === undefined
-      ? body
-      : body.replaceAll(CUSTOM_EMOJI_IN_TEXT, (token, name: string) =>
-          customEmojiNames.has(name) ? "😀" : token,
-        );
-  const text = replaced.replaceAll(/\s/g, "");
+export const isJumboEmoji = (body: string, customEmojiNames: ReadonlyMap<string, object>) => {
+  const text = body
+    .replaceAll(CUSTOM_EMOJI_IN_TEXT, (token, name: string) =>
+      customEmojiNames.has(name) ? "😀" : token,
+    )
+    .replaceAll(/\s/g, "");
   return text !== "" && EMOJI_ONLY.test(text) && [...segmenter.segment(text)].length <= MAX_EMOJI;
 };

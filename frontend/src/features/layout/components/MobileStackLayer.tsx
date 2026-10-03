@@ -3,14 +3,13 @@ import type { ReactNode } from "react";
 
 import { animate, motion, useDragControls, useMotionValue } from "motion/react";
 
+import { MobileStackContext } from "#/components/block/BackButton/mobileStack";
 import { transitions } from "#/lib/motion";
 
-import { MobileBackContext } from "../hooks/useMobileBack";
-import { MobileForwardContext } from "../hooks/useMobileForward";
 import { isSwipeBlocked } from "../utils/swipe";
 
 type MobileStackLayerProps = {
-  // 画面を閉じ終えたあとに呼ぶ（履歴を戻る、パネルを閉じるなど）
+  // 画面を閉じ終えたあとに呼ぶ
   onBack: () => void;
   children: ReactNode;
 };
@@ -36,39 +35,44 @@ export const MobileStackLayer = ({ onBack, children }: MobileStackLayerProps) =>
   };
 
   return (
-    <MobileBackContext value={back}>
-      <MobileForwardContext value={forwardRef}>
-        <motion.div
-          ref={ref}
-          style={{ x }}
-          drag="x"
-          dragListener={false}
-          dragControls={dragControls}
-          dragDirectionLock
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={{ left: 0.2, right: 1 }}
-          onPointerDown={(event) => {
-            if (
-              ref.current !== null &&
-              event.target instanceof Element &&
-              !isSwipeBlocked(event.target, ref.current)
-            ) {
-              dragControls.start(event);
-            }
-          }}
-          onDragEnd={(_, info) => {
-            if (info.offset.x > width() / 3 || info.velocity.x > 500) {
-              back();
-            } else if (info.offset.x < -width() / 4 || info.velocity.x < -500) {
-              forwardRef.current?.();
-            }
-          }}
-          // 入力欄をホームインジケーターから離す。キーボードが出ている間は不要
-          className="absolute inset-0 isolate flex touch-pan-y flex-col overscroll-contain bg-surface pb-[env(safe-area-inset-bottom)] shadow-xl group-data-keyboard/shell:pb-0"
-        >
-          {children}
-        </motion.div>
-      </MobileForwardContext>
-    </MobileBackContext>
+    <MobileStackContext
+      value={{
+        back,
+        setForward: (forward) => {
+          forwardRef.current = forward;
+        },
+      }}
+    >
+      <motion.div
+        ref={ref}
+        style={{ x }}
+        drag="x"
+        dragListener={false}
+        dragControls={dragControls}
+        dragDirectionLock
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={{ left: 0.2, right: 1 }}
+        onPointerDown={(event) => {
+          if (
+            ref.current !== null &&
+            event.target instanceof Element &&
+            !isSwipeBlocked(event.target, ref.current)
+          ) {
+            dragControls.start(event);
+          }
+        }}
+        onDragEnd={(_, info) => {
+          if (info.offset.x > width() / 3 || info.velocity.x > 500) {
+            back();
+          } else if (info.offset.x < -width() / 4 || info.velocity.x < -500) {
+            forwardRef.current?.();
+          }
+        }}
+        // 入力欄をホームインジケーターから離す。キーボードが出ている間は不要
+        className="absolute inset-0 isolate flex touch-pan-y flex-col overscroll-contain bg-surface pb-[env(safe-area-inset-bottom)] shadow-xl group-data-keyboard/shell:pb-0"
+      >
+        {children}
+      </motion.div>
+    </MobileStackContext>
   );
 };

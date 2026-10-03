@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 
+import { useMutation } from "@connectrpc/connect-query";
 import { useTranslation } from "react-i18next";
 
-import { useLoginWithGoogle } from "#/features/auth/hooks/useLoginWithGoogle";
+import { useCompleteLogin } from "#/features/auth/hooks/useCompleteLogin";
 import { loadGoogleIdentity } from "#/features/auth/utils/googleIdentity";
+import { AuthService } from "#/gen/chat/v1/auth_service_pb";
 import { usePreferences } from "#/hooks/usePreferences";
 
 type GoogleSignInButtonProps = {
@@ -16,7 +18,9 @@ type GoogleSignInButtonProps = {
 export const GoogleSignInButton = ({ clientId, workspaceId }: GoogleSignInButtonProps) => {
   const { t } = useTranslation();
   const { locale } = usePreferences();
-  const loginWithGoogle = useLoginWithGoogle(workspaceId);
+  const loginWithGoogle = useMutation(AuthService.method.loginWithGoogle, {
+    onSuccess: useCompleteLogin(workspaceId),
+  });
   const { mutate } = loginWithGoogle;
   const containerRef = useRef<HTMLDivElement>(null);
   const [loadFailed, setLoadFailed] = useState(false);

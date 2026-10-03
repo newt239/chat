@@ -39,11 +39,14 @@ func (Message) Fields() []ent.Field {
 			Default(time.Now).
 			Immutable(),
 		field.Time("edited_at").
-			Optional(),
+			Optional().
+			Nillable(),
 		field.Time("deleted_at").
-			Optional(),
+			Optional().
+			Nillable(),
 		field.UUID("deleted_by", uuid.UUID{}).
-			Optional(),
+			Optional().
+			Nillable(),
 		// 共有された位置情報。緯度と経度は両方そろって設定される
 		field.Float("location_latitude").
 			Optional().
@@ -83,30 +86,15 @@ func (Message) Edges() []ent.Edge {
 			Immutable(),
 		edge.From("replies", Message.Type).
 			Ref("parent"),
-		edge.From("reactions", MessageReaction.Type).
-			Ref("message"),
-		edge.From("bookmarks", MessageBookmark.Type).
-			Ref("message"),
 		edge.From("user_mentions", MessageUserMention.Type).
 			Ref("message"),
-		edge.From("group_mentions", MessageGroupMention.Type).
-			Ref("message"),
-		edge.From("links", MessageLink.Type).
-			Ref("message"),
-		edge.From("attachments", Attachment.Type).
-			Ref("message"),
-		edge.From("pins", MessagePin.Type).
-			Ref("message"),
 		edge.From("user_thread_follows", UserThreadFollow.Type).
-			Ref("thread"),
-		edge.From("thread_read_states", ThreadReadState.Type).
 			Ref("thread"),
 	}
 }
 
 func (Message) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("created_at"),
 		// タイムラインと未読数は削除済みを読まないため部分インデックスにする
 		index.Fields("channel_id", "created_at").
 			Annotations(entsql.IndexWhere("deleted_at IS NULL")),

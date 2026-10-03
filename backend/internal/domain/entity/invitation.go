@@ -17,7 +17,6 @@ type Invitation struct {
 	InvitedBy   string
 	ExpiresAt   time.Time
 	AcceptedAt  *time.Time
-	CreatedAt   time.Time
 }
 
 func (i *Invitation) IsPending(now time.Time) bool {

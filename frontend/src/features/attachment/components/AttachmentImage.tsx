@@ -3,25 +3,18 @@ import { useTranslation } from "react-i18next";
 
 import { cn } from "#/components/ui/styles/styles";
 
-import { useAttachmentUrl } from "../api/client";
+import { useAttachmentUrl } from "../hooks/useAttachmentUrl";
 
 type AttachmentImageProps = {
   attachmentId: string;
-  // true なら動画のサムネイルを表示する
-  thumbnail: boolean;
   alt: string;
   className: string;
 };
 
 // 署名付き URL を取得して表示する。取得中は枠だけを出してレイアウトを保つ
-export const AttachmentImage = ({
-  attachmentId,
-  thumbnail,
-  alt,
-  className,
-}: AttachmentImageProps) => {
+export const AttachmentImage = ({ attachmentId, alt, className }: AttachmentImageProps) => {
   const { t } = useTranslation();
-  const { data: url, isError } = useAttachmentUrl(attachmentId, thumbnail);
+  const { data: url, isError } = useAttachmentUrl(attachmentId, false);
 
   if (isError) {
     return (

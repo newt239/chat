@@ -2,16 +2,12 @@ package repository
 
 import (
 	"context"
-	"time"
-
-	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type attachmentRepository struct {
@@ -23,99 +19,31 @@ func NewAttachmentRepository(client *ent.Client) domainrepository.AttachmentRepo
 }
 
 func (r *attachmentRepository) FindByID(ctx context.Context, id string) (*entity.Attachment, error) {
-	aid, err := utils.ParseUUID(id, "attachment ID")
+	aid, err := parseUUID(id, "attachment ID")
 	if err != nil {
 		return nil, err
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	a, err := client.Attachment.Query().
-		Where(attachment.IDEQ(aid)).
-		Only(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, nil
-		}
+	a, err := orNil(transaction.ResolveClient(ctx, r.client).Attachment.Get(ctx, aid))
+	if a == nil {
 		return nil, err
 	}
-
-	return utils.AttachmentToEntity(a), nil
-}
-
-func (r *attachmentRepository) Create(ctx context.Context, att *entity.Attachment) error {
-	uid, err := utils.ParseUUID(att.UploaderID, "uploader ID")
-	if err != nil {
-		return err
-	}
-
-	cid, err := utils.ParseUUID(att.ChannelID, "channel ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	builder := client.Attachment.Create().
-		SetUploaderID(uid).
-		SetChannelID(cid).
-		SetFileName(att.FileName).
-		SetMimeType(att.MimeType).
-		SetSizeBytes(att.SizeBytes).
-		SetStorageKey(att.StorageKey).
-		SetStatus(string(att.Status))
-
-	if att.ID != "" {
-		attachmentID, err := utils.ParseUUID(att.ID, "attachment ID")
-		if err != nil {
-			return err
-		}
-		builder = builder.SetID(attachmentID)
-	}
-
-	if att.MessageID != nil {
-		mid, err := utils.ParseUUID(*att.MessageID, "message ID")
-		if err != nil {
-			return err
-		}
-		builder = builder.SetMessageID(mid)
-	}
-
-	if att.UploadedAt != nil {
-		builder = builder.SetUploadedAt(*att.UploadedAt)
-	}
-
-	if att.ExpiresAt != nil {
-		builder = builder.SetExpiresAt(*att.ExpiresAt)
-	}
-
-	a, err := builder.Save(ctx)
-	if err != nil {
-		return err
-	}
-
-	*att = *utils.AttachmentToEntity(a)
-	return nil
+	return attachmentToEntity(a), nil
 }
 
 func (r *attachmentRepository) CreatePending(ctx context.Context, att *entity.Attachment) error {
-	aid, err := utils.ParseUUID(att.ID, "attachment ID")
+	aid, err := parseUUID(att.ID, "attachment ID")
 	if err != nil {
 		return err
 	}
-
-	uid, err := utils.ParseUUID(att.UploaderID, "uploader ID")
+	uid, err := parseUUID(att.UploaderID, "uploader ID")
 	if err != nil {
 		return err
 	}
-
-	cid, err := utils.ParseUUID(att.ChannelID, "channel ID")
+	cid, err := parseUUID(att.ChannelID, "channel ID")
 	if err != nil {
 		return err
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	create := client.Attachment.Create().
+	create := transaction.ResolveClient(ctx, r.client).Attachment.Create().
 		SetID(aid).
 		SetUploaderID(uid).
 		SetChannelID(cid).
@@ -123,36 +51,27 @@ func (r *attachmentRepository) CreatePending(ctx context.Context, att *entity.At
 		SetMimeType(att.MimeType).
 		SetSizeBytes(att.SizeBytes).
 		SetStorageKey(att.StorageKey).
-		SetStatus(string(att.Status)).
+		SetStatus(string(entity.AttachmentStatusPending)).
 		SetNillableWidth(att.Media.Width).
 		SetNillableHeight(att.Media.Height).
 		SetNillableDurationSeconds(att.Media.DurationSeconds)
 	if t := att.Media.Thumbnail; t != nil {
 		create.SetThumbnailStorageKey(t.StorageKey).SetThumbnailWidth(t.Width).SetThumbnailHeight(t.Height)
 	}
-	if att.UploadedAt != nil {
-		create.SetUploadedAt(*att.UploadedAt)
-	}
-	if att.ExpiresAt != nil {
-		create.SetExpiresAt(*att.ExpiresAt)
-	}
-
 	a, err := create.Save(ctx)
 	if err != nil {
 		return err
 	}
-
-	*att = *utils.AttachmentToEntity(a)
+	*att = *attachmentToEntity(a)
 	return nil
 }
 
 func (r *attachmentRepository) AttachToMessage(ctx context.Context, attachmentIDs []string, messageID string) error {
-	mid, err := utils.ParseUUID(messageID, "message ID")
+	mid, err := parseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}
-
-	aids, err := utils.ParseUUIDs(attachmentIDs, "attachment ID")
+	aids, err := parseUUIDs(attachmentIDs, "attachment ID")
 	if err != nil {
 		return err
 	}
@@ -160,122 +79,46 @@ func (r *attachmentRepository) AttachToMessage(ctx context.Context, attachmentID
 		Where(attachment.IDIn(aids...)).
 		SetMessageID(mid).
 		SetStatus(string(entity.AttachmentStatusAttached)).
-		SetUploadedAt(time.Now()).
 		Exec(ctx)
 }
 
 func (r *attachmentRepository) FindByMessageIDs(ctx context.Context, messageIDs []string) (map[string][]*entity.Attachment, error) {
-	if len(messageIDs) == 0 {
-		return make(map[string][]*entity.Attachment), nil
+	ids, err := parseUUIDs(messageIDs, "message ID")
+	if err != nil {
+		return nil, err
 	}
-
-	// Parse all message IDs
-	parsedIDs := make([]uuid.UUID, 0, len(messageIDs))
-	for _, id := range messageIDs {
-		parsedID, err := utils.ParseUUID(id, "message ID")
-		if err != nil {
-			return nil, err
-		}
-		parsedIDs = append(parsedIDs, parsedID)
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	attachments, err := client.Attachment.Query().
-		Where(attachment.MessageIDIn(parsedIDs...)).
+	attachments, err := transaction.ResolveClient(ctx, r.client).Attachment.Query().
+		Where(attachment.MessageIDIn(ids...)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-
 	result := make(map[string][]*entity.Attachment)
 	for _, a := range attachments {
 		messageID := a.MessageID.String()
-		if result[messageID] == nil {
-			result[messageID] = make([]*entity.Attachment, 0)
-		}
-		result[messageID] = append(result[messageID], utils.AttachmentToEntity(a))
+		result[messageID] = append(result[messageID], attachmentToEntity(a))
 	}
-
-	return result, nil
-}
-
-func (r *attachmentRepository) FindPendingByUploaderAndChannel(ctx context.Context, uploaderID, channelID string) ([]*entity.Attachment, error) {
-	uid, err := utils.ParseUUID(uploaderID, "uploader ID")
-	if err != nil {
-		return nil, err
-	}
-
-	cid, err := utils.ParseUUID(channelID, "channel ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	attachments, err := client.Attachment.Query().
-		Where(
-			attachment.UploaderID(uid),
-			attachment.ChannelID(cid),
-			attachment.Status("pending"),
-		).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.Attachment, 0, len(attachments))
-	for _, a := range attachments {
-		result = append(result, utils.AttachmentToEntity(a))
-	}
-
 	return result, nil
 }
 
 func (r *attachmentRepository) FindPendingByIDsForUser(ctx context.Context, userID string, attachmentIDs []string) ([]*entity.Attachment, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
-
-	if len(attachmentIDs) == 0 {
-		return []*entity.Attachment{}, nil
+	ids, err := parseUUIDs(attachmentIDs, "attachment ID")
+	if err != nil {
+		return nil, err
 	}
-
-	// Parse all attachment IDs
-	parsedIDs := make([]uuid.UUID, 0, len(attachmentIDs))
-	for _, id := range attachmentIDs {
-		parsedID, err := utils.ParseUUID(id, "attachment ID")
-		if err != nil {
-			return nil, err
-		}
-		parsedIDs = append(parsedIDs, parsedID)
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	attachments, err := client.Attachment.Query().
+	attachments, err := transaction.ResolveClient(ctx, r.client).Attachment.Query().
 		Where(
-			attachment.IDIn(parsedIDs...),
+			attachment.IDIn(ids...),
 			attachment.UploaderID(uid),
-			attachment.Status("pending"),
+			attachment.Status(string(entity.AttachmentStatusPending)),
 		).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]*entity.Attachment, 0, len(attachments))
-	for _, a := range attachments {
-		result = append(result, utils.AttachmentToEntity(a))
-	}
-
-	return result, nil
-}
-
-func (r *attachmentRepository) Delete(ctx context.Context, id string) error {
-	aid, err := utils.ParseUUID(id, "attachment ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	return client.Attachment.DeleteOneID(aid).Exec(ctx)
+	return convertAll(attachments, attachmentToEntity), nil
 }

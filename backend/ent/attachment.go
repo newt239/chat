@@ -49,10 +49,6 @@ type Attachment struct {
 	ThumbnailHeight *int32 `json:"thumbnail_height,omitempty"`
 	// Status holds the value of the "status" field.
 	Status string `json:"status,omitempty"`
-	// UploadedAt holds the value of the "uploaded_at" field.
-	UploadedAt time.Time `json:"uploaded_at,omitempty"`
-	// ExpiresAt holds the value of the "expires_at" field.
-	ExpiresAt time.Time `json:"expires_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -120,7 +116,7 @@ func (*Attachment) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case attachment.FieldFileName, attachment.FieldMimeType, attachment.FieldStorageKey, attachment.FieldThumbnailStorageKey, attachment.FieldStatus:
 			values[i] = new(sql.NullString)
-		case attachment.FieldUploadedAt, attachment.FieldExpiresAt, attachment.FieldCreatedAt:
+		case attachment.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case attachment.FieldID, attachment.FieldUploaderID, attachment.FieldChannelID:
 			values[i] = new(uuid.UUID)
@@ -236,18 +232,6 @@ func (_m *Attachment) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Status = value.String
 			}
-		case attachment.FieldUploadedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field uploaded_at", values[i])
-			} else if value.Valid {
-				_m.UploadedAt = value.Time
-			}
-		case attachment.FieldExpiresAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field expires_at", values[i])
-			} else if value.Valid {
-				_m.ExpiresAt = value.Time
-			}
 		case attachment.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -360,12 +344,6 @@ func (_m *Attachment) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(_m.Status)
-	builder.WriteString(", ")
-	builder.WriteString("uploaded_at=")
-	builder.WriteString(_m.UploadedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("expires_at=")
-	builder.WriteString(_m.ExpiresAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

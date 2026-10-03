@@ -11,7 +11,7 @@ import { describe, expect, test, vi } from "vite-plus/test";
 import { ColorMode, UserPreferencesSchema } from "#/gen/chat/v1/user_pb";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { sessionAtom } from "#/providers/store/auth";
-import { defaultPreferences, storedPreferencesAtom } from "#/providers/store/preferences";
+import { storedPreferencesAtom } from "#/providers/store/preferences";
 
 import { usePreferences, useUpdatePreferences } from "./usePreferences";
 
@@ -21,7 +21,7 @@ vi.mock("#/components/ui/ToastRegion/toast", () => ({ toast: vi.fn() }));
 
 const setup = (hasSession: boolean, routes: (router: ConnectRouter) => void) => {
   const store = createStore();
-  store.set(storedPreferencesAtom, { ...defaultPreferences, mode: "light" });
+  store.set(storedPreferencesAtom, create(UserPreferencesSchema, { colorMode: ColorMode.LIGHT }));
   store.set(sessionAtom, hasSession ? { accessToken: "a", userId: "u1" } : null);
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const wrapper = ({ children }: { children: ReactNode }) => (

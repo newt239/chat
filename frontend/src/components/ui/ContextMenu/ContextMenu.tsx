@@ -13,7 +13,6 @@ type ContextMenuProps = {
   // MenuItem / MenuSeparator / MenuSection。Menu と同じ定義を渡せる
   menu: ReactNode;
   "aria-label": string;
-  className?: string;
 };
 
 const pointOf = (event: MouseEvent<HTMLDivElement>) => {
@@ -25,7 +24,7 @@ const pointOf = (event: MouseEvent<HTMLDivElement>) => {
   return { x: event.clientX, y: event.clientY };
 };
 
-export const ContextMenu = ({ children, menu, className, ...props }: ContextMenuProps) => {
+export const ContextMenu = ({ children, menu, ...props }: ContextMenuProps) => {
   const anchorRef = useRef<HTMLSpanElement>(null);
   const [point, setPoint] = useState<Point | null>(null);
   const close = () => {
@@ -34,7 +33,6 @@ export const ContextMenu = ({ children, menu, className, ...props }: ContextMenu
 
   return (
     <div
-      className={className}
       onContextMenu={(event) => {
         event.preventDefault();
         setPoint(pointOf(event));
@@ -50,11 +48,7 @@ export const ContextMenu = ({ children, menu, className, ...props }: ContextMenu
       <Popover
         triggerRef={anchorRef}
         isOpen={point !== null}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            close();
-          }
-        }}
+        onOpenChange={close}
         placement="bottom start"
         offset={0}
         className={cn(overlayStyles.popover, "overflow-y-auto")}

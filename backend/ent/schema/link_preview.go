@@ -41,12 +41,6 @@ func (LinkPreview) Fields() []ent.Field {
 		field.String("card_type").
 			Optional().
 			Nillable(),
-		field.Int32("image_width").
-			Optional().
-			Nillable(),
-		field.Int32("image_height").
-			Optional().
-			Nillable(),
 		field.Time("fetched_at"),
 	}
 }
@@ -59,8 +53,6 @@ func (LinkPreview) Edges() []ent.Edge {
 		edge.To("x_post", LinkPreviewXPost.Type).
 			Unique().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
-		edge.From("message_links", MessageLink.Type).
-			Ref("link_preview"),
 	}
 }
 

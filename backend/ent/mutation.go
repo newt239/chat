@@ -129,7 +129,6 @@ type AppMutation struct {
 	is_official            *bool
 	last_used_at           *time.Time
 	created_at             *time.Time
-	updated_at             *time.Time
 	clearedFields          map[string]struct{}
 	workspace              *string
 	clearedworkspace       bool
@@ -858,42 +857,6 @@ func (m *AppMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (m *AppMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *AppMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the App entity.
-// If the App object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AppMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *AppMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
 // ClearWorkspace clears the "workspace" edge to the Workspace entity.
 func (m *AppMutation) ClearWorkspace() {
 	m.clearedworkspace = true
@@ -1036,7 +999,7 @@ func (m *AppMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AppMutation) Fields() []string {
-	fields := make([]string, 0, 15)
+	fields := make([]string, 0, 14)
 	if m.created_by != nil {
 		fields = append(fields, app.FieldCreatedByID)
 	}
@@ -1079,9 +1042,6 @@ func (m *AppMutation) Fields() []string {
 	if m.created_at != nil {
 		fields = append(fields, app.FieldCreatedAt)
 	}
-	if m.updated_at != nil {
-		fields = append(fields, app.FieldUpdatedAt)
-	}
 	return fields
 }
 
@@ -1118,8 +1078,6 @@ func (m *AppMutation) Field(name string) (ent.Value, bool) {
 		return m.LastUsedAt()
 	case app.FieldCreatedAt:
 		return m.CreatedAt()
-	case app.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -1157,8 +1115,6 @@ func (m *AppMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldLastUsedAt(ctx)
 	case app.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case app.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown App field %s", name)
 }
@@ -1265,13 +1221,6 @@ func (m *AppMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
-		return nil
-	case app.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown App field %s", name)
@@ -1408,9 +1357,6 @@ func (m *AppMutation) ResetField(name string) error {
 		return nil
 	case app.FieldCreatedAt:
 		m.ResetCreatedAt()
-		return nil
-	case app.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown App field %s", name)
@@ -1567,8 +1513,6 @@ type AttachmentMutation struct {
 	thumbnail_height      *int32
 	addthumbnail_height   *int32
 	status                *string
-	uploaded_at           *time.Time
-	expires_at            *time.Time
 	created_at            *time.Time
 	clearedFields         map[string]struct{}
 	message               *uuid.UUID
@@ -2406,104 +2350,6 @@ func (m *AttachmentMutation) ResetStatus() {
 	m.status = nil
 }
 
-// SetUploadedAt sets the "uploaded_at" field.
-func (m *AttachmentMutation) SetUploadedAt(t time.Time) {
-	m.uploaded_at = &t
-}
-
-// UploadedAt returns the value of the "uploaded_at" field in the mutation.
-func (m *AttachmentMutation) UploadedAt() (r time.Time, exists bool) {
-	v := m.uploaded_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUploadedAt returns the old "uploaded_at" field's value of the Attachment entity.
-// If the Attachment object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AttachmentMutation) OldUploadedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUploadedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUploadedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUploadedAt: %w", err)
-	}
-	return oldValue.UploadedAt, nil
-}
-
-// ClearUploadedAt clears the value of the "uploaded_at" field.
-func (m *AttachmentMutation) ClearUploadedAt() {
-	m.uploaded_at = nil
-	m.clearedFields[attachment.FieldUploadedAt] = struct{}{}
-}
-
-// UploadedAtCleared returns if the "uploaded_at" field was cleared in this mutation.
-func (m *AttachmentMutation) UploadedAtCleared() bool {
-	_, ok := m.clearedFields[attachment.FieldUploadedAt]
-	return ok
-}
-
-// ResetUploadedAt resets all changes to the "uploaded_at" field.
-func (m *AttachmentMutation) ResetUploadedAt() {
-	m.uploaded_at = nil
-	delete(m.clearedFields, attachment.FieldUploadedAt)
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (m *AttachmentMutation) SetExpiresAt(t time.Time) {
-	m.expires_at = &t
-}
-
-// ExpiresAt returns the value of the "expires_at" field in the mutation.
-func (m *AttachmentMutation) ExpiresAt() (r time.Time, exists bool) {
-	v := m.expires_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldExpiresAt returns the old "expires_at" field's value of the Attachment entity.
-// If the Attachment object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AttachmentMutation) OldExpiresAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
-	}
-	return oldValue.ExpiresAt, nil
-}
-
-// ClearExpiresAt clears the value of the "expires_at" field.
-func (m *AttachmentMutation) ClearExpiresAt() {
-	m.expires_at = nil
-	m.clearedFields[attachment.FieldExpiresAt] = struct{}{}
-}
-
-// ExpiresAtCleared returns if the "expires_at" field was cleared in this mutation.
-func (m *AttachmentMutation) ExpiresAtCleared() bool {
-	_, ok := m.clearedFields[attachment.FieldExpiresAt]
-	return ok
-}
-
-// ResetExpiresAt resets all changes to the "expires_at" field.
-func (m *AttachmentMutation) ResetExpiresAt() {
-	m.expires_at = nil
-	delete(m.clearedFields, attachment.FieldExpiresAt)
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (m *AttachmentMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -2655,7 +2501,7 @@ func (m *AttachmentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AttachmentMutation) Fields() []string {
-	fields := make([]string, 0, 17)
+	fields := make([]string, 0, 15)
 	if m.message != nil {
 		fields = append(fields, attachment.FieldMessageID)
 	}
@@ -2698,12 +2544,6 @@ func (m *AttachmentMutation) Fields() []string {
 	if m.status != nil {
 		fields = append(fields, attachment.FieldStatus)
 	}
-	if m.uploaded_at != nil {
-		fields = append(fields, attachment.FieldUploadedAt)
-	}
-	if m.expires_at != nil {
-		fields = append(fields, attachment.FieldExpiresAt)
-	}
 	if m.created_at != nil {
 		fields = append(fields, attachment.FieldCreatedAt)
 	}
@@ -2743,10 +2583,6 @@ func (m *AttachmentMutation) Field(name string) (ent.Value, bool) {
 		return m.ThumbnailHeight()
 	case attachment.FieldStatus:
 		return m.Status()
-	case attachment.FieldUploadedAt:
-		return m.UploadedAt()
-	case attachment.FieldExpiresAt:
-		return m.ExpiresAt()
 	case attachment.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -2786,10 +2622,6 @@ func (m *AttachmentMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldThumbnailHeight(ctx)
 	case attachment.FieldStatus:
 		return m.OldStatus(ctx)
-	case attachment.FieldUploadedAt:
-		return m.OldUploadedAt(ctx)
-	case attachment.FieldExpiresAt:
-		return m.OldExpiresAt(ctx)
 	case attachment.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -2898,20 +2730,6 @@ func (m *AttachmentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
-		return nil
-	case attachment.FieldUploadedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUploadedAt(v)
-		return nil
-	case attachment.FieldExpiresAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetExpiresAt(v)
 		return nil
 	case attachment.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -3046,12 +2864,6 @@ func (m *AttachmentMutation) ClearedFields() []string {
 	if m.FieldCleared(attachment.FieldThumbnailHeight) {
 		fields = append(fields, attachment.FieldThumbnailHeight)
 	}
-	if m.FieldCleared(attachment.FieldUploadedAt) {
-		fields = append(fields, attachment.FieldUploadedAt)
-	}
-	if m.FieldCleared(attachment.FieldExpiresAt) {
-		fields = append(fields, attachment.FieldExpiresAt)
-	}
 	return fields
 }
 
@@ -3086,12 +2898,6 @@ func (m *AttachmentMutation) ClearField(name string) error {
 		return nil
 	case attachment.FieldThumbnailHeight:
 		m.ClearThumbnailHeight()
-		return nil
-	case attachment.FieldUploadedAt:
-		m.ClearUploadedAt()
-		return nil
-	case attachment.FieldExpiresAt:
-		m.ClearExpiresAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Attachment nullable field %s", name)
@@ -3142,12 +2948,6 @@ func (m *AttachmentMutation) ResetField(name string) error {
 		return nil
 	case attachment.FieldStatus:
 		m.ResetStatus()
-		return nil
-	case attachment.FieldUploadedAt:
-		m.ResetUploadedAt()
-		return nil
-	case attachment.FieldExpiresAt:
-		m.ResetExpiresAt()
 		return nil
 	case attachment.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -4109,41 +3909,31 @@ func (m *AuditLogMutation) ResetEdge(name string) error {
 // ChannelMutation represents an operation that mutates the Channel nodes in the graph.
 type ChannelMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	name               *string
-	description        *string
-	channel_type       *string
-	archived_at        *time.Time
-	dm_key             *string
-	created_at         *time.Time
-	updated_at         *time.Time
-	clearedFields      map[string]struct{}
-	workspace          *string
-	clearedworkspace   bool
-	created_by         *uuid.UUID
-	clearedcreated_by  bool
-	members            map[uuid.UUID]struct{}
-	removedmembers     map[uuid.UUID]struct{}
-	clearedmembers     bool
-	messages           map[uuid.UUID]struct{}
-	removedmessages    map[uuid.UUID]struct{}
-	clearedmessages    bool
-	attachments        map[uuid.UUID]struct{}
-	removedattachments map[uuid.UUID]struct{}
-	clearedattachments bool
-	read_states        map[uuid.UUID]struct{}
-	removedread_states map[uuid.UUID]struct{}
-	clearedread_states bool
-	parent             *uuid.UUID
-	clearedparent      bool
-	children           map[uuid.UUID]struct{}
-	removedchildren    map[uuid.UUID]struct{}
-	clearedchildren    bool
-	done               bool
-	oldValue           func(context.Context) (*Channel, error)
-	predicates         []predicate.Channel
+	op                Op
+	typ               string
+	id                *uuid.UUID
+	name              *string
+	description       *string
+	channel_type      *string
+	dm_key            *string
+	created_at        *time.Time
+	updated_at        *time.Time
+	clearedFields     map[string]struct{}
+	workspace         *string
+	clearedworkspace  bool
+	created_by        *uuid.UUID
+	clearedcreated_by bool
+	members           map[uuid.UUID]struct{}
+	removedmembers    map[uuid.UUID]struct{}
+	clearedmembers    bool
+	parent            *uuid.UUID
+	clearedparent     bool
+	children          map[uuid.UUID]struct{}
+	removedchildren   map[uuid.UUID]struct{}
+	clearedchildren   bool
+	done              bool
+	oldValue          func(context.Context) (*Channel, error)
+	predicates        []predicate.Channel
 }
 
 var _ ent.Mutation = (*ChannelMutation)(nil)
@@ -4375,7 +4165,7 @@ func (m *ChannelMutation) Description() (r string, exists bool) {
 // OldDescription returns the old "description" field's value of the Channel entity.
 // If the Channel object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ChannelMutation) OldDescription(ctx context.Context) (v string, err error) {
+func (m *ChannelMutation) OldDescription(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
 	}
@@ -4441,55 +4231,6 @@ func (m *ChannelMutation) OldChannelType(ctx context.Context) (v string, err err
 // ResetChannelType resets all changes to the "channel_type" field.
 func (m *ChannelMutation) ResetChannelType() {
 	m.channel_type = nil
-}
-
-// SetArchivedAt sets the "archived_at" field.
-func (m *ChannelMutation) SetArchivedAt(t time.Time) {
-	m.archived_at = &t
-}
-
-// ArchivedAt returns the value of the "archived_at" field in the mutation.
-func (m *ChannelMutation) ArchivedAt() (r time.Time, exists bool) {
-	v := m.archived_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldArchivedAt returns the old "archived_at" field's value of the Channel entity.
-// If the Channel object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ChannelMutation) OldArchivedAt(ctx context.Context) (v *time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldArchivedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldArchivedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldArchivedAt: %w", err)
-	}
-	return oldValue.ArchivedAt, nil
-}
-
-// ClearArchivedAt clears the value of the "archived_at" field.
-func (m *ChannelMutation) ClearArchivedAt() {
-	m.archived_at = nil
-	m.clearedFields[channel.FieldArchivedAt] = struct{}{}
-}
-
-// ArchivedAtCleared returns if the "archived_at" field was cleared in this mutation.
-func (m *ChannelMutation) ArchivedAtCleared() bool {
-	_, ok := m.clearedFields[channel.FieldArchivedAt]
-	return ok
-}
-
-// ResetArchivedAt resets all changes to the "archived_at" field.
-func (m *ChannelMutation) ResetArchivedAt() {
-	m.archived_at = nil
-	delete(m.clearedFields, channel.FieldArchivedAt)
 }
 
 // SetParentID sets the "parent_id" field.
@@ -4770,168 +4511,6 @@ func (m *ChannelMutation) ResetMembers() {
 	m.removedmembers = nil
 }
 
-// AddMessageIDs adds the "messages" edge to the Message entity by ids.
-func (m *ChannelMutation) AddMessageIDs(ids ...uuid.UUID) {
-	if m.messages == nil {
-		m.messages = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.messages[ids[i]] = struct{}{}
-	}
-}
-
-// ClearMessages clears the "messages" edge to the Message entity.
-func (m *ChannelMutation) ClearMessages() {
-	m.clearedmessages = true
-}
-
-// MessagesCleared reports if the "messages" edge to the Message entity was cleared.
-func (m *ChannelMutation) MessagesCleared() bool {
-	return m.clearedmessages
-}
-
-// RemoveMessageIDs removes the "messages" edge to the Message entity by IDs.
-func (m *ChannelMutation) RemoveMessageIDs(ids ...uuid.UUID) {
-	if m.removedmessages == nil {
-		m.removedmessages = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.messages, ids[i])
-		m.removedmessages[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedMessages returns the removed IDs of the "messages" edge to the Message entity.
-func (m *ChannelMutation) RemovedMessagesIDs() (ids []uuid.UUID) {
-	for id := range m.removedmessages {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// MessagesIDs returns the "messages" edge IDs in the mutation.
-func (m *ChannelMutation) MessagesIDs() (ids []uuid.UUID) {
-	for id := range m.messages {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetMessages resets all changes to the "messages" edge.
-func (m *ChannelMutation) ResetMessages() {
-	m.messages = nil
-	m.clearedmessages = false
-	m.removedmessages = nil
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by ids.
-func (m *ChannelMutation) AddAttachmentIDs(ids ...uuid.UUID) {
-	if m.attachments == nil {
-		m.attachments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.attachments[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAttachments clears the "attachments" edge to the Attachment entity.
-func (m *ChannelMutation) ClearAttachments() {
-	m.clearedattachments = true
-}
-
-// AttachmentsCleared reports if the "attachments" edge to the Attachment entity was cleared.
-func (m *ChannelMutation) AttachmentsCleared() bool {
-	return m.clearedattachments
-}
-
-// RemoveAttachmentIDs removes the "attachments" edge to the Attachment entity by IDs.
-func (m *ChannelMutation) RemoveAttachmentIDs(ids ...uuid.UUID) {
-	if m.removedattachments == nil {
-		m.removedattachments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.attachments, ids[i])
-		m.removedattachments[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAttachments returns the removed IDs of the "attachments" edge to the Attachment entity.
-func (m *ChannelMutation) RemovedAttachmentsIDs() (ids []uuid.UUID) {
-	for id := range m.removedattachments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AttachmentsIDs returns the "attachments" edge IDs in the mutation.
-func (m *ChannelMutation) AttachmentsIDs() (ids []uuid.UUID) {
-	for id := range m.attachments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAttachments resets all changes to the "attachments" edge.
-func (m *ChannelMutation) ResetAttachments() {
-	m.attachments = nil
-	m.clearedattachments = false
-	m.removedattachments = nil
-}
-
-// AddReadStateIDs adds the "read_states" edge to the ChannelReadState entity by ids.
-func (m *ChannelMutation) AddReadStateIDs(ids ...uuid.UUID) {
-	if m.read_states == nil {
-		m.read_states = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.read_states[ids[i]] = struct{}{}
-	}
-}
-
-// ClearReadStates clears the "read_states" edge to the ChannelReadState entity.
-func (m *ChannelMutation) ClearReadStates() {
-	m.clearedread_states = true
-}
-
-// ReadStatesCleared reports if the "read_states" edge to the ChannelReadState entity was cleared.
-func (m *ChannelMutation) ReadStatesCleared() bool {
-	return m.clearedread_states
-}
-
-// RemoveReadStateIDs removes the "read_states" edge to the ChannelReadState entity by IDs.
-func (m *ChannelMutation) RemoveReadStateIDs(ids ...uuid.UUID) {
-	if m.removedread_states == nil {
-		m.removedread_states = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.read_states, ids[i])
-		m.removedread_states[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedReadStates returns the removed IDs of the "read_states" edge to the ChannelReadState entity.
-func (m *ChannelMutation) RemovedReadStatesIDs() (ids []uuid.UUID) {
-	for id := range m.removedread_states {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ReadStatesIDs returns the "read_states" edge IDs in the mutation.
-func (m *ChannelMutation) ReadStatesIDs() (ids []uuid.UUID) {
-	for id := range m.read_states {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetReadStates resets all changes to the "read_states" edge.
-func (m *ChannelMutation) ResetReadStates() {
-	m.read_states = nil
-	m.clearedread_states = false
-	m.removedread_states = nil
-}
-
 // ClearParent clears the "parent" edge to the Channel entity.
 func (m *ChannelMutation) ClearParent() {
 	m.clearedparent = true
@@ -5047,7 +4626,7 @@ func (m *ChannelMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ChannelMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 9)
 	if m.workspace != nil {
 		fields = append(fields, channel.FieldWorkspaceID)
 	}
@@ -5062,9 +4641,6 @@ func (m *ChannelMutation) Fields() []string {
 	}
 	if m.channel_type != nil {
 		fields = append(fields, channel.FieldChannelType)
-	}
-	if m.archived_at != nil {
-		fields = append(fields, channel.FieldArchivedAt)
 	}
 	if m.parent != nil {
 		fields = append(fields, channel.FieldParentID)
@@ -5096,8 +4672,6 @@ func (m *ChannelMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case channel.FieldChannelType:
 		return m.ChannelType()
-	case channel.FieldArchivedAt:
-		return m.ArchivedAt()
 	case channel.FieldParentID:
 		return m.ParentID()
 	case channel.FieldDmKey:
@@ -5125,8 +4699,6 @@ func (m *ChannelMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldDescription(ctx)
 	case channel.FieldChannelType:
 		return m.OldChannelType(ctx)
-	case channel.FieldArchivedAt:
-		return m.OldArchivedAt(ctx)
 	case channel.FieldParentID:
 		return m.OldParentID(ctx)
 	case channel.FieldDmKey:
@@ -5178,13 +4750,6 @@ func (m *ChannelMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetChannelType(v)
-		return nil
-	case channel.FieldArchivedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetArchivedAt(v)
 		return nil
 	case channel.FieldParentID:
 		v, ok := value.(uuid.UUID)
@@ -5247,9 +4812,6 @@ func (m *ChannelMutation) ClearedFields() []string {
 	if m.FieldCleared(channel.FieldDescription) {
 		fields = append(fields, channel.FieldDescription)
 	}
-	if m.FieldCleared(channel.FieldArchivedAt) {
-		fields = append(fields, channel.FieldArchivedAt)
-	}
 	if m.FieldCleared(channel.FieldParentID) {
 		fields = append(fields, channel.FieldParentID)
 	}
@@ -5272,9 +4834,6 @@ func (m *ChannelMutation) ClearField(name string) error {
 	switch name {
 	case channel.FieldDescription:
 		m.ClearDescription()
-		return nil
-	case channel.FieldArchivedAt:
-		m.ClearArchivedAt()
 		return nil
 	case channel.FieldParentID:
 		m.ClearParentID()
@@ -5305,9 +4864,6 @@ func (m *ChannelMutation) ResetField(name string) error {
 	case channel.FieldChannelType:
 		m.ResetChannelType()
 		return nil
-	case channel.FieldArchivedAt:
-		m.ResetArchivedAt()
-		return nil
 	case channel.FieldParentID:
 		m.ResetParentID()
 		return nil
@@ -5326,7 +4882,7 @@ func (m *ChannelMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ChannelMutation) AddedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 5)
 	if m.workspace != nil {
 		edges = append(edges, channel.EdgeWorkspace)
 	}
@@ -5335,15 +4891,6 @@ func (m *ChannelMutation) AddedEdges() []string {
 	}
 	if m.members != nil {
 		edges = append(edges, channel.EdgeMembers)
-	}
-	if m.messages != nil {
-		edges = append(edges, channel.EdgeMessages)
-	}
-	if m.attachments != nil {
-		edges = append(edges, channel.EdgeAttachments)
-	}
-	if m.read_states != nil {
-		edges = append(edges, channel.EdgeReadStates)
 	}
 	if m.parent != nil {
 		edges = append(edges, channel.EdgeParent)
@@ -5372,24 +4919,6 @@ func (m *ChannelMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case channel.EdgeMessages:
-		ids := make([]ent.Value, 0, len(m.messages))
-		for id := range m.messages {
-			ids = append(ids, id)
-		}
-		return ids
-	case channel.EdgeAttachments:
-		ids := make([]ent.Value, 0, len(m.attachments))
-		for id := range m.attachments {
-			ids = append(ids, id)
-		}
-		return ids
-	case channel.EdgeReadStates:
-		ids := make([]ent.Value, 0, len(m.read_states))
-		for id := range m.read_states {
-			ids = append(ids, id)
-		}
-		return ids
 	case channel.EdgeParent:
 		if id := m.parent; id != nil {
 			return []ent.Value{*id}
@@ -5406,18 +4935,9 @@ func (m *ChannelMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ChannelMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 5)
 	if m.removedmembers != nil {
 		edges = append(edges, channel.EdgeMembers)
-	}
-	if m.removedmessages != nil {
-		edges = append(edges, channel.EdgeMessages)
-	}
-	if m.removedattachments != nil {
-		edges = append(edges, channel.EdgeAttachments)
-	}
-	if m.removedread_states != nil {
-		edges = append(edges, channel.EdgeReadStates)
 	}
 	if m.removedchildren != nil {
 		edges = append(edges, channel.EdgeChildren)
@@ -5435,24 +4955,6 @@ func (m *ChannelMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case channel.EdgeMessages:
-		ids := make([]ent.Value, 0, len(m.removedmessages))
-		for id := range m.removedmessages {
-			ids = append(ids, id)
-		}
-		return ids
-	case channel.EdgeAttachments:
-		ids := make([]ent.Value, 0, len(m.removedattachments))
-		for id := range m.removedattachments {
-			ids = append(ids, id)
-		}
-		return ids
-	case channel.EdgeReadStates:
-		ids := make([]ent.Value, 0, len(m.removedread_states))
-		for id := range m.removedread_states {
-			ids = append(ids, id)
-		}
-		return ids
 	case channel.EdgeChildren:
 		ids := make([]ent.Value, 0, len(m.removedchildren))
 		for id := range m.removedchildren {
@@ -5465,7 +4967,7 @@ func (m *ChannelMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ChannelMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 5)
 	if m.clearedworkspace {
 		edges = append(edges, channel.EdgeWorkspace)
 	}
@@ -5474,15 +4976,6 @@ func (m *ChannelMutation) ClearedEdges() []string {
 	}
 	if m.clearedmembers {
 		edges = append(edges, channel.EdgeMembers)
-	}
-	if m.clearedmessages {
-		edges = append(edges, channel.EdgeMessages)
-	}
-	if m.clearedattachments {
-		edges = append(edges, channel.EdgeAttachments)
-	}
-	if m.clearedread_states {
-		edges = append(edges, channel.EdgeReadStates)
 	}
 	if m.clearedparent {
 		edges = append(edges, channel.EdgeParent)
@@ -5503,12 +4996,6 @@ func (m *ChannelMutation) EdgeCleared(name string) bool {
 		return m.clearedcreated_by
 	case channel.EdgeMembers:
 		return m.clearedmembers
-	case channel.EdgeMessages:
-		return m.clearedmessages
-	case channel.EdgeAttachments:
-		return m.clearedattachments
-	case channel.EdgeReadStates:
-		return m.clearedread_states
 	case channel.EdgeParent:
 		return m.clearedparent
 	case channel.EdgeChildren:
@@ -5546,15 +5033,6 @@ func (m *ChannelMutation) ResetEdge(name string) error {
 		return nil
 	case channel.EdgeMembers:
 		m.ResetMembers()
-		return nil
-	case channel.EdgeMessages:
-		m.ResetMessages()
-		return nil
-	case channel.EdgeAttachments:
-		m.ResetAttachments()
-		return nil
-	case channel.EdgeReadStates:
-		m.ResetReadStates()
 		return nil
 	case channel.EdgeParent:
 		m.ResetParent()
@@ -12080,31 +11558,24 @@ func (m *InvitationMutation) ResetEdge(name string) error {
 // LinkPreviewMutation represents an operation that mutates the LinkPreview nodes in the graph.
 type LinkPreviewMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	url                  *string
-	title                *string
-	description          *string
-	image_url            *string
-	site_name            *string
-	card_type            *string
-	image_width          *int32
-	addimage_width       *int32
-	image_height         *int32
-	addimage_height      *int32
-	fetched_at           *time.Time
-	clearedFields        map[string]struct{}
-	youtube              *uuid.UUID
-	clearedyoutube       bool
-	x_post               *uuid.UUID
-	clearedx_post        bool
-	message_links        map[uuid.UUID]struct{}
-	removedmessage_links map[uuid.UUID]struct{}
-	clearedmessage_links bool
-	done                 bool
-	oldValue             func(context.Context) (*LinkPreview, error)
-	predicates           []predicate.LinkPreview
+	op             Op
+	typ            string
+	id             *uuid.UUID
+	url            *string
+	title          *string
+	description    *string
+	image_url      *string
+	site_name      *string
+	card_type      *string
+	fetched_at     *time.Time
+	clearedFields  map[string]struct{}
+	youtube        *uuid.UUID
+	clearedyoutube bool
+	x_post         *uuid.UUID
+	clearedx_post  bool
+	done           bool
+	oldValue       func(context.Context) (*LinkPreview, error)
+	predicates     []predicate.LinkPreview
 }
 
 var _ ent.Mutation = (*LinkPreviewMutation)(nil)
@@ -12492,146 +11963,6 @@ func (m *LinkPreviewMutation) ResetCardType() {
 	delete(m.clearedFields, linkpreview.FieldCardType)
 }
 
-// SetImageWidth sets the "image_width" field.
-func (m *LinkPreviewMutation) SetImageWidth(i int32) {
-	m.image_width = &i
-	m.addimage_width = nil
-}
-
-// ImageWidth returns the value of the "image_width" field in the mutation.
-func (m *LinkPreviewMutation) ImageWidth() (r int32, exists bool) {
-	v := m.image_width
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldImageWidth returns the old "image_width" field's value of the LinkPreview entity.
-// If the LinkPreview object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LinkPreviewMutation) OldImageWidth(ctx context.Context) (v *int32, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldImageWidth is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldImageWidth requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldImageWidth: %w", err)
-	}
-	return oldValue.ImageWidth, nil
-}
-
-// AddImageWidth adds i to the "image_width" field.
-func (m *LinkPreviewMutation) AddImageWidth(i int32) {
-	if m.addimage_width != nil {
-		*m.addimage_width += i
-	} else {
-		m.addimage_width = &i
-	}
-}
-
-// AddedImageWidth returns the value that was added to the "image_width" field in this mutation.
-func (m *LinkPreviewMutation) AddedImageWidth() (r int32, exists bool) {
-	v := m.addimage_width
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearImageWidth clears the value of the "image_width" field.
-func (m *LinkPreviewMutation) ClearImageWidth() {
-	m.image_width = nil
-	m.addimage_width = nil
-	m.clearedFields[linkpreview.FieldImageWidth] = struct{}{}
-}
-
-// ImageWidthCleared returns if the "image_width" field was cleared in this mutation.
-func (m *LinkPreviewMutation) ImageWidthCleared() bool {
-	_, ok := m.clearedFields[linkpreview.FieldImageWidth]
-	return ok
-}
-
-// ResetImageWidth resets all changes to the "image_width" field.
-func (m *LinkPreviewMutation) ResetImageWidth() {
-	m.image_width = nil
-	m.addimage_width = nil
-	delete(m.clearedFields, linkpreview.FieldImageWidth)
-}
-
-// SetImageHeight sets the "image_height" field.
-func (m *LinkPreviewMutation) SetImageHeight(i int32) {
-	m.image_height = &i
-	m.addimage_height = nil
-}
-
-// ImageHeight returns the value of the "image_height" field in the mutation.
-func (m *LinkPreviewMutation) ImageHeight() (r int32, exists bool) {
-	v := m.image_height
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldImageHeight returns the old "image_height" field's value of the LinkPreview entity.
-// If the LinkPreview object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LinkPreviewMutation) OldImageHeight(ctx context.Context) (v *int32, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldImageHeight is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldImageHeight requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldImageHeight: %w", err)
-	}
-	return oldValue.ImageHeight, nil
-}
-
-// AddImageHeight adds i to the "image_height" field.
-func (m *LinkPreviewMutation) AddImageHeight(i int32) {
-	if m.addimage_height != nil {
-		*m.addimage_height += i
-	} else {
-		m.addimage_height = &i
-	}
-}
-
-// AddedImageHeight returns the value that was added to the "image_height" field in this mutation.
-func (m *LinkPreviewMutation) AddedImageHeight() (r int32, exists bool) {
-	v := m.addimage_height
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearImageHeight clears the value of the "image_height" field.
-func (m *LinkPreviewMutation) ClearImageHeight() {
-	m.image_height = nil
-	m.addimage_height = nil
-	m.clearedFields[linkpreview.FieldImageHeight] = struct{}{}
-}
-
-// ImageHeightCleared returns if the "image_height" field was cleared in this mutation.
-func (m *LinkPreviewMutation) ImageHeightCleared() bool {
-	_, ok := m.clearedFields[linkpreview.FieldImageHeight]
-	return ok
-}
-
-// ResetImageHeight resets all changes to the "image_height" field.
-func (m *LinkPreviewMutation) ResetImageHeight() {
-	m.image_height = nil
-	m.addimage_height = nil
-	delete(m.clearedFields, linkpreview.FieldImageHeight)
-}
-
 // SetFetchedAt sets the "fetched_at" field.
 func (m *LinkPreviewMutation) SetFetchedAt(t time.Time) {
 	m.fetched_at = &t
@@ -12746,60 +12077,6 @@ func (m *LinkPreviewMutation) ResetXPost() {
 	m.clearedx_post = false
 }
 
-// AddMessageLinkIDs adds the "message_links" edge to the MessageLink entity by ids.
-func (m *LinkPreviewMutation) AddMessageLinkIDs(ids ...uuid.UUID) {
-	if m.message_links == nil {
-		m.message_links = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.message_links[ids[i]] = struct{}{}
-	}
-}
-
-// ClearMessageLinks clears the "message_links" edge to the MessageLink entity.
-func (m *LinkPreviewMutation) ClearMessageLinks() {
-	m.clearedmessage_links = true
-}
-
-// MessageLinksCleared reports if the "message_links" edge to the MessageLink entity was cleared.
-func (m *LinkPreviewMutation) MessageLinksCleared() bool {
-	return m.clearedmessage_links
-}
-
-// RemoveMessageLinkIDs removes the "message_links" edge to the MessageLink entity by IDs.
-func (m *LinkPreviewMutation) RemoveMessageLinkIDs(ids ...uuid.UUID) {
-	if m.removedmessage_links == nil {
-		m.removedmessage_links = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.message_links, ids[i])
-		m.removedmessage_links[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedMessageLinks returns the removed IDs of the "message_links" edge to the MessageLink entity.
-func (m *LinkPreviewMutation) RemovedMessageLinksIDs() (ids []uuid.UUID) {
-	for id := range m.removedmessage_links {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// MessageLinksIDs returns the "message_links" edge IDs in the mutation.
-func (m *LinkPreviewMutation) MessageLinksIDs() (ids []uuid.UUID) {
-	for id := range m.message_links {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetMessageLinks resets all changes to the "message_links" edge.
-func (m *LinkPreviewMutation) ResetMessageLinks() {
-	m.message_links = nil
-	m.clearedmessage_links = false
-	m.removedmessage_links = nil
-}
-
 // Where appends a list predicates to the LinkPreviewMutation builder.
 func (m *LinkPreviewMutation) Where(ps ...predicate.LinkPreview) {
 	m.predicates = append(m.predicates, ps...)
@@ -12834,7 +12111,7 @@ func (m *LinkPreviewMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LinkPreviewMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 7)
 	if m.url != nil {
 		fields = append(fields, linkpreview.FieldURL)
 	}
@@ -12852,12 +12129,6 @@ func (m *LinkPreviewMutation) Fields() []string {
 	}
 	if m.card_type != nil {
 		fields = append(fields, linkpreview.FieldCardType)
-	}
-	if m.image_width != nil {
-		fields = append(fields, linkpreview.FieldImageWidth)
-	}
-	if m.image_height != nil {
-		fields = append(fields, linkpreview.FieldImageHeight)
 	}
 	if m.fetched_at != nil {
 		fields = append(fields, linkpreview.FieldFetchedAt)
@@ -12882,10 +12153,6 @@ func (m *LinkPreviewMutation) Field(name string) (ent.Value, bool) {
 		return m.SiteName()
 	case linkpreview.FieldCardType:
 		return m.CardType()
-	case linkpreview.FieldImageWidth:
-		return m.ImageWidth()
-	case linkpreview.FieldImageHeight:
-		return m.ImageHeight()
 	case linkpreview.FieldFetchedAt:
 		return m.FetchedAt()
 	}
@@ -12909,10 +12176,6 @@ func (m *LinkPreviewMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldSiteName(ctx)
 	case linkpreview.FieldCardType:
 		return m.OldCardType(ctx)
-	case linkpreview.FieldImageWidth:
-		return m.OldImageWidth(ctx)
-	case linkpreview.FieldImageHeight:
-		return m.OldImageHeight(ctx)
 	case linkpreview.FieldFetchedAt:
 		return m.OldFetchedAt(ctx)
 	}
@@ -12966,20 +12229,6 @@ func (m *LinkPreviewMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCardType(v)
 		return nil
-	case linkpreview.FieldImageWidth:
-		v, ok := value.(int32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetImageWidth(v)
-		return nil
-	case linkpreview.FieldImageHeight:
-		v, ok := value.(int32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetImageHeight(v)
-		return nil
 	case linkpreview.FieldFetchedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -12994,26 +12243,13 @@ func (m *LinkPreviewMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *LinkPreviewMutation) AddedFields() []string {
-	var fields []string
-	if m.addimage_width != nil {
-		fields = append(fields, linkpreview.FieldImageWidth)
-	}
-	if m.addimage_height != nil {
-		fields = append(fields, linkpreview.FieldImageHeight)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *LinkPreviewMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case linkpreview.FieldImageWidth:
-		return m.AddedImageWidth()
-	case linkpreview.FieldImageHeight:
-		return m.AddedImageHeight()
-	}
 	return nil, false
 }
 
@@ -13022,20 +12258,6 @@ func (m *LinkPreviewMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *LinkPreviewMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case linkpreview.FieldImageWidth:
-		v, ok := value.(int32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddImageWidth(v)
-		return nil
-	case linkpreview.FieldImageHeight:
-		v, ok := value.(int32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddImageHeight(v)
-		return nil
 	}
 	return fmt.Errorf("unknown LinkPreview numeric field %s", name)
 }
@@ -13058,12 +12280,6 @@ func (m *LinkPreviewMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(linkpreview.FieldCardType) {
 		fields = append(fields, linkpreview.FieldCardType)
-	}
-	if m.FieldCleared(linkpreview.FieldImageWidth) {
-		fields = append(fields, linkpreview.FieldImageWidth)
-	}
-	if m.FieldCleared(linkpreview.FieldImageHeight) {
-		fields = append(fields, linkpreview.FieldImageHeight)
 	}
 	return fields
 }
@@ -13094,12 +12310,6 @@ func (m *LinkPreviewMutation) ClearField(name string) error {
 	case linkpreview.FieldCardType:
 		m.ClearCardType()
 		return nil
-	case linkpreview.FieldImageWidth:
-		m.ClearImageWidth()
-		return nil
-	case linkpreview.FieldImageHeight:
-		m.ClearImageHeight()
-		return nil
 	}
 	return fmt.Errorf("unknown LinkPreview nullable field %s", name)
 }
@@ -13126,12 +12336,6 @@ func (m *LinkPreviewMutation) ResetField(name string) error {
 	case linkpreview.FieldCardType:
 		m.ResetCardType()
 		return nil
-	case linkpreview.FieldImageWidth:
-		m.ResetImageWidth()
-		return nil
-	case linkpreview.FieldImageHeight:
-		m.ResetImageHeight()
-		return nil
 	case linkpreview.FieldFetchedAt:
 		m.ResetFetchedAt()
 		return nil
@@ -13141,15 +12345,12 @@ func (m *LinkPreviewMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *LinkPreviewMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.youtube != nil {
 		edges = append(edges, linkpreview.EdgeYoutube)
 	}
 	if m.x_post != nil {
 		edges = append(edges, linkpreview.EdgeXPost)
-	}
-	if m.message_links != nil {
-		edges = append(edges, linkpreview.EdgeMessageLinks)
 	}
 	return edges
 }
@@ -13166,50 +12367,30 @@ func (m *LinkPreviewMutation) AddedIDs(name string) []ent.Value {
 		if id := m.x_post; id != nil {
 			return []ent.Value{*id}
 		}
-	case linkpreview.EdgeMessageLinks:
-		ids := make([]ent.Value, 0, len(m.message_links))
-		for id := range m.message_links {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *LinkPreviewMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.removedmessage_links != nil {
-		edges = append(edges, linkpreview.EdgeMessageLinks)
-	}
+	edges := make([]string, 0, 2)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *LinkPreviewMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case linkpreview.EdgeMessageLinks:
-		ids := make([]ent.Value, 0, len(m.removedmessage_links))
-		for id := range m.removedmessage_links {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *LinkPreviewMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.clearedyoutube {
 		edges = append(edges, linkpreview.EdgeYoutube)
 	}
 	if m.clearedx_post {
 		edges = append(edges, linkpreview.EdgeXPost)
-	}
-	if m.clearedmessage_links {
-		edges = append(edges, linkpreview.EdgeMessageLinks)
 	}
 	return edges
 }
@@ -13222,8 +12403,6 @@ func (m *LinkPreviewMutation) EdgeCleared(name string) bool {
 		return m.clearedyoutube
 	case linkpreview.EdgeXPost:
 		return m.clearedx_post
-	case linkpreview.EdgeMessageLinks:
-		return m.clearedmessage_links
 	}
 	return false
 }
@@ -13251,9 +12430,6 @@ func (m *LinkPreviewMutation) ResetEdge(name string) error {
 		return nil
 	case linkpreview.EdgeXPost:
 		m.ResetXPost()
-		return nil
-	case linkpreview.EdgeMessageLinks:
-		m.ResetMessageLinks()
 		return nil
 	}
 	return fmt.Errorf("unknown LinkPreview edge %s", name)
@@ -14409,33 +13585,12 @@ type MessageMutation struct {
 	replies                    map[uuid.UUID]struct{}
 	removedreplies             map[uuid.UUID]struct{}
 	clearedreplies             bool
-	reactions                  map[uuid.UUID]struct{}
-	removedreactions           map[uuid.UUID]struct{}
-	clearedreactions           bool
-	bookmarks                  map[uuid.UUID]struct{}
-	removedbookmarks           map[uuid.UUID]struct{}
-	clearedbookmarks           bool
 	user_mentions              map[uuid.UUID]struct{}
 	removeduser_mentions       map[uuid.UUID]struct{}
 	cleareduser_mentions       bool
-	group_mentions             map[uuid.UUID]struct{}
-	removedgroup_mentions      map[uuid.UUID]struct{}
-	clearedgroup_mentions      bool
-	links                      map[uuid.UUID]struct{}
-	removedlinks               map[uuid.UUID]struct{}
-	clearedlinks               bool
-	attachments                map[uuid.UUID]struct{}
-	removedattachments         map[uuid.UUID]struct{}
-	clearedattachments         bool
-	pins                       map[uuid.UUID]struct{}
-	removedpins                map[uuid.UUID]struct{}
-	clearedpins                bool
 	user_thread_follows        map[uuid.UUID]struct{}
 	removeduser_thread_follows map[uuid.UUID]struct{}
 	cleareduser_thread_follows bool
-	thread_read_states         map[uuid.UUID]struct{}
-	removedthread_read_states  map[uuid.UUID]struct{}
-	clearedthread_read_states  bool
 	done                       bool
 	oldValue                   func(context.Context) (*Message, error)
 	predicates                 []predicate.Message
@@ -14755,7 +13910,7 @@ func (m *MessageMutation) EditedAt() (r time.Time, exists bool) {
 // OldEditedAt returns the old "edited_at" field's value of the Message entity.
 // If the Message object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MessageMutation) OldEditedAt(ctx context.Context) (v time.Time, err error) {
+func (m *MessageMutation) OldEditedAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEditedAt is only allowed on UpdateOne operations")
 	}
@@ -14804,7 +13959,7 @@ func (m *MessageMutation) DeletedAt() (r time.Time, exists bool) {
 // OldDeletedAt returns the old "deleted_at" field's value of the Message entity.
 // If the Message object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MessageMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+func (m *MessageMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
 	}
@@ -14853,7 +14008,7 @@ func (m *MessageMutation) DeletedBy() (r uuid.UUID, exists bool) {
 // OldDeletedBy returns the old "deleted_by" field's value of the Message entity.
 // If the Message object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MessageMutation) OldDeletedBy(ctx context.Context) (v uuid.UUID, err error) {
+func (m *MessageMutation) OldDeletedBy(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
 	}
@@ -15351,114 +14506,6 @@ func (m *MessageMutation) ResetReplies() {
 	m.removedreplies = nil
 }
 
-// AddReactionIDs adds the "reactions" edge to the MessageReaction entity by ids.
-func (m *MessageMutation) AddReactionIDs(ids ...uuid.UUID) {
-	if m.reactions == nil {
-		m.reactions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.reactions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearReactions clears the "reactions" edge to the MessageReaction entity.
-func (m *MessageMutation) ClearReactions() {
-	m.clearedreactions = true
-}
-
-// ReactionsCleared reports if the "reactions" edge to the MessageReaction entity was cleared.
-func (m *MessageMutation) ReactionsCleared() bool {
-	return m.clearedreactions
-}
-
-// RemoveReactionIDs removes the "reactions" edge to the MessageReaction entity by IDs.
-func (m *MessageMutation) RemoveReactionIDs(ids ...uuid.UUID) {
-	if m.removedreactions == nil {
-		m.removedreactions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.reactions, ids[i])
-		m.removedreactions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedReactions returns the removed IDs of the "reactions" edge to the MessageReaction entity.
-func (m *MessageMutation) RemovedReactionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedreactions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ReactionsIDs returns the "reactions" edge IDs in the mutation.
-func (m *MessageMutation) ReactionsIDs() (ids []uuid.UUID) {
-	for id := range m.reactions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetReactions resets all changes to the "reactions" edge.
-func (m *MessageMutation) ResetReactions() {
-	m.reactions = nil
-	m.clearedreactions = false
-	m.removedreactions = nil
-}
-
-// AddBookmarkIDs adds the "bookmarks" edge to the MessageBookmark entity by ids.
-func (m *MessageMutation) AddBookmarkIDs(ids ...uuid.UUID) {
-	if m.bookmarks == nil {
-		m.bookmarks = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.bookmarks[ids[i]] = struct{}{}
-	}
-}
-
-// ClearBookmarks clears the "bookmarks" edge to the MessageBookmark entity.
-func (m *MessageMutation) ClearBookmarks() {
-	m.clearedbookmarks = true
-}
-
-// BookmarksCleared reports if the "bookmarks" edge to the MessageBookmark entity was cleared.
-func (m *MessageMutation) BookmarksCleared() bool {
-	return m.clearedbookmarks
-}
-
-// RemoveBookmarkIDs removes the "bookmarks" edge to the MessageBookmark entity by IDs.
-func (m *MessageMutation) RemoveBookmarkIDs(ids ...uuid.UUID) {
-	if m.removedbookmarks == nil {
-		m.removedbookmarks = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.bookmarks, ids[i])
-		m.removedbookmarks[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedBookmarks returns the removed IDs of the "bookmarks" edge to the MessageBookmark entity.
-func (m *MessageMutation) RemovedBookmarksIDs() (ids []uuid.UUID) {
-	for id := range m.removedbookmarks {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// BookmarksIDs returns the "bookmarks" edge IDs in the mutation.
-func (m *MessageMutation) BookmarksIDs() (ids []uuid.UUID) {
-	for id := range m.bookmarks {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetBookmarks resets all changes to the "bookmarks" edge.
-func (m *MessageMutation) ResetBookmarks() {
-	m.bookmarks = nil
-	m.clearedbookmarks = false
-	m.removedbookmarks = nil
-}
-
 // AddUserMentionIDs adds the "user_mentions" edge to the MessageUserMention entity by ids.
 func (m *MessageMutation) AddUserMentionIDs(ids ...uuid.UUID) {
 	if m.user_mentions == nil {
@@ -15513,222 +14560,6 @@ func (m *MessageMutation) ResetUserMentions() {
 	m.removeduser_mentions = nil
 }
 
-// AddGroupMentionIDs adds the "group_mentions" edge to the MessageGroupMention entity by ids.
-func (m *MessageMutation) AddGroupMentionIDs(ids ...uuid.UUID) {
-	if m.group_mentions == nil {
-		m.group_mentions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.group_mentions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearGroupMentions clears the "group_mentions" edge to the MessageGroupMention entity.
-func (m *MessageMutation) ClearGroupMentions() {
-	m.clearedgroup_mentions = true
-}
-
-// GroupMentionsCleared reports if the "group_mentions" edge to the MessageGroupMention entity was cleared.
-func (m *MessageMutation) GroupMentionsCleared() bool {
-	return m.clearedgroup_mentions
-}
-
-// RemoveGroupMentionIDs removes the "group_mentions" edge to the MessageGroupMention entity by IDs.
-func (m *MessageMutation) RemoveGroupMentionIDs(ids ...uuid.UUID) {
-	if m.removedgroup_mentions == nil {
-		m.removedgroup_mentions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.group_mentions, ids[i])
-		m.removedgroup_mentions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedGroupMentions returns the removed IDs of the "group_mentions" edge to the MessageGroupMention entity.
-func (m *MessageMutation) RemovedGroupMentionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedgroup_mentions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// GroupMentionsIDs returns the "group_mentions" edge IDs in the mutation.
-func (m *MessageMutation) GroupMentionsIDs() (ids []uuid.UUID) {
-	for id := range m.group_mentions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetGroupMentions resets all changes to the "group_mentions" edge.
-func (m *MessageMutation) ResetGroupMentions() {
-	m.group_mentions = nil
-	m.clearedgroup_mentions = false
-	m.removedgroup_mentions = nil
-}
-
-// AddLinkIDs adds the "links" edge to the MessageLink entity by ids.
-func (m *MessageMutation) AddLinkIDs(ids ...uuid.UUID) {
-	if m.links == nil {
-		m.links = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.links[ids[i]] = struct{}{}
-	}
-}
-
-// ClearLinks clears the "links" edge to the MessageLink entity.
-func (m *MessageMutation) ClearLinks() {
-	m.clearedlinks = true
-}
-
-// LinksCleared reports if the "links" edge to the MessageLink entity was cleared.
-func (m *MessageMutation) LinksCleared() bool {
-	return m.clearedlinks
-}
-
-// RemoveLinkIDs removes the "links" edge to the MessageLink entity by IDs.
-func (m *MessageMutation) RemoveLinkIDs(ids ...uuid.UUID) {
-	if m.removedlinks == nil {
-		m.removedlinks = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.links, ids[i])
-		m.removedlinks[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedLinks returns the removed IDs of the "links" edge to the MessageLink entity.
-func (m *MessageMutation) RemovedLinksIDs() (ids []uuid.UUID) {
-	for id := range m.removedlinks {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// LinksIDs returns the "links" edge IDs in the mutation.
-func (m *MessageMutation) LinksIDs() (ids []uuid.UUID) {
-	for id := range m.links {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetLinks resets all changes to the "links" edge.
-func (m *MessageMutation) ResetLinks() {
-	m.links = nil
-	m.clearedlinks = false
-	m.removedlinks = nil
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by ids.
-func (m *MessageMutation) AddAttachmentIDs(ids ...uuid.UUID) {
-	if m.attachments == nil {
-		m.attachments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.attachments[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAttachments clears the "attachments" edge to the Attachment entity.
-func (m *MessageMutation) ClearAttachments() {
-	m.clearedattachments = true
-}
-
-// AttachmentsCleared reports if the "attachments" edge to the Attachment entity was cleared.
-func (m *MessageMutation) AttachmentsCleared() bool {
-	return m.clearedattachments
-}
-
-// RemoveAttachmentIDs removes the "attachments" edge to the Attachment entity by IDs.
-func (m *MessageMutation) RemoveAttachmentIDs(ids ...uuid.UUID) {
-	if m.removedattachments == nil {
-		m.removedattachments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.attachments, ids[i])
-		m.removedattachments[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAttachments returns the removed IDs of the "attachments" edge to the Attachment entity.
-func (m *MessageMutation) RemovedAttachmentsIDs() (ids []uuid.UUID) {
-	for id := range m.removedattachments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AttachmentsIDs returns the "attachments" edge IDs in the mutation.
-func (m *MessageMutation) AttachmentsIDs() (ids []uuid.UUID) {
-	for id := range m.attachments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAttachments resets all changes to the "attachments" edge.
-func (m *MessageMutation) ResetAttachments() {
-	m.attachments = nil
-	m.clearedattachments = false
-	m.removedattachments = nil
-}
-
-// AddPinIDs adds the "pins" edge to the MessagePin entity by ids.
-func (m *MessageMutation) AddPinIDs(ids ...uuid.UUID) {
-	if m.pins == nil {
-		m.pins = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.pins[ids[i]] = struct{}{}
-	}
-}
-
-// ClearPins clears the "pins" edge to the MessagePin entity.
-func (m *MessageMutation) ClearPins() {
-	m.clearedpins = true
-}
-
-// PinsCleared reports if the "pins" edge to the MessagePin entity was cleared.
-func (m *MessageMutation) PinsCleared() bool {
-	return m.clearedpins
-}
-
-// RemovePinIDs removes the "pins" edge to the MessagePin entity by IDs.
-func (m *MessageMutation) RemovePinIDs(ids ...uuid.UUID) {
-	if m.removedpins == nil {
-		m.removedpins = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.pins, ids[i])
-		m.removedpins[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedPins returns the removed IDs of the "pins" edge to the MessagePin entity.
-func (m *MessageMutation) RemovedPinsIDs() (ids []uuid.UUID) {
-	for id := range m.removedpins {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// PinsIDs returns the "pins" edge IDs in the mutation.
-func (m *MessageMutation) PinsIDs() (ids []uuid.UUID) {
-	for id := range m.pins {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetPins resets all changes to the "pins" edge.
-func (m *MessageMutation) ResetPins() {
-	m.pins = nil
-	m.clearedpins = false
-	m.removedpins = nil
-}
-
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by ids.
 func (m *MessageMutation) AddUserThreadFollowIDs(ids ...uuid.UUID) {
 	if m.user_thread_follows == nil {
@@ -15781,60 +14612,6 @@ func (m *MessageMutation) ResetUserThreadFollows() {
 	m.user_thread_follows = nil
 	m.cleareduser_thread_follows = false
 	m.removeduser_thread_follows = nil
-}
-
-// AddThreadReadStateIDs adds the "thread_read_states" edge to the ThreadReadState entity by ids.
-func (m *MessageMutation) AddThreadReadStateIDs(ids ...uuid.UUID) {
-	if m.thread_read_states == nil {
-		m.thread_read_states = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.thread_read_states[ids[i]] = struct{}{}
-	}
-}
-
-// ClearThreadReadStates clears the "thread_read_states" edge to the ThreadReadState entity.
-func (m *MessageMutation) ClearThreadReadStates() {
-	m.clearedthread_read_states = true
-}
-
-// ThreadReadStatesCleared reports if the "thread_read_states" edge to the ThreadReadState entity was cleared.
-func (m *MessageMutation) ThreadReadStatesCleared() bool {
-	return m.clearedthread_read_states
-}
-
-// RemoveThreadReadStateIDs removes the "thread_read_states" edge to the ThreadReadState entity by IDs.
-func (m *MessageMutation) RemoveThreadReadStateIDs(ids ...uuid.UUID) {
-	if m.removedthread_read_states == nil {
-		m.removedthread_read_states = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.thread_read_states, ids[i])
-		m.removedthread_read_states[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedThreadReadStates returns the removed IDs of the "thread_read_states" edge to the ThreadReadState entity.
-func (m *MessageMutation) RemovedThreadReadStatesIDs() (ids []uuid.UUID) {
-	for id := range m.removedthread_read_states {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ThreadReadStatesIDs returns the "thread_read_states" edge IDs in the mutation.
-func (m *MessageMutation) ThreadReadStatesIDs() (ids []uuid.UUID) {
-	for id := range m.thread_read_states {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetThreadReadStates resets all changes to the "thread_read_states" edge.
-func (m *MessageMutation) ResetThreadReadStates() {
-	m.thread_read_states = nil
-	m.clearedthread_read_states = false
-	m.removedthread_read_states = nil
 }
 
 // Where appends a list predicates to the MessageMutation builder.
@@ -16281,7 +15058,7 @@ func (m *MessageMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *MessageMutation) AddedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 6)
 	if m.channel != nil {
 		edges = append(edges, message.EdgeChannel)
 	}
@@ -16294,32 +15071,11 @@ func (m *MessageMutation) AddedEdges() []string {
 	if m.replies != nil {
 		edges = append(edges, message.EdgeReplies)
 	}
-	if m.reactions != nil {
-		edges = append(edges, message.EdgeReactions)
-	}
-	if m.bookmarks != nil {
-		edges = append(edges, message.EdgeBookmarks)
-	}
 	if m.user_mentions != nil {
 		edges = append(edges, message.EdgeUserMentions)
 	}
-	if m.group_mentions != nil {
-		edges = append(edges, message.EdgeGroupMentions)
-	}
-	if m.links != nil {
-		edges = append(edges, message.EdgeLinks)
-	}
-	if m.attachments != nil {
-		edges = append(edges, message.EdgeAttachments)
-	}
-	if m.pins != nil {
-		edges = append(edges, message.EdgePins)
-	}
 	if m.user_thread_follows != nil {
 		edges = append(edges, message.EdgeUserThreadFollows)
-	}
-	if m.thread_read_states != nil {
-		edges = append(edges, message.EdgeThreadReadStates)
 	}
 	return edges
 }
@@ -16346,45 +15102,9 @@ func (m *MessageMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case message.EdgeReactions:
-		ids := make([]ent.Value, 0, len(m.reactions))
-		for id := range m.reactions {
-			ids = append(ids, id)
-		}
-		return ids
-	case message.EdgeBookmarks:
-		ids := make([]ent.Value, 0, len(m.bookmarks))
-		for id := range m.bookmarks {
-			ids = append(ids, id)
-		}
-		return ids
 	case message.EdgeUserMentions:
 		ids := make([]ent.Value, 0, len(m.user_mentions))
 		for id := range m.user_mentions {
-			ids = append(ids, id)
-		}
-		return ids
-	case message.EdgeGroupMentions:
-		ids := make([]ent.Value, 0, len(m.group_mentions))
-		for id := range m.group_mentions {
-			ids = append(ids, id)
-		}
-		return ids
-	case message.EdgeLinks:
-		ids := make([]ent.Value, 0, len(m.links))
-		for id := range m.links {
-			ids = append(ids, id)
-		}
-		return ids
-	case message.EdgeAttachments:
-		ids := make([]ent.Value, 0, len(m.attachments))
-		for id := range m.attachments {
-			ids = append(ids, id)
-		}
-		return ids
-	case message.EdgePins:
-		ids := make([]ent.Value, 0, len(m.pins))
-		for id := range m.pins {
 			ids = append(ids, id)
 		}
 		return ids
@@ -16394,48 +15114,21 @@ func (m *MessageMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case message.EdgeThreadReadStates:
-		ids := make([]ent.Value, 0, len(m.thread_read_states))
-		for id := range m.thread_read_states {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MessageMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 6)
 	if m.removedreplies != nil {
 		edges = append(edges, message.EdgeReplies)
-	}
-	if m.removedreactions != nil {
-		edges = append(edges, message.EdgeReactions)
-	}
-	if m.removedbookmarks != nil {
-		edges = append(edges, message.EdgeBookmarks)
 	}
 	if m.removeduser_mentions != nil {
 		edges = append(edges, message.EdgeUserMentions)
 	}
-	if m.removedgroup_mentions != nil {
-		edges = append(edges, message.EdgeGroupMentions)
-	}
-	if m.removedlinks != nil {
-		edges = append(edges, message.EdgeLinks)
-	}
-	if m.removedattachments != nil {
-		edges = append(edges, message.EdgeAttachments)
-	}
-	if m.removedpins != nil {
-		edges = append(edges, message.EdgePins)
-	}
 	if m.removeduser_thread_follows != nil {
 		edges = append(edges, message.EdgeUserThreadFollows)
-	}
-	if m.removedthread_read_states != nil {
-		edges = append(edges, message.EdgeThreadReadStates)
 	}
 	return edges
 }
@@ -16450,45 +15143,9 @@ func (m *MessageMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case message.EdgeReactions:
-		ids := make([]ent.Value, 0, len(m.removedreactions))
-		for id := range m.removedreactions {
-			ids = append(ids, id)
-		}
-		return ids
-	case message.EdgeBookmarks:
-		ids := make([]ent.Value, 0, len(m.removedbookmarks))
-		for id := range m.removedbookmarks {
-			ids = append(ids, id)
-		}
-		return ids
 	case message.EdgeUserMentions:
 		ids := make([]ent.Value, 0, len(m.removeduser_mentions))
 		for id := range m.removeduser_mentions {
-			ids = append(ids, id)
-		}
-		return ids
-	case message.EdgeGroupMentions:
-		ids := make([]ent.Value, 0, len(m.removedgroup_mentions))
-		for id := range m.removedgroup_mentions {
-			ids = append(ids, id)
-		}
-		return ids
-	case message.EdgeLinks:
-		ids := make([]ent.Value, 0, len(m.removedlinks))
-		for id := range m.removedlinks {
-			ids = append(ids, id)
-		}
-		return ids
-	case message.EdgeAttachments:
-		ids := make([]ent.Value, 0, len(m.removedattachments))
-		for id := range m.removedattachments {
-			ids = append(ids, id)
-		}
-		return ids
-	case message.EdgePins:
-		ids := make([]ent.Value, 0, len(m.removedpins))
-		for id := range m.removedpins {
 			ids = append(ids, id)
 		}
 		return ids
@@ -16498,19 +15155,13 @@ func (m *MessageMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case message.EdgeThreadReadStates:
-		ids := make([]ent.Value, 0, len(m.removedthread_read_states))
-		for id := range m.removedthread_read_states {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *MessageMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 6)
 	if m.clearedchannel {
 		edges = append(edges, message.EdgeChannel)
 	}
@@ -16523,32 +15174,11 @@ func (m *MessageMutation) ClearedEdges() []string {
 	if m.clearedreplies {
 		edges = append(edges, message.EdgeReplies)
 	}
-	if m.clearedreactions {
-		edges = append(edges, message.EdgeReactions)
-	}
-	if m.clearedbookmarks {
-		edges = append(edges, message.EdgeBookmarks)
-	}
 	if m.cleareduser_mentions {
 		edges = append(edges, message.EdgeUserMentions)
 	}
-	if m.clearedgroup_mentions {
-		edges = append(edges, message.EdgeGroupMentions)
-	}
-	if m.clearedlinks {
-		edges = append(edges, message.EdgeLinks)
-	}
-	if m.clearedattachments {
-		edges = append(edges, message.EdgeAttachments)
-	}
-	if m.clearedpins {
-		edges = append(edges, message.EdgePins)
-	}
 	if m.cleareduser_thread_follows {
 		edges = append(edges, message.EdgeUserThreadFollows)
-	}
-	if m.clearedthread_read_states {
-		edges = append(edges, message.EdgeThreadReadStates)
 	}
 	return edges
 }
@@ -16565,24 +15195,10 @@ func (m *MessageMutation) EdgeCleared(name string) bool {
 		return m.clearedparent
 	case message.EdgeReplies:
 		return m.clearedreplies
-	case message.EdgeReactions:
-		return m.clearedreactions
-	case message.EdgeBookmarks:
-		return m.clearedbookmarks
 	case message.EdgeUserMentions:
 		return m.cleareduser_mentions
-	case message.EdgeGroupMentions:
-		return m.clearedgroup_mentions
-	case message.EdgeLinks:
-		return m.clearedlinks
-	case message.EdgeAttachments:
-		return m.clearedattachments
-	case message.EdgePins:
-		return m.clearedpins
 	case message.EdgeUserThreadFollows:
 		return m.cleareduser_thread_follows
-	case message.EdgeThreadReadStates:
-		return m.clearedthread_read_states
 	}
 	return false
 }
@@ -16620,32 +15236,11 @@ func (m *MessageMutation) ResetEdge(name string) error {
 	case message.EdgeReplies:
 		m.ResetReplies()
 		return nil
-	case message.EdgeReactions:
-		m.ResetReactions()
-		return nil
-	case message.EdgeBookmarks:
-		m.ResetBookmarks()
-		return nil
 	case message.EdgeUserMentions:
 		m.ResetUserMentions()
 		return nil
-	case message.EdgeGroupMentions:
-		m.ResetGroupMentions()
-		return nil
-	case message.EdgeLinks:
-		m.ResetLinks()
-		return nil
-	case message.EdgeAttachments:
-		m.ResetAttachments()
-		return nil
-	case message.EdgePins:
-		m.ResetPins()
-		return nil
 	case message.EdgeUserThreadFollows:
 		m.ResetUserThreadFollows()
-		return nil
-	case message.EdgeThreadReadStates:
-		m.ResetThreadReadStates()
 		return nil
 	}
 	return fmt.Errorf("unknown Message edge %s", name)
@@ -17197,7 +15792,6 @@ type MessageGroupMentionMutation struct {
 	op             Op
 	typ            string
 	id             *uuid.UUID
-	created_at     *time.Time
 	clearedFields  map[string]struct{}
 	message        *uuid.UUID
 	clearedmessage bool
@@ -17384,42 +15978,6 @@ func (m *MessageGroupMentionMutation) ResetGroupID() {
 	m.group = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *MessageGroupMentionMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *MessageGroupMentionMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the MessageGroupMention entity.
-// If the MessageGroupMention object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MessageGroupMentionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *MessageGroupMentionMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
 // ClearMessage clears the "message" edge to the Message entity.
 func (m *MessageGroupMentionMutation) ClearMessage() {
 	m.clearedmessage = true
@@ -17508,15 +16066,12 @@ func (m *MessageGroupMentionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MessageGroupMentionMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 2)
 	if m.message != nil {
 		fields = append(fields, messagegroupmention.FieldMessageID)
 	}
 	if m.group != nil {
 		fields = append(fields, messagegroupmention.FieldGroupID)
-	}
-	if m.created_at != nil {
-		fields = append(fields, messagegroupmention.FieldCreatedAt)
 	}
 	return fields
 }
@@ -17530,8 +16085,6 @@ func (m *MessageGroupMentionMutation) Field(name string) (ent.Value, bool) {
 		return m.MessageID()
 	case messagegroupmention.FieldGroupID:
 		return m.GroupID()
-	case messagegroupmention.FieldCreatedAt:
-		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -17545,8 +16098,6 @@ func (m *MessageGroupMentionMutation) OldField(ctx context.Context, name string)
 		return m.OldMessageID(ctx)
 	case messagegroupmention.FieldGroupID:
 		return m.OldGroupID(ctx)
-	case messagegroupmention.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown MessageGroupMention field %s", name)
 }
@@ -17569,13 +16120,6 @@ func (m *MessageGroupMentionMutation) SetField(name string, value ent.Value) err
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetGroupID(v)
-		return nil
-	case messagegroupmention.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown MessageGroupMention field %s", name)
@@ -17631,9 +16175,6 @@ func (m *MessageGroupMentionMutation) ResetField(name string) error {
 		return nil
 	case messagegroupmention.FieldGroupID:
 		m.ResetGroupID()
-		return nil
-	case messagegroupmention.FieldCreatedAt:
-		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown MessageGroupMention field %s", name)
@@ -19661,7 +18202,6 @@ type MessageUserMentionMutation struct {
 	typ            string
 	id             *uuid.UUID
 	via_group_id   *uuid.UUID
-	created_at     *time.Time
 	clearedFields  map[string]struct{}
 	message        *uuid.UUID
 	clearedmessage bool
@@ -19897,42 +18437,6 @@ func (m *MessageUserMentionMutation) ResetViaGroupID() {
 	delete(m.clearedFields, messageusermention.FieldViaGroupID)
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *MessageUserMentionMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *MessageUserMentionMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the MessageUserMention entity.
-// If the MessageUserMention object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MessageUserMentionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *MessageUserMentionMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
 // ClearMessage clears the "message" edge to the Message entity.
 func (m *MessageUserMentionMutation) ClearMessage() {
 	m.clearedmessage = true
@@ -20021,7 +18525,7 @@ func (m *MessageUserMentionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MessageUserMentionMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 3)
 	if m.message != nil {
 		fields = append(fields, messageusermention.FieldMessageID)
 	}
@@ -20030,9 +18534,6 @@ func (m *MessageUserMentionMutation) Fields() []string {
 	}
 	if m.via_group_id != nil {
 		fields = append(fields, messageusermention.FieldViaGroupID)
-	}
-	if m.created_at != nil {
-		fields = append(fields, messageusermention.FieldCreatedAt)
 	}
 	return fields
 }
@@ -20048,8 +18549,6 @@ func (m *MessageUserMentionMutation) Field(name string) (ent.Value, bool) {
 		return m.UserID()
 	case messageusermention.FieldViaGroupID:
 		return m.ViaGroupID()
-	case messageusermention.FieldCreatedAt:
-		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -20065,8 +18564,6 @@ func (m *MessageUserMentionMutation) OldField(ctx context.Context, name string) 
 		return m.OldUserID(ctx)
 	case messageusermention.FieldViaGroupID:
 		return m.OldViaGroupID(ctx)
-	case messageusermention.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown MessageUserMention field %s", name)
 }
@@ -20096,13 +18593,6 @@ func (m *MessageUserMentionMutation) SetField(name string, value ent.Value) erro
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetViaGroupID(v)
-		return nil
-	case messageusermention.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown MessageUserMention field %s", name)
@@ -20170,9 +18660,6 @@ func (m *MessageUserMentionMutation) ResetField(name string) error {
 		return nil
 	case messageusermention.FieldViaGroupID:
 		m.ResetViaGroupID()
-		return nil
-	case messageusermention.FieldCreatedAt:
-		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown MessageUserMention field %s", name)
@@ -21174,9 +19661,6 @@ type PollOptionMutation struct {
 	clearedFields map[string]struct{}
 	poll          *uuid.UUID
 	clearedpoll   bool
-	votes         map[uuid.UUID]struct{}
-	removedvotes  map[uuid.UUID]struct{}
-	clearedvotes  bool
 	done          bool
 	oldValue      func(context.Context) (*PollOption, error)
 	predicates    []predicate.PollOption
@@ -21526,60 +20010,6 @@ func (m *PollOptionMutation) ResetPoll() {
 	m.clearedpoll = false
 }
 
-// AddVoteIDs adds the "votes" edge to the PollVote entity by ids.
-func (m *PollOptionMutation) AddVoteIDs(ids ...uuid.UUID) {
-	if m.votes == nil {
-		m.votes = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.votes[ids[i]] = struct{}{}
-	}
-}
-
-// ClearVotes clears the "votes" edge to the PollVote entity.
-func (m *PollOptionMutation) ClearVotes() {
-	m.clearedvotes = true
-}
-
-// VotesCleared reports if the "votes" edge to the PollVote entity was cleared.
-func (m *PollOptionMutation) VotesCleared() bool {
-	return m.clearedvotes
-}
-
-// RemoveVoteIDs removes the "votes" edge to the PollVote entity by IDs.
-func (m *PollOptionMutation) RemoveVoteIDs(ids ...uuid.UUID) {
-	if m.removedvotes == nil {
-		m.removedvotes = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.votes, ids[i])
-		m.removedvotes[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedVotes returns the removed IDs of the "votes" edge to the PollVote entity.
-func (m *PollOptionMutation) RemovedVotesIDs() (ids []uuid.UUID) {
-	for id := range m.removedvotes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// VotesIDs returns the "votes" edge IDs in the mutation.
-func (m *PollOptionMutation) VotesIDs() (ids []uuid.UUID) {
-	for id := range m.votes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetVotes resets all changes to the "votes" edge.
-func (m *PollOptionMutation) ResetVotes() {
-	m.votes = nil
-	m.clearedvotes = false
-	m.removedvotes = nil
-}
-
 // Where appends a list predicates to the PollOptionMutation builder.
 func (m *PollOptionMutation) Where(ps ...predicate.PollOption) {
 	m.predicates = append(m.predicates, ps...)
@@ -21805,12 +20235,9 @@ func (m *PollOptionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PollOptionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.poll != nil {
 		edges = append(edges, polloption.EdgePoll)
-	}
-	if m.votes != nil {
-		edges = append(edges, polloption.EdgeVotes)
 	}
 	return edges
 }
@@ -21823,47 +20250,27 @@ func (m *PollOptionMutation) AddedIDs(name string) []ent.Value {
 		if id := m.poll; id != nil {
 			return []ent.Value{*id}
 		}
-	case polloption.EdgeVotes:
-		ids := make([]ent.Value, 0, len(m.votes))
-		for id := range m.votes {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PollOptionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedvotes != nil {
-		edges = append(edges, polloption.EdgeVotes)
-	}
+	edges := make([]string, 0, 1)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *PollOptionMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case polloption.EdgeVotes:
-		ids := make([]ent.Value, 0, len(m.removedvotes))
-		for id := range m.removedvotes {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PollOptionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.clearedpoll {
 		edges = append(edges, polloption.EdgePoll)
-	}
-	if m.clearedvotes {
-		edges = append(edges, polloption.EdgeVotes)
 	}
 	return edges
 }
@@ -21874,8 +20281,6 @@ func (m *PollOptionMutation) EdgeCleared(name string) bool {
 	switch name {
 	case polloption.EdgePoll:
 		return m.clearedpoll
-	case polloption.EdgeVotes:
-		return m.clearedvotes
 	}
 	return false
 }
@@ -21897,9 +20302,6 @@ func (m *PollOptionMutation) ResetEdge(name string) error {
 	switch name {
 	case polloption.EdgePoll:
 		m.ResetPoll()
-		return nil
-	case polloption.EdgeVotes:
-		m.ResetVotes()
 		return nil
 	}
 	return fmt.Errorf("unknown PollOption edge %s", name)
@@ -22453,9 +20855,6 @@ type PushTokenMutation struct {
 	id            *uuid.UUID
 	token         *string
 	platform      *pushtoken.Platform
-	user_agent    *string
-	last_seen_at  *time.Time
-	created_at    *time.Time
 	clearedFields map[string]struct{}
 	user          *uuid.UUID
 	cleareduser   bool
@@ -22676,114 +21075,6 @@ func (m *PushTokenMutation) ResetPlatform() {
 	m.platform = nil
 }
 
-// SetUserAgent sets the "user_agent" field.
-func (m *PushTokenMutation) SetUserAgent(s string) {
-	m.user_agent = &s
-}
-
-// UserAgent returns the value of the "user_agent" field in the mutation.
-func (m *PushTokenMutation) UserAgent() (r string, exists bool) {
-	v := m.user_agent
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUserAgent returns the old "user_agent" field's value of the PushToken entity.
-// If the PushToken object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PushTokenMutation) OldUserAgent(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserAgent is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserAgent requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserAgent: %w", err)
-	}
-	return oldValue.UserAgent, nil
-}
-
-// ResetUserAgent resets all changes to the "user_agent" field.
-func (m *PushTokenMutation) ResetUserAgent() {
-	m.user_agent = nil
-}
-
-// SetLastSeenAt sets the "last_seen_at" field.
-func (m *PushTokenMutation) SetLastSeenAt(t time.Time) {
-	m.last_seen_at = &t
-}
-
-// LastSeenAt returns the value of the "last_seen_at" field in the mutation.
-func (m *PushTokenMutation) LastSeenAt() (r time.Time, exists bool) {
-	v := m.last_seen_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLastSeenAt returns the old "last_seen_at" field's value of the PushToken entity.
-// If the PushToken object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PushTokenMutation) OldLastSeenAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLastSeenAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLastSeenAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLastSeenAt: %w", err)
-	}
-	return oldValue.LastSeenAt, nil
-}
-
-// ResetLastSeenAt resets all changes to the "last_seen_at" field.
-func (m *PushTokenMutation) ResetLastSeenAt() {
-	m.last_seen_at = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *PushTokenMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *PushTokenMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the PushToken entity.
-// If the PushToken object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PushTokenMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *PushTokenMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
 // ClearUser clears the "user" edge to the User entity.
 func (m *PushTokenMutation) ClearUser() {
 	m.cleareduser = true
@@ -22845,7 +21136,7 @@ func (m *PushTokenMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PushTokenMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 3)
 	if m.user != nil {
 		fields = append(fields, pushtoken.FieldUserID)
 	}
@@ -22854,15 +21145,6 @@ func (m *PushTokenMutation) Fields() []string {
 	}
 	if m.platform != nil {
 		fields = append(fields, pushtoken.FieldPlatform)
-	}
-	if m.user_agent != nil {
-		fields = append(fields, pushtoken.FieldUserAgent)
-	}
-	if m.last_seen_at != nil {
-		fields = append(fields, pushtoken.FieldLastSeenAt)
-	}
-	if m.created_at != nil {
-		fields = append(fields, pushtoken.FieldCreatedAt)
 	}
 	return fields
 }
@@ -22878,12 +21160,6 @@ func (m *PushTokenMutation) Field(name string) (ent.Value, bool) {
 		return m.Token()
 	case pushtoken.FieldPlatform:
 		return m.Platform()
-	case pushtoken.FieldUserAgent:
-		return m.UserAgent()
-	case pushtoken.FieldLastSeenAt:
-		return m.LastSeenAt()
-	case pushtoken.FieldCreatedAt:
-		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -22899,12 +21175,6 @@ func (m *PushTokenMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldToken(ctx)
 	case pushtoken.FieldPlatform:
 		return m.OldPlatform(ctx)
-	case pushtoken.FieldUserAgent:
-		return m.OldUserAgent(ctx)
-	case pushtoken.FieldLastSeenAt:
-		return m.OldLastSeenAt(ctx)
-	case pushtoken.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown PushToken field %s", name)
 }
@@ -22934,27 +21204,6 @@ func (m *PushTokenMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPlatform(v)
-		return nil
-	case pushtoken.FieldUserAgent:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUserAgent(v)
-		return nil
-	case pushtoken.FieldLastSeenAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLastSeenAt(v)
-		return nil
-	case pushtoken.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown PushToken field %s", name)
@@ -23013,15 +21262,6 @@ func (m *PushTokenMutation) ResetField(name string) error {
 		return nil
 	case pushtoken.FieldPlatform:
 		m.ResetPlatform()
-		return nil
-	case pushtoken.FieldUserAgent:
-		m.ResetUserAgent()
-		return nil
-	case pushtoken.FieldLastSeenAt:
-		m.ResetLastSeenAt()
-		return nil
-	case pushtoken.FieldCreatedAt:
-		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown PushToken field %s", name)
@@ -25812,7 +24052,7 @@ func (m *SessionMutation) RevokedAt() (r time.Time, exists bool) {
 // OldRevokedAt returns the old "revoked_at" field's value of the Session entity.
 // If the Session object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SessionMutation) OldRevokedAt(ctx context.Context) (v time.Time, err error) {
+func (m *SessionMutation) OldRevokedAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRevokedAt is only allowed on UpdateOne operations")
 	}
@@ -26972,8 +25212,6 @@ type ThreadReadStateMutation struct {
 	typ           string
 	id            *uuid.UUID
 	last_read_at  *time.Time
-	created_at    *time.Time
-	updated_at    *time.Time
 	clearedFields map[string]struct{}
 	user          *uuid.UUID
 	cleareduser   bool
@@ -27196,78 +25434,6 @@ func (m *ThreadReadStateMutation) ResetLastReadAt() {
 	m.last_read_at = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *ThreadReadStateMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *ThreadReadStateMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the ThreadReadState entity.
-// If the ThreadReadState object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ThreadReadStateMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *ThreadReadStateMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *ThreadReadStateMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *ThreadReadStateMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the ThreadReadState entity.
-// If the ThreadReadState object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ThreadReadStateMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *ThreadReadStateMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
 // ClearUser clears the "user" edge to the User entity.
 func (m *ThreadReadStateMutation) ClearUser() {
 	m.cleareduser = true
@@ -27356,7 +25522,7 @@ func (m *ThreadReadStateMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ThreadReadStateMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 3)
 	if m.user != nil {
 		fields = append(fields, threadreadstate.FieldUserID)
 	}
@@ -27365,12 +25531,6 @@ func (m *ThreadReadStateMutation) Fields() []string {
 	}
 	if m.last_read_at != nil {
 		fields = append(fields, threadreadstate.FieldLastReadAt)
-	}
-	if m.created_at != nil {
-		fields = append(fields, threadreadstate.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, threadreadstate.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -27386,10 +25546,6 @@ func (m *ThreadReadStateMutation) Field(name string) (ent.Value, bool) {
 		return m.ThreadID()
 	case threadreadstate.FieldLastReadAt:
 		return m.LastReadAt()
-	case threadreadstate.FieldCreatedAt:
-		return m.CreatedAt()
-	case threadreadstate.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -27405,10 +25561,6 @@ func (m *ThreadReadStateMutation) OldField(ctx context.Context, name string) (en
 		return m.OldThreadID(ctx)
 	case threadreadstate.FieldLastReadAt:
 		return m.OldLastReadAt(ctx)
-	case threadreadstate.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case threadreadstate.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown ThreadReadState field %s", name)
 }
@@ -27438,20 +25590,6 @@ func (m *ThreadReadStateMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLastReadAt(v)
-		return nil
-	case threadreadstate.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case threadreadstate.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ThreadReadState field %s", name)
@@ -27510,12 +25648,6 @@ func (m *ThreadReadStateMutation) ResetField(name string) error {
 		return nil
 	case threadreadstate.FieldLastReadAt:
 		m.ResetLastReadAt()
-		return nil
-	case threadreadstate.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case threadreadstate.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown ThreadReadState field %s", name)
@@ -27616,67 +25748,32 @@ func (m *ThreadReadStateMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                         Op
-	typ                        string
-	id                         *uuid.UUID
-	email                      *string
-	password_hash              *string
-	google_sub                 *string
-	display_name               *string
-	bio                        *string
-	avatar_url                 *string
-	is_app                     *bool
-	is_official                *bool
-	created_at                 *time.Time
-	updated_at                 *time.Time
-	clearedFields              map[string]struct{}
-	sessions                   map[uuid.UUID]struct{}
-	removedsessions            map[uuid.UUID]struct{}
-	clearedsessions            bool
-	created_workspaces         map[string]struct{}
-	removedcreated_workspaces  map[string]struct{}
-	clearedcreated_workspaces  bool
-	workspace_members          map[uuid.UUID]struct{}
-	removedworkspace_members   map[uuid.UUID]struct{}
-	clearedworkspace_members   bool
-	created_channels           map[uuid.UUID]struct{}
-	removedcreated_channels    map[uuid.UUID]struct{}
-	clearedcreated_channels    bool
-	channel_members            map[uuid.UUID]struct{}
-	removedchannel_members     map[uuid.UUID]struct{}
-	clearedchannel_members     bool
-	messages                   map[uuid.UUID]struct{}
-	removedmessages            map[uuid.UUID]struct{}
-	clearedmessages            bool
-	message_reactions          map[uuid.UUID]struct{}
-	removedmessage_reactions   map[uuid.UUID]struct{}
-	clearedmessage_reactions   bool
-	message_bookmarks          map[uuid.UUID]struct{}
-	removedmessage_bookmarks   map[uuid.UUID]struct{}
-	clearedmessage_bookmarks   bool
-	user_mentions              map[uuid.UUID]struct{}
-	removeduser_mentions       map[uuid.UUID]struct{}
-	cleareduser_mentions       bool
-	user_group_members         map[uuid.UUID]struct{}
-	removeduser_group_members  map[uuid.UUID]struct{}
-	cleareduser_group_members  bool
-	created_user_groups        map[uuid.UUID]struct{}
-	removedcreated_user_groups map[uuid.UUID]struct{}
-	clearedcreated_user_groups bool
-	attachments                map[uuid.UUID]struct{}
-	removedattachments         map[uuid.UUID]struct{}
-	clearedattachments         bool
-	channel_read_states        map[uuid.UUID]struct{}
-	removedchannel_read_states map[uuid.UUID]struct{}
-	clearedchannel_read_states bool
-	preference                 *uuid.UUID
-	clearedpreference          bool
-	links                      map[uuid.UUID]struct{}
-	removedlinks               map[uuid.UUID]struct{}
-	clearedlinks               bool
-	done                       bool
-	oldValue                   func(context.Context) (*User, error)
-	predicates                 []predicate.User
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	email                  *string
+	password_hash          *string
+	google_sub             *string
+	display_name           *string
+	bio                    *string
+	avatar_url             *string
+	is_app                 *bool
+	is_official            *bool
+	deleted_at             *time.Time
+	created_at             *time.Time
+	updated_at             *time.Time
+	clearedFields          map[string]struct{}
+	channel_members        map[uuid.UUID]struct{}
+	removedchannel_members map[uuid.UUID]struct{}
+	clearedchannel_members bool
+	preference             *uuid.UUID
+	clearedpreference      bool
+	links                  map[uuid.UUID]struct{}
+	removedlinks           map[uuid.UUID]struct{}
+	clearedlinks           bool
+	done                   bool
+	oldValue               func(context.Context) (*User, error)
+	predicates             []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -27957,7 +26054,7 @@ func (m *UserMutation) Bio() (r string, exists bool) {
 // OldBio returns the old "bio" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldBio(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldBio(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldBio is only allowed on UpdateOne operations")
 	}
@@ -28006,7 +26103,7 @@ func (m *UserMutation) AvatarURL() (r string, exists bool) {
 // OldAvatarURL returns the old "avatar_url" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldAvatarURL(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldAvatarURL(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAvatarURL is only allowed on UpdateOne operations")
 	}
@@ -28110,6 +26207,55 @@ func (m *UserMutation) ResetIsOfficial() {
 	m.is_official = nil
 }
 
+// SetDeletedAt sets the "deleted_at" field.
+func (m *UserMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *UserMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *UserMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[user.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *UserMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[user.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *UserMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, user.FieldDeletedAt)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *UserMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -28182,222 +26328,6 @@ func (m *UserMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// AddSessionIDs adds the "sessions" edge to the Session entity by ids.
-func (m *UserMutation) AddSessionIDs(ids ...uuid.UUID) {
-	if m.sessions == nil {
-		m.sessions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.sessions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSessions clears the "sessions" edge to the Session entity.
-func (m *UserMutation) ClearSessions() {
-	m.clearedsessions = true
-}
-
-// SessionsCleared reports if the "sessions" edge to the Session entity was cleared.
-func (m *UserMutation) SessionsCleared() bool {
-	return m.clearedsessions
-}
-
-// RemoveSessionIDs removes the "sessions" edge to the Session entity by IDs.
-func (m *UserMutation) RemoveSessionIDs(ids ...uuid.UUID) {
-	if m.removedsessions == nil {
-		m.removedsessions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.sessions, ids[i])
-		m.removedsessions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSessions returns the removed IDs of the "sessions" edge to the Session entity.
-func (m *UserMutation) RemovedSessionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsessions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SessionsIDs returns the "sessions" edge IDs in the mutation.
-func (m *UserMutation) SessionsIDs() (ids []uuid.UUID) {
-	for id := range m.sessions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSessions resets all changes to the "sessions" edge.
-func (m *UserMutation) ResetSessions() {
-	m.sessions = nil
-	m.clearedsessions = false
-	m.removedsessions = nil
-}
-
-// AddCreatedWorkspaceIDs adds the "created_workspaces" edge to the Workspace entity by ids.
-func (m *UserMutation) AddCreatedWorkspaceIDs(ids ...string) {
-	if m.created_workspaces == nil {
-		m.created_workspaces = make(map[string]struct{})
-	}
-	for i := range ids {
-		m.created_workspaces[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedWorkspaces clears the "created_workspaces" edge to the Workspace entity.
-func (m *UserMutation) ClearCreatedWorkspaces() {
-	m.clearedcreated_workspaces = true
-}
-
-// CreatedWorkspacesCleared reports if the "created_workspaces" edge to the Workspace entity was cleared.
-func (m *UserMutation) CreatedWorkspacesCleared() bool {
-	return m.clearedcreated_workspaces
-}
-
-// RemoveCreatedWorkspaceIDs removes the "created_workspaces" edge to the Workspace entity by IDs.
-func (m *UserMutation) RemoveCreatedWorkspaceIDs(ids ...string) {
-	if m.removedcreated_workspaces == nil {
-		m.removedcreated_workspaces = make(map[string]struct{})
-	}
-	for i := range ids {
-		delete(m.created_workspaces, ids[i])
-		m.removedcreated_workspaces[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedWorkspaces returns the removed IDs of the "created_workspaces" edge to the Workspace entity.
-func (m *UserMutation) RemovedCreatedWorkspacesIDs() (ids []string) {
-	for id := range m.removedcreated_workspaces {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedWorkspacesIDs returns the "created_workspaces" edge IDs in the mutation.
-func (m *UserMutation) CreatedWorkspacesIDs() (ids []string) {
-	for id := range m.created_workspaces {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedWorkspaces resets all changes to the "created_workspaces" edge.
-func (m *UserMutation) ResetCreatedWorkspaces() {
-	m.created_workspaces = nil
-	m.clearedcreated_workspaces = false
-	m.removedcreated_workspaces = nil
-}
-
-// AddWorkspaceMemberIDs adds the "workspace_members" edge to the WorkspaceMember entity by ids.
-func (m *UserMutation) AddWorkspaceMemberIDs(ids ...uuid.UUID) {
-	if m.workspace_members == nil {
-		m.workspace_members = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.workspace_members[ids[i]] = struct{}{}
-	}
-}
-
-// ClearWorkspaceMembers clears the "workspace_members" edge to the WorkspaceMember entity.
-func (m *UserMutation) ClearWorkspaceMembers() {
-	m.clearedworkspace_members = true
-}
-
-// WorkspaceMembersCleared reports if the "workspace_members" edge to the WorkspaceMember entity was cleared.
-func (m *UserMutation) WorkspaceMembersCleared() bool {
-	return m.clearedworkspace_members
-}
-
-// RemoveWorkspaceMemberIDs removes the "workspace_members" edge to the WorkspaceMember entity by IDs.
-func (m *UserMutation) RemoveWorkspaceMemberIDs(ids ...uuid.UUID) {
-	if m.removedworkspace_members == nil {
-		m.removedworkspace_members = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.workspace_members, ids[i])
-		m.removedworkspace_members[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedWorkspaceMembers returns the removed IDs of the "workspace_members" edge to the WorkspaceMember entity.
-func (m *UserMutation) RemovedWorkspaceMembersIDs() (ids []uuid.UUID) {
-	for id := range m.removedworkspace_members {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// WorkspaceMembersIDs returns the "workspace_members" edge IDs in the mutation.
-func (m *UserMutation) WorkspaceMembersIDs() (ids []uuid.UUID) {
-	for id := range m.workspace_members {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetWorkspaceMembers resets all changes to the "workspace_members" edge.
-func (m *UserMutation) ResetWorkspaceMembers() {
-	m.workspace_members = nil
-	m.clearedworkspace_members = false
-	m.removedworkspace_members = nil
-}
-
-// AddCreatedChannelIDs adds the "created_channels" edge to the Channel entity by ids.
-func (m *UserMutation) AddCreatedChannelIDs(ids ...uuid.UUID) {
-	if m.created_channels == nil {
-		m.created_channels = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.created_channels[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedChannels clears the "created_channels" edge to the Channel entity.
-func (m *UserMutation) ClearCreatedChannels() {
-	m.clearedcreated_channels = true
-}
-
-// CreatedChannelsCleared reports if the "created_channels" edge to the Channel entity was cleared.
-func (m *UserMutation) CreatedChannelsCleared() bool {
-	return m.clearedcreated_channels
-}
-
-// RemoveCreatedChannelIDs removes the "created_channels" edge to the Channel entity by IDs.
-func (m *UserMutation) RemoveCreatedChannelIDs(ids ...uuid.UUID) {
-	if m.removedcreated_channels == nil {
-		m.removedcreated_channels = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.created_channels, ids[i])
-		m.removedcreated_channels[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedChannels returns the removed IDs of the "created_channels" edge to the Channel entity.
-func (m *UserMutation) RemovedCreatedChannelsIDs() (ids []uuid.UUID) {
-	for id := range m.removedcreated_channels {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedChannelsIDs returns the "created_channels" edge IDs in the mutation.
-func (m *UserMutation) CreatedChannelsIDs() (ids []uuid.UUID) {
-	for id := range m.created_channels {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedChannels resets all changes to the "created_channels" edge.
-func (m *UserMutation) ResetCreatedChannels() {
-	m.created_channels = nil
-	m.clearedcreated_channels = false
-	m.removedcreated_channels = nil
-}
-
 // AddChannelMemberIDs adds the "channel_members" edge to the ChannelMember entity by ids.
 func (m *UserMutation) AddChannelMemberIDs(ids ...uuid.UUID) {
 	if m.channel_members == nil {
@@ -28450,438 +26380,6 @@ func (m *UserMutation) ResetChannelMembers() {
 	m.channel_members = nil
 	m.clearedchannel_members = false
 	m.removedchannel_members = nil
-}
-
-// AddMessageIDs adds the "messages" edge to the Message entity by ids.
-func (m *UserMutation) AddMessageIDs(ids ...uuid.UUID) {
-	if m.messages == nil {
-		m.messages = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.messages[ids[i]] = struct{}{}
-	}
-}
-
-// ClearMessages clears the "messages" edge to the Message entity.
-func (m *UserMutation) ClearMessages() {
-	m.clearedmessages = true
-}
-
-// MessagesCleared reports if the "messages" edge to the Message entity was cleared.
-func (m *UserMutation) MessagesCleared() bool {
-	return m.clearedmessages
-}
-
-// RemoveMessageIDs removes the "messages" edge to the Message entity by IDs.
-func (m *UserMutation) RemoveMessageIDs(ids ...uuid.UUID) {
-	if m.removedmessages == nil {
-		m.removedmessages = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.messages, ids[i])
-		m.removedmessages[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedMessages returns the removed IDs of the "messages" edge to the Message entity.
-func (m *UserMutation) RemovedMessagesIDs() (ids []uuid.UUID) {
-	for id := range m.removedmessages {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// MessagesIDs returns the "messages" edge IDs in the mutation.
-func (m *UserMutation) MessagesIDs() (ids []uuid.UUID) {
-	for id := range m.messages {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetMessages resets all changes to the "messages" edge.
-func (m *UserMutation) ResetMessages() {
-	m.messages = nil
-	m.clearedmessages = false
-	m.removedmessages = nil
-}
-
-// AddMessageReactionIDs adds the "message_reactions" edge to the MessageReaction entity by ids.
-func (m *UserMutation) AddMessageReactionIDs(ids ...uuid.UUID) {
-	if m.message_reactions == nil {
-		m.message_reactions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.message_reactions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearMessageReactions clears the "message_reactions" edge to the MessageReaction entity.
-func (m *UserMutation) ClearMessageReactions() {
-	m.clearedmessage_reactions = true
-}
-
-// MessageReactionsCleared reports if the "message_reactions" edge to the MessageReaction entity was cleared.
-func (m *UserMutation) MessageReactionsCleared() bool {
-	return m.clearedmessage_reactions
-}
-
-// RemoveMessageReactionIDs removes the "message_reactions" edge to the MessageReaction entity by IDs.
-func (m *UserMutation) RemoveMessageReactionIDs(ids ...uuid.UUID) {
-	if m.removedmessage_reactions == nil {
-		m.removedmessage_reactions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.message_reactions, ids[i])
-		m.removedmessage_reactions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedMessageReactions returns the removed IDs of the "message_reactions" edge to the MessageReaction entity.
-func (m *UserMutation) RemovedMessageReactionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedmessage_reactions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// MessageReactionsIDs returns the "message_reactions" edge IDs in the mutation.
-func (m *UserMutation) MessageReactionsIDs() (ids []uuid.UUID) {
-	for id := range m.message_reactions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetMessageReactions resets all changes to the "message_reactions" edge.
-func (m *UserMutation) ResetMessageReactions() {
-	m.message_reactions = nil
-	m.clearedmessage_reactions = false
-	m.removedmessage_reactions = nil
-}
-
-// AddMessageBookmarkIDs adds the "message_bookmarks" edge to the MessageBookmark entity by ids.
-func (m *UserMutation) AddMessageBookmarkIDs(ids ...uuid.UUID) {
-	if m.message_bookmarks == nil {
-		m.message_bookmarks = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.message_bookmarks[ids[i]] = struct{}{}
-	}
-}
-
-// ClearMessageBookmarks clears the "message_bookmarks" edge to the MessageBookmark entity.
-func (m *UserMutation) ClearMessageBookmarks() {
-	m.clearedmessage_bookmarks = true
-}
-
-// MessageBookmarksCleared reports if the "message_bookmarks" edge to the MessageBookmark entity was cleared.
-func (m *UserMutation) MessageBookmarksCleared() bool {
-	return m.clearedmessage_bookmarks
-}
-
-// RemoveMessageBookmarkIDs removes the "message_bookmarks" edge to the MessageBookmark entity by IDs.
-func (m *UserMutation) RemoveMessageBookmarkIDs(ids ...uuid.UUID) {
-	if m.removedmessage_bookmarks == nil {
-		m.removedmessage_bookmarks = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.message_bookmarks, ids[i])
-		m.removedmessage_bookmarks[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedMessageBookmarks returns the removed IDs of the "message_bookmarks" edge to the MessageBookmark entity.
-func (m *UserMutation) RemovedMessageBookmarksIDs() (ids []uuid.UUID) {
-	for id := range m.removedmessage_bookmarks {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// MessageBookmarksIDs returns the "message_bookmarks" edge IDs in the mutation.
-func (m *UserMutation) MessageBookmarksIDs() (ids []uuid.UUID) {
-	for id := range m.message_bookmarks {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetMessageBookmarks resets all changes to the "message_bookmarks" edge.
-func (m *UserMutation) ResetMessageBookmarks() {
-	m.message_bookmarks = nil
-	m.clearedmessage_bookmarks = false
-	m.removedmessage_bookmarks = nil
-}
-
-// AddUserMentionIDs adds the "user_mentions" edge to the MessageUserMention entity by ids.
-func (m *UserMutation) AddUserMentionIDs(ids ...uuid.UUID) {
-	if m.user_mentions == nil {
-		m.user_mentions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.user_mentions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearUserMentions clears the "user_mentions" edge to the MessageUserMention entity.
-func (m *UserMutation) ClearUserMentions() {
-	m.cleareduser_mentions = true
-}
-
-// UserMentionsCleared reports if the "user_mentions" edge to the MessageUserMention entity was cleared.
-func (m *UserMutation) UserMentionsCleared() bool {
-	return m.cleareduser_mentions
-}
-
-// RemoveUserMentionIDs removes the "user_mentions" edge to the MessageUserMention entity by IDs.
-func (m *UserMutation) RemoveUserMentionIDs(ids ...uuid.UUID) {
-	if m.removeduser_mentions == nil {
-		m.removeduser_mentions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.user_mentions, ids[i])
-		m.removeduser_mentions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUserMentions returns the removed IDs of the "user_mentions" edge to the MessageUserMention entity.
-func (m *UserMutation) RemovedUserMentionsIDs() (ids []uuid.UUID) {
-	for id := range m.removeduser_mentions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// UserMentionsIDs returns the "user_mentions" edge IDs in the mutation.
-func (m *UserMutation) UserMentionsIDs() (ids []uuid.UUID) {
-	for id := range m.user_mentions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetUserMentions resets all changes to the "user_mentions" edge.
-func (m *UserMutation) ResetUserMentions() {
-	m.user_mentions = nil
-	m.cleareduser_mentions = false
-	m.removeduser_mentions = nil
-}
-
-// AddUserGroupMemberIDs adds the "user_group_members" edge to the UserGroupMember entity by ids.
-func (m *UserMutation) AddUserGroupMemberIDs(ids ...uuid.UUID) {
-	if m.user_group_members == nil {
-		m.user_group_members = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.user_group_members[ids[i]] = struct{}{}
-	}
-}
-
-// ClearUserGroupMembers clears the "user_group_members" edge to the UserGroupMember entity.
-func (m *UserMutation) ClearUserGroupMembers() {
-	m.cleareduser_group_members = true
-}
-
-// UserGroupMembersCleared reports if the "user_group_members" edge to the UserGroupMember entity was cleared.
-func (m *UserMutation) UserGroupMembersCleared() bool {
-	return m.cleareduser_group_members
-}
-
-// RemoveUserGroupMemberIDs removes the "user_group_members" edge to the UserGroupMember entity by IDs.
-func (m *UserMutation) RemoveUserGroupMemberIDs(ids ...uuid.UUID) {
-	if m.removeduser_group_members == nil {
-		m.removeduser_group_members = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.user_group_members, ids[i])
-		m.removeduser_group_members[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUserGroupMembers returns the removed IDs of the "user_group_members" edge to the UserGroupMember entity.
-func (m *UserMutation) RemovedUserGroupMembersIDs() (ids []uuid.UUID) {
-	for id := range m.removeduser_group_members {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// UserGroupMembersIDs returns the "user_group_members" edge IDs in the mutation.
-func (m *UserMutation) UserGroupMembersIDs() (ids []uuid.UUID) {
-	for id := range m.user_group_members {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetUserGroupMembers resets all changes to the "user_group_members" edge.
-func (m *UserMutation) ResetUserGroupMembers() {
-	m.user_group_members = nil
-	m.cleareduser_group_members = false
-	m.removeduser_group_members = nil
-}
-
-// AddCreatedUserGroupIDs adds the "created_user_groups" edge to the UserGroup entity by ids.
-func (m *UserMutation) AddCreatedUserGroupIDs(ids ...uuid.UUID) {
-	if m.created_user_groups == nil {
-		m.created_user_groups = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.created_user_groups[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedUserGroups clears the "created_user_groups" edge to the UserGroup entity.
-func (m *UserMutation) ClearCreatedUserGroups() {
-	m.clearedcreated_user_groups = true
-}
-
-// CreatedUserGroupsCleared reports if the "created_user_groups" edge to the UserGroup entity was cleared.
-func (m *UserMutation) CreatedUserGroupsCleared() bool {
-	return m.clearedcreated_user_groups
-}
-
-// RemoveCreatedUserGroupIDs removes the "created_user_groups" edge to the UserGroup entity by IDs.
-func (m *UserMutation) RemoveCreatedUserGroupIDs(ids ...uuid.UUID) {
-	if m.removedcreated_user_groups == nil {
-		m.removedcreated_user_groups = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.created_user_groups, ids[i])
-		m.removedcreated_user_groups[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedUserGroups returns the removed IDs of the "created_user_groups" edge to the UserGroup entity.
-func (m *UserMutation) RemovedCreatedUserGroupsIDs() (ids []uuid.UUID) {
-	for id := range m.removedcreated_user_groups {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedUserGroupsIDs returns the "created_user_groups" edge IDs in the mutation.
-func (m *UserMutation) CreatedUserGroupsIDs() (ids []uuid.UUID) {
-	for id := range m.created_user_groups {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedUserGroups resets all changes to the "created_user_groups" edge.
-func (m *UserMutation) ResetCreatedUserGroups() {
-	m.created_user_groups = nil
-	m.clearedcreated_user_groups = false
-	m.removedcreated_user_groups = nil
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by ids.
-func (m *UserMutation) AddAttachmentIDs(ids ...uuid.UUID) {
-	if m.attachments == nil {
-		m.attachments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.attachments[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAttachments clears the "attachments" edge to the Attachment entity.
-func (m *UserMutation) ClearAttachments() {
-	m.clearedattachments = true
-}
-
-// AttachmentsCleared reports if the "attachments" edge to the Attachment entity was cleared.
-func (m *UserMutation) AttachmentsCleared() bool {
-	return m.clearedattachments
-}
-
-// RemoveAttachmentIDs removes the "attachments" edge to the Attachment entity by IDs.
-func (m *UserMutation) RemoveAttachmentIDs(ids ...uuid.UUID) {
-	if m.removedattachments == nil {
-		m.removedattachments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.attachments, ids[i])
-		m.removedattachments[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAttachments returns the removed IDs of the "attachments" edge to the Attachment entity.
-func (m *UserMutation) RemovedAttachmentsIDs() (ids []uuid.UUID) {
-	for id := range m.removedattachments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AttachmentsIDs returns the "attachments" edge IDs in the mutation.
-func (m *UserMutation) AttachmentsIDs() (ids []uuid.UUID) {
-	for id := range m.attachments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAttachments resets all changes to the "attachments" edge.
-func (m *UserMutation) ResetAttachments() {
-	m.attachments = nil
-	m.clearedattachments = false
-	m.removedattachments = nil
-}
-
-// AddChannelReadStateIDs adds the "channel_read_states" edge to the ChannelReadState entity by ids.
-func (m *UserMutation) AddChannelReadStateIDs(ids ...uuid.UUID) {
-	if m.channel_read_states == nil {
-		m.channel_read_states = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.channel_read_states[ids[i]] = struct{}{}
-	}
-}
-
-// ClearChannelReadStates clears the "channel_read_states" edge to the ChannelReadState entity.
-func (m *UserMutation) ClearChannelReadStates() {
-	m.clearedchannel_read_states = true
-}
-
-// ChannelReadStatesCleared reports if the "channel_read_states" edge to the ChannelReadState entity was cleared.
-func (m *UserMutation) ChannelReadStatesCleared() bool {
-	return m.clearedchannel_read_states
-}
-
-// RemoveChannelReadStateIDs removes the "channel_read_states" edge to the ChannelReadState entity by IDs.
-func (m *UserMutation) RemoveChannelReadStateIDs(ids ...uuid.UUID) {
-	if m.removedchannel_read_states == nil {
-		m.removedchannel_read_states = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.channel_read_states, ids[i])
-		m.removedchannel_read_states[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedChannelReadStates returns the removed IDs of the "channel_read_states" edge to the ChannelReadState entity.
-func (m *UserMutation) RemovedChannelReadStatesIDs() (ids []uuid.UUID) {
-	for id := range m.removedchannel_read_states {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ChannelReadStatesIDs returns the "channel_read_states" edge IDs in the mutation.
-func (m *UserMutation) ChannelReadStatesIDs() (ids []uuid.UUID) {
-	for id := range m.channel_read_states {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetChannelReadStates resets all changes to the "channel_read_states" edge.
-func (m *UserMutation) ResetChannelReadStates() {
-	m.channel_read_states = nil
-	m.clearedchannel_read_states = false
-	m.removedchannel_read_states = nil
 }
 
 // SetPreferenceID sets the "preference" edge to the UserPreference entity by id.
@@ -29011,7 +26509,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -29035,6 +26533,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.is_official != nil {
 		fields = append(fields, user.FieldIsOfficial)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, user.FieldDeletedAt)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -29066,6 +26567,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.IsApp()
 	case user.FieldIsOfficial:
 		return m.IsOfficial()
+	case user.FieldDeletedAt:
+		return m.DeletedAt()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	case user.FieldUpdatedAt:
@@ -29095,6 +26598,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldIsApp(ctx)
 	case user.FieldIsOfficial:
 		return m.OldIsOfficial(ctx)
+	case user.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case user.FieldUpdatedAt:
@@ -29164,6 +26669,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetIsOfficial(v)
 		return nil
+	case user.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -29217,6 +26729,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldAvatarURL) {
 		fields = append(fields, user.FieldAvatarURL)
 	}
+	if m.FieldCleared(user.FieldDeletedAt) {
+		fields = append(fields, user.FieldDeletedAt)
+	}
 	return fields
 }
 
@@ -29239,6 +26754,9 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldAvatarURL:
 		m.ClearAvatarURL()
+		return nil
+	case user.FieldDeletedAt:
+		m.ClearDeletedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -29272,6 +26790,9 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldIsOfficial:
 		m.ResetIsOfficial()
 		return nil
+	case user.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
@@ -29284,45 +26805,9 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 15)
-	if m.sessions != nil {
-		edges = append(edges, user.EdgeSessions)
-	}
-	if m.created_workspaces != nil {
-		edges = append(edges, user.EdgeCreatedWorkspaces)
-	}
-	if m.workspace_members != nil {
-		edges = append(edges, user.EdgeWorkspaceMembers)
-	}
-	if m.created_channels != nil {
-		edges = append(edges, user.EdgeCreatedChannels)
-	}
+	edges := make([]string, 0, 3)
 	if m.channel_members != nil {
 		edges = append(edges, user.EdgeChannelMembers)
-	}
-	if m.messages != nil {
-		edges = append(edges, user.EdgeMessages)
-	}
-	if m.message_reactions != nil {
-		edges = append(edges, user.EdgeMessageReactions)
-	}
-	if m.message_bookmarks != nil {
-		edges = append(edges, user.EdgeMessageBookmarks)
-	}
-	if m.user_mentions != nil {
-		edges = append(edges, user.EdgeUserMentions)
-	}
-	if m.user_group_members != nil {
-		edges = append(edges, user.EdgeUserGroupMembers)
-	}
-	if m.created_user_groups != nil {
-		edges = append(edges, user.EdgeCreatedUserGroups)
-	}
-	if m.attachments != nil {
-		edges = append(edges, user.EdgeAttachments)
-	}
-	if m.channel_read_states != nil {
-		edges = append(edges, user.EdgeChannelReadStates)
 	}
 	if m.preference != nil {
 		edges = append(edges, user.EdgePreference)
@@ -29337,81 +26822,9 @@ func (m *UserMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case user.EdgeSessions:
-		ids := make([]ent.Value, 0, len(m.sessions))
-		for id := range m.sessions {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedWorkspaces:
-		ids := make([]ent.Value, 0, len(m.created_workspaces))
-		for id := range m.created_workspaces {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeWorkspaceMembers:
-		ids := make([]ent.Value, 0, len(m.workspace_members))
-		for id := range m.workspace_members {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedChannels:
-		ids := make([]ent.Value, 0, len(m.created_channels))
-		for id := range m.created_channels {
-			ids = append(ids, id)
-		}
-		return ids
 	case user.EdgeChannelMembers:
 		ids := make([]ent.Value, 0, len(m.channel_members))
 		for id := range m.channel_members {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeMessages:
-		ids := make([]ent.Value, 0, len(m.messages))
-		for id := range m.messages {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeMessageReactions:
-		ids := make([]ent.Value, 0, len(m.message_reactions))
-		for id := range m.message_reactions {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeMessageBookmarks:
-		ids := make([]ent.Value, 0, len(m.message_bookmarks))
-		for id := range m.message_bookmarks {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeUserMentions:
-		ids := make([]ent.Value, 0, len(m.user_mentions))
-		for id := range m.user_mentions {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeUserGroupMembers:
-		ids := make([]ent.Value, 0, len(m.user_group_members))
-		for id := range m.user_group_members {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedUserGroups:
-		ids := make([]ent.Value, 0, len(m.created_user_groups))
-		for id := range m.created_user_groups {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeAttachments:
-		ids := make([]ent.Value, 0, len(m.attachments))
-		for id := range m.attachments {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeChannelReadStates:
-		ids := make([]ent.Value, 0, len(m.channel_read_states))
-		for id := range m.channel_read_states {
 			ids = append(ids, id)
 		}
 		return ids
@@ -29431,45 +26844,9 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 15)
-	if m.removedsessions != nil {
-		edges = append(edges, user.EdgeSessions)
-	}
-	if m.removedcreated_workspaces != nil {
-		edges = append(edges, user.EdgeCreatedWorkspaces)
-	}
-	if m.removedworkspace_members != nil {
-		edges = append(edges, user.EdgeWorkspaceMembers)
-	}
-	if m.removedcreated_channels != nil {
-		edges = append(edges, user.EdgeCreatedChannels)
-	}
+	edges := make([]string, 0, 3)
 	if m.removedchannel_members != nil {
 		edges = append(edges, user.EdgeChannelMembers)
-	}
-	if m.removedmessages != nil {
-		edges = append(edges, user.EdgeMessages)
-	}
-	if m.removedmessage_reactions != nil {
-		edges = append(edges, user.EdgeMessageReactions)
-	}
-	if m.removedmessage_bookmarks != nil {
-		edges = append(edges, user.EdgeMessageBookmarks)
-	}
-	if m.removeduser_mentions != nil {
-		edges = append(edges, user.EdgeUserMentions)
-	}
-	if m.removeduser_group_members != nil {
-		edges = append(edges, user.EdgeUserGroupMembers)
-	}
-	if m.removedcreated_user_groups != nil {
-		edges = append(edges, user.EdgeCreatedUserGroups)
-	}
-	if m.removedattachments != nil {
-		edges = append(edges, user.EdgeAttachments)
-	}
-	if m.removedchannel_read_states != nil {
-		edges = append(edges, user.EdgeChannelReadStates)
 	}
 	if m.removedlinks != nil {
 		edges = append(edges, user.EdgeLinks)
@@ -29481,81 +26858,9 @@ func (m *UserMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case user.EdgeSessions:
-		ids := make([]ent.Value, 0, len(m.removedsessions))
-		for id := range m.removedsessions {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedWorkspaces:
-		ids := make([]ent.Value, 0, len(m.removedcreated_workspaces))
-		for id := range m.removedcreated_workspaces {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeWorkspaceMembers:
-		ids := make([]ent.Value, 0, len(m.removedworkspace_members))
-		for id := range m.removedworkspace_members {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedChannels:
-		ids := make([]ent.Value, 0, len(m.removedcreated_channels))
-		for id := range m.removedcreated_channels {
-			ids = append(ids, id)
-		}
-		return ids
 	case user.EdgeChannelMembers:
 		ids := make([]ent.Value, 0, len(m.removedchannel_members))
 		for id := range m.removedchannel_members {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeMessages:
-		ids := make([]ent.Value, 0, len(m.removedmessages))
-		for id := range m.removedmessages {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeMessageReactions:
-		ids := make([]ent.Value, 0, len(m.removedmessage_reactions))
-		for id := range m.removedmessage_reactions {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeMessageBookmarks:
-		ids := make([]ent.Value, 0, len(m.removedmessage_bookmarks))
-		for id := range m.removedmessage_bookmarks {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeUserMentions:
-		ids := make([]ent.Value, 0, len(m.removeduser_mentions))
-		for id := range m.removeduser_mentions {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeUserGroupMembers:
-		ids := make([]ent.Value, 0, len(m.removeduser_group_members))
-		for id := range m.removeduser_group_members {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeCreatedUserGroups:
-		ids := make([]ent.Value, 0, len(m.removedcreated_user_groups))
-		for id := range m.removedcreated_user_groups {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeAttachments:
-		ids := make([]ent.Value, 0, len(m.removedattachments))
-		for id := range m.removedattachments {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeChannelReadStates:
-		ids := make([]ent.Value, 0, len(m.removedchannel_read_states))
-		for id := range m.removedchannel_read_states {
 			ids = append(ids, id)
 		}
 		return ids
@@ -29571,45 +26876,9 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 15)
-	if m.clearedsessions {
-		edges = append(edges, user.EdgeSessions)
-	}
-	if m.clearedcreated_workspaces {
-		edges = append(edges, user.EdgeCreatedWorkspaces)
-	}
-	if m.clearedworkspace_members {
-		edges = append(edges, user.EdgeWorkspaceMembers)
-	}
-	if m.clearedcreated_channels {
-		edges = append(edges, user.EdgeCreatedChannels)
-	}
+	edges := make([]string, 0, 3)
 	if m.clearedchannel_members {
 		edges = append(edges, user.EdgeChannelMembers)
-	}
-	if m.clearedmessages {
-		edges = append(edges, user.EdgeMessages)
-	}
-	if m.clearedmessage_reactions {
-		edges = append(edges, user.EdgeMessageReactions)
-	}
-	if m.clearedmessage_bookmarks {
-		edges = append(edges, user.EdgeMessageBookmarks)
-	}
-	if m.cleareduser_mentions {
-		edges = append(edges, user.EdgeUserMentions)
-	}
-	if m.cleareduser_group_members {
-		edges = append(edges, user.EdgeUserGroupMembers)
-	}
-	if m.clearedcreated_user_groups {
-		edges = append(edges, user.EdgeCreatedUserGroups)
-	}
-	if m.clearedattachments {
-		edges = append(edges, user.EdgeAttachments)
-	}
-	if m.clearedchannel_read_states {
-		edges = append(edges, user.EdgeChannelReadStates)
 	}
 	if m.clearedpreference {
 		edges = append(edges, user.EdgePreference)
@@ -29624,32 +26893,8 @@ func (m *UserMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
-	case user.EdgeSessions:
-		return m.clearedsessions
-	case user.EdgeCreatedWorkspaces:
-		return m.clearedcreated_workspaces
-	case user.EdgeWorkspaceMembers:
-		return m.clearedworkspace_members
-	case user.EdgeCreatedChannels:
-		return m.clearedcreated_channels
 	case user.EdgeChannelMembers:
 		return m.clearedchannel_members
-	case user.EdgeMessages:
-		return m.clearedmessages
-	case user.EdgeMessageReactions:
-		return m.clearedmessage_reactions
-	case user.EdgeMessageBookmarks:
-		return m.clearedmessage_bookmarks
-	case user.EdgeUserMentions:
-		return m.cleareduser_mentions
-	case user.EdgeUserGroupMembers:
-		return m.cleareduser_group_members
-	case user.EdgeCreatedUserGroups:
-		return m.clearedcreated_user_groups
-	case user.EdgeAttachments:
-		return m.clearedattachments
-	case user.EdgeChannelReadStates:
-		return m.clearedchannel_read_states
 	case user.EdgePreference:
 		return m.clearedpreference
 	case user.EdgeLinks:
@@ -29673,44 +26918,8 @@ func (m *UserMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
-	case user.EdgeSessions:
-		m.ResetSessions()
-		return nil
-	case user.EdgeCreatedWorkspaces:
-		m.ResetCreatedWorkspaces()
-		return nil
-	case user.EdgeWorkspaceMembers:
-		m.ResetWorkspaceMembers()
-		return nil
-	case user.EdgeCreatedChannels:
-		m.ResetCreatedChannels()
-		return nil
 	case user.EdgeChannelMembers:
 		m.ResetChannelMembers()
-		return nil
-	case user.EdgeMessages:
-		m.ResetMessages()
-		return nil
-	case user.EdgeMessageReactions:
-		m.ResetMessageReactions()
-		return nil
-	case user.EdgeMessageBookmarks:
-		m.ResetMessageBookmarks()
-		return nil
-	case user.EdgeUserMentions:
-		m.ResetUserMentions()
-		return nil
-	case user.EdgeUserGroupMembers:
-		m.ResetUserGroupMembers()
-		return nil
-	case user.EdgeCreatedUserGroups:
-		m.ResetCreatedUserGroups()
-		return nil
-	case user.EdgeAttachments:
-		m.ResetAttachments()
-		return nil
-	case user.EdgeChannelReadStates:
-		m.ResetChannelReadStates()
 		return nil
 	case user.EdgePreference:
 		m.ResetPreference()
@@ -29725,27 +26934,21 @@ func (m *UserMutation) ResetEdge(name string) error {
 // UserGroupMutation represents an operation that mutates the UserGroup nodes in the graph.
 type UserGroupMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	name                  *string
-	description           *string
-	created_at            *time.Time
-	updated_at            *time.Time
-	clearedFields         map[string]struct{}
-	workspace             *string
-	clearedworkspace      bool
-	created_by            *uuid.UUID
-	clearedcreated_by     bool
-	members               map[uuid.UUID]struct{}
-	removedmembers        map[uuid.UUID]struct{}
-	clearedmembers        bool
-	group_mentions        map[uuid.UUID]struct{}
-	removedgroup_mentions map[uuid.UUID]struct{}
-	clearedgroup_mentions bool
-	done                  bool
-	oldValue              func(context.Context) (*UserGroup, error)
-	predicates            []predicate.UserGroup
+	op                Op
+	typ               string
+	id                *uuid.UUID
+	name              *string
+	description       *string
+	created_at        *time.Time
+	updated_at        *time.Time
+	clearedFields     map[string]struct{}
+	workspace         *string
+	clearedworkspace  bool
+	created_by        *uuid.UUID
+	clearedcreated_by bool
+	done              bool
+	oldValue          func(context.Context) (*UserGroup, error)
+	predicates        []predicate.UserGroup
 }
 
 var _ ent.Mutation = (*UserGroupMutation)(nil)
@@ -29977,7 +27180,7 @@ func (m *UserGroupMutation) Description() (r string, exists bool) {
 // OldDescription returns the old "description" field's value of the UserGroup entity.
 // If the UserGroup object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserGroupMutation) OldDescription(ctx context.Context) (v string, err error) {
+func (m *UserGroupMutation) OldDescription(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
 	}
@@ -30133,114 +27336,6 @@ func (m *UserGroupMutation) CreatedByIDs() (ids []uuid.UUID) {
 func (m *UserGroupMutation) ResetCreatedBy() {
 	m.created_by = nil
 	m.clearedcreated_by = false
-}
-
-// AddMemberIDs adds the "members" edge to the UserGroupMember entity by ids.
-func (m *UserGroupMutation) AddMemberIDs(ids ...uuid.UUID) {
-	if m.members == nil {
-		m.members = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.members[ids[i]] = struct{}{}
-	}
-}
-
-// ClearMembers clears the "members" edge to the UserGroupMember entity.
-func (m *UserGroupMutation) ClearMembers() {
-	m.clearedmembers = true
-}
-
-// MembersCleared reports if the "members" edge to the UserGroupMember entity was cleared.
-func (m *UserGroupMutation) MembersCleared() bool {
-	return m.clearedmembers
-}
-
-// RemoveMemberIDs removes the "members" edge to the UserGroupMember entity by IDs.
-func (m *UserGroupMutation) RemoveMemberIDs(ids ...uuid.UUID) {
-	if m.removedmembers == nil {
-		m.removedmembers = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.members, ids[i])
-		m.removedmembers[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedMembers returns the removed IDs of the "members" edge to the UserGroupMember entity.
-func (m *UserGroupMutation) RemovedMembersIDs() (ids []uuid.UUID) {
-	for id := range m.removedmembers {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// MembersIDs returns the "members" edge IDs in the mutation.
-func (m *UserGroupMutation) MembersIDs() (ids []uuid.UUID) {
-	for id := range m.members {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetMembers resets all changes to the "members" edge.
-func (m *UserGroupMutation) ResetMembers() {
-	m.members = nil
-	m.clearedmembers = false
-	m.removedmembers = nil
-}
-
-// AddGroupMentionIDs adds the "group_mentions" edge to the MessageGroupMention entity by ids.
-func (m *UserGroupMutation) AddGroupMentionIDs(ids ...uuid.UUID) {
-	if m.group_mentions == nil {
-		m.group_mentions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.group_mentions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearGroupMentions clears the "group_mentions" edge to the MessageGroupMention entity.
-func (m *UserGroupMutation) ClearGroupMentions() {
-	m.clearedgroup_mentions = true
-}
-
-// GroupMentionsCleared reports if the "group_mentions" edge to the MessageGroupMention entity was cleared.
-func (m *UserGroupMutation) GroupMentionsCleared() bool {
-	return m.clearedgroup_mentions
-}
-
-// RemoveGroupMentionIDs removes the "group_mentions" edge to the MessageGroupMention entity by IDs.
-func (m *UserGroupMutation) RemoveGroupMentionIDs(ids ...uuid.UUID) {
-	if m.removedgroup_mentions == nil {
-		m.removedgroup_mentions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.group_mentions, ids[i])
-		m.removedgroup_mentions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedGroupMentions returns the removed IDs of the "group_mentions" edge to the MessageGroupMention entity.
-func (m *UserGroupMutation) RemovedGroupMentionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedgroup_mentions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// GroupMentionsIDs returns the "group_mentions" edge IDs in the mutation.
-func (m *UserGroupMutation) GroupMentionsIDs() (ids []uuid.UUID) {
-	for id := range m.group_mentions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetGroupMentions resets all changes to the "group_mentions" edge.
-func (m *UserGroupMutation) ResetGroupMentions() {
-	m.group_mentions = nil
-	m.clearedgroup_mentions = false
-	m.removedgroup_mentions = nil
 }
 
 // Where appends a list predicates to the UserGroupMutation builder.
@@ -30470,18 +27565,12 @@ func (m *UserGroupMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserGroupMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 2)
 	if m.workspace != nil {
 		edges = append(edges, usergroup.EdgeWorkspace)
 	}
 	if m.created_by != nil {
 		edges = append(edges, usergroup.EdgeCreatedBy)
-	}
-	if m.members != nil {
-		edges = append(edges, usergroup.EdgeMembers)
-	}
-	if m.group_mentions != nil {
-		edges = append(edges, usergroup.EdgeGroupMentions)
 	}
 	return edges
 }
@@ -30498,68 +27587,30 @@ func (m *UserGroupMutation) AddedIDs(name string) []ent.Value {
 		if id := m.created_by; id != nil {
 			return []ent.Value{*id}
 		}
-	case usergroup.EdgeMembers:
-		ids := make([]ent.Value, 0, len(m.members))
-		for id := range m.members {
-			ids = append(ids, id)
-		}
-		return ids
-	case usergroup.EdgeGroupMentions:
-		ids := make([]ent.Value, 0, len(m.group_mentions))
-		for id := range m.group_mentions {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserGroupMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.removedmembers != nil {
-		edges = append(edges, usergroup.EdgeMembers)
-	}
-	if m.removedgroup_mentions != nil {
-		edges = append(edges, usergroup.EdgeGroupMentions)
-	}
+	edges := make([]string, 0, 2)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *UserGroupMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case usergroup.EdgeMembers:
-		ids := make([]ent.Value, 0, len(m.removedmembers))
-		for id := range m.removedmembers {
-			ids = append(ids, id)
-		}
-		return ids
-	case usergroup.EdgeGroupMentions:
-		ids := make([]ent.Value, 0, len(m.removedgroup_mentions))
-		for id := range m.removedgroup_mentions {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserGroupMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 2)
 	if m.clearedworkspace {
 		edges = append(edges, usergroup.EdgeWorkspace)
 	}
 	if m.clearedcreated_by {
 		edges = append(edges, usergroup.EdgeCreatedBy)
-	}
-	if m.clearedmembers {
-		edges = append(edges, usergroup.EdgeMembers)
-	}
-	if m.clearedgroup_mentions {
-		edges = append(edges, usergroup.EdgeGroupMentions)
 	}
 	return edges
 }
@@ -30572,10 +27623,6 @@ func (m *UserGroupMutation) EdgeCleared(name string) bool {
 		return m.clearedworkspace
 	case usergroup.EdgeCreatedBy:
 		return m.clearedcreated_by
-	case usergroup.EdgeMembers:
-		return m.clearedmembers
-	case usergroup.EdgeGroupMentions:
-		return m.clearedgroup_mentions
 	}
 	return false
 }
@@ -30604,12 +27651,6 @@ func (m *UserGroupMutation) ResetEdge(name string) error {
 	case usergroup.EdgeCreatedBy:
 		m.ResetCreatedBy()
 		return nil
-	case usergroup.EdgeMembers:
-		m.ResetMembers()
-		return nil
-	case usergroup.EdgeGroupMentions:
-		m.ResetGroupMentions()
-		return nil
 	}
 	return fmt.Errorf("unknown UserGroup edge %s", name)
 }
@@ -30620,7 +27661,6 @@ type UserGroupMemberMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
-	joined_at     *time.Time
 	clearedFields map[string]struct{}
 	group         *uuid.UUID
 	clearedgroup  bool
@@ -30807,42 +27847,6 @@ func (m *UserGroupMemberMutation) ResetUserID() {
 	m.user = nil
 }
 
-// SetJoinedAt sets the "joined_at" field.
-func (m *UserGroupMemberMutation) SetJoinedAt(t time.Time) {
-	m.joined_at = &t
-}
-
-// JoinedAt returns the value of the "joined_at" field in the mutation.
-func (m *UserGroupMemberMutation) JoinedAt() (r time.Time, exists bool) {
-	v := m.joined_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldJoinedAt returns the old "joined_at" field's value of the UserGroupMember entity.
-// If the UserGroupMember object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserGroupMemberMutation) OldJoinedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldJoinedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldJoinedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldJoinedAt: %w", err)
-	}
-	return oldValue.JoinedAt, nil
-}
-
-// ResetJoinedAt resets all changes to the "joined_at" field.
-func (m *UserGroupMemberMutation) ResetJoinedAt() {
-	m.joined_at = nil
-}
-
 // ClearGroup clears the "group" edge to the UserGroup entity.
 func (m *UserGroupMemberMutation) ClearGroup() {
 	m.clearedgroup = true
@@ -30931,15 +27935,12 @@ func (m *UserGroupMemberMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserGroupMemberMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 2)
 	if m.group != nil {
 		fields = append(fields, usergroupmember.FieldGroupID)
 	}
 	if m.user != nil {
 		fields = append(fields, usergroupmember.FieldUserID)
-	}
-	if m.joined_at != nil {
-		fields = append(fields, usergroupmember.FieldJoinedAt)
 	}
 	return fields
 }
@@ -30953,8 +27954,6 @@ func (m *UserGroupMemberMutation) Field(name string) (ent.Value, bool) {
 		return m.GroupID()
 	case usergroupmember.FieldUserID:
 		return m.UserID()
-	case usergroupmember.FieldJoinedAt:
-		return m.JoinedAt()
 	}
 	return nil, false
 }
@@ -30968,8 +27967,6 @@ func (m *UserGroupMemberMutation) OldField(ctx context.Context, name string) (en
 		return m.OldGroupID(ctx)
 	case usergroupmember.FieldUserID:
 		return m.OldUserID(ctx)
-	case usergroupmember.FieldJoinedAt:
-		return m.OldJoinedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown UserGroupMember field %s", name)
 }
@@ -30992,13 +27989,6 @@ func (m *UserGroupMemberMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUserID(v)
-		return nil
-	case usergroupmember.FieldJoinedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetJoinedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown UserGroupMember field %s", name)
@@ -31054,9 +28044,6 @@ func (m *UserGroupMemberMutation) ResetField(name string) error {
 		return nil
 	case usergroupmember.FieldUserID:
 		m.ResetUserID()
-		return nil
-	case usergroupmember.FieldJoinedAt:
-		m.ResetJoinedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown UserGroupMember field %s", name)
@@ -33928,12 +30915,6 @@ type WorkspaceMutation struct {
 	members              map[uuid.UUID]struct{}
 	removedmembers       map[uuid.UUID]struct{}
 	clearedmembers       bool
-	channels             map[uuid.UUID]struct{}
-	removedchannels      map[uuid.UUID]struct{}
-	clearedchannels      bool
-	user_groups          map[uuid.UUID]struct{}
-	removeduser_groups   map[uuid.UUID]struct{}
-	cleareduser_groups   bool
 	done                 bool
 	oldValue             func(context.Context) (*Workspace, error)
 	predicates           []predicate.Workspace
@@ -34132,7 +31113,7 @@ func (m *WorkspaceMutation) Description() (r string, exists bool) {
 // OldDescription returns the old "description" field's value of the Workspace entity.
 // If the Workspace object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkspaceMutation) OldDescription(ctx context.Context) (v string, err error) {
+func (m *WorkspaceMutation) OldDescription(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
 	}
@@ -34181,7 +31162,7 @@ func (m *WorkspaceMutation) IconURL() (r string, exists bool) {
 // OldIconURL returns the old "icon_url" field's value of the Workspace entity.
 // If the Workspace object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *WorkspaceMutation) OldIconURL(ctx context.Context) (v string, err error) {
+func (m *WorkspaceMutation) OldIconURL(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldIconURL is only allowed on UpdateOne operations")
 	}
@@ -34474,114 +31455,6 @@ func (m *WorkspaceMutation) ResetMembers() {
 	m.removedmembers = nil
 }
 
-// AddChannelIDs adds the "channels" edge to the Channel entity by ids.
-func (m *WorkspaceMutation) AddChannelIDs(ids ...uuid.UUID) {
-	if m.channels == nil {
-		m.channels = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.channels[ids[i]] = struct{}{}
-	}
-}
-
-// ClearChannels clears the "channels" edge to the Channel entity.
-func (m *WorkspaceMutation) ClearChannels() {
-	m.clearedchannels = true
-}
-
-// ChannelsCleared reports if the "channels" edge to the Channel entity was cleared.
-func (m *WorkspaceMutation) ChannelsCleared() bool {
-	return m.clearedchannels
-}
-
-// RemoveChannelIDs removes the "channels" edge to the Channel entity by IDs.
-func (m *WorkspaceMutation) RemoveChannelIDs(ids ...uuid.UUID) {
-	if m.removedchannels == nil {
-		m.removedchannels = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.channels, ids[i])
-		m.removedchannels[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedChannels returns the removed IDs of the "channels" edge to the Channel entity.
-func (m *WorkspaceMutation) RemovedChannelsIDs() (ids []uuid.UUID) {
-	for id := range m.removedchannels {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ChannelsIDs returns the "channels" edge IDs in the mutation.
-func (m *WorkspaceMutation) ChannelsIDs() (ids []uuid.UUID) {
-	for id := range m.channels {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetChannels resets all changes to the "channels" edge.
-func (m *WorkspaceMutation) ResetChannels() {
-	m.channels = nil
-	m.clearedchannels = false
-	m.removedchannels = nil
-}
-
-// AddUserGroupIDs adds the "user_groups" edge to the UserGroup entity by ids.
-func (m *WorkspaceMutation) AddUserGroupIDs(ids ...uuid.UUID) {
-	if m.user_groups == nil {
-		m.user_groups = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.user_groups[ids[i]] = struct{}{}
-	}
-}
-
-// ClearUserGroups clears the "user_groups" edge to the UserGroup entity.
-func (m *WorkspaceMutation) ClearUserGroups() {
-	m.cleareduser_groups = true
-}
-
-// UserGroupsCleared reports if the "user_groups" edge to the UserGroup entity was cleared.
-func (m *WorkspaceMutation) UserGroupsCleared() bool {
-	return m.cleareduser_groups
-}
-
-// RemoveUserGroupIDs removes the "user_groups" edge to the UserGroup entity by IDs.
-func (m *WorkspaceMutation) RemoveUserGroupIDs(ids ...uuid.UUID) {
-	if m.removeduser_groups == nil {
-		m.removeduser_groups = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.user_groups, ids[i])
-		m.removeduser_groups[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUserGroups returns the removed IDs of the "user_groups" edge to the UserGroup entity.
-func (m *WorkspaceMutation) RemovedUserGroupsIDs() (ids []uuid.UUID) {
-	for id := range m.removeduser_groups {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// UserGroupsIDs returns the "user_groups" edge IDs in the mutation.
-func (m *WorkspaceMutation) UserGroupsIDs() (ids []uuid.UUID) {
-	for id := range m.user_groups {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetUserGroups resets all changes to the "user_groups" edge.
-func (m *WorkspaceMutation) ResetUserGroups() {
-	m.user_groups = nil
-	m.cleareduser_groups = false
-	m.removeduser_groups = nil
-}
-
 // Where appends a list predicates to the WorkspaceMutation builder.
 func (m *WorkspaceMutation) Where(ps ...predicate.Workspace) {
 	m.predicates = append(m.predicates, ps...)
@@ -34866,18 +31739,12 @@ func (m *WorkspaceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WorkspaceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 2)
 	if m.created_by != nil {
 		edges = append(edges, workspace.EdgeCreatedBy)
 	}
 	if m.members != nil {
 		edges = append(edges, workspace.EdgeMembers)
-	}
-	if m.channels != nil {
-		edges = append(edges, workspace.EdgeChannels)
-	}
-	if m.user_groups != nil {
-		edges = append(edges, workspace.EdgeUserGroups)
 	}
 	return edges
 }
@@ -34896,33 +31763,15 @@ func (m *WorkspaceMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case workspace.EdgeChannels:
-		ids := make([]ent.Value, 0, len(m.channels))
-		for id := range m.channels {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeUserGroups:
-		ids := make([]ent.Value, 0, len(m.user_groups))
-		for id := range m.user_groups {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WorkspaceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 2)
 	if m.removedmembers != nil {
 		edges = append(edges, workspace.EdgeMembers)
-	}
-	if m.removedchannels != nil {
-		edges = append(edges, workspace.EdgeChannels)
-	}
-	if m.removeduser_groups != nil {
-		edges = append(edges, workspace.EdgeUserGroups)
 	}
 	return edges
 }
@@ -34937,36 +31786,18 @@ func (m *WorkspaceMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case workspace.EdgeChannels:
-		ids := make([]ent.Value, 0, len(m.removedchannels))
-		for id := range m.removedchannels {
-			ids = append(ids, id)
-		}
-		return ids
-	case workspace.EdgeUserGroups:
-		ids := make([]ent.Value, 0, len(m.removeduser_groups))
-		for id := range m.removeduser_groups {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WorkspaceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 2)
 	if m.clearedcreated_by {
 		edges = append(edges, workspace.EdgeCreatedBy)
 	}
 	if m.clearedmembers {
 		edges = append(edges, workspace.EdgeMembers)
-	}
-	if m.clearedchannels {
-		edges = append(edges, workspace.EdgeChannels)
-	}
-	if m.cleareduser_groups {
-		edges = append(edges, workspace.EdgeUserGroups)
 	}
 	return edges
 }
@@ -34979,10 +31810,6 @@ func (m *WorkspaceMutation) EdgeCleared(name string) bool {
 		return m.clearedcreated_by
 	case workspace.EdgeMembers:
 		return m.clearedmembers
-	case workspace.EdgeChannels:
-		return m.clearedchannels
-	case workspace.EdgeUserGroups:
-		return m.cleareduser_groups
 	}
 	return false
 }
@@ -35007,12 +31834,6 @@ func (m *WorkspaceMutation) ResetEdge(name string) error {
 		return nil
 	case workspace.EdgeMembers:
 		m.ResetMembers()
-		return nil
-	case workspace.EdgeChannels:
-		m.ResetChannels()
-		return nil
-	case workspace.EdgeUserGroups:
-		m.ResetUserGroups()
 		return nil
 	}
 	return fmt.Errorf("unknown Workspace edge %s", name)

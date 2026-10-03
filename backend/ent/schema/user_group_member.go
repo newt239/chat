@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
@@ -12,7 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserGroupMember holds the schema definition for the UserGroupMember entity.
 type UserGroupMember struct {
 	ent.Schema
 }
@@ -21,7 +18,6 @@ func (UserGroupMember) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "user_group_member"}}
 }
 
-// Fields of the UserGroupMember.
 func (UserGroupMember) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -29,13 +25,9 @@ func (UserGroupMember) Fields() []ent.Field {
 			Immutable(),
 		field.UUID("group_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}),
-		field.Time("joined_at").
-			Default(time.Now).
-			Immutable(),
 	}
 }
 
-// Edges of the UserGroupMember.
 func (UserGroupMember) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("group", UserGroup.Type).
@@ -49,7 +41,6 @@ func (UserGroupMember) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the UserGroupMember.
 func (UserGroupMember) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("group_id", "user_id").

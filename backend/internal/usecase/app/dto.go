@@ -1,8 +1,6 @@
 package app
 
 import (
-	"time"
-
 	"github.com/newt239/chat/internal/domain/entity"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
@@ -58,23 +56,11 @@ type PostInput struct {
 	ParentID  *string
 }
 
+// Output の OutgoingSecret は管理できる人にだけ設定する
 type Output struct {
-	ID               string
-	WorkspaceID      string
-	Name             string
-	Description      *string
-	AvatarURL        *string
-	Permissions      []entity.AppPermission
-	DefaultChannelID *string
-	OutgoingURL      *string
-	// 管理できる人にだけ返す
-	OutgoingSecret *string
-	IsOfficial     bool
-	BotUserID      string
-	CreatedBy      messageuc.UserInfo
-	CreatedAt      time.Time
-	LastUsedAt     *time.Time
-	CanManage      bool
+	*entity.App
+	Creator   messageuc.UserInfo
+	CanManage bool
 }
 
 type CreateOutput struct {

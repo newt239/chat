@@ -1,9 +1,6 @@
 import type { Messages } from "../../messages";
 
 export const ui: Messages["ui"] = {
-  avatar: {
-    groupMembers: "Group of {{count}}",
-  },
   calendar: {
     next: "Next month",
     previous: "Previous month",
@@ -13,7 +10,6 @@ export const ui: Messages["ui"] = {
     showSuggestions: "Show suggestions",
   },
   copyableUrl: {
-    copied: "Copied the link",
     copy: "Copy",
   },
   iconImage: {
@@ -29,6 +25,11 @@ export const ui: Messages["ui"] = {
   },
   menu: {
     title: "Menu",
+  },
+  pagination: {
+    next: "Next page",
+    page: "Page {{page}} of {{total}}",
+    previous: "Previous page",
   },
   toast: {
     dismiss: "Dismiss notification",

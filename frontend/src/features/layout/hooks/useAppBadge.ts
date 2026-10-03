@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { setAppBadge } from "#/lib/platform/badge";
+import { setAppBadge } from "#/features/layout/utils/appBadge";
 
 import { useUnreadSummary } from "./useUnreadSummary";
 

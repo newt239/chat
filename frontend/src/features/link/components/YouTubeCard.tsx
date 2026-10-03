@@ -3,7 +3,7 @@ import { Link } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { focusRing } from "#/components/ui/styles/styles";
-import { formatDuration } from "#/features/player/utils/formatDuration";
+import { formatDuration } from "#/lib/formatDuration";
 
 import type { OgpData, YouTubeVideo } from "#/gen/chat/v1/message_pb";
 

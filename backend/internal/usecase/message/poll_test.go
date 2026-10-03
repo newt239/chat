@@ -21,7 +21,6 @@ func TestNewPollValidates(t *testing.T) {
 		{name: "文字の選択肢", input: PollInput{Question: "昼ご飯", Mode: entity.PollModeText, Options: []PollOptionInput{{Label: "そば"}, {Label: "うどん"}}}},
 		{name: "日程調整", input: PollInput{Question: "打ち上げ", Mode: entity.PollModeDate, Options: []PollOptionInput{{StartsAt: &day, AllDay: true}, {StartsAt: &day}}}},
 		{name: "質問が空", input: PollInput{Question: " ", Mode: entity.PollModeText, Options: []PollOptionInput{{Label: "a"}, {Label: "b"}}}, want: ErrPollQuestionRequired},
-		{name: "選択肢が 1 つ", input: PollInput{Question: "q", Mode: entity.PollModeText, Options: []PollOptionInput{{Label: "a"}}}, want: ErrPollOptionCount},
 		{name: "日程調整に日時がない", input: PollInput{Question: "q", Mode: entity.PollModeDate, Options: []PollOptionInput{{Label: "a"}, {StartsAt: &day}}}, want: ErrPollOptionInvalid},
 		{name: "締切が過去", input: PollInput{Question: "q", Mode: entity.PollModeText, ClosesAt: &past, Options: []PollOptionInput{{Label: "a"}, {Label: "b"}}}, want: ErrPollClosesInPast},
 	}

@@ -1,0 +1,117 @@
+import { useState } from "react";
+
+import { useRouter } from "@tanstack/react-router";
+import { Form } from "react-aria-components";
+import { useTranslation } from "react-i18next";
+
+import { CopyableUrl } from "#/components/block/CopyableUrl/CopyableUrl";
+import { Button } from "#/components/ui/Button/Button";
+import { Select } from "#/components/ui/Select/Select";
+import { TextField } from "#/components/ui/TextField/TextField";
+import { toast } from "#/components/ui/ToastRegion/toast";
+import { assignableWorkspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
+import { toShareUrl } from "#/lib/shareUrl";
+
+import { useAdminActions } from "../hooks/useAdminActions";
+
+import type { WorkspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
+
+type IssuedInvitation = {
+  email: string;
+  url: string;
+};
+
+type InviteMemberFormProps = {
+  workspaceId: string;
+};
+
+// 登録済みのメールアドレスは直ちに追加し、未登録なら一度だけ表示する招待リンクを発行する
+export const InviteMemberForm = ({ workspaceId }: InviteMemberFormProps) => {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const { createInvitation } = useAdminActions();
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<WorkspaceRoleKey>("member");
+  const [issued, setIssued] = useState<IssuedInvitation | null>(null);
+
+  const submit = () => {
+    const target = email.trim();
+    createInvitation.mutate(
+      {
+        email: target,
+        role: assignableWorkspaceRoles.find((option) => option.key === role)?.role,
+        workspaceId,
+      },
+      {
+        onError: (error) => {
+          toast(t("admin.invitations.invite.failed"), {
+            description: error.message,
+            tone: "danger",
+          });
+        },
+        onSuccess: ({ addedDirectly, token }) => {
+          setEmail("");
+          if (addedDirectly) {
+            setIssued(null);
+            toast(t("admin.invitations.invite.addedDirectly", { email: target }), {
+              tone: "success",
+            });
+            return;
+          }
+          const { href } = router.buildLocation({ params: { token }, to: "/invite/$token" });
+          setIssued({ email: target, url: toShareUrl(href) });
+        },
+      },
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      <Form
+        className="flex flex-wrap items-end gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submit();
+        }}
+      >
+        <TextField
+          className="min-w-48 flex-1"
+          type="email"
+          label={t("admin.invitations.invite.email")}
+          placeholder="email@example.com"
+          value={email}
+          onChange={setEmail}
+          isRequired
+        />
+        <Select
+          label={t("admin.invitations.invite.role")}
+          className="w-32"
+          value={role}
+          onChange={setRole}
+          options={assignableWorkspaceRoles.map(({ key }) => ({
+            label: t(`member.role.${key}`),
+            value: key,
+          }))}
+        />
+        <Button
+          type="submit"
+          isDisabled={email.trim().length === 0}
+          isPending={createInvitation.isPending}
+        >
+          {t("admin.invitations.invite.submit")}
+        </Button>
+      </Form>
+      {issued !== null && (
+        <div className="flex flex-col gap-2">
+          <p className="m-0 rounded-md bg-accent-soft px-3 py-2 text-caption text-accent-text">
+            {t("admin.invitations.invite.linkOnce")}
+          </p>
+          <span className="text-xs font-semibold text-muted">
+            {t("admin.invitations.invite.link", { email: issued.email })}
+          </span>
+          <CopyableUrl url={issued.url} />
+        </div>
+      )}
+    </div>
+  );
+};

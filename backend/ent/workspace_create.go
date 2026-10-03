@@ -13,9 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/user"
-	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 )
@@ -164,36 +162,6 @@ func (_c *WorkspaceCreate) AddMembers(v ...*WorkspaceMember) *WorkspaceCreate {
 	return _c.AddMemberIDs(ids...)
 }
 
-// AddChannelIDs adds the "channels" edge to the Channel entity by IDs.
-func (_c *WorkspaceCreate) AddChannelIDs(ids ...uuid.UUID) *WorkspaceCreate {
-	_c.mutation.AddChannelIDs(ids...)
-	return _c
-}
-
-// AddChannels adds the "channels" edges to the Channel entity.
-func (_c *WorkspaceCreate) AddChannels(v ...*Channel) *WorkspaceCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddChannelIDs(ids...)
-}
-
-// AddUserGroupIDs adds the "user_groups" edge to the UserGroup entity by IDs.
-func (_c *WorkspaceCreate) AddUserGroupIDs(ids ...uuid.UUID) *WorkspaceCreate {
-	_c.mutation.AddUserGroupIDs(ids...)
-	return _c
-}
-
-// AddUserGroups adds the "user_groups" edges to the UserGroup entity.
-func (_c *WorkspaceCreate) AddUserGroups(v ...*UserGroup) *WorkspaceCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddUserGroupIDs(ids...)
-}
-
 // Mutation returns the WorkspaceMutation object of the builder.
 func (_c *WorkspaceCreate) Mutation() *WorkspaceMutation {
 	return _c.mutation
@@ -329,11 +297,11 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(workspace.FieldDescription, field.TypeString, value)
-		_node.Description = value
+		_node.Description = &value
 	}
 	if value, ok := _c.mutation.IconURL(); ok {
 		_spec.SetField(workspace.FieldIconURL, field.TypeString, value)
-		_node.IconURL = value
+		_node.IconURL = &value
 	}
 	if value, ok := _c.mutation.IsPublic(); ok {
 		_spec.SetField(workspace.FieldIsPublic, field.TypeBool, value)
@@ -381,38 +349,6 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.ChannelsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.ChannelsTable,
-			Columns: []string{workspace.ChannelsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.UserGroupsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.UserGroupsTable,
-			Columns: []string{workspace.UserGroupsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroup.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

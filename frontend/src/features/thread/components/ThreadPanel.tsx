@@ -6,35 +6,33 @@ import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { BaseMessageInput } from "#/features/message/components/BaseMessageInput";
 import { MessageItem } from "#/features/message/components/MessageItem";
 import { MessageList } from "#/features/message/components/MessageList";
-import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
-import { useSendMessage } from "#/features/message/hooks/useMessage";
 import { ThreadPanelContext } from "#/features/message/hooks/useOwnsMessageOverlay";
-import { useThreadReplies } from "#/features/message/hooks/useThread";
-import { toDateKey } from "#/features/message/utils/dateJump";
 import { buildTimelineRows } from "#/features/message/utils/timelineRows";
 import { TimelineItemSchema } from "#/gen/chat/v1/message_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
-import { toDate } from "#/lib/timestamp";
+
+import { useThreadReplies } from "../hooks/useThreadReplies";
 
 import type { TimelineRow } from "#/features/message/utils/timelineRows";
 import type { Message } from "#/gen/chat/v1/message_pb";
 
 type ThreadPanelProps = {
-  workspaceId: string;
   channelId: string;
   threadId: string;
 };
 
-const noopRef = () => undefined;
+const renderMessage = (message: Message, isHighlighted: boolean) => (
+  <MessageItem message={message} isHighlighted={isHighlighted} channelChip={null} />
+);
 
-export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelProps) => {
+export const ThreadPanel = ({ channelId, threadId }: ThreadPanelProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   // ?message= で返信を指しているときはその返信の前後を読み、そこまでスクロールする
   const targetReplyId = useSearch({ select: (search) => search.message, strict: false }) ?? null;
   const {
     parentMessage,
-    replies,
+    items: replies,
     replyCount,
     hasOlder,
     hasNewer,
@@ -44,18 +42,9 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
     load,
     loading,
   } = useThreadReplies(threadId, targetReplyId);
-  const sendReply = useSendMessage();
   const { timeZone } = useDateFormat();
   // 親チャンネルの集約表示から開いたスレッドは子孫チャンネルのものなので、返信先は親メッセージのチャンネルにする
   const threadChannelId = parentMessage?.channelId ?? channelId;
-  const handleCopyLink = useCopyMessageLink(workspaceId, threadChannelId);
-
-  const handleCreateThread = (messageId: string) => {
-    void navigate({
-      params: { channelId, messageId, workspaceId },
-      to: "/app/$workspaceId/$channelId/thread/$messageId",
-    });
-  };
 
   // 親メッセージは最初の返信まで読み込んだときだけ先頭に置く
   const replyRows = buildTimelineRows(
@@ -73,23 +62,7 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
       ? []
       : hasOlder
         ? replyRows
-        : [
-            {
-              dateKey: toDateKey(toDate(parentMessage.createdAt), timeZone),
-              key: "header",
-              kind: "header",
-            },
-            ...replyRows,
-          ];
-
-  const renderMessage = (message: Message, isHighlighted: boolean) => (
-    <MessageItem
-      message={message}
-      onCopyLink={handleCopyLink}
-      onCreateThread={handleCreateThread}
-      isHighlighted={isHighlighted}
-    />
-  );
+        : [{ key: "header", kind: "header" }, ...replyRows];
 
   const renderBody = () => {
     if (isLoading) {
@@ -104,7 +77,7 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
       return <p className="m-0 p-4 text-caption text-danger">{error?.message}</p>;
     }
     if (parentMessage === undefined || replies === undefined) {
-      return <p className="m-0 p-4 text-caption text-muted">{t("shell.thread.notFound")}</p>;
+      return <p className="m-0 p-4 text-caption text-muted">{t("thread.notFound")}</p>;
     }
     return (
       <MessageList
@@ -118,20 +91,14 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
         onJumpToLatest={() => {
           void navigate({ search: (prev) => ({ ...prev, message: undefined }), to: "." });
         }}
-        latestMessageRef={noopRef}
-        latestUserMessageId={null}
         renderMessage={renderMessage}
         header={
           <>
-            <MessageItem
-              message={parentMessage}
-              onCopyLink={handleCopyLink}
-              onCreateThread={handleCreateThread}
-            />
+            {renderMessage(parentMessage, false)}
             <div className="mx-4 my-2 flex items-center gap-2 text-caption text-muted">
               {replyCount === 0
                 ? t("message.thread.noReplies")
-                : t("shell.thread.replyCount", { count: replyCount })}
+                : t("message.thread.replies", { count: replyCount })}
               <span className="h-px flex-1 bg-border" />
             </div>
           </>
@@ -148,16 +115,9 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
           <BaseMessageInput
             channelId={threadChannelId}
             parentId={threadId}
-            onSubmit={(content) => {
-              sendReply.mutate({ ...content, channelId: threadChannelId, parentId: threadId });
-            }}
             placeholder={t("message.thread.replyPlaceholder")}
-            isPending={sendReply.isPending}
-            error={
-              sendReply.isError
-                ? sendReply.error.message || t("message.thread.sendFailed")
-                : undefined
-            }
+            targetPicker={null}
+            onSent={null}
           />
         )}
       </div>

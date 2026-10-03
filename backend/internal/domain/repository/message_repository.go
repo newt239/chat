@@ -18,7 +18,6 @@ type MessageRepository interface {
 	Update(ctx context.Context, message *entity.Message) error
 	AddReaction(ctx context.Context, reaction *entity.MessageReaction) error
 	RemoveReaction(ctx context.Context, messageID string, userID string, emoji string) error
-	FindReactions(ctx context.Context, messageID string) ([]*entity.MessageReaction, error)
 	FindReactionsByMessageIDs(ctx context.Context, messageIDs []string) (map[string][]*entity.MessageReaction, error)
 	FindSearchScope(ctx context.Context, workspaceID string, userID string) (*MessageSearchScope, error)
 	// FindSearchDocuments は指定したメッセージのうち削除されていないものの検索用文書を返します

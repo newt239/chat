@@ -10,74 +10,53 @@ import (
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
-type UseCase interface {
-	Get(ctx context.Context, input GetInput) (*Output, error)
-	Update(ctx context.Context, input UpdateInput) (*Output, error)
-}
-
-type interactor struct {
+type Interactor struct {
 	userNoteRepo domainrepository.UserNoteRepository
 	userRepo     domainrepository.UserRepository
 }
 
-func NewInteractor(userNoteRepo domainrepository.UserNoteRepository, userRepo domainrepository.UserRepository) UseCase {
-	return &interactor{userNoteRepo: userNoteRepo, userRepo: userRepo}
+func New(userNoteRepo domainrepository.UserNoteRepository, userRepo domainrepository.UserRepository) *Interactor {
+	return &Interactor{userNoteRepo: userNoteRepo, userRepo: userRepo}
 }
 
 // Get は未設定の場合 nil を返します
-func (i *interactor) Get(ctx context.Context, input GetInput) (*Output, error) {
-	note, err := i.userNoteRepo.Find(ctx, input.OwnerID, input.TargetID)
+func (i *Interactor) Get(ctx context.Context, ownerID, targetID string) (*entity.UserNote, error) {
+	note, err := i.userNoteRepo.Find(ctx, ownerID, targetID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load user note: %w", err)
 	}
-	if note == nil {
-		return nil, nil
-	}
-	return toOutput(note), nil
+	return note, nil
 }
 
-// Update はニックネームとメモを保存します。両方とも空の場合は削除して nil を返します
-func (i *interactor) Update(ctx context.Context, input UpdateInput) (*Output, error) {
-	target, err := i.userRepo.FindByID(ctx, input.TargetID)
+// Update はニックネームとメモを保存します。空白だけの値は未設定として扱い、両方とも空なら削除して nil を返します
+func (i *Interactor) Update(ctx context.Context, note entity.UserNote) (*entity.UserNote, error) {
+	target, err := i.userRepo.FindByID(ctx, note.TargetID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load target user: %w", err)
 	}
 	if target == nil {
 		return nil, domerr.ErrUserNotFound
 	}
-
-	note := &entity.UserNote{
-		OwnerID:  input.OwnerID,
-		TargetID: input.TargetID,
-		Nickname: nonEmpty(input.Nickname),
-		Memo:     nonEmpty(input.Memo),
-	}
+	note.Nickname, note.Memo = nonEmpty(note.Nickname), nonEmpty(note.Memo)
 	if note.Nickname == nil && note.Memo == nil {
-		if err := i.userNoteRepo.Delete(ctx, input.OwnerID, input.TargetID); err != nil {
+		if err := i.userNoteRepo.Delete(ctx, note.OwnerID, note.TargetID); err != nil {
 			return nil, fmt.Errorf("failed to delete user note: %w", err)
 		}
 		return nil, nil
 	}
-
-	if err := i.userNoteRepo.Upsert(ctx, note); err != nil {
+	if err := i.userNoteRepo.Upsert(ctx, &note); err != nil {
 		return nil, fmt.Errorf("failed to save user note: %w", err)
 	}
-	return toOutput(note), nil
+	return &note, nil
 }
 
-func nonEmpty(value string) *string {
-	trimmed := strings.TrimSpace(value)
+func nonEmpty(value *string) *string {
+	if value == nil {
+		return nil
+	}
+	trimmed := strings.TrimSpace(*value)
 	if trimmed == "" {
 		return nil
 	}
 	return &trimmed
-}
-
-func toOutput(note *entity.UserNote) *Output {
-	return &Output{
-		TargetID:  note.TargetID,
-		Nickname:  note.Nickname,
-		Memo:      note.Memo,
-		UpdatedAt: note.UpdatedAt,
-	}
 }

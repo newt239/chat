@@ -3,51 +3,32 @@ package readstate
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
 
-type ReadStateUseCase interface {
-	GetUnreadCount(ctx context.Context, input GetUnreadCountInput) (*UnreadCountOutput, error)
-	UpdateReadState(ctx context.Context, input UpdateReadStateInput) error
+type UpdateReadStateInput struct {
+	ChannelID          string
+	UserID             string
+	LastReadAt         time.Time
+	IncludeDescendants bool
 }
 
-type readStateInteractor struct {
+type Interactor struct {
 	readStateRepo    domainrepository.ReadStateRepository
 	notificationSvc  Notifier
 	channelAccessSvc service.ChannelAccessService
 }
 
-func NewReadStateInteractor(
-	readStateRepo domainrepository.ReadStateRepository,
-	notificationSvc Notifier,
-	channelAccessSvc service.ChannelAccessService,
-) ReadStateUseCase {
-	return &readStateInteractor{
-		readStateRepo:    readStateRepo,
-		notificationSvc:  notificationSvc,
-		channelAccessSvc: channelAccessSvc,
-	}
-}
-
-func (i *readStateInteractor) GetUnreadCount(ctx context.Context, input GetUnreadCountInput) (*UnreadCountOutput, error) {
-	channel, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
-	if err != nil {
-		return nil, err
-	}
-
-	count, err := i.readStateRepo.GetUnreadCount(ctx, channel.ID, input.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get unread count: %w", err)
-	}
-
-	return &UnreadCountOutput{Count: count}, nil
+func New(readStateRepo domainrepository.ReadStateRepository, notificationSvc Notifier, channelAccessSvc service.ChannelAccessService) *Interactor {
+	return &Interactor{readStateRepo: readStateRepo, notificationSvc: notificationSvc, channelAccessSvc: channelAccessSvc}
 }
 
 // UpdateReadState は既読位置を保存し、子孫も含めるときは集約表示で見えていた範囲まで子孫を既読にします
-func (i *readStateInteractor) UpdateReadState(ctx context.Context, input UpdateReadStateInput) error {
+func (i *Interactor) UpdateReadState(ctx context.Context, input UpdateReadStateInput) error {
 	channel, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return err
@@ -72,25 +53,22 @@ func (i *readStateInteractor) UpdateReadState(ctx context.Context, input UpdateR
 		}
 		channels = append(channels, descendants...)
 	}
-	return i.notifyUnreadCounts(ctx, channels, input.UserID)
-}
 
-// notifyUnreadCounts は既読にしたチャンネルの未読数とメンション数をまとめて数え、本人の他の端末へ配信します
-func (i *readStateInteractor) notifyUnreadCounts(ctx context.Context, channels []*entity.Channel, userID string) error {
+	// 既読にしたチャンネルの未読数とメンション数を本人の他の端末へ配信する
 	ids := make([]string, len(channels))
 	for idx, ch := range channels {
 		ids[idx] = ch.ID
 	}
-	counts, err := i.readStateRepo.GetUnreadCountBatch(ctx, ids, userID)
+	counts, err := i.readStateRepo.GetUnreadCountBatch(ctx, ids, input.UserID)
 	if err != nil {
 		return fmt.Errorf("failed to get unread counts: %w", err)
 	}
-	mentions, err := i.readStateRepo.GetUnreadMentionCountBatch(ctx, ids, userID)
+	mentions, err := i.readStateRepo.GetUnreadMentionCountBatch(ctx, ids, input.UserID)
 	if err != nil {
 		return fmt.Errorf("failed to get unread mention counts: %w", err)
 	}
 	for _, ch := range channels {
-		i.notificationSvc.NotifyUnreadCount(ch.WorkspaceID, userID, ch.ID, counts[ch.ID], mentions[ch.ID])
+		i.notificationSvc.NotifyUnreadCount(ch.WorkspaceID, input.UserID, ch.ID, counts[ch.ID], mentions[ch.ID])
 	}
 	return nil
 }

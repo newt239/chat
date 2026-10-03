@@ -1,20 +1,6 @@
 import { describe, expect, test } from "vite-plus/test";
 
-import { pickRecordingMimeType, recordingFile } from "./recordingFormat";
-
-describe("pickRecordingMimeType", () => {
-  test("webm に対応していればそれを使う", () => {
-    expect(pickRecordingMimeType(() => true)).toBe("audio/webm;codecs=opus");
-  });
-
-  test("iOS Safari のように mp4 だけなら mp4 を使う", () => {
-    expect(pickRecordingMimeType((type) => type === "audio/mp4")).toBe("audio/mp4");
-  });
-
-  test("どれにも対応していなければブラウザの既定にする", () => {
-    expect(pickRecordingMimeType(() => false)).toBe("");
-  });
-});
+import { recordingFile } from "./recordingFormat";
 
 describe("recordingFile", () => {
   const recordedAt = new Date(2026, 8, 29, 9, 5, 3);

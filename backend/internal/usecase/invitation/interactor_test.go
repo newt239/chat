@@ -80,30 +80,19 @@ func (r *stubPermissionRepo) FindOverrides(context.Context, string) ([]entity.Pe
 	return r.overrides, nil
 }
 
-type recordingSender struct {
-	tokens []string
-}
-
-func (s *recordingSender) SendInvitation(_ context.Context, _ *entity.Invitation, token string) error {
-	s.tokens = append(s.tokens, token)
-	return nil
-}
-
 type fixture struct {
 	uc          *Interactor
 	workspaces  *stubWorkspaceRepo
 	invitations *stubInvitationRepo
-	sender      *recordingSender
 }
 
 func newFixture(role entity.WorkspaceRole, overrides ...entity.PermissionOverride) fixture {
 	f := fixture{
 		workspaces:  &stubWorkspaceRepo{members: map[string]*entity.WorkspaceMember{"user": {Role: role}}},
 		invitations: &stubInvitationRepo{},
-		sender:      &recordingSender{},
 	}
 	permissionSvc := domainservice.NewPermissionService(f.workspaces, &stubPermissionRepo{overrides: overrides})
-	f.uc = NewInteractor(f.invitations, f.workspaces, stubUserRepo{}, permissionSvc, f.sender)
+	f.uc = New(f.invitations, f.workspaces, stubUserRepo{}, permissionSvc)
 	return f
 }
 
@@ -118,7 +107,6 @@ func TestCreatePermission(t *testing.T) {
 		{name: "既定ではメンバーは招待できない", role: entity.WorkspaceRoleMember, wantErr: domerr.ErrUnauthorized},
 		{name: "権限を許可するとメンバーも招待できる", overrides: []entity.PermissionOverride{allowMemberInvite}, role: entity.WorkspaceRoleMember},
 		{name: "招待を許可されたメンバーでも管理者としては招待できない", overrides: []entity.PermissionOverride{allowMemberInvite}, role: entity.WorkspaceRoleAdmin, wantErr: domerr.ErrUnauthorized},
-		{name: "オーナーとしては招待できない", overrides: []entity.PermissionOverride{allowMemberInvite}, role: entity.WorkspaceRoleOwner, wantErr: domerr.ErrInvalidRole},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -163,9 +151,6 @@ func TestCreateInvitationForNewEmail(t *testing.T) {
 	inv := f.invitations.created[0]
 	if inv.Email != "new@example.com" || inv.Role != entity.WorkspaceRoleGuest || inv.TokenHash != entity.HashSecretToken(out.Token) {
 		t.Errorf("招待はメールアドレスを正規化し、トークンをハッシュで保存するはず: %+v", inv)
-	}
-	if len(f.sender.tokens) != 1 || f.sender.tokens[0] != out.Token {
-		t.Errorf("招待の送信に平文のトークンが渡されていません: %v", f.sender.tokens)
 	}
 
 	preview, err := f.uc.Preview(context.Background(), out.Token)

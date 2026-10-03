@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+	"regexp"
+	"slices"
+	"time"
+)
 
 type MessageLink struct {
 	ID        string
@@ -11,7 +15,6 @@ type MessageLink struct {
 	LinkPreviewID *string
 	// 同じワークスペースのメッセージへのリンクのときに設定される
 	LinkedMessageID *string
-	CreatedAt       time.Time
 }
 
 // LinkPreviewTTL を過ぎたプレビューは次に投稿されたときに取り直す
@@ -36,8 +39,6 @@ type OGPData struct {
 	ImageURL    *string
 	SiteName    *string
 	CardType    *string
-	ImageWidth  *int32
-	ImageHeight *int32
 	YouTube     *YouTubeVideo
 	XPost       *XPost
 }
@@ -51,4 +52,17 @@ type YouTubeVideo struct {
 	VideoID         string
 	ChannelName     *string
 	DurationSeconds *int32
+}
+
+var urlPattern = regexp.MustCompile(`https?://[^\s<>"{}|\\^` + "`" + `\[\]]+`)
+
+// ExtractURLs は本文中の URL を出現順に重複なく返します
+func ExtractURLs(text string) []string {
+	var urls []string
+	for _, match := range urlPattern.FindAllString(text, -1) {
+		if !slices.Contains(urls, match) {
+			urls = append(urls, match)
+		}
+	}
+	return urls
 }

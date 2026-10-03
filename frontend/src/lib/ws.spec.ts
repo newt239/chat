@@ -33,7 +33,7 @@ describe("WsClient のイベント購読", () => {
       received.push(payload.message?.id ?? "");
     });
     client.on("messageDeleted", (payload) => {
-      other.push(payload.messageId);
+      other.push(payload.channelId);
     });
 
     client.eventDispatcher(newMessageEvent);

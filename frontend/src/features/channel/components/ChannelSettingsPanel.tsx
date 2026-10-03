@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-import { useParams } from "@tanstack/react-router";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -8,37 +7,26 @@ import { Button } from "#/components/ui/Button/Button";
 import { Checkbox } from "#/components/ui/Checkbox/Checkbox";
 import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import {
-  channelPathErrorKeys,
-  lastSegment,
-  parentPath,
-  validateChannelPath,
-} from "#/features/channel/utils/channelPath";
+import { lastSegment, parentPath, validateChannelPath } from "#/features/channel/utils/channelPath";
 
-import { useUpdateChannel } from "../hooks/useUpdateChannel";
+import { useUpdateChannel } from "../hooks/useChannel";
 import { ChannelNameField } from "./ChannelNameField";
 
-type Props = {
-  channelId: string;
-  initialName: string;
-  initialDescription: string | null;
-  initialIsPrivate: boolean;
+import type { Channel } from "#/gen/chat/v1/channel_service_pb";
+
+type ChannelSettingsPanelProps = {
+  workspaceId: string;
+  channel: Channel;
 };
 
 // 名前はパスの末尾だけを編集させ、親のパスは固定の接頭辞として見せる
-export const ChannelSettingsPanel = ({
-  channelId,
-  initialName,
-  initialDescription,
-  initialIsPrivate,
-}: Props) => {
+export const ChannelSettingsPanel = ({ workspaceId, channel }: ChannelSettingsPanelProps) => {
   const { t } = useTranslation();
-  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const update = useUpdateChannel(workspaceId);
-  const parent = parentPath(initialName);
-  const [segment, setSegment] = useState(lastSegment(initialName));
-  const [description, setDescription] = useState(initialDescription ?? "");
-  const [isPrivate, setIsPrivate] = useState(initialIsPrivate);
+  const parent = parentPath(channel.name);
+  const [segment, setSegment] = useState(lastSegment(channel.name));
+  const [description, setDescription] = useState(channel.description ?? "");
+  const [isPrivate, setIsPrivate] = useState(channel.isPrivate);
 
   const nameError = segment.includes("/") ? "invalid" : validateChannelPath(segment, []);
   const name = parent === null ? segment : `${parent}/${segment}`;
@@ -52,7 +40,7 @@ export const ChannelSettingsPanel = ({
           return;
         }
         update.mutate(
-          { channelId, description, isPrivate, name },
+          { channelId: channel.id, description, isPrivate, name },
           {
             onSuccess: () => {
               toast(t("channel.settings.saved"), { tone: "success" });
@@ -68,7 +56,8 @@ export const ChannelSettingsPanel = ({
         value={segment}
         onChange={setSegment}
         description={t("channel.settings.nameHint")}
-        errorMessage={nameError === null ? null : t(channelPathErrorKeys[nameError], { name })}
+        errorMessage={nameError === null ? null : t(`channel.name.${nameError}`, { name })}
+        placeholder=""
       />
       <TextArea
         label={t("channel.settings.description")}

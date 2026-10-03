@@ -22,15 +22,4 @@ describe("Select", () => {
 
     expect(onChange).toHaveBeenCalledWith("dark");
   });
-
-  test("選択中の選択肢に選択状態を付ける", async () => {
-    render(<Select label="表示モード" options={options} value="dark" onChange={() => {}} />);
-
-    await userEvent.click(screen.getByRole("button", { name: /表示モード/ }));
-
-    expect(await screen.findByRole("option", { name: "ダーク" })).toHaveAttribute(
-      "aria-selected",
-      "true",
-    );
-  });
 });

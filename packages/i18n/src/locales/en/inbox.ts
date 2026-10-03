@@ -5,12 +5,7 @@ export const inbox: Messages["inbox"] = {
     emptyDescription: "Messages that mention you will show up here",
     emptyTitle: "No mentions",
     failed: "Couldn't load mentions",
+    replied: "Replied in thread",
     replyPlaceholder: "Reply to {{name}} in thread…",
-  },
-  thread: {
-    open: "Open thread",
-    replyPlaceholder: "Reply…",
-    showMore: "Show {{count}} more replies",
-    unread: "{{count}} unread",
   },
 };

@@ -15,7 +15,5 @@ export const dm: Messages["dm"] = {
     submitGroup: "Start group DM",
     title: "Start a direct message",
   },
-  header: {
-    groupCount: "Group DM with {{count}} people",
-  },
+  groupCount: "Group DM with {{count}} people",
 };

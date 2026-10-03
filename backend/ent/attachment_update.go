@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -312,46 +311,6 @@ func (_u *AttachmentUpdate) SetNillableStatus(v *string) *AttachmentUpdate {
 	return _u
 }
 
-// SetUploadedAt sets the "uploaded_at" field.
-func (_u *AttachmentUpdate) SetUploadedAt(v time.Time) *AttachmentUpdate {
-	_u.mutation.SetUploadedAt(v)
-	return _u
-}
-
-// SetNillableUploadedAt sets the "uploaded_at" field if the given value is not nil.
-func (_u *AttachmentUpdate) SetNillableUploadedAt(v *time.Time) *AttachmentUpdate {
-	if v != nil {
-		_u.SetUploadedAt(*v)
-	}
-	return _u
-}
-
-// ClearUploadedAt clears the value of the "uploaded_at" field.
-func (_u *AttachmentUpdate) ClearUploadedAt() *AttachmentUpdate {
-	_u.mutation.ClearUploadedAt()
-	return _u
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (_u *AttachmentUpdate) SetExpiresAt(v time.Time) *AttachmentUpdate {
-	_u.mutation.SetExpiresAt(v)
-	return _u
-}
-
-// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
-func (_u *AttachmentUpdate) SetNillableExpiresAt(v *time.Time) *AttachmentUpdate {
-	if v != nil {
-		_u.SetExpiresAt(*v)
-	}
-	return _u
-}
-
-// ClearExpiresAt clears the value of the "expires_at" field.
-func (_u *AttachmentUpdate) ClearExpiresAt() *AttachmentUpdate {
-	_u.mutation.ClearExpiresAt()
-	return _u
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *AttachmentUpdate) SetMessage(v *Message) *AttachmentUpdate {
 	return _u.SetMessageID(v.ID)
@@ -528,18 +487,6 @@ func (_u *AttachmentUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(attachment.FieldStatus, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.UploadedAt(); ok {
-		_spec.SetField(attachment.FieldUploadedAt, field.TypeTime, value)
-	}
-	if _u.mutation.UploadedAtCleared() {
-		_spec.ClearField(attachment.FieldUploadedAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.ExpiresAt(); ok {
-		_spec.SetField(attachment.FieldExpiresAt, field.TypeTime, value)
-	}
-	if _u.mutation.ExpiresAtCleared() {
-		_spec.ClearField(attachment.FieldExpiresAt, field.TypeTime)
 	}
 	if _u.mutation.MessageCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -928,46 +875,6 @@ func (_u *AttachmentUpdateOne) SetNillableStatus(v *string) *AttachmentUpdateOne
 	return _u
 }
 
-// SetUploadedAt sets the "uploaded_at" field.
-func (_u *AttachmentUpdateOne) SetUploadedAt(v time.Time) *AttachmentUpdateOne {
-	_u.mutation.SetUploadedAt(v)
-	return _u
-}
-
-// SetNillableUploadedAt sets the "uploaded_at" field if the given value is not nil.
-func (_u *AttachmentUpdateOne) SetNillableUploadedAt(v *time.Time) *AttachmentUpdateOne {
-	if v != nil {
-		_u.SetUploadedAt(*v)
-	}
-	return _u
-}
-
-// ClearUploadedAt clears the value of the "uploaded_at" field.
-func (_u *AttachmentUpdateOne) ClearUploadedAt() *AttachmentUpdateOne {
-	_u.mutation.ClearUploadedAt()
-	return _u
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (_u *AttachmentUpdateOne) SetExpiresAt(v time.Time) *AttachmentUpdateOne {
-	_u.mutation.SetExpiresAt(v)
-	return _u
-}
-
-// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
-func (_u *AttachmentUpdateOne) SetNillableExpiresAt(v *time.Time) *AttachmentUpdateOne {
-	if v != nil {
-		_u.SetExpiresAt(*v)
-	}
-	return _u
-}
-
-// ClearExpiresAt clears the value of the "expires_at" field.
-func (_u *AttachmentUpdateOne) ClearExpiresAt() *AttachmentUpdateOne {
-	_u.mutation.ClearExpiresAt()
-	return _u
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *AttachmentUpdateOne) SetMessage(v *Message) *AttachmentUpdateOne {
 	return _u.SetMessageID(v.ID)
@@ -1174,18 +1081,6 @@ func (_u *AttachmentUpdateOne) sqlSave(ctx context.Context) (_node *Attachment, 
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(attachment.FieldStatus, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.UploadedAt(); ok {
-		_spec.SetField(attachment.FieldUploadedAt, field.TypeTime, value)
-	}
-	if _u.mutation.UploadedAtCleared() {
-		_spec.ClearField(attachment.FieldUploadedAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.ExpiresAt(); ok {
-		_spec.SetField(attachment.FieldExpiresAt, field.TypeTime, value)
-	}
-	if _u.mutation.ExpiresAtCleared() {
-		_spec.ClearField(attachment.FieldExpiresAt, field.TypeTime)
 	}
 	if _u.mutation.MessageCleared() {
 		edge := &sqlgraph.EdgeSpec{

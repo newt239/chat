@@ -1,12 +1,12 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
-import { IconChevronLeft, IconChevronRight, IconSearch } from "@tabler/icons-react";
+import { IconSearch } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "#/components/block/PageHeader/PageHeader";
-import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { Pagination } from "#/components/block/Pagination/Pagination";
 import { SearchField } from "#/components/ui/SearchField/SearchField";
 import { Select } from "#/components/ui/Select/Select";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
@@ -14,7 +14,7 @@ import { Tab } from "#/components/ui/Tab/Tab";
 import { TabList } from "#/components/ui/TabList/TabList";
 import { TabPanel } from "#/components/ui/TabPanel/TabPanel";
 import { Tabs } from "#/components/ui/Tabs/Tabs";
-import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearch";
+import { RESULTS_PER_PAGE, useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearch";
 import { searchFilterValues, searchSortValues } from "#/features/search/schemas";
 
 import { SearchFilterBar } from "./SearchFilterBar";
@@ -23,12 +23,7 @@ import { SearchResultList } from "./SearchResultList";
 
 import type { SearchFilter } from "#/features/search/schemas";
 
-const RESULTS_PER_PAGE = 20;
-
 const searchRoute = getRouteApi("/app/$workspaceId/search");
-
-const pageCount = (total: number, perPage: number) =>
-  Math.max(1, Math.ceil(total / Math.max(1, perPage)));
 
 export const SearchPage = () => {
   const { t } = useTranslation();
@@ -38,27 +33,21 @@ export const SearchPage = () => {
   const navigate = searchRoute.useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [inputValue, setInputValue] = useState(query);
-  const [syncedQuery, setSyncedQuery] = useState(query);
-  // URL のクエリが変わったら入力欄に反映する
-  if (syncedQuery !== query) {
-    setSyncedQuery(query);
-    setInputValue(query);
-  }
-
   const { data, isFetching, error, isEnabled, unresolved, resolved } = useWorkspaceSearch(
     workspaceId,
     search,
-    RESULTS_PER_PAGE,
   );
 
+  // 入力欄は URL のクエリを初期値にした非制御の欄なので、DOM の値を書き換えて input イベントで知らせる
   const insertModifier = (modifier: string) => {
-    setInputValue((prev) => `${prev.trimEnd()}${prev.trim() ? " " : ""}${modifier}`);
-    requestAnimationFrame(() => {
-      const input = inputRef.current;
-      input?.focus();
-      input?.setSelectionRange(input.value.length, input.value.length);
-    });
+    const input = inputRef.current;
+    if (input === null) {
+      return;
+    }
+    const prefix = input.value.trimEnd();
+    input.setRangeText(`${prefix ? " " : ""}${modifier}`, prefix.length, input.value.length, "end");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.focus();
   };
 
   const countOf = (value: SearchFilter) =>
@@ -73,38 +62,28 @@ export const SearchPage = () => {
       : Math.max(
           ...Object.entries(data)
             .filter(([key]) => filter === "all" || key === filter)
-            .map(([, section]) => pageCount(section.total, section.perPage)),
+            .map(([, section]) => Math.max(1, Math.ceil(section.total / RESULTS_PER_PAGE))),
         );
-
-  const goToPage = (next: number) => {
-    void navigate({ search: (prev) => ({ ...prev, page: next }) });
-  };
 
   const renderResults = () => {
     const { invalidDates } = resolved.query;
-    if (invalidDates.length > 0) {
+    const errorMessage =
+      invalidDates.length > 0
+        ? t("search.invalidDate", { tokens: invalidDates.join(", ") })
+        : unresolved.length > 0
+          ? t("search.unresolved", { names: unresolved.join(", ") })
+          : error
+            ? t("search.failed")
+            : null;
+    if (errorMessage !== null) {
       return (
         <p role="alert" className="m-0 px-4.5 py-6 text-caption text-danger">
-          {t("search.invalidDate", { tokens: invalidDates.join(", ") })}
-        </p>
-      );
-    }
-    if (unresolved.length > 0) {
-      return (
-        <p role="alert" className="m-0 px-4.5 py-6 text-caption text-danger">
-          {t("search.unresolved", { names: unresolved.join(", ") })}
+          {errorMessage}
         </p>
       );
     }
     if (query.trim().length === 0) {
       return <p className="m-0 px-4.5 py-6 text-caption text-muted">{t("search.prompt")}</p>;
-    }
-    if (error) {
-      return (
-        <p role="alert" className="m-0 px-4.5 py-6 text-caption text-danger">
-          {t("search.failed")}
-        </p>
-      );
     }
     if (!isEnabled || isFetching || data === undefined) {
       return (
@@ -150,29 +129,13 @@ export const SearchPage = () => {
           filter={filter}
           workspaceId={workspaceId}
         />
-        {totalPages > 1 && (
-          <nav className="flex items-center justify-center gap-2 pb-6 text-caption text-muted">
-            <IconButton
-              label={t("search.prev")}
-              isDisabled={page <= 1}
-              onPress={() => {
-                goToPage(page - 1);
-              }}
-            >
-              <IconChevronLeft />
-            </IconButton>
-            <span className="tabular-nums">{t("search.page", { page, total: totalPages })}</span>
-            <IconButton
-              label={t("search.next")}
-              isDisabled={page >= totalPages}
-              onPress={() => {
-                goToPage(page + 1);
-              }}
-            >
-              <IconChevronRight />
-            </IconButton>
-          </nav>
-        )}
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onChange={(next) => {
+            void navigate({ search: (prev) => ({ ...prev, page: next }) });
+          }}
+        />
       </>
     );
   };
@@ -185,12 +148,13 @@ export const SearchPage = () => {
         className="flex shrink-0 flex-col gap-2 px-4.5 pt-3 pb-2.5"
         onSubmit={(event) => {
           event.preventDefault();
-          void navigate({ search: (prev) => ({ ...prev, page: 1, q: inputValue.trim() }) });
+          const q = inputRef.current?.value.trim() ?? "";
+          void navigate({ search: (prev) => ({ ...prev, page: 1, q }) });
         }}
       >
         <SearchField
-          value={inputValue}
-          onChange={setInputValue}
+          key={query}
+          defaultValue={query}
           label={t("search.input")}
           placeholder={t("search.placeholder")}
           inputRef={inputRef}
@@ -198,7 +162,7 @@ export const SearchPage = () => {
         />
         <SearchModifierHelp onInsert={insertModifier} />
       </Form>
-      <SearchFilterBar />
+      <SearchFilterBar resolved={resolved} unresolved={unresolved} />
       <Tabs
         selectedKey={filter}
         onSelectionChange={(key) => {

@@ -6,7 +6,7 @@ import {
   SliderTrack,
 } from "react-aria-components";
 
-import { cn, fieldStyles } from "#/components/ui/styles/styles";
+import { fieldStyles } from "#/components/ui/styles/styles";
 
 type SliderProps = {
   label: string;
@@ -19,7 +19,6 @@ type SliderProps = {
   onChangeEnd: (value: number) => void;
   // 色相のようにトラック自体で値の意味を示すときの背景（CSS の background）
   trackBackground?: string;
-  className?: string;
 };
 
 export const Slider = ({
@@ -31,7 +30,6 @@ export const Slider = ({
   onChange,
   onChangeEnd,
   trackBackground,
-  className,
 }: SliderProps) => (
   <AriaSlider
     value={value}
@@ -40,7 +38,7 @@ export const Slider = ({
     step={step}
     onChange={onChange}
     onChangeEnd={onChangeEnd}
-    className={cn("grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 font-sans", className)}
+    className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 font-sans"
   >
     <Label className={fieldStyles.label}>{label}</Label>
     <SliderOutput className="text-right font-mono text-xs text-muted tabular-nums" />

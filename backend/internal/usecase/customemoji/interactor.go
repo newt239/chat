@@ -2,8 +2,8 @@ package customemoji
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,11 +19,7 @@ import (
 // imageURLExpires は一覧で返す画像 URL の有効期限です。表示のたびに取り直さないよう長めにします
 const imageURLExpires = 12 * time.Hour
 
-var (
-	ErrEmojiNotFound = errors.New("指定されたカスタム絵文字が見つかりません")
-	ErrNameExists    = errors.New("同じ名前のカスタム絵文字がすでにあります")
-	ErrInvalidName   = fmt.Errorf("%w: 名前は英小文字・数字・_・- の 32 文字以内で指定してください", domerr.ErrValidation)
-)
+var ErrEmojiNotFound = domerr.New(domerr.ErrNotFound, "指定されたカスタム絵文字が見つかりません")
 
 type Interactor struct {
 	emojiRepo     domainrepository.CustomEmojiRepository
@@ -33,10 +29,9 @@ type Interactor struct {
 	storage       domainservice.StorageService
 	notifier      Notifier
 	recorder      audit.Recorder
-	logger        domainservice.Logger
 }
 
-func NewInteractor(
+func New(
 	emojiRepo domainrepository.CustomEmojiRepository,
 	userRepo domainrepository.UserRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
@@ -44,7 +39,6 @@ func NewInteractor(
 	storage domainservice.StorageService,
 	notifier Notifier,
 	recorder audit.Recorder,
-	logger domainservice.Logger,
 ) *Interactor {
 	return &Interactor{
 		emojiRepo:     emojiRepo,
@@ -54,12 +48,11 @@ func NewInteractor(
 		storage:       storage,
 		notifier:      notifier,
 		recorder:      recorder,
-		logger:        logger,
 	}
 }
 
-func (i *Interactor) List(ctx context.Context, input ListInput) (*ListOutput, error) {
-	member, err := i.ensureMember(ctx, input.WorkspaceID, input.UserID)
+func (i *Interactor) List(ctx context.Context, input ListInput) ([]Output, error) {
+	member, err := domainservice.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +60,7 @@ func (i *Interactor) List(ctx context.Context, input ListInput) (*ListOutput, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to load custom emojis: %w", err)
 	}
-	expiresAt := time.Now().Add(imageURLExpires)
-	outputs, err := i.toOutputs(ctx, emojis, member)
-	if err != nil {
-		return nil, err
-	}
-	return &ListOutput{Emojis: outputs, ExpiresAt: expiresAt}, nil
+	return i.toOutputs(ctx, emojis, member)
 }
 
 // Presign は画像のアップロード先を発行します。登録は画像を置いたあと Create で行います
@@ -81,7 +69,7 @@ func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignO
 		return nil, err
 	}
 	uploadID := uuid.NewString()
-	url, err := i.storage.GenerateUploadURL(ctx, storageKey(input.WorkspaceID, uploadID), input.ContentType, input.SizeBytes, 0)
+	url, err := i.storage.GenerateUploadURL(ctx, storageKey(input.WorkspaceID, uploadID), input.ContentType, input.SizeBytes, domainservice.UploadURLExpires)
 	if err != nil {
 		return nil, fmt.Errorf("failed to presign upload: %w", err)
 	}
@@ -93,12 +81,6 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*Output, er
 	if err != nil {
 		return nil, err
 	}
-	if !entity.IsValidCustomEmojiName(input.Name) {
-		return nil, ErrInvalidName
-	}
-	if uuid.Validate(input.UploadID) != nil {
-		return nil, fmt.Errorf("%w: upload_id が不正です", domerr.ErrValidation)
-	}
 	// アップロード先はサーバーで組み立て直し、他のワークスペースの画像を指せないようにする
 	emoji := &entity.CustomEmoji{
 		ID:          input.UploadID,
@@ -107,14 +89,12 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*Output, er
 		StorageKey:  storageKey(input.WorkspaceID, input.UploadID),
 		CreatedBy:   input.UserID,
 	}
+	// 同じ名前があれば ErrCustomEmojiNameExists をそのまま返す
 	if err := i.emojiRepo.Create(ctx, emoji); err != nil {
-		if errors.Is(err, domerr.ErrConflict) {
-			return nil, ErrNameExists
-		}
-		return nil, fmt.Errorf("failed to create custom emoji: %w", err)
+		return nil, err
 	}
 	i.record(ctx, emoji, input.UserID, entity.AuditActionCustomEmojiCreated)
-	i.notifier.NotifyCustomEmojiCreated(emoji.WorkspaceID, Notification{ID: emoji.ID, Name: emoji.Name})
+	i.notifier.NotifyCustomEmojisChanged(emoji.WorkspaceID)
 
 	outputs, err := i.toOutputs(ctx, []*entity.CustomEmoji{emoji}, member)
 	if err != nil {
@@ -124,7 +104,7 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*Output, er
 }
 
 func (i *Interactor) Delete(ctx context.Context, input DeleteInput) error {
-	member, err := i.ensureMember(ctx, input.WorkspaceID, input.UserID)
+	member, err := domainservice.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return err
 	}
@@ -143,25 +123,11 @@ func (i *Interactor) Delete(ctx context.Context, input DeleteInput) error {
 	}
 	// 画像が残っても表示されることはないため、削除の失敗は記録だけにとどめる
 	if err := i.storage.DeleteObject(ctx, emoji.StorageKey); err != nil {
-		i.logger.Warn("カスタム絵文字の画像の削除に失敗しました",
-			domainservice.LogField{Key: "storageKey", Value: emoji.StorageKey},
-			domainservice.LogField{Key: "error", Value: err.Error()},
-		)
+		slog.WarnContext(ctx, "カスタム絵文字の画像の削除に失敗しました", "storageKey", emoji.StorageKey, "error", err)
 	}
 	i.record(ctx, emoji, input.UserID, entity.AuditActionCustomEmojiDeleted)
-	i.notifier.NotifyCustomEmojiDeleted(emoji.WorkspaceID, Notification{ID: emoji.ID, Name: emoji.Name})
+	i.notifier.NotifyCustomEmojisChanged(emoji.WorkspaceID)
 	return nil
-}
-
-func (i *Interactor) ensureMember(ctx context.Context, workspaceID, userID string) (*entity.WorkspaceMember, error) {
-	member, err := i.workspaceRepo.FindMember(ctx, workspaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return nil, domerr.ErrUnauthorized
-	}
-	return member, nil
 }
 
 func (i *Interactor) toOutputs(ctx context.Context, emojis []*entity.CustomEmoji, viewer *entity.WorkspaceMember) ([]Output, error) {
@@ -172,10 +138,6 @@ func (i *Interactor) toOutputs(ctx context.Context, emojis []*entity.CustomEmoji
 	creators, err := i.userRepo.FindByIDs(ctx, creatorIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load creators: %w", err)
-	}
-	byID := make(map[string]*entity.User, len(creators))
-	for _, u := range creators {
-		byID[u.ID] = u
 	}
 
 	outputs := make([]Output, 0, len(emojis))
@@ -188,8 +150,7 @@ func (i *Interactor) toOutputs(ctx context.Context, emojis []*entity.CustomEmoji
 			ID:        e.ID,
 			Name:      e.Name,
 			ImageURL:  url,
-			CreatedBy: messageuc.UserInfoOf(e.CreatedBy, byID),
-			CreatedAt: e.CreatedAt,
+			CreatedBy: messageuc.UserInfoOf(e.CreatedBy, creators),
 			CanDelete: canDelete(e, viewer),
 		})
 	}

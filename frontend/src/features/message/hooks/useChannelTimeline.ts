@@ -1,18 +1,23 @@
 import { useEffect } from "react";
 
 import { create } from "@bufbuild/protobuf";
-import { timestampNow } from "@bufbuild/protobuf/wkt";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 
-import { MessagePinSchema, ReactionSchema, TimelineItemSchema } from "#/gen/chat/v1/message_pb";
+import {
+  subscribeMessagePatches,
+  updateMessagePages,
+  updateTimelineMessage,
+  updateUserMessages,
+} from "#/features/message/utils/updateTimelineMessage";
+import { pinListKey } from "#/features/pin/hooks/useTogglePin";
+import { ThreadMetadataSchema, TimelineItemSchema } from "#/gen/chat/v1/message_pb";
+import { myUserIdAtom } from "#/providers/store/auth";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
 import { messagePagesKey } from "./useMessagePages";
 
-import type { Message, Reaction, TimelineItem } from "#/gen/chat/v1/message_pb";
-import type { ListMessagesResponse } from "#/gen/chat/v1/message_service_pb";
-
-import type { InfiniteData } from "@tanstack/react-query";
+import type { TimelineItem } from "#/gen/chat/v1/message_pb";
 
 type UseChannelTimelineArgs = {
   channelId: string;
@@ -23,34 +28,6 @@ type UseChannelTimelineArgs = {
   items: TimelineItem[] | undefined;
 };
 
-/** ユーザーメッセージの項目だけを更新する */
-const updateUserMessages = (
-  items: TimelineItem[],
-  shouldUpdate: (message: Message) => boolean,
-  update: (message: Message) => Message,
-) =>
-  items.map((item) =>
-    item.content.case === "userMessage" && shouldUpdate(item.content.value)
-      ? { ...item, content: { case: "userMessage" as const, value: update(item.content.value) } }
-      : item,
-  );
-
-const updateMessage = (
-  items: TimelineItem[],
-  messageId: string,
-  update: (message: Message) => Message,
-) => updateUserMessages(items, (message) => message.id === messageId, update);
-
-const updateReactions = (
-  items: TimelineItem[],
-  messageId: string,
-  update: (reactions: Reaction[]) => Reaction[],
-) =>
-  updateMessage(items, messageId, (message) => ({
-    ...message,
-    reactions: update(message.reactions),
-  }));
-
 /** WebSocket の差分を読み込み済みのページに当て、表示用に古い順へ並べ直す */
 export const useChannelTimeline = ({
   channelId,
@@ -59,7 +36,8 @@ export const useChannelTimeline = ({
   items,
 }: UseChannelTimelineArgs) => {
   const queryClient = useQueryClient();
-  const { wsClient } = useWsClient();
+  const wsClient = useWsClient();
+  const myId = useAtomValue(myUserIdAtom);
   const descendantKey = [...new Set(descendantIds)].toSorted().join(",");
 
   useEffect(() => {
@@ -78,18 +56,7 @@ export const useChannelTimeline = ({
       if (!channelIds.includes(eventChannelId)) {
         return;
       }
-      queryClient.setQueriesData<InfiniteData<ListMessagesResponse>>(
-        { queryKey: messagePagesKey(channelId, includeDescendants) },
-        (data) =>
-          data && {
-            ...data,
-            pages: data.pages.map((page, index) => ({
-              ...page,
-              // 新しい順に並ぶので先頭のページが最新。最新まで読み込んでいるときだけ新着を足す
-              messages: update(page.messages, index === 0 && !page.hasNewer),
-            })),
-          },
-      );
+      updateMessagePages(queryClient, messagePagesKey(channelId, includeDescendants), update);
     };
 
     const prependToLatest = (eventChannelId: string, item: TimelineItem) => {
@@ -101,10 +68,35 @@ export const useChannelTimeline = ({
       );
     };
 
+    // ピンの一覧も取り直す。自分の操作は useTogglePin で取り直すため二重に取らない
+    const invalidatePins = (eventChannelId: string, pinnedBy: string) => {
+      if (pinnedBy !== myId) {
+        void queryClient.invalidateQueries({ queryKey: pinListKey(eventChannelId) });
+      }
+    };
+
     const unsubscribes = [
       wsClient.on("newMessage", ({ channelId: eventChannelId, message }) => {
-        // スレッドの返信はスレッドパネル側で表示するためタイムラインには積まない
-        if (message === undefined || message.parentId !== undefined) {
+        if (message === undefined) {
+          return;
+        }
+        // スレッドの返信はタイムラインに積まず、親の返信数などを進める。返信者と親の投稿者は自動でフォローされる
+        const { parentId } = message;
+        if (parentId !== undefined) {
+          updatePages(eventChannelId, (current) =>
+            updateTimelineMessage(current, parentId, (parent) => ({
+              ...parent,
+              threadMetadata: create(ThreadMetadataSchema, {
+                isFollowing:
+                  (parent.threadMetadata?.isFollowing ?? false) ||
+                  message.userId === myId ||
+                  parent.userId === myId,
+                lastReplyAt: message.createdAt,
+                lastReplyUser: message.user,
+                replyCount: (parent.threadMetadata?.replyCount ?? 0) + 1,
+              }),
+            })),
+          );
           return;
         }
         prependToLatest(
@@ -128,72 +120,15 @@ export const useChannelTimeline = ({
         }
       }),
 
-      wsClient.on("messageUpdated", ({ channelId: eventChannelId, message }) => {
-        if (message !== undefined) {
-          updatePages(eventChannelId, (current) =>
-            updateMessage(current, message.id, () => message),
-          );
-        }
+      wsClient.on("pinCreated", ({ channelId: eventChannelId, pinnedBy }) => {
+        invalidatePins(eventChannelId, pinnedBy);
       }),
-
-      wsClient.on(
-        "messageDeleted",
-        ({ channelId: eventChannelId, deletedMessageIds, deletedAt }) => {
-          const deletedIds = new Set(deletedMessageIds);
-          updatePages(eventChannelId, (current) =>
-            updateUserMessages(
-              current,
-              (message) => deletedIds.has(message.id),
-              (message) => ({ ...message, deletedAt, isDeleted: true }),
-            ),
-          );
-        },
-      ),
-
-      wsClient.on(
-        "reactionAdded",
-        ({ channelId: eventChannelId, emoji, messageId, userId, user, createdAt }) => {
-          updatePages(eventChannelId, (current) =>
-            updateReactions(current, messageId, (reactions) =>
-              reactions.some((r) => r.emoji === emoji && r.user?.id === userId)
-                ? reactions
-                : [
-                    ...reactions,
-                    create(ReactionSchema, {
-                      createdAt: createdAt ?? timestampNow(),
-                      emoji,
-                      messageId,
-                      user: user ?? { id: userId },
-                    }),
-                  ],
-            ),
-          );
-        },
-      ),
-
-      wsClient.on("reactionRemoved", ({ channelId: eventChannelId, emoji, messageId, userId }) => {
-        updatePages(eventChannelId, (current) =>
-          updateReactions(current, messageId, (reactions) =>
-            reactions.filter((r) => !(r.emoji === emoji && r.user?.id === userId)),
-          ),
-        );
+      wsClient.on("pinDeleted", ({ channelId: eventChannelId, pinnedBy }) => {
+        invalidatePins(eventChannelId, pinnedBy);
       }),
-
-      wsClient.on(
-        "pinCreated",
-        ({ channelId: eventChannelId, messageId, pinnedByUser, pinnedAt }) => {
-          updatePages(eventChannelId, (current) =>
-            updateMessage(current, messageId, (message) => ({
-              ...message,
-              pin: create(MessagePinSchema, { pinnedAt, pinnedBy: pinnedByUser }),
-            })),
-          );
-        },
-      ),
-
-      wsClient.on("pinDeleted", ({ channelId: eventChannelId, messageId }) => {
+      subscribeMessagePatches(wsClient, (eventChannelId, messageIds, update) => {
         updatePages(eventChannelId, (current) =>
-          updateMessage(current, messageId, (message) => ({ ...message, pin: undefined })),
+          updateUserMessages(current, (message) => messageIds.has(message.id), update),
         );
       }),
     ];
@@ -206,7 +141,7 @@ export const useChannelTimeline = ({
         wsClient.leaveChannel(id);
       }
     };
-  }, [wsClient, queryClient, channelId, includeDescendants, descendantKey]);
+  }, [wsClient, queryClient, channelId, includeDescendants, descendantKey, myId]);
 
   // ページの境目で重なった項目を除き、古い順にする
   const seen = new Set<string>();

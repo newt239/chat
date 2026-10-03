@@ -320,10 +320,8 @@ type SearchWorkspaceRequest struct {
 	// 空白区切りの語をすべて含むものを探す。message_filter に条件があれば空でもよい
 	Query string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
 	// 未指定の場合はすべての種類を検索する
-	Target SearchTarget `protobuf:"varint,3,opt,name=target,proto3,enum=chat.v1.SearchTarget" json:"target,omitempty"`
-	// 0 の場合は 1 ページ目として扱う
-	Page int32 `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"`
-	// 0 の場合はサーバーの既定値を使う
+	Target        SearchTarget         `protobuf:"varint,3,opt,name=target,proto3,enum=chat.v1.SearchTarget" json:"target,omitempty"`
+	Page          int32                `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"`
 	PerPage       int32                `protobuf:"varint,5,opt,name=per_page,json=perPage,proto3" json:"per_page,omitempty"`
 	MessageFilter *MessageSearchFilter `protobuf:"bytes,6,opt,name=message_filter,json=messageFilter,proto3" json:"message_filter,omitempty"`
 	// メッセージの並び順
@@ -589,9 +587,6 @@ type MessageSearchResult struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*MessageSearchHit    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
-	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	PerPage       int32                  `protobuf:"varint,4,opt,name=per_page,json=perPage,proto3" json:"per_page,omitempty"`
-	HasMore       bool                   `protobuf:"varint,5,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -640,34 +635,10 @@ func (x *MessageSearchResult) GetTotal() int32 {
 	return 0
 }
 
-func (x *MessageSearchResult) GetPage() int32 {
-	if x != nil {
-		return x.Page
-	}
-	return 0
-}
-
-func (x *MessageSearchResult) GetPerPage() int32 {
-	if x != nil {
-		return x.PerPage
-	}
-	return 0
-}
-
-func (x *MessageSearchResult) GetHasMore() bool {
-	if x != nil {
-		return x.HasMore
-	}
-	return false
-}
-
 type ChannelSearchResult struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*Channel             `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
-	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	PerPage       int32                  `protobuf:"varint,4,opt,name=per_page,json=perPage,proto3" json:"per_page,omitempty"`
-	HasMore       bool                   `protobuf:"varint,5,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -716,34 +687,10 @@ func (x *ChannelSearchResult) GetTotal() int32 {
 	return 0
 }
 
-func (x *ChannelSearchResult) GetPage() int32 {
-	if x != nil {
-		return x.Page
-	}
-	return 0
-}
-
-func (x *ChannelSearchResult) GetPerPage() int32 {
-	if x != nil {
-		return x.PerPage
-	}
-	return 0
-}
-
-func (x *ChannelSearchResult) GetHasMore() bool {
-	if x != nil {
-		return x.HasMore
-	}
-	return false
-}
-
 type UserSearchResult struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*WorkspaceMember     `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
-	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	PerPage       int32                  `protobuf:"varint,4,opt,name=per_page,json=perPage,proto3" json:"per_page,omitempty"`
-	HasMore       bool                   `protobuf:"varint,5,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -792,34 +739,10 @@ func (x *UserSearchResult) GetTotal() int32 {
 	return 0
 }
 
-func (x *UserSearchResult) GetPage() int32 {
-	if x != nil {
-		return x.Page
-	}
-	return 0
-}
-
-func (x *UserSearchResult) GetPerPage() int32 {
-	if x != nil {
-		return x.PerPage
-	}
-	return 0
-}
-
-func (x *UserSearchResult) GetHasMore() bool {
-	if x != nil {
-		return x.HasMore
-	}
-	return false
-}
-
 type UserGroupSearchResult struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*UserGroup           `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
-	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	PerPage       int32                  `protobuf:"varint,4,opt,name=per_page,json=perPage,proto3" json:"per_page,omitempty"`
-	HasMore       bool                   `protobuf:"varint,5,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -868,27 +791,6 @@ func (x *UserGroupSearchResult) GetTotal() int32 {
 	return 0
 }
 
-func (x *UserGroupSearchResult) GetPage() int32 {
-	if x != nil {
-		return x.Page
-	}
-	return 0
-}
-
-func (x *UserGroupSearchResult) GetPerPage() int32 {
-	if x != nil {
-		return x.PerPage
-	}
-	return 0
-}
-
-func (x *UserGroupSearchResult) GetHasMore() bool {
-	if x != nil {
-		return x.HasMore
-	}
-	return false
-}
-
 var File_chat_v1_search_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_search_service_proto_rawDesc = "" +
@@ -914,8 +816,8 @@ const file_chat_v1_search_service_proto_rawDesc = "" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12\x1e\n" +
 	"\x05query\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05query\x12-\n" +
 	"\x06target\x18\x03 \x01(\x0e2\x15.chat.v1.SearchTargetR\x06target\x12\x1b\n" +
-	"\x04page\x18\x04 \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\x04page\x12$\n" +
-	"\bper_page\x18\x05 \x01(\x05B\t\xbaH\x06\x1a\x04\x182(\x00R\aperPage\x12C\n" +
+	"\x04page\x18\x04 \x01(\x05B\a\xbaH\x04\x1a\x02(\x01R\x04page\x12$\n" +
+	"\bper_page\x18\x05 \x01(\x05B\t\xbaH\x06\x1a\x04\x182(\x01R\aperPage\x12C\n" +
 	"\x0emessage_filter\x18\x06 \x01(\v2\x1c.chat.v1.MessageSearchFilterR\rmessageFilter\x12'\n" +
 	"\x04sort\x18\a \x01(\x0e2\x13.chat.v1.SearchSortR\x04sort\"\xf6\x01\n" +
 	"\x17SearchWorkspaceResponse\x128\n" +
@@ -930,31 +832,19 @@ const file_chat_v1_search_service_proto_rawDesc = "" +
 	"\amessage\x18\x01 \x01(\v2\x10.chat.v1.MessageR\amessage\x122\n" +
 	"\n" +
 	"highlights\x18\x02 \x03(\v2\x12.chat.v1.TextRangeR\n" +
-	"highlights\"\xa6\x01\n" +
+	"highlights\"\\\n" +
 	"\x13MessageSearchResult\x12/\n" +
 	"\x05items\x18\x01 \x03(\v2\x19.chat.v1.MessageSearchHitR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x19\n" +
-	"\bper_page\x18\x04 \x01(\x05R\aperPage\x12\x19\n" +
-	"\bhas_more\x18\x05 \x01(\bR\ahasMore\"\x9d\x01\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"S\n" +
 	"\x13ChannelSearchResult\x12&\n" +
 	"\x05items\x18\x01 \x03(\v2\x10.chat.v1.ChannelR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x19\n" +
-	"\bper_page\x18\x04 \x01(\x05R\aperPage\x12\x19\n" +
-	"\bhas_more\x18\x05 \x01(\bR\ahasMore\"\xa2\x01\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"X\n" +
 	"\x10UserSearchResult\x12.\n" +
 	"\x05items\x18\x01 \x03(\v2\x18.chat.v1.WorkspaceMemberR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x19\n" +
-	"\bper_page\x18\x04 \x01(\x05R\aperPage\x12\x19\n" +
-	"\bhas_more\x18\x05 \x01(\bR\ahasMore\"\xa1\x01\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"W\n" +
 	"\x15UserGroupSearchResult\x12(\n" +
 	"\x05items\x18\x01 \x03(\v2\x12.chat.v1.UserGroupR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x19\n" +
-	"\bper_page\x18\x04 \x01(\x05R\aperPage\x12\x19\n" +
-	"\bhas_more\x18\x05 \x01(\bR\ahasMore*\xaf\x01\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total*\xaf\x01\n" +
 	"\fSearchTarget\x12\x1d\n" +
 	"\x19SEARCH_TARGET_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11SEARCH_TARGET_ALL\x10\x01\x12\x1a\n" +

@@ -1,17 +1,18 @@
 import { IconHash, IconLock } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { surfaceNavTone } from "#/components/block/NavLink/navTone";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
+import { surfaceNavTone } from "#/components/ui/styles/navTone";
 import { Switch } from "#/components/ui/Switch/Switch";
 import { ChannelAppsSection } from "#/features/app/components/ChannelAppsSection";
 import { ChannelMemberManager } from "#/features/channel/components/ChannelMemberManager";
 import { ChannelSettingsPanel } from "#/features/channel/components/ChannelSettingsPanel";
 import { canHaveChildChannel } from "#/features/channel/utils/channelPath";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { openDialog } from "#/lib/overlaySearch";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
+import { useChannelById } from "../hooks/useChannelById";
 import { useChannelListActions } from "../hooks/useChannelListActions";
 import { relativePath } from "../utils/channelTree";
 import { ChannelLinksSection } from "./ChannelLinksSection";
@@ -24,15 +25,11 @@ type ChannelInfoPanelProps = {
 
 export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelProps) => {
   const { t } = useTranslation();
-  const {
-    channel: activeChannel,
-    descendants,
-    isError,
-    isResolved,
-  } = useChannelAggregation(workspaceId, channelId);
+  const { channel: activeChannel, isError, isPending } = useChannelById(workspaceId, channelId);
+  const { descendants } = useChannelAggregation(workspaceId, channelId);
   const { setMuted, setStarred } = useChannelListActions(workspaceId);
 
-  if (!isResolved) {
+  if (isPending && !isError) {
     return (
       <div className="flex flex-col gap-2 p-4">
         <Skeleton className="h-4 w-32" />
@@ -143,10 +140,8 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
       <ChannelAppsSection workspaceId={workspaceId} channelId={activeChannel.id} />
       <ChannelSettingsPanel
         key={activeChannel.id}
-        channelId={activeChannel.id}
-        initialName={activeChannel.name}
-        initialDescription={activeChannel.description ?? null}
-        initialIsPrivate={activeChannel.isPrivate}
+        workspaceId={workspaceId}
+        channel={activeChannel}
       />
     </div>
   );

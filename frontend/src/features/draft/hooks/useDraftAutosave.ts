@@ -1,12 +1,24 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { useMutation, useQuery } from "@connectrpc/connect-query";
 
 import { DraftService } from "#/gen/chat/v1/draft_service_pb";
 
-import { useInvalidateDrafts } from "./useDrafts";
+import { useDeleteDraft, useInvalidateDrafts } from "./useDrafts";
 
 const SAVE_DELAY_MS = 800;
+
+type Pending = { body: string; channelId: string; parentId: string | undefined };
+type Autosave = { pending: Pending | null; timer: ReturnType<typeof setTimeout> | undefined };
+
+// 待っている本文があれば、入力したときの宛先に保存する
+const flush = (autosave: Autosave, saveDraft: (pending: Pending) => void) => {
+  clearTimeout(autosave.timer);
+  if (autosave.pending !== null) {
+    saveDraft(autosave.pending);
+    autosave.pending = null;
+  }
+};
 
 // 入力欄の本文を少し待ってからサーバーの下書きに保存する。チャンネルを離れるときは待たずに保存する
 export const useDraftAutosave = (channelId: string, parentId: string | null) => {
@@ -18,34 +30,30 @@ export const useDraftAutosave = (channelId: string, parentId: string | null) => 
   const { mutate: saveDraft } = useMutation(DraftService.method.saveDraft, {
     onSuccess: invalidateDrafts,
   });
-  const { mutate: deleteDraft } = useMutation(DraftService.method.deleteDraft, {
-    onSuccess: invalidateDrafts,
-  });
-  const pendingRef = useRef<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const { mutate: deleteDraft } = useDeleteDraft();
+  const autosaveRef = useRef<Autosave>({ pending: null, timer: undefined });
 
-  // 宛先が変わったときだけ後始末で保存するよう、effect の依存にするため参照を固定する
-  const flush = useCallback(() => {
-    clearTimeout(timerRef.current);
-    const body = pendingRef.current;
-    if (body !== null) {
-      pendingRef.current = null;
-      saveDraft({ body, channelId, parentId: parentId ?? undefined });
-    }
+  useEffect(() => {
+    const autosave = autosaveRef.current;
+    return () => {
+      flush(autosave, saveDraft);
+    };
   }, [saveDraft, channelId, parentId]);
 
-  useEffect(() => flush, [flush]);
-
   const save = (body: string) => {
-    pendingRef.current = body;
-    clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(flush, SAVE_DELAY_MS);
+    const autosave = autosaveRef.current;
+    clearTimeout(autosave.timer);
+    autosave.pending = { ...target, body };
+    autosave.timer = setTimeout(() => {
+      flush(autosave, saveDraft);
+    }, SAVE_DELAY_MS);
   };
 
   // 送信したら書きかけを消す
   const discard = () => {
-    clearTimeout(timerRef.current);
-    pendingRef.current = null;
+    const autosave = autosaveRef.current;
+    clearTimeout(autosave.timer);
+    autosave.pending = null;
     deleteDraft(target);
   };
 

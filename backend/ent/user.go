@@ -28,13 +28,15 @@ type User struct {
 	// DisplayName holds the value of the "display_name" field.
 	DisplayName string `json:"display_name,omitempty"`
 	// Bio holds the value of the "bio" field.
-	Bio string `json:"bio,omitempty"`
+	Bio *string `json:"bio,omitempty"`
 	// AvatarURL holds the value of the "avatar_url" field.
-	AvatarURL string `json:"avatar_url,omitempty"`
+	AvatarURL *string `json:"avatar_url,omitempty"`
 	// IsApp holds the value of the "is_app" field.
 	IsApp bool `json:"is_app,omitempty"`
 	// IsOfficial holds the value of the "is_official" field.
 	IsOfficial bool `json:"is_official,omitempty"`
+	// DeletedAt holds the value of the "deleted_at" field.
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -47,156 +49,24 @@ type User struct {
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
-	// Sessions holds the value of the sessions edge.
-	Sessions []*Session `json:"sessions,omitempty"`
-	// CreatedWorkspaces holds the value of the created_workspaces edge.
-	CreatedWorkspaces []*Workspace `json:"created_workspaces,omitempty"`
-	// WorkspaceMembers holds the value of the workspace_members edge.
-	WorkspaceMembers []*WorkspaceMember `json:"workspace_members,omitempty"`
-	// CreatedChannels holds the value of the created_channels edge.
-	CreatedChannels []*Channel `json:"created_channels,omitempty"`
 	// ChannelMembers holds the value of the channel_members edge.
 	ChannelMembers []*ChannelMember `json:"channel_members,omitempty"`
-	// Messages holds the value of the messages edge.
-	Messages []*Message `json:"messages,omitempty"`
-	// MessageReactions holds the value of the message_reactions edge.
-	MessageReactions []*MessageReaction `json:"message_reactions,omitempty"`
-	// MessageBookmarks holds the value of the message_bookmarks edge.
-	MessageBookmarks []*MessageBookmark `json:"message_bookmarks,omitempty"`
-	// UserMentions holds the value of the user_mentions edge.
-	UserMentions []*MessageUserMention `json:"user_mentions,omitempty"`
-	// UserGroupMembers holds the value of the user_group_members edge.
-	UserGroupMembers []*UserGroupMember `json:"user_group_members,omitempty"`
-	// CreatedUserGroups holds the value of the created_user_groups edge.
-	CreatedUserGroups []*UserGroup `json:"created_user_groups,omitempty"`
-	// Attachments holds the value of the attachments edge.
-	Attachments []*Attachment `json:"attachments,omitempty"`
-	// ChannelReadStates holds the value of the channel_read_states edge.
-	ChannelReadStates []*ChannelReadState `json:"channel_read_states,omitempty"`
 	// Preference holds the value of the preference edge.
 	Preference *UserPreference `json:"preference,omitempty"`
 	// Links holds the value of the links edge.
 	Links []*UserLink `json:"links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [15]bool
-}
-
-// SessionsOrErr returns the Sessions value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) SessionsOrErr() ([]*Session, error) {
-	if e.loadedTypes[0] {
-		return e.Sessions, nil
-	}
-	return nil, &NotLoadedError{edge: "sessions"}
-}
-
-// CreatedWorkspacesOrErr returns the CreatedWorkspaces value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedWorkspacesOrErr() ([]*Workspace, error) {
-	if e.loadedTypes[1] {
-		return e.CreatedWorkspaces, nil
-	}
-	return nil, &NotLoadedError{edge: "created_workspaces"}
-}
-
-// WorkspaceMembersOrErr returns the WorkspaceMembers value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) WorkspaceMembersOrErr() ([]*WorkspaceMember, error) {
-	if e.loadedTypes[2] {
-		return e.WorkspaceMembers, nil
-	}
-	return nil, &NotLoadedError{edge: "workspace_members"}
-}
-
-// CreatedChannelsOrErr returns the CreatedChannels value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedChannelsOrErr() ([]*Channel, error) {
-	if e.loadedTypes[3] {
-		return e.CreatedChannels, nil
-	}
-	return nil, &NotLoadedError{edge: "created_channels"}
+	loadedTypes [3]bool
 }
 
 // ChannelMembersOrErr returns the ChannelMembers value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) ChannelMembersOrErr() ([]*ChannelMember, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[0] {
 		return e.ChannelMembers, nil
 	}
 	return nil, &NotLoadedError{edge: "channel_members"}
-}
-
-// MessagesOrErr returns the Messages value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) MessagesOrErr() ([]*Message, error) {
-	if e.loadedTypes[5] {
-		return e.Messages, nil
-	}
-	return nil, &NotLoadedError{edge: "messages"}
-}
-
-// MessageReactionsOrErr returns the MessageReactions value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) MessageReactionsOrErr() ([]*MessageReaction, error) {
-	if e.loadedTypes[6] {
-		return e.MessageReactions, nil
-	}
-	return nil, &NotLoadedError{edge: "message_reactions"}
-}
-
-// MessageBookmarksOrErr returns the MessageBookmarks value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) MessageBookmarksOrErr() ([]*MessageBookmark, error) {
-	if e.loadedTypes[7] {
-		return e.MessageBookmarks, nil
-	}
-	return nil, &NotLoadedError{edge: "message_bookmarks"}
-}
-
-// UserMentionsOrErr returns the UserMentions value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) UserMentionsOrErr() ([]*MessageUserMention, error) {
-	if e.loadedTypes[8] {
-		return e.UserMentions, nil
-	}
-	return nil, &NotLoadedError{edge: "user_mentions"}
-}
-
-// UserGroupMembersOrErr returns the UserGroupMembers value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) UserGroupMembersOrErr() ([]*UserGroupMember, error) {
-	if e.loadedTypes[9] {
-		return e.UserGroupMembers, nil
-	}
-	return nil, &NotLoadedError{edge: "user_group_members"}
-}
-
-// CreatedUserGroupsOrErr returns the CreatedUserGroups value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedUserGroupsOrErr() ([]*UserGroup, error) {
-	if e.loadedTypes[10] {
-		return e.CreatedUserGroups, nil
-	}
-	return nil, &NotLoadedError{edge: "created_user_groups"}
-}
-
-// AttachmentsOrErr returns the Attachments value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) AttachmentsOrErr() ([]*Attachment, error) {
-	if e.loadedTypes[11] {
-		return e.Attachments, nil
-	}
-	return nil, &NotLoadedError{edge: "attachments"}
-}
-
-// ChannelReadStatesOrErr returns the ChannelReadStates value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) ChannelReadStatesOrErr() ([]*ChannelReadState, error) {
-	if e.loadedTypes[12] {
-		return e.ChannelReadStates, nil
-	}
-	return nil, &NotLoadedError{edge: "channel_read_states"}
 }
 
 // PreferenceOrErr returns the Preference value or an error if the edge
@@ -204,7 +74,7 @@ func (e UserEdges) ChannelReadStatesOrErr() ([]*ChannelReadState, error) {
 func (e UserEdges) PreferenceOrErr() (*UserPreference, error) {
 	if e.Preference != nil {
 		return e.Preference, nil
-	} else if e.loadedTypes[13] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: userpreference.Label}
 	}
 	return nil, &NotLoadedError{edge: "preference"}
@@ -213,7 +83,7 @@ func (e UserEdges) PreferenceOrErr() (*UserPreference, error) {
 // LinksOrErr returns the Links value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) LinksOrErr() ([]*UserLink, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[2] {
 		return e.Links, nil
 	}
 	return nil, &NotLoadedError{edge: "links"}
@@ -228,7 +98,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldEmail, user.FieldPasswordHash, user.FieldGoogleSub, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL:
 			values[i] = new(sql.NullString)
-		case user.FieldCreatedAt, user.FieldUpdatedAt:
+		case user.FieldDeletedAt, user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
@@ -282,13 +152,15 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field bio", values[i])
 			} else if value.Valid {
-				_m.Bio = value.String
+				_m.Bio = new(string)
+				*_m.Bio = value.String
 			}
 		case user.FieldAvatarURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field avatar_url", values[i])
 			} else if value.Valid {
-				_m.AvatarURL = value.String
+				_m.AvatarURL = new(string)
+				*_m.AvatarURL = value.String
 			}
 		case user.FieldIsApp:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -301,6 +173,13 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field is_official", values[i])
 			} else if value.Valid {
 				_m.IsOfficial = value.Bool
+			}
+		case user.FieldDeletedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
+			} else if value.Valid {
+				_m.DeletedAt = new(time.Time)
+				*_m.DeletedAt = value.Time
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -327,69 +206,9 @@ func (_m *User) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QuerySessions queries the "sessions" edge of the User entity.
-func (_m *User) QuerySessions() *SessionQuery {
-	return NewUserClient(_m.config).QuerySessions(_m)
-}
-
-// QueryCreatedWorkspaces queries the "created_workspaces" edge of the User entity.
-func (_m *User) QueryCreatedWorkspaces() *WorkspaceQuery {
-	return NewUserClient(_m.config).QueryCreatedWorkspaces(_m)
-}
-
-// QueryWorkspaceMembers queries the "workspace_members" edge of the User entity.
-func (_m *User) QueryWorkspaceMembers() *WorkspaceMemberQuery {
-	return NewUserClient(_m.config).QueryWorkspaceMembers(_m)
-}
-
-// QueryCreatedChannels queries the "created_channels" edge of the User entity.
-func (_m *User) QueryCreatedChannels() *ChannelQuery {
-	return NewUserClient(_m.config).QueryCreatedChannels(_m)
-}
-
 // QueryChannelMembers queries the "channel_members" edge of the User entity.
 func (_m *User) QueryChannelMembers() *ChannelMemberQuery {
 	return NewUserClient(_m.config).QueryChannelMembers(_m)
-}
-
-// QueryMessages queries the "messages" edge of the User entity.
-func (_m *User) QueryMessages() *MessageQuery {
-	return NewUserClient(_m.config).QueryMessages(_m)
-}
-
-// QueryMessageReactions queries the "message_reactions" edge of the User entity.
-func (_m *User) QueryMessageReactions() *MessageReactionQuery {
-	return NewUserClient(_m.config).QueryMessageReactions(_m)
-}
-
-// QueryMessageBookmarks queries the "message_bookmarks" edge of the User entity.
-func (_m *User) QueryMessageBookmarks() *MessageBookmarkQuery {
-	return NewUserClient(_m.config).QueryMessageBookmarks(_m)
-}
-
-// QueryUserMentions queries the "user_mentions" edge of the User entity.
-func (_m *User) QueryUserMentions() *MessageUserMentionQuery {
-	return NewUserClient(_m.config).QueryUserMentions(_m)
-}
-
-// QueryUserGroupMembers queries the "user_group_members" edge of the User entity.
-func (_m *User) QueryUserGroupMembers() *UserGroupMemberQuery {
-	return NewUserClient(_m.config).QueryUserGroupMembers(_m)
-}
-
-// QueryCreatedUserGroups queries the "created_user_groups" edge of the User entity.
-func (_m *User) QueryCreatedUserGroups() *UserGroupQuery {
-	return NewUserClient(_m.config).QueryCreatedUserGroups(_m)
-}
-
-// QueryAttachments queries the "attachments" edge of the User entity.
-func (_m *User) QueryAttachments() *AttachmentQuery {
-	return NewUserClient(_m.config).QueryAttachments(_m)
-}
-
-// QueryChannelReadStates queries the "channel_read_states" edge of the User entity.
-func (_m *User) QueryChannelReadStates() *ChannelReadStateQuery {
-	return NewUserClient(_m.config).QueryChannelReadStates(_m)
 }
 
 // QueryPreference queries the "preference" edge of the User entity.
@@ -439,17 +258,26 @@ func (_m *User) String() string {
 	builder.WriteString("display_name=")
 	builder.WriteString(_m.DisplayName)
 	builder.WriteString(", ")
-	builder.WriteString("bio=")
-	builder.WriteString(_m.Bio)
+	if v := _m.Bio; v != nil {
+		builder.WriteString("bio=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
-	builder.WriteString("avatar_url=")
-	builder.WriteString(_m.AvatarURL)
+	if v := _m.AvatarURL; v != nil {
+		builder.WriteString("avatar_url=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("is_app=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsApp))
 	builder.WriteString(", ")
 	builder.WriteString("is_official=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsOfficial))
+	builder.WriteString(", ")
+	if v := _m.DeletedAt; v != nil {
+		builder.WriteString("deleted_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

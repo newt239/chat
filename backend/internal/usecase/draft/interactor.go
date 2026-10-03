@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
+	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
 type SaveInput struct {
@@ -22,7 +22,7 @@ type Interactor struct {
 	channelAccessSvc service.ChannelAccessService
 }
 
-func NewInteractor(draftRepo domainrepository.DraftRepository, messageRepo domainrepository.MessageRepository, channelAccessSvc service.ChannelAccessService) *Interactor {
+func New(draftRepo domainrepository.DraftRepository, messageRepo domainrepository.MessageRepository, channelAccessSvc service.ChannelAccessService) *Interactor {
 	return &Interactor{draftRepo: draftRepo, messageRepo: messageRepo, channelAccessSvc: channelAccessSvc}
 }
 
@@ -62,15 +62,6 @@ func (i *Interactor) ensureTarget(ctx context.Context, target domainrepository.D
 	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, target.ChannelID, target.UserID); err != nil {
 		return err
 	}
-	if target.ParentID == nil {
-		return nil
-	}
-	parent, err := i.messageRepo.FindByID(ctx, *target.ParentID)
-	if err != nil {
-		return fmt.Errorf("failed to load parent message: %w", err)
-	}
-	if !parent.CanBeRepliedIn(target.ChannelID) {
-		return domerr.ErrParentMessageNotFound
-	}
-	return nil
+	_, err := messageuc.EnsureReplyTarget(ctx, i.messageRepo, target.ParentID, target.ChannelID)
+	return err
 }

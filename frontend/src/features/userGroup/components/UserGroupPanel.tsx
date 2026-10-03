@@ -7,10 +7,9 @@ import { useTranslation } from "react-i18next";
 import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Button } from "#/components/ui/Button/Button";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
-import { closePanel, openDialog } from "#/features/layout/utils/overlaySearch";
-import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { useIsWorkspaceAdmin } from "#/hooks/useIsWorkspaceAdmin";
 import { copyWithToast } from "#/lib/clipboard";
-import { isAdminRole } from "#/lib/isAdminRole";
+import { closePanel, openDialog } from "#/lib/overlaySearch";
 
 import { useUserGroupActions, useUserGroups } from "../hooks/useUserGroups";
 import { UserGroupMembers } from "./UserGroupMembers";
@@ -27,7 +26,7 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
   const { remove } = useUserGroupActions();
   const navigate = useNavigate();
   const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
-  const canManage = isAdminRole(useMyWorkspaceRole(workspaceId).data);
+  const canManage = useIsWorkspaceAdmin(workspaceId);
   const group = groups?.find((candidate) => candidate.id === groupId);
 
   if (group === undefined) {

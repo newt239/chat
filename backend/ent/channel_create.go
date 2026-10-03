@@ -13,11 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
-	"github.com/newt239/chat/ent/channelreadstate"
-	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/workspace"
 )
@@ -72,20 +69,6 @@ func (_c *ChannelCreate) SetChannelType(v string) *ChannelCreate {
 func (_c *ChannelCreate) SetNillableChannelType(v *string) *ChannelCreate {
 	if v != nil {
 		_c.SetChannelType(*v)
-	}
-	return _c
-}
-
-// SetArchivedAt sets the "archived_at" field.
-func (_c *ChannelCreate) SetArchivedAt(v time.Time) *ChannelCreate {
-	_c.mutation.SetArchivedAt(v)
-	return _c
-}
-
-// SetNillableArchivedAt sets the "archived_at" field if the given value is not nil.
-func (_c *ChannelCreate) SetNillableArchivedAt(v *time.Time) *ChannelCreate {
-	if v != nil {
-		_c.SetArchivedAt(*v)
 	}
 	return _c
 }
@@ -183,51 +166,6 @@ func (_c *ChannelCreate) AddMembers(v ...*ChannelMember) *ChannelCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddMemberIDs(ids...)
-}
-
-// AddMessageIDs adds the "messages" edge to the Message entity by IDs.
-func (_c *ChannelCreate) AddMessageIDs(ids ...uuid.UUID) *ChannelCreate {
-	_c.mutation.AddMessageIDs(ids...)
-	return _c
-}
-
-// AddMessages adds the "messages" edges to the Message entity.
-func (_c *ChannelCreate) AddMessages(v ...*Message) *ChannelCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddMessageIDs(ids...)
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
-func (_c *ChannelCreate) AddAttachmentIDs(ids ...uuid.UUID) *ChannelCreate {
-	_c.mutation.AddAttachmentIDs(ids...)
-	return _c
-}
-
-// AddAttachments adds the "attachments" edges to the Attachment entity.
-func (_c *ChannelCreate) AddAttachments(v ...*Attachment) *ChannelCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAttachmentIDs(ids...)
-}
-
-// AddReadStateIDs adds the "read_states" edge to the ChannelReadState entity by IDs.
-func (_c *ChannelCreate) AddReadStateIDs(ids ...uuid.UUID) *ChannelCreate {
-	_c.mutation.AddReadStateIDs(ids...)
-	return _c
-}
-
-// AddReadStates adds the "read_states" edges to the ChannelReadState entity.
-func (_c *ChannelCreate) AddReadStates(v ...*ChannelReadState) *ChannelCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddReadStateIDs(ids...)
 }
 
 // SetParent sets the "parent" edge to the Channel entity.
@@ -376,15 +314,11 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(channel.FieldDescription, field.TypeString, value)
-		_node.Description = value
+		_node.Description = &value
 	}
 	if value, ok := _c.mutation.ChannelType(); ok {
 		_spec.SetField(channel.FieldChannelType, field.TypeString, value)
 		_node.ChannelType = value
-	}
-	if value, ok := _c.mutation.ArchivedAt(); ok {
-		_spec.SetField(channel.FieldArchivedAt, field.TypeTime, value)
-		_node.ArchivedAt = &value
 	}
 	if value, ok := _c.mutation.DmKey(); ok {
 		_spec.SetField(channel.FieldDmKey, field.TypeString, value)
@@ -441,54 +375,6 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(channelmember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.MessagesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.MessagesTable,
-			Columns: []string{channel.MessagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AttachmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.AttachmentsTable,
-			Columns: []string{channel.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.ReadStatesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.ReadStatesTable,
-			Columns: []string{channel.ReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -644,24 +530,6 @@ func (u *ChannelUpsert) SetChannelType(v string) *ChannelUpsert {
 // UpdateChannelType sets the "channel_type" field to the value that was provided on create.
 func (u *ChannelUpsert) UpdateChannelType() *ChannelUpsert {
 	u.SetExcluded(channel.FieldChannelType)
-	return u
-}
-
-// SetArchivedAt sets the "archived_at" field.
-func (u *ChannelUpsert) SetArchivedAt(v time.Time) *ChannelUpsert {
-	u.Set(channel.FieldArchivedAt, v)
-	return u
-}
-
-// UpdateArchivedAt sets the "archived_at" field to the value that was provided on create.
-func (u *ChannelUpsert) UpdateArchivedAt() *ChannelUpsert {
-	u.SetExcluded(channel.FieldArchivedAt)
-	return u
-}
-
-// ClearArchivedAt clears the value of the "archived_at" field.
-func (u *ChannelUpsert) ClearArchivedAt() *ChannelUpsert {
-	u.SetNull(channel.FieldArchivedAt)
 	return u
 }
 
@@ -823,27 +691,6 @@ func (u *ChannelUpsertOne) SetChannelType(v string) *ChannelUpsertOne {
 func (u *ChannelUpsertOne) UpdateChannelType() *ChannelUpsertOne {
 	return u.Update(func(s *ChannelUpsert) {
 		s.UpdateChannelType()
-	})
-}
-
-// SetArchivedAt sets the "archived_at" field.
-func (u *ChannelUpsertOne) SetArchivedAt(v time.Time) *ChannelUpsertOne {
-	return u.Update(func(s *ChannelUpsert) {
-		s.SetArchivedAt(v)
-	})
-}
-
-// UpdateArchivedAt sets the "archived_at" field to the value that was provided on create.
-func (u *ChannelUpsertOne) UpdateArchivedAt() *ChannelUpsertOne {
-	return u.Update(func(s *ChannelUpsert) {
-		s.UpdateArchivedAt()
-	})
-}
-
-// ClearArchivedAt clears the value of the "archived_at" field.
-func (u *ChannelUpsertOne) ClearArchivedAt() *ChannelUpsertOne {
-	return u.Update(func(s *ChannelUpsert) {
-		s.ClearArchivedAt()
 	})
 }
 
@@ -1177,27 +1024,6 @@ func (u *ChannelUpsertBulk) SetChannelType(v string) *ChannelUpsertBulk {
 func (u *ChannelUpsertBulk) UpdateChannelType() *ChannelUpsertBulk {
 	return u.Update(func(s *ChannelUpsert) {
 		s.UpdateChannelType()
-	})
-}
-
-// SetArchivedAt sets the "archived_at" field.
-func (u *ChannelUpsertBulk) SetArchivedAt(v time.Time) *ChannelUpsertBulk {
-	return u.Update(func(s *ChannelUpsert) {
-		s.SetArchivedAt(v)
-	})
-}
-
-// UpdateArchivedAt sets the "archived_at" field to the value that was provided on create.
-func (u *ChannelUpsertBulk) UpdateArchivedAt() *ChannelUpsertBulk {
-	return u.Update(func(s *ChannelUpsert) {
-		s.UpdateArchivedAt()
-	})
-}
-
-// ClearArchivedAt clears the value of the "archived_at" field.
-func (u *ChannelUpsertBulk) ClearArchivedAt() *ChannelUpsertBulk {
-	return u.Update(func(s *ChannelUpsert) {
-		s.ClearArchivedAt()
 	})
 }
 

@@ -3,11 +3,12 @@ package repository
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channelmute"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type channelMuteRepository struct {
@@ -19,38 +20,33 @@ func NewChannelMuteRepository(client *ent.Client) domainrepository.ChannelMuteRe
 }
 
 func (r *channelMuteRepository) SetMuted(ctx context.Context, userID string, channelID string, muted bool) error {
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return err
 	}
-	cid, err := utils.ParseUUID(channelID, "channel ID")
+	cid, err := parseUUID(channelID, "channel ID")
 	if err != nil {
 		return err
 	}
-
 	client := transaction.ResolveClient(ctx, r.client)
 	if !muted {
-		_, err = client.ChannelMute.Delete().
-			Where(channelmute.UserID(uid), channelmute.ChannelID(cid)).
-			Exec(ctx)
+		_, err = client.ChannelMute.Delete().Where(channelmute.UserID(uid), channelmute.ChannelID(cid)).Exec(ctx)
 		return err
 	}
-	// ミュート済みでも結果は同じなので成功とみなす
-	err = client.ChannelMute.Create().
+	return ignoreConflict(client.ChannelMute.Create().
 		SetUserID(uid).
 		SetChannelID(cid).
 		OnConflictColumns(channelmute.FieldUserID, channelmute.FieldChannelID).
 		DoNothing().
-		Exec(ctx)
-	return ignoreConflict(err)
+		Exec(ctx))
 }
 
 func (r *channelMuteRepository) FindMutedChannelIDs(ctx context.Context, userID string, channelIDs []string) (map[string]bool, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
-	cids, err := utils.ParseUUIDs(channelIDs, "channel ID")
+	cids, err := parseUUIDs(channelIDs, "channel ID")
 	if err != nil {
 		return nil, err
 	}
@@ -60,19 +56,15 @@ func (r *channelMuteRepository) FindMutedChannelIDs(ctx context.Context, userID 
 	if err != nil {
 		return nil, err
 	}
-	result := make(map[string]bool, len(mutes))
-	for _, m := range mutes {
-		result[m.ChannelID.String()] = true
-	}
-	return result, nil
+	return idSet(mutes, func(m *ent.ChannelMute) uuid.UUID { return m.ChannelID }), nil
 }
 
 func (r *channelMuteRepository) FindMutedUserIDs(ctx context.Context, channelID string, userIDs []string) (map[string]bool, error) {
-	cid, err := utils.ParseUUID(channelID, "channel ID")
+	cid, err := parseUUID(channelID, "channel ID")
 	if err != nil {
 		return nil, err
 	}
-	uids, err := utils.ParseUUIDs(userIDs, "user ID")
+	uids, err := parseUUIDs(userIDs, "user ID")
 	if err != nil {
 		return nil, err
 	}
@@ -82,9 +74,5 @@ func (r *channelMuteRepository) FindMutedUserIDs(ctx context.Context, channelID 
 	if err != nil {
 		return nil, err
 	}
-	result := make(map[string]bool, len(mutes))
-	for _, m := range mutes {
-		result[m.UserID.String()] = true
-	}
-	return result, nil
+	return idSet(mutes, func(m *ent.ChannelMute) uuid.UUID { return m.UserID }), nil
 }

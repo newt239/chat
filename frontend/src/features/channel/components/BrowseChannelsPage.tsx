@@ -1,14 +1,14 @@
 import { useQuery } from "@connectrpc/connect-query";
-import { IconChevronLeft, IconChevronRight, IconHash, IconSearch } from "@tabler/icons-react";
+import { IconHash, IconSearch } from "@tabler/icons-react";
 import { keepPreviousData } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "#/components/block/PageHeader/PageHeader";
+import { Pagination } from "#/components/block/Pagination/Pagination";
 import { Badge } from "#/components/ui/Badge/Badge";
 import { Button } from "#/components/ui/Button/Button";
 import { EmptyState } from "#/components/ui/EmptyState/EmptyState";
-import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Link } from "#/components/ui/Link/Link";
 import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedControl";
 import { Select } from "#/components/ui/Select/Select";
@@ -50,7 +50,6 @@ export const BrowseChannelsPage = () => {
   const { join } = useChannelMemberActions(workspaceId);
   const matched = data?.channels ?? [];
   const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
   // 条件を変えたら 1 ページ目に戻す
   const changeFilter = (
     next: Partial<{ membership: typeof membership; q: string; sort: typeof sort }>,
@@ -125,7 +124,7 @@ export const BrowseChannelsPage = () => {
                   </span>
                 </div>
                 {channel.isMember ? (
-                  <Badge tone="accent">{t("channel.browse.joined")}</Badge>
+                  <Badge tone="accent">{t("channel.browse.membership.joined")}</Badge>
                 ) : (
                   <Button
                     size="sm"
@@ -151,31 +150,13 @@ export const BrowseChannelsPage = () => {
             ),
           )}
         </ul>
-        {totalPages > 1 && (
-          <nav className="flex items-center justify-center gap-2 pb-3 text-caption text-muted">
-            <IconButton
-              label={t("channel.browse.prev")}
-              isDisabled={page <= 1}
-              onPress={() => {
-                void navigate({ search: (prev) => ({ ...prev, page: page - 1 }) });
-              }}
-            >
-              <IconChevronLeft />
-            </IconButton>
-            <span className="tabular-nums">
-              {t("channel.browse.page", { page, total: totalPages })}
-            </span>
-            <IconButton
-              label={t("channel.browse.next")}
-              isDisabled={page >= totalPages}
-              onPress={() => {
-                void navigate({ search: (prev) => ({ ...prev, page: page + 1 }) });
-              }}
-            >
-              <IconChevronRight />
-            </IconButton>
-          </nav>
-        )}
+        <Pagination
+          page={page}
+          totalPages={Math.ceil(total / PER_PAGE)}
+          onChange={(next) => {
+            void navigate({ search: (prev) => ({ ...prev, page: next }) });
+          }}
+        />
       </div>
     </>
   );

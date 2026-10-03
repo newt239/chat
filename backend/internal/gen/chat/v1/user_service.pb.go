@@ -468,7 +468,6 @@ func (*DeleteMeResponse) Descriptor() ([]byte, []int) {
 // 自分だけに見える相手ユーザーのニックネームとメモ
 type UserNote struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TargetUserId  string                 `protobuf:"bytes,1,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"`
 	Nickname      *string                `protobuf:"bytes,2,opt,name=nickname,proto3,oneof" json:"nickname,omitempty"`
 	Memo          *string                `protobuf:"bytes,3,opt,name=memo,proto3,oneof" json:"memo,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
@@ -504,13 +503,6 @@ func (x *UserNote) ProtoReflect() protoreflect.Message {
 // Deprecated: Use UserNote.ProtoReflect.Descriptor instead.
 func (*UserNote) Descriptor() ([]byte, []int) {
 	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *UserNote) GetTargetUserId() string {
-	if x != nil {
-		return x.TargetUserId
-	}
-	return ""
 }
 
 func (x *UserNote) GetNickname() string {
@@ -757,9 +749,8 @@ const file_chat_v1_user_service_proto_rawDesc = "" +
 	"\fnew_password\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\vnewPassword\"\x18\n" +
 	"\x16UpdatePasswordResponse\"\x11\n" +
 	"\x0fDeleteMeRequest\"\x12\n" +
-	"\x10DeleteMeResponse\"\xbb\x01\n" +
-	"\bUserNote\x12$\n" +
-	"\x0etarget_user_id\x18\x01 \x01(\tR\ftargetUserId\x12\x1f\n" +
+	"\x10DeleteMeResponse\"\x95\x01\n" +
+	"\bUserNote\x12\x1f\n" +
 	"\bnickname\x18\x02 \x01(\tH\x00R\bnickname\x88\x01\x01\x12\x17\n" +
 	"\x04memo\x18\x03 \x01(\tH\x01R\x04memo\x88\x01\x01\x129\n" +
 	"\n" +

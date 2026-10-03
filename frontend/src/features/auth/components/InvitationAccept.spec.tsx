@@ -17,7 +17,7 @@ describe("InvitationAccept", () => {
   test("招待先を表示し、パスワードを設定して参加できる", async () => {
     vi.stubEnv("VITE_GOOGLE_OAUTH_CLIENT_ID", "");
     const signUp = vi.fn(() => ({ accessToken: "a", user: { id: "u1" } }));
-    await renderWithProviders(<InvitationAccept token="t1" />, "/app/ws1", (routes) => {
+    await renderWithProviders(<InvitationAccept />, "/invite/t1", (routes) => {
       routes.rpc(InvitationService.method.getInvitation, ({ token }) => {
         expect(token).toBe("t1");
         return { email: "new@example.com", workspaceName: "Acme" };
@@ -41,7 +41,7 @@ describe("InvitationAccept", () => {
   });
 
   test("無効な招待はその旨を表示する", async () => {
-    await renderWithProviders(<InvitationAccept token="bad" />, "/app/ws1", (routes) => {
+    await renderWithProviders(<InvitationAccept />, "/invite/bad", (routes) => {
       routes.rpc(InvitationService.method.getInvitation, () => {
         throw new ConnectError("not found", Code.NotFound);
       });

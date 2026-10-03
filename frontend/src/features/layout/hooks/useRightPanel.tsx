@@ -15,11 +15,9 @@ import { ThreadFollowButton } from "#/features/thread/components/ThreadFollowBut
 import { ThreadPanel } from "#/features/thread/components/ThreadPanel";
 import { UserGroupPanel } from "#/features/userGroup/components/UserGroupPanel";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
+import { closePanel, workspaceRoute } from "#/lib/overlaySearch";
 import { isTauri } from "#/lib/platform/platform";
 import { myUserIdAtom } from "#/providers/store/auth";
-
-import { closePanel } from "../utils/overlaySearch";
-import { workspaceRoute } from "../utils/workspaceRoute";
 
 /** 右パネル（モバイルでは全画面のページ）に出す内容と閉じる操作。 ?profile= などの search がスレッドのパスより優先する */
 export const useRightPanel = (workspaceId: string) => {
@@ -98,7 +96,7 @@ export const useRightPanel = (workspaceId: string) => {
     }
     if (isThreadOpen) {
       return {
-        body: <ThreadPanel workspaceId={workspaceId} channelId={channelId} threadId={messageId} />,
+        body: <ThreadPanel channelId={channelId} threadId={messageId} />,
         extra: (
           <>
             {isFollowingThread !== undefined && (

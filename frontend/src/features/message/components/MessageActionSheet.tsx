@@ -9,11 +9,10 @@ import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { focusRing } from "#/components/ui/styles/styles";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { EmojiPicker } from "#/features/reaction/components/EmojiPicker";
 
-import { useMentionDirectory } from "../hooks/useMentionDirectory";
-import { toPlainText } from "../utils/markdown/plainText";
-import { quickReactions } from "../utils/quickReactions";
+import { quickReactions } from "../hooks/useMessageMenuActions";
 
 import type { MessageMenuAction } from "../hooks/useMessageMenuActions";
 
@@ -36,7 +35,7 @@ export const MessageActionSheet = ({
   onReact,
 }: MessageActionSheetProps) => {
   const { t } = useTranslation();
-  const { toText } = useMentionDirectory();
+  const { toExcerpt } = useMentionDirectory();
   const [isPickingEmoji, setIsPickingEmoji] = useState(false);
   const displayName = useDisplayName();
   const react = (emoji: string) => {
@@ -47,11 +46,7 @@ export const MessageActionSheet = ({
   return (
     <DialogFrame
       isOpen
-      onOpenChange={(next) => {
-        if (!next) {
-          onClose();
-        }
-      }}
+      onOpenChange={onClose}
       layout="bottom"
       role="dialog"
       className="bg-raised pt-2"
@@ -69,9 +64,7 @@ export const MessageActionSheet = ({
             <b className="text-text">
               {displayName(message.userId, message.user?.displayName ?? "")}
             </b>
-            <span className="line-clamp-2">
-              {toPlainText(toText(message.body)) || t("message.sheet.attachmentOnly")}
-            </span>
+            <span className="line-clamp-2">{toExcerpt(message.body)}</span>
           </div>
           <div className="flex justify-between px-4 pb-2.5">
             {quickReactions.map((emoji) => (

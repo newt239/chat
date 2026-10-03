@@ -5,19 +5,21 @@ import (
 
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
+	adminuc "github.com/newt239/chat/internal/usecase/admin"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
 type WorkspaceServer struct {
-	UC workspaceuc.WorkspaceUseCase
+	UC      *workspaceuc.Interactor
+	AdminUC *adminuc.Interactor
 }
 
 func (s *WorkspaceServer) ListWorkspaces(ctx context.Context, _ *chatv1.ListWorkspacesRequest) (*chatv1.ListWorkspacesResponse, error) {
-	out, err := s.UC.GetWorkspacesByUserID(ctx, userIDFrom(ctx))
+	out, err := s.UC.ListWorkspaces(ctx, userIDFrom(ctx))
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.ListWorkspacesResponse{Workspaces: presenter.ConvertAll(out.Workspaces, presenter.Workspace)}, nil
+	return &chatv1.ListWorkspacesResponse{Workspaces: presenter.ConvertAll(out, presenter.Workspace)}, nil
 }
 
 func (s *WorkspaceServer) CreateWorkspace(ctx context.Context, req *chatv1.CreateWorkspaceRequest) (*chatv1.CreateWorkspaceResponse, error) {
@@ -32,15 +34,15 @@ func (s *WorkspaceServer) CreateWorkspace(ctx context.Context, req *chatv1.Creat
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.CreateWorkspaceResponse{Workspace: presenter.Workspace(out.Workspace)}, nil
+	return &chatv1.CreateWorkspaceResponse{Workspace: presenter.Workspace(*out)}, nil
 }
 
 func (s *WorkspaceServer) GetWorkspace(ctx context.Context, req *chatv1.GetWorkspaceRequest) (*chatv1.GetWorkspaceResponse, error) {
-	out, err := s.UC.GetWorkspace(ctx, workspaceuc.GetWorkspaceInput{ID: req.WorkspaceId, UserID: userIDFrom(ctx)})
+	out, err := s.UC.GetWorkspace(ctx, req.WorkspaceId, userIDFrom(ctx))
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.GetWorkspaceResponse{Workspace: presenter.Workspace(out.Workspace)}, nil
+	return &chatv1.GetWorkspaceResponse{Workspace: presenter.Workspace(*out)}, nil
 }
 
 func (s *WorkspaceServer) UpdateWorkspace(ctx context.Context, req *chatv1.UpdateWorkspaceRequest) (*chatv1.UpdateWorkspaceResponse, error) {
@@ -57,14 +59,11 @@ func (s *WorkspaceServer) UpdateWorkspace(ctx context.Context, req *chatv1.Updat
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.UpdateWorkspaceResponse{Workspace: presenter.Workspace(out.Workspace)}, nil
+	return &chatv1.UpdateWorkspaceResponse{Workspace: presenter.Workspace(*out)}, nil
 }
 
 func (s *WorkspaceServer) DeleteWorkspace(ctx context.Context, req *chatv1.DeleteWorkspaceRequest) (*chatv1.DeleteWorkspaceResponse, error) {
-	if _, err := s.UC.DeleteWorkspace(ctx, workspaceuc.DeleteWorkspaceInput{ID: req.WorkspaceId, UserID: userIDFrom(ctx)}); err != nil {
-		return nil, err
-	}
-	return &chatv1.DeleteWorkspaceResponse{}, nil
+	return &chatv1.DeleteWorkspaceResponse{}, s.UC.DeleteWorkspace(ctx, req.WorkspaceId, userIDFrom(ctx))
 }
 
 func (s *WorkspaceServer) ListPublicWorkspaces(ctx context.Context, _ *chatv1.ListPublicWorkspacesRequest) (*chatv1.ListPublicWorkspacesResponse, error) {
@@ -72,43 +71,32 @@ func (s *WorkspaceServer) ListPublicWorkspaces(ctx context.Context, _ *chatv1.Li
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.ListPublicWorkspacesResponse{Workspaces: presenter.ConvertAll(out.Workspaces, presenter.PublicWorkspace)}, nil
+	return &chatv1.ListPublicWorkspacesResponse{Workspaces: presenter.ConvertAll(out, presenter.PublicWorkspace)}, nil
 }
 
 func (s *WorkspaceServer) JoinPublicWorkspace(ctx context.Context, req *chatv1.JoinPublicWorkspaceRequest) (*chatv1.JoinPublicWorkspaceResponse, error) {
-	if _, err := s.UC.JoinPublicWorkspace(ctx, workspaceuc.JoinPublicWorkspaceInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx)}); err != nil {
-		return nil, err
-	}
-	return &chatv1.JoinPublicWorkspaceResponse{}, nil
+	return &chatv1.JoinPublicWorkspaceResponse{}, s.UC.JoinPublicWorkspace(ctx, req.WorkspaceId, userIDFrom(ctx))
 }
 
 func (s *WorkspaceServer) ListMembers(ctx context.Context, req *chatv1.ListMembersRequest) (*chatv1.ListMembersResponse, error) {
-	out, err := s.UC.ListMembers(ctx, workspaceuc.ListMembersInput{WorkspaceID: req.WorkspaceId, RequesterID: userIDFrom(ctx)})
+	out, err := s.UC.ListMembers(ctx, req.WorkspaceId, userIDFrom(ctx))
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.ListMembersResponse{Members: presenter.ConvertAll(out.Members, presenter.WorkspaceMember)}, nil
+	return &chatv1.ListMembersResponse{Members: presenter.ConvertAll(out, presenter.WorkspaceMember)}, nil
 }
 
 func (s *WorkspaceServer) UpdateMemberRole(ctx context.Context, req *chatv1.UpdateMemberRoleRequest) (*chatv1.UpdateMemberRoleResponse, error) {
-	_, err := s.UC.UpdateMemberRole(ctx, workspaceuc.UpdateMemberRoleInput{
-		WorkspaceID: req.WorkspaceId,
-		UserID:      req.UserId,
-		UpdaterID:   userIDFrom(ctx),
-		Role:        presenter.WorkspaceRoleFromProto(req.Role),
-	})
-	if err != nil {
-		return nil, err
+	input := adminuc.UpdateMemberRoleInput{
+		MemberActionInput: adminuc.MemberActionInput{WorkspaceID: req.WorkspaceId, TargetUserID: req.UserId, OperatorID: userIDFrom(ctx)},
+		Role:              fromProto(presenter.WorkspaceRoles, req.Role),
 	}
-	return &chatv1.UpdateMemberRoleResponse{}, nil
+	return &chatv1.UpdateMemberRoleResponse{}, s.AdminUC.UpdateMemberRole(ctx, input)
 }
 
 func (s *WorkspaceServer) RemoveMember(ctx context.Context, req *chatv1.RemoveMemberRequest) (*chatv1.RemoveMemberResponse, error) {
-	_, err := s.UC.RemoveMember(ctx, workspaceuc.RemoveMemberInput{WorkspaceID: req.WorkspaceId, UserID: req.UserId, RemoverID: userIDFrom(ctx)})
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.RemoveMemberResponse{}, nil
+	input := adminuc.MemberActionInput{WorkspaceID: req.WorkspaceId, TargetUserID: req.UserId, OperatorID: userIDFrom(ctx)}
+	return &chatv1.RemoveMemberResponse{}, s.AdminUC.RemoveMember(ctx, input)
 }
 
 func (s *WorkspaceServer) GetWorkspaceSignupInfo(ctx context.Context, req *chatv1.GetWorkspaceSignupInfoRequest) (*chatv1.GetWorkspaceSignupInfoResponse, error) {

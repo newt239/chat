@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "#/components/ui/Link/Link";
 import { useConversationLabel } from "#/features/channel/hooks/useConversationLabel";
 import { useDateFormat } from "#/hooks/useDateFormat";
+import { messageLocation } from "#/lib/messageLocation";
 import { toDate } from "#/lib/timestamp";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
@@ -14,9 +15,6 @@ type MessageListCardProps = {
   message: Message;
   children: ReactNode;
 };
-
-const linkClassName =
-  "shrink-0 rounded-sm px-2 py-0.5 text-xs font-semibold text-accent-text no-underline data-hovered:bg-hover";
 
 // 検索結果・スレッド一覧・メンション一覧のカード。見出しに会話の名前・日時・元の場所へのリンクを出す
 export const MessageListCard = ({ workspaceId, message, children }: MessageListCardProps) => {
@@ -31,27 +29,19 @@ export const MessageListCard = ({ workspaceId, message, children }: MessageListC
         {label && <b className="max-w-1/2 truncate font-semibold text-text">{label}</b>}
         <span className="min-w-0 flex-1 truncate">
           {formatDateTime(toDate(message.createdAt))}
-          {parentId !== undefined && ` · ${t("search.inThread")}`}
+          {parentId !== undefined && ` · ${t("message.card.inThread")}`}
         </span>
-        {parentId === undefined ? (
-          <Link
-            to="/app/$workspaceId/$channelId"
-            params={{ channelId: message.channelId, workspaceId }}
-            search={{ message: message.id }}
-            className={linkClassName}
-          >
-            {t("search.showInChannel")}
-          </Link>
-        ) : (
-          <Link
-            to="/app/$workspaceId/$channelId/thread/$messageId"
-            params={{ channelId: message.channelId, messageId: parentId, workspaceId }}
-            search={{ message: message.id }}
-            className={linkClassName}
-          >
-            {t("search.showInThread")}
-          </Link>
-        )}
+        <Link
+          {...messageLocation({
+            channelId: message.channelId,
+            messageId: message.id,
+            parentId,
+            workspaceId,
+          })}
+          className="shrink-0 rounded-sm px-2 py-0.5 text-xs font-semibold text-accent-text no-underline data-hovered:bg-hover"
+        >
+          {t(parentId === undefined ? "message.card.showInChannel" : "message.card.showInThread")}
+        </Link>
       </header>
       {children}
     </article>

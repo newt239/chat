@@ -3,13 +3,9 @@ package channel
 import (
 	"time"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
-
-type ListChannelsInput struct {
-	WorkspaceID string
-	UserID      string
-}
 
 type CreateChannelInput struct {
 	WorkspaceID string
@@ -28,52 +24,22 @@ type UpdateChannelInput struct {
 	IsPrivate   *bool
 }
 
-type GetChannelInput struct {
+// SetFlagInput はスターやミュートを付け外しします
+type SetFlagInput struct {
 	ChannelID string
 	UserID    string
-}
-
-type DeleteChannelInput struct {
-	ChannelID string
-	UserID    string
-}
-
-type SetArchivedInput struct {
-	ChannelID string
-	UserID    string
-	Archived  bool
-}
-
-type SetChannelStarredInput struct {
-	ChannelID string
-	UserID    string
-	Starred   bool
-}
-
-type SetChannelMutedInput struct {
-	ChannelID string
-	UserID    string
-	Muted     bool
+	Value     bool
 }
 
 type ChannelOutput struct {
-	ID           string     `json:"id"`
-	WorkspaceID  string     `json:"workspaceId"`
-	Name         string     `json:"name"`
-	Description  *string    `json:"description"`
-	IsPrivate    bool       `json:"isPrivate"`
-	CreatedBy    string     `json:"createdBy"`
-	CreatedAt    time.Time  `json:"createdAt"`
-	UpdatedAt    time.Time  `json:"updatedAt"`
-	UnreadCount  int        `json:"unreadCount"`
-	MentionCount int        `json:"mentionCount"`
-	ParentID     *string    `json:"parentId"`
-	IsStarred    bool       `json:"isStarred"`
-	IsMuted      bool       `json:"isMuted"`
-	IsMember     bool       `json:"isMember"`
-	ArchivedAt   *time.Time `json:"archivedAt,omitempty"`
+	*entity.Channel
+	UnreadCount  int
+	MentionCount int
+	IsStarred    bool
+	IsMuted      bool
+	IsMember     bool
 	// ListChannels でだけ設定する
-	LastMessageAt *time.Time `json:"lastMessageAt,omitempty"`
+	LastMessageAt *time.Time
 }
 
 type BrowsableChannelOutput struct {

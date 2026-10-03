@@ -1,12 +1,9 @@
 package entity
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 
 	domerr "github.com/newt239/chat/internal/domain/errors"
 )
@@ -22,11 +19,9 @@ const (
 var channelSegmentPattern = regexp.MustCompile(`^[a-z0-9_-]+$`)
 
 var (
-	ErrChannelWorkspaceIDInvalid = fmt.Errorf("%w: ワークスペースIDの形式が無効です", domerr.ErrValidation)
-	ErrChannelCreatorInvalid     = fmt.Errorf("%w: 作成者IDはUUID形式で指定してください", domerr.ErrValidation)
-	ErrInvalidChannelType        = fmt.Errorf("%w: 無効なチャンネル種別です", domerr.ErrValidation)
-	ErrGroupDMMaxMembers         = fmt.Errorf("%w: グループDMは自分を含めて10人までです", domerr.ErrValidation)
-	ErrChannelNameInvalid        = fmt.Errorf("%w: チャンネル名は小文字の英数字・ハイフン・アンダースコアをスラッシュで区切った4階層までのパスで指定してください", domerr.ErrValidation)
+	ErrInvalidChannelType = domerr.New(domerr.ErrValidation, "無効なチャンネル種別です")
+	ErrGroupDMMaxMembers  = domerr.New(domerr.ErrValidation, "グループDMは自分を含めて10人までです")
+	ErrChannelNameInvalid = domerr.New(domerr.ErrValidation, "チャンネル名は小文字の英数字・ハイフン・アンダースコアをスラッシュで区切った4階層までのパスで指定してください")
 )
 
 type ChannelType string
@@ -55,79 +50,24 @@ type Channel struct {
 	ParentID    *string
 	CreatedBy   string
 	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	ArchivedAt  *time.Time
 }
 
-type ChannelParams struct {
-	ID          string
-	WorkspaceID string
-	Name        string
-	Description *string
-	Type        ChannelType
-	ParentID    *string
-	CreatedBy   string
-	CreatedAt   time.Time
-}
-
-func NewChannel(params ChannelParams) (*Channel, error) {
-	workspaceID := strings.TrimSpace(params.WorkspaceID)
-	// ワークスペースIDはslug形式（3-12文字の英小文字、数字、ハイフン）またはUUID形式を許可
-	if err := ValidateWorkspaceSlug(workspaceID); err != nil {
-		// slug形式でない場合、UUID形式かチェック
-		if _, err := uuid.Parse(workspaceID); err != nil {
-			return nil, fmt.Errorf("%w: %v", ErrChannelWorkspaceIDInvalid, err)
-		}
+// NewChannel は種別を省略したら公開にし、公開・非公開チャンネルの名前をパスとして正規化します
+func NewChannel(ch Channel) (*Channel, error) {
+	if ch.Type == "" {
+		ch.Type = ChannelTypePublic
 	}
-
-	creatorID := strings.TrimSpace(params.CreatedBy)
-	if _, err := uuid.Parse(creatorID); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrChannelCreatorInvalid, err)
-	}
-
-	channelType := params.Type
-	if channelType == "" {
-		channelType = ChannelTypePublic
-	}
-	if !channelType.IsValid() {
+	if !ch.Type.IsValid() {
 		return nil, ErrInvalidChannelType
 	}
-
-	name := strings.TrimSpace(params.Name)
-	if channelType == ChannelTypePublic || channelType == ChannelTypePrivate {
-		normalized, err := NormalizeChannelPath(name)
+	if !ch.IsDM() {
+		name, err := NormalizeChannelPath(ch.Name)
 		if err != nil {
 			return nil, err
 		}
-		name = normalized
+		ch.Name = name
 	}
-
-	var id string
-	if params.ID == "" {
-		id = uuid.NewString()
-	} else {
-		if _, err := uuid.Parse(params.ID); err != nil {
-			return nil, fmt.Errorf("%w: チャンネルIDがUUID形式ではありません", domerr.ErrValidation)
-		}
-		id = params.ID
-	}
-
-	createdAt := params.CreatedAt
-	if createdAt.IsZero() {
-		createdAt = time.Now().UTC()
-	}
-
-	return &Channel{
-		ID:          id,
-		WorkspaceID: workspaceID,
-		Name:        name,
-		Description: cloneString(params.Description),
-		Type:        channelType,
-		ParentID:    cloneString(params.ParentID),
-		CreatedBy:   creatorID,
-		CreatedAt:   createdAt,
-		UpdatedAt:   createdAt,
-	}, nil
+	return &ch, nil
 }
 
 // IsPrivate は参加者だけが閲覧できるチャンネルかを返します。DM とグループ DM も含む
@@ -147,14 +87,13 @@ func (c *Channel) ChangeName(newName string) error {
 		return err
 	}
 	if ParentChannelPath(name) != ParentChannelPath(c.Name) {
-		return fmt.Errorf("%w: 変更できるのはチャンネル名の末尾の階層のみです", domerr.ErrValidation)
+		return domerr.New(domerr.ErrValidation, "変更できるのはチャンネル名の末尾の階層のみです")
 	}
 	if c.Name == name {
 		return nil
 	}
 
 	c.Name = name
-	c.UpdatedAt = time.Now().UTC()
 	return nil
 }
 
@@ -192,14 +131,6 @@ func AncestorChannelPaths(path string) []string {
 	return ancestors
 }
 
-func cloneString(value *string) *string {
-	if value == nil {
-		return nil
-	}
-	copied := *value
-	return &copied
-}
-
 type ChannelRole string
 
 const (
@@ -211,5 +142,4 @@ type ChannelMember struct {
 	ChannelID string
 	UserID    string
 	Role      ChannelRole
-	JoinedAt  time.Time
 }

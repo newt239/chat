@@ -14,10 +14,6 @@ type stubMessageRepo struct {
 	domainrepository.MessageRepository
 }
 
-func (stubMessageRepo) FindByID(_ context.Context, id string) (*entity.Message, error) {
-	return &entity.Message{ID: id, ChannelID: "ch1"}, nil
-}
-
 func (stubMessageRepo) AddReaction(_ context.Context, r *entity.MessageReaction) error {
 	r.CreatedAt = time.Now()
 	return nil
@@ -39,8 +35,8 @@ type stubChannelAccess struct {
 	service.ChannelAccessService
 }
 
-func (stubChannelAccess) EnsureChannelAccess(_ context.Context, channelID string, _ string) (*entity.Channel, error) {
-	return &entity.Channel{ID: channelID}, nil
+func (stubChannelAccess) EnsureMessageAccess(_ context.Context, messageID, _ string) (*entity.Message, *entity.Channel, error) {
+	return &entity.Message{ID: messageID, ChannelID: "ch1"}, &entity.Channel{ID: "ch1"}, nil
 }
 
 type recordingNotifier struct {
@@ -58,13 +54,13 @@ func (n *recordingNotifier) NotifyReactionRemoved(_, _ string, reaction Reaction
 
 func TestReactionNotificationsIncludeUserOnAdd(t *testing.T) {
 	notifier := &recordingNotifier{}
-	uc := NewReactionInteractor(stubMessageRepo{}, stubUserRepo{}, notifier, stubChannelAccess{})
-	input := AddReactionInput{MessageID: "m1", UserID: "u1", Emoji: "👍"}
+	uc := New(stubMessageRepo{}, stubUserRepo{}, notifier, stubChannelAccess{})
+	input := ReactionInput{MessageID: "m1", UserID: "u1", Emoji: "👍"}
 
 	if err := uc.AddReaction(context.Background(), input); err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
-	if err := uc.RemoveReaction(context.Background(), RemoveReactionInput(input)); err != nil {
+	if err := uc.RemoveReaction(context.Background(), input); err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
 

@@ -12,6 +12,7 @@ import (
 
 	"connectrpc.com/connect"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/gen/chat/v1/chatv1connect"
@@ -38,18 +39,18 @@ func (fakeJWTService) VerifyToken(token string) (*authuc.TokenClaims, error) {
 
 // stubAuthUseCase は渡された入力を記録し、固定のトークンを返します
 type stubAuthUseCase struct {
-	authuc.AuthUseCase
+	authUseCase
 	refreshed []string
 	loggedOut []authuc.LogoutInput
 }
 
 func (u *stubAuthUseCase) Login(context.Context, authuc.LoginInput) (*authuc.AuthOutput, error) {
-	return &authuc.AuthOutput{AccessToken: validToken, RefreshToken: "rt", ExpiresAt: time.Now().Add(time.Hour)}, nil
+	return &authuc.AuthOutput{AccessToken: validToken, RefreshToken: "rt", ExpiresAt: time.Now().Add(time.Hour), User: &entity.User{}}, nil
 }
 
 func (u *stubAuthUseCase) RefreshToken(_ context.Context, input authuc.RefreshTokenInput) (*authuc.AuthOutput, error) {
 	u.refreshed = append(u.refreshed, input.RefreshToken)
-	return &authuc.AuthOutput{AccessToken: validToken, RefreshToken: "rotated", ExpiresAt: time.Now().Add(time.Hour)}, nil
+	return &authuc.AuthOutput{AccessToken: validToken, RefreshToken: "rotated", ExpiresAt: time.Now().Add(time.Hour), User: &entity.User{}}, nil
 }
 
 func (u *stubAuthUseCase) Logout(_ context.Context, input authuc.LogoutInput) error {
@@ -71,10 +72,11 @@ func (s stubRealtimeServer) IssueWebSocketTicket(ctx context.Context, _ *chatv1.
 
 func newTestServer(t *testing.T, uc *stubAuthUseCase, realtime stubRealtimeServer) *httptest.Server {
 	t.Helper()
-	ts := httptest.NewServer(NewHandler(fakeJWTService{}, []string{allowedOrigin},
-		Register(chatv1connect.NewAuthServiceHandler, chatv1connect.AuthServiceHandler(&AuthServer{UC: uc})),
-		Register(chatv1connect.NewRealtimeServiceHandler, chatv1connect.RealtimeServiceHandler(realtime)),
-	))
+	opts := HandlerOptions(fakeJWTService{}, []string{allowedOrigin})
+	mux := http.NewServeMux()
+	mux.Handle(chatv1connect.NewAuthServiceHandler(&AuthServer{UC: uc}, opts...))
+	mux.Handle(chatv1connect.NewRealtimeServiceHandler(realtime, opts...))
+	ts := httptest.NewServer(mux)
 	t.Cleanup(ts.Close)
 	return ts
 }

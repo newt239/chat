@@ -7,7 +7,6 @@ import {
   ListBox,
   ListBoxItem,
   Popover,
-  Text,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -21,9 +20,7 @@ type ComboBoxProps<T extends string> = {
   options: readonly Option<T>[];
   value: T | null;
   onChange: (value: T | null) => void;
-  description?: string;
   placeholder?: string;
-  isDisabled?: boolean;
   className?: string;
 };
 
@@ -33,9 +30,7 @@ export const ComboBox = <T extends string>({
   options,
   value,
   onChange,
-  description,
   placeholder,
-  isDisabled,
   className,
 }: ComboBoxProps<T>) => {
   const { t } = useTranslation();
@@ -46,7 +41,6 @@ export const ComboBox = <T extends string>({
       onChange={(key) => {
         onChange(findOption(options, key)?.value ?? null);
       }}
-      isDisabled={isDisabled}
       menuTrigger="focus"
       className={cn(fieldStyles.root, className)}
     >
@@ -60,11 +54,6 @@ export const ComboBox = <T extends string>({
           <IconSelector aria-hidden className="size-4" />
         </Button>
       </div>
-      {description && (
-        <Text slot="description" className={fieldStyles.description}>
-          {description}
-        </Text>
-      )}
       <Popover offset={4} className={cn(overlayStyles.popover, "w-(--trigger-width) p-1")}>
         <ListBox
           className="max-h-72 overflow-y-auto outline-none"

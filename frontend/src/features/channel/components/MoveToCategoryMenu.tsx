@@ -6,7 +6,7 @@ import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { Submenu } from "#/components/ui/Submenu/Submenu";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { openDialog } from "#/lib/overlaySearch";
 
 import { useChannelCategories, useChannelCategoryActions } from "../hooks/useChannelCategories";
 import { categoryOfChannel } from "../utils/channelTree";
@@ -25,19 +25,16 @@ export const MoveToCategoryMenu = ({ workspaceId, channel, channels }: MoveToCat
   const navigate = useNavigate();
   const { data: categories = [] } = useChannelCategories(workspaceId);
   const { setChannel } = useChannelCategoryActions(workspaceId);
-  const current = categoryOfChannel(
-    channel,
-    channels,
-    new Map(categories.flatMap((category) => category.channelIds.map((id) => [id, category.id]))),
-  );
+  const current = categoryOfChannel(channel, channels, categories);
+  // 割り当てがなければ外しても変わらない。祖先から継承しているときもそのまま
+  const isAssigned = categories.some((category) => category.channelIds.includes(channel.id));
+  // 選ぶとメニューごと閉じて mutate のコールバックが呼ばれないため、Promise で待つ。失敗は hook がトーストで出す
   const moveTo = (categoryId: string | undefined, name: string) => {
-    setChannel.mutate(
-      { categoryId, channelId: channel.id },
-      {
-        onSuccess: () => {
-          toast(t("channel.category.moved", { category: name, channel: channel.name }));
-        },
+    setChannel.mutateAsync({ categoryId, channelId: channel.id }).then(
+      () => {
+        toast(t("channel.category.moved", { category: name, channel: channel.name }));
       },
+      () => {},
     );
   };
   const checkIcon = (categoryId: string | null) => (
@@ -48,8 +45,16 @@ export const MoveToCategoryMenu = ({ workspaceId, channel, channels }: MoveToCat
     <Submenu label={t("channel.category.moveTo")} icon={<IconFolder />}>
       <MenuItem
         icon={checkIcon(null)}
+        isDisabled={!isAssigned}
         onAction={() => {
-          moveTo(undefined, t("shell.sidebar.channels"));
+          // 外すと祖先の割り当てに従う
+          const parent = channels.find((candidate) => candidate.id === channel.parentId);
+          const inherited = parent && categoryOfChannel(parent, channels, categories);
+          moveTo(
+            undefined,
+            categories.find((category) => category.id === inherited)?.name ??
+              t("shell.sidebar.channels"),
+          );
         }}
       >
         {t("channel.category.defaultCategory")}

@@ -9,12 +9,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	_ "github.com/lib/pq"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/migrate"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
 )
 
 // TEST_DATABASE_URL に空の PostgreSQL を指定したときだけ実行する
@@ -24,7 +24,7 @@ func openTestClient(t *testing.T) *ent.Client {
 	if dsn == "" {
 		t.Skip("TEST_DATABASE_URL が未設定のためスキップします")
 	}
-	client, err := database.NewConnection(dsn)
+	client, err := ent.Open("postgres", dsn)
 	if err != nil {
 		t.Fatalf("DB に接続できません: %v", err)
 	}
@@ -194,9 +194,6 @@ func TestFindSearchDocuments(t *testing.T) {
 	if location := byKey["location"]; !reflect.DeepEqual(location.Has, []domainrepository.MessageContentKind{domainrepository.MessageContentLocation}) {
 		t.Errorf("位置情報が期待と異なります: %+v", location.Has)
 	}
-	if group := byKey["group"]; !reflect.DeepEqual(group.MentionedGroupIDs, []string{f.group.ID.String()}) {
-		t.Errorf("グループメンションが期待と異なります: %+v", group.MentionedGroupIDs)
-	}
 	if !byKey["broadcast"].MentionsChannel || byKey["not-broadcast"].MentionsChannel {
 		t.Error("@channel の判定が期待と異なります")
 	}
@@ -291,8 +288,7 @@ func TestFindParticipatingThreads(t *testing.T) {
 		t.Fatal("次ページのカーソルがありません")
 	}
 
-	input.CursorLastActivityAt = &first.NextCursor.LastActivityAt
-	input.CursorThreadID = &first.NextCursor.ThreadID
+	input.Cursor = first.NextCursor
 	second, err := repo.FindParticipatingThreads(ctx, input)
 	if err != nil {
 		t.Fatalf("取得に失敗しました: %v", err)

@@ -3,16 +3,12 @@ package notification
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
-
-// dispatchTimeout は投稿の処理が終わったあとも送り続けるプッシュ通知の上限時間
-const dispatchTimeout = 30 * time.Second
 
 const maxBodyRunes = 200
 
@@ -48,7 +44,6 @@ type Dispatcher struct {
 	mentionSvc        service.MentionService
 	channelAccessSvc  service.ChannelAccessService
 	sender            Sender
-	logger            service.Logger
 }
 
 // NewDispatcher の sender が nil のとき（FIREBASE_PROJECT_ID が未設定）は何も送らない
@@ -61,7 +56,6 @@ func NewDispatcher(
 	mentionSvc service.MentionService,
 	channelAccessSvc service.ChannelAccessService,
 	sender Sender,
-	logger service.Logger,
 ) *Dispatcher {
 	return &Dispatcher{
 		userRepo:          userRepo,
@@ -72,25 +66,13 @@ func NewDispatcher(
 		mentionSvc:        mentionSvc,
 		channelAccessSvc:  channelAccessSvc,
 		sender:            sender,
-		logger:            logger,
 	}
 }
 
-// NotifyNewMessage は投稿の応答を待たせないよう非同期で送り、失敗はログに残すだけにします
-func (d *Dispatcher) NotifyNewMessage(ctx context.Context, channel *entity.Channel, message messageuc.MessageOutput) {
+func (d *Dispatcher) NotifyNewMessage(ctx context.Context, channel *entity.Channel, message messageuc.MessageOutput) error {
 	if d.sender == nil {
-		return
+		return nil
 	}
-	go func() {
-		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), dispatchTimeout)
-		defer cancel()
-		if err := d.dispatch(ctx, channel, message); err != nil {
-			d.logger.Warn("プッシュ通知の送信に失敗しました", service.LogField{Key: "messageID", Value: message.ID}, service.LogField{Key: "error", Value: err.Error()})
-		}
-	}()
-}
-
-func (d *Dispatcher) dispatch(ctx context.Context, channel *entity.Channel, message messageuc.MessageOutput) error {
 	candidates, err := d.candidates(ctx, channel, message)
 	if err != nil {
 		return err
@@ -148,13 +130,18 @@ func (d *Dispatcher) candidates(ctx context.Context, channel *entity.Channel, me
 	for _, m := range message.Mentions {
 		add(m.UserID, reasonMention)
 	}
-	if channel.IsDM() {
-		members, err := d.channelMemberRepo.FindMembers(ctx, channel.ID)
+	// @channel はメンバー全員へのメンションとして送る。@here はオンラインの人向けのため、プッシュでは送らない
+	if channel.IsDM() || message.MentionsChannel {
+		members, err := d.channelMemberRepo.FindMembersByChannelIDs(ctx, []string{channel.ID})
 		if err != nil {
-			return nil, fmt.Errorf("failed to load DM members: %w", err)
+			return nil, fmt.Errorf("failed to load channel members: %w", err)
+		}
+		r := reasonMention
+		if channel.IsDM() {
+			r = reasonDM
 		}
 		for _, m := range members {
-			add(m.UserID, reasonDM)
+			add(m.UserID, r)
 		}
 	}
 

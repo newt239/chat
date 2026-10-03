@@ -1,7 +1,5 @@
 package entity
 
-import "time"
-
 type ChannelLink struct {
 	ID        string
 	ChannelID string
@@ -9,6 +7,4 @@ type ChannelLink struct {
 	URL       string
 	Position  int
 	CreatedBy string
-	CreatedAt time.Time
-	UpdatedAt time.Time
 }

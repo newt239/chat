@@ -8,7 +8,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type channelLinkRepository struct {
@@ -20,58 +19,45 @@ func NewChannelLinkRepository(client *ent.Client) domainrepository.ChannelLinkRe
 }
 
 func (r *channelLinkRepository) FindByID(ctx context.Context, id string) (*entity.ChannelLink, error) {
-	linkID, err := utils.ParseUUID(id, "link ID")
+	linkID, err := parseUUID(id, "link ID")
 	if err != nil {
 		return nil, err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	link, err := client.ChannelLink.Query().
-		Where(channellink.ID(linkID)).
-		Only(ctx)
-	if ent.IsNotFound(err) {
-		return nil, nil
-	}
-	if err != nil {
+	link, err := orNil(transaction.ResolveClient(ctx, r.client).ChannelLink.Get(ctx, linkID))
+	if link == nil {
 		return nil, err
 	}
 	return channelLinkToEntity(link), nil
 }
 
 func (r *channelLinkRepository) FindByChannelID(ctx context.Context, channelID string) ([]*entity.ChannelLink, error) {
-	cid, err := utils.ParseUUID(channelID, "channel ID")
+	cid, err := parseUUID(channelID, "channel ID")
 	if err != nil {
 		return nil, err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	links, err := client.ChannelLink.Query().
+	links, err := transaction.ResolveClient(ctx, r.client).ChannelLink.Query().
 		Where(channellink.ChannelID(cid)).
 		Order(ent.Asc(channellink.FieldPosition), ent.Asc(channellink.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]*entity.ChannelLink, 0, len(links))
-	for _, link := range links {
-		result = append(result, channelLinkToEntity(link))
-	}
-	return result, nil
+	return convertAll(links, channelLinkToEntity), nil
 }
 
 func (r *channelLinkRepository) Create(ctx context.Context, link *entity.ChannelLink) error {
-	cid, err := utils.ParseUUID(link.ChannelID, "channel ID")
+	cid, err := parseUUID(link.ChannelID, "channel ID")
 	if err != nil {
 		return err
 	}
-	uid, err := utils.ParseUUID(link.CreatedBy, "user ID")
+	uid, err := parseUUID(link.CreatedBy, "user ID")
 	if err != nil {
 		return err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	created, err := client.ChannelLink.Create().
+	created, err := transaction.ResolveClient(ctx, r.client).ChannelLink.Create().
 		SetChannelID(cid).
 		SetCreatedByID(uid).
 		SetTitle(link.Title).
@@ -83,44 +69,34 @@ func (r *channelLinkRepository) Create(ctx context.Context, link *entity.Channel
 	}
 
 	link.ID = created.ID.String()
-	link.CreatedAt = created.CreatedAt
-	link.UpdatedAt = created.UpdatedAt
 	return nil
 }
 
 func (r *channelLinkRepository) Update(ctx context.Context, link *entity.ChannelLink) error {
-	linkID, err := utils.ParseUUID(link.ID, "link ID")
+	linkID, err := parseUUID(link.ID, "link ID")
 	if err != nil {
 		return err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	updated, err := client.ChannelLink.UpdateOneID(linkID).
+	return transaction.ResolveClient(ctx, r.client).ChannelLink.UpdateOneID(linkID).
 		SetTitle(link.Title).
 		SetURL(link.URL).
-		Save(ctx)
-	if err != nil {
-		return err
-	}
-
-	link.UpdatedAt = updated.UpdatedAt
-	return nil
+		Exec(ctx)
 }
 
 func (r *channelLinkRepository) Delete(ctx context.Context, id string) error {
-	linkID, err := utils.ParseUUID(id, "link ID")
+	linkID, err := parseUUID(id, "link ID")
 	if err != nil {
 		return err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	return client.ChannelLink.DeleteOneID(linkID).Exec(ctx)
+	return transaction.ResolveClient(ctx, r.client).ChannelLink.DeleteOneID(linkID).Exec(ctx)
 }
 
 func (r *channelLinkRepository) UpdatePositions(ctx context.Context, linkIDs []string) error {
 	client := transaction.ResolveClient(ctx, r.client)
 	for position, id := range linkIDs {
-		linkID, err := utils.ParseUUID(id, "link ID")
+		linkID, err := parseUUID(id, "link ID")
 		if err != nil {
 			return err
 		}
@@ -132,15 +108,12 @@ func (r *channelLinkRepository) UpdatePositions(ctx context.Context, linkIDs []s
 }
 
 func channelLinkToEntity(link *ent.ChannelLink) *entity.ChannelLink {
-	result := &entity.ChannelLink{
+	return &entity.ChannelLink{
 		ID:        link.ID.String(),
 		Title:     link.Title,
 		URL:       link.URL,
 		Position:  link.Position,
 		ChannelID: link.ChannelID.String(),
 		CreatedBy: link.CreatedByID.String(),
-		CreatedAt: link.CreatedAt,
-		UpdatedAt: link.UpdatedAt,
 	}
-	return result
 }

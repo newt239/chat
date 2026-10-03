@@ -120,94 +120,6 @@ func (*UpdateReadStateResponse) Descriptor() ([]byte, []int) {
 	return file_chat_v1_read_state_service_proto_rawDescGZIP(), []int{1}
 }
 
-type GetUnreadCountRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetUnreadCountRequest) Reset() {
-	*x = GetUnreadCountRequest{}
-	mi := &file_chat_v1_read_state_service_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUnreadCountRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUnreadCountRequest) ProtoMessage() {}
-
-func (x *GetUnreadCountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_read_state_service_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetUnreadCountRequest.ProtoReflect.Descriptor instead.
-func (*GetUnreadCountRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_read_state_service_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *GetUnreadCountRequest) GetChannelId() string {
-	if x != nil {
-		return x.ChannelId
-	}
-	return ""
-}
-
-type GetUnreadCountResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Count         int32                  `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetUnreadCountResponse) Reset() {
-	*x = GetUnreadCountResponse{}
-	mi := &file_chat_v1_read_state_service_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUnreadCountResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUnreadCountResponse) ProtoMessage() {}
-
-func (x *GetUnreadCountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_read_state_service_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetUnreadCountResponse.ProtoReflect.Descriptor instead.
-func (*GetUnreadCountResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_read_state_service_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *GetUnreadCountResponse) GetCount() int32 {
-	if x != nil {
-		return x.Count
-	}
-	return 0
-}
-
 var File_chat_v1_read_state_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_read_state_service_proto_rawDesc = "" +
@@ -219,15 +131,9 @@ const file_chat_v1_read_state_service_proto_rawDesc = "" +
 	"\flast_read_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\n" +
 	"lastReadAt\x12/\n" +
 	"\x13include_descendants\x18\x03 \x01(\bR\x12includeDescendants\"\x19\n" +
-	"\x17UpdateReadStateResponse\"@\n" +
-	"\x15GetUnreadCountRequest\x12'\n" +
-	"\n" +
-	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\".\n" +
-	"\x16GetUnreadCountResponse\x12\x14\n" +
-	"\x05count\x18\x01 \x01(\x05R\x05count2\xbb\x01\n" +
+	"\x17UpdateReadStateResponse2h\n" +
 	"\x10ReadStateService\x12T\n" +
-	"\x0fUpdateReadState\x12\x1f.chat.v1.UpdateReadStateRequest\x1a .chat.v1.UpdateReadStateResponse\x12Q\n" +
-	"\x0eGetUnreadCount\x12\x1e.chat.v1.GetUnreadCountRequest\x1a\x1f.chat.v1.GetUnreadCountResponseB\x96\x01\n" +
+	"\x0fUpdateReadState\x12\x1f.chat.v1.UpdateReadStateRequest\x1a .chat.v1.UpdateReadStateResponseB\x96\x01\n" +
 	"\vcom.chat.v1B\x15ReadStateServiceProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"
 
 var (
@@ -242,22 +148,18 @@ func file_chat_v1_read_state_service_proto_rawDescGZIP() []byte {
 	return file_chat_v1_read_state_service_proto_rawDescData
 }
 
-var file_chat_v1_read_state_service_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_chat_v1_read_state_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_chat_v1_read_state_service_proto_goTypes = []any{
 	(*UpdateReadStateRequest)(nil),  // 0: chat.v1.UpdateReadStateRequest
 	(*UpdateReadStateResponse)(nil), // 1: chat.v1.UpdateReadStateResponse
-	(*GetUnreadCountRequest)(nil),   // 2: chat.v1.GetUnreadCountRequest
-	(*GetUnreadCountResponse)(nil),  // 3: chat.v1.GetUnreadCountResponse
-	(*timestamppb.Timestamp)(nil),   // 4: google.protobuf.Timestamp
+	(*timestamppb.Timestamp)(nil),   // 2: google.protobuf.Timestamp
 }
 var file_chat_v1_read_state_service_proto_depIdxs = []int32{
-	4, // 0: chat.v1.UpdateReadStateRequest.last_read_at:type_name -> google.protobuf.Timestamp
+	2, // 0: chat.v1.UpdateReadStateRequest.last_read_at:type_name -> google.protobuf.Timestamp
 	0, // 1: chat.v1.ReadStateService.UpdateReadState:input_type -> chat.v1.UpdateReadStateRequest
-	2, // 2: chat.v1.ReadStateService.GetUnreadCount:input_type -> chat.v1.GetUnreadCountRequest
-	1, // 3: chat.v1.ReadStateService.UpdateReadState:output_type -> chat.v1.UpdateReadStateResponse
-	3, // 4: chat.v1.ReadStateService.GetUnreadCount:output_type -> chat.v1.GetUnreadCountResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
+	1, // 2: chat.v1.ReadStateService.UpdateReadState:output_type -> chat.v1.UpdateReadStateResponse
+	2, // [2:3] is the sub-list for method output_type
+	1, // [1:2] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -274,7 +176,7 @@ func file_chat_v1_read_state_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_read_state_service_proto_rawDesc), len(file_chat_v1_read_state_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

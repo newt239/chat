@@ -15,7 +15,7 @@ const clearTimer = (timerRef: RefObject<ReturnType<typeof setTimeout> | null>) =
 
 /** 入力中であることを WebSocket で通知する。連投を抑えるため間引いて送信する */
 export const useTypingNotifier = (channelId: string) => {
-  const { wsClient } = useWsClient();
+  const wsClient = useWsClient();
   const lastSentAtRef = useRef(0);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

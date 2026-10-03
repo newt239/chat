@@ -1,10 +1,6 @@
 package dm
 
-import (
-	"time"
-
-	"github.com/newt239/chat/internal/domain/entity"
-)
+import "github.com/newt239/chat/internal/domain/entity"
 
 type CreateDMInput struct {
 	WorkspaceID  string
@@ -16,7 +12,6 @@ type CreateGroupDMInput struct {
 	WorkspaceID string
 	CreatorID   string
 	MemberIDs   []string
-	Name        string
 }
 
 type ListDMsInput struct {
@@ -25,22 +20,10 @@ type ListDMsInput struct {
 }
 
 type DMOutput struct {
-	ID          string
-	WorkspaceID string
-	Name        string
-	Description *string
-	Type        entity.ChannelType
-	Members     []DMMemberOutput
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	*entity.Channel
+	// 自分以外の参加者
+	Members     []*entity.User
 	IsStarred   bool
 	IsMuted     bool
 	UnreadCount int
-	HasMention  bool
-}
-
-type DMMemberOutput struct {
-	UserID      string
-	DisplayName string
-	AvatarURL   *string
 }

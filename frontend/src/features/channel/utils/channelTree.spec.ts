@@ -2,6 +2,7 @@ import { create } from "@bufbuild/protobuf";
 import { timestampFromMs } from "@bufbuild/protobuf/wkt";
 import { describe, expect, test } from "vite-plus/test";
 
+import { ChannelCategorySchema } from "#/gen/chat/v1/channel_category_service_pb";
 import { ChannelSchema } from "#/gen/chat/v1/channel_service_pb";
 
 import {
@@ -14,7 +15,6 @@ import {
 
 const dev = create(ChannelSchema, { id: "dev", name: "dev", unreadCount: 1 });
 const frontend = create(ChannelSchema, {
-  hasMention: true,
   id: "fe",
   mentionCount: 1,
   name: "dev/frontend",
@@ -22,7 +22,6 @@ const frontend = create(ChannelSchema, {
   unreadCount: 2,
 });
 const backend = create(ChannelSchema, {
-  hasMention: true,
   id: "be",
   isMuted: true,
   mentionCount: 2,
@@ -76,10 +75,10 @@ describe("sortChannelsByActivity", () => {
 describe("categoryOfChannel", () => {
   test("自分の割り当て、なければ最も近い祖先の割り当てに従う", () => {
     const channels = [dev, frontend, backend, general];
-    const assigned = new Map([
-      ["dev", "work"],
-      ["be", "later"],
-    ]);
+    const assigned = [
+      create(ChannelCategorySchema, { channelIds: ["dev"], id: "work" }),
+      create(ChannelCategorySchema, { channelIds: ["be"], id: "later" }),
+    ];
     expect(categoryOfChannel(frontend, channels, assigned)).toBe("work");
     expect(categoryOfChannel(backend, channels, assigned)).toBe("later");
     expect(categoryOfChannel(general, channels, assigned)).toBeNull();

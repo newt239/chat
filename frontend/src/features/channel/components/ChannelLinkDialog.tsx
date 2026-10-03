@@ -34,7 +34,7 @@ export const ChannelLinkDialog = ({ channelId, link, onClose }: ChannelLinkDialo
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { create, update, remove } = useChannelLinkActions(channelId);
   const host = hostOf(url.trim());
-  const failed = [create, update, remove].find((mutation) => mutation.isError);
+  const failed = [create, update].find((mutation) => mutation.isError);
 
   const save = () => {
     setIsSubmitted(true);
@@ -56,11 +56,7 @@ export const ChannelLinkDialog = ({ channelId, link, onClose }: ChannelLinkDialo
   return (
     <Dialog
       isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onClose();
-        }
-      }}
+      onOpenChange={onClose}
       title={t(link ? "channel.links.editTitle" : "channel.links.addTitle")}
       footer={
         <>

@@ -2,9 +2,9 @@ import { createConnectTransport } from "@connectrpc/connect-web";
 
 import { isTauri } from "#/lib/platform/platform";
 
-import { apiBaseUrl } from "./baseUrl";
-
 import type { Interceptor } from "@connectrpc/connect";
+
+export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 // リフレッシュトークンの Cookie を送受信するため
 const fetchWithCredentials: typeof fetch = (input, init) =>

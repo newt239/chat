@@ -49,10 +49,10 @@ func TestDispatchSendsSignedEventsToSubscribedApps(t *testing.T) {
 	subscribed := &entity.App{ID: "a1", BotUserID: "bot-1", Permissions: []entity.AppPermission{entity.AppPermissionOutgoingWebhook}, OutgoingURL: &url, OutgoingSecret: &secret}
 	notAllowed := &entity.App{ID: "a2", BotUserID: "bot-2", OutgoingURL: &url, OutgoingSecret: &secret}
 	sender := &recordingSender{}
-	d := NewEventDispatcher(channelAppRepo{apps: []*entity.App{subscribed, notAllowed}}, stubMentionService{}, sender, nil)
+	d := NewEventDispatcher(channelAppRepo{apps: []*entity.App{subscribed, notAllowed}}, stubMentionService{}, sender)
 	channel := &entity.Channel{ID: "c1", WorkspaceID: "ws", Name: "general"}
 
-	if err := d.dispatch(context.Background(), channel, messageuc.MessageOutput{ID: "m1", UserID: "u2", Body: "hi <@u1>"}); err != nil {
+	if err := d.NotifyNewMessage(context.Background(), channel, messageuc.MessageOutput{ID: "m1", UserID: "u2", Body: "hi <@u1>"}); err != nil {
 		t.Fatal(err)
 	}
 	if len(sender.sent) != 1 || sender.sent[0].url != url {
@@ -69,7 +69,7 @@ func TestDispatchSendsSignedEventsToSubscribedApps(t *testing.T) {
 
 	// アプリ自身の投稿は送らない
 	sender.sent = nil
-	if err := d.dispatch(context.Background(), channel, messageuc.MessageOutput{ID: "m2", UserID: "bot-1", Body: "echo"}); err != nil || len(sender.sent) != 0 {
+	if err := d.NotifyNewMessage(context.Background(), channel, messageuc.MessageOutput{ID: "m2", UserID: "bot-1", Body: "echo"}); err != nil || len(sender.sent) != 0 {
 		t.Fatalf("自分の投稿を送っています: %v %d", err, len(sender.sent))
 	}
 }

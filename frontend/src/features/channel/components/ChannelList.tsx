@@ -20,20 +20,15 @@ export const ChannelList = ({ workspaceId, categoryId }: ChannelListProps) => {
   const { t } = useTranslation();
   const { channelSortOrder } = usePreferences();
   const { data: channels, isLoading } = useChannels(workspaceId);
-  const { data: categories } = useChannelCategories(workspaceId);
+  const { data: categories = [] } = useChannelCategories(workspaceId);
 
   if (isLoading) {
     return <Skeleton className="mx-2 my-1 h-4 w-32 bg-(--nav-hover)" />;
   }
 
   const all = channels ?? [];
-  const categoryByChannel = new Map(
-    (categories ?? []).flatMap((category) =>
-      category.channelIds.map((channelId) => [channelId, category.id] as const),
-    ),
-  );
   const inCategory = all.filter(
-    (channel) => categoryOfChannel(channel, all, categoryByChannel) === categoryId,
+    (channel) => categoryOfChannel(channel, all, categories) === categoryId,
   );
   const sorted = channelSortOrder === "recentActivity" ? sortChannelsByActivity(inCategory) : [];
   const tree = channelSortOrder === "recentActivity" ? [] : buildChannelTree(inCategory);

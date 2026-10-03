@@ -2,10 +2,10 @@ import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
+import { channelViewersAtom } from "#/features/channel/atoms";
 import { useChannelMembers } from "#/features/channel/hooks/useChannelMembers";
 import { MemberRow } from "#/features/member/components/MemberRow";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
-import { channelViewersAtom } from "#/providers/store/ui";
 
 import type { ChannelMember } from "#/gen/chat/v1/channel_member_service_pb";
 

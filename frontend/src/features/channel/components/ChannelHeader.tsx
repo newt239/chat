@@ -1,4 +1,3 @@
-import { skipToken, useQuery } from "@connectrpc/connect-query";
 import {
   IconBellOff,
   IconNote,
@@ -14,6 +13,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
+import { BackButton } from "#/components/block/BackButton/BackButton";
+import { useMobileForward } from "#/components/block/BackButton/mobileStack";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { IconToggleButton } from "#/components/ui/IconToggleButton/IconToggleButton";
@@ -22,20 +23,16 @@ import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { focusRing } from "#/components/ui/styles/styles";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
-import { DMAvatar } from "#/features/dm/components/DMAvatar";
-import { useDMs } from "#/features/dm/hooks/useDM";
-import { dmName } from "#/features/dm/utils/dmName";
-import { BackButton } from "#/features/layout/components/BackButton";
-import { useMobileForward } from "#/features/layout/hooks/useMobileForward";
-import { openPanel } from "#/features/layout/utils/overlaySearch";
+import { DMAvatar } from "#/features/channel/components/DMAvatar";
+import { dmName } from "#/features/channel/utils/dmName";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { useUserNote } from "#/features/member/hooks/useUserNote";
 import { usePinCount } from "#/features/pin/hooks/usePinnedMessages";
 import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
-import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { useIsMobile } from "#/hooks/useMediaQuery";
+import { openPanel } from "#/lib/overlaySearch";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
-import { useChannelById } from "../hooks/useChannelById";
 import { useChannelListActions } from "../hooks/useChannelListActions";
 import { useChannelMembers } from "../hooks/useChannelMembers";
 import { ChannelLinkBar } from "./ChannelLinkBar";
@@ -43,14 +40,19 @@ import { ChannelMenuItems } from "./ChannelMenuItems";
 import { ChannelName } from "./ChannelName";
 import { DescendantsToggle } from "./DescendantsToggle";
 
-import type { PanelSearch } from "#/features/layout/utils/overlaySearch";
+import type { Channel } from "#/gen/chat/v1/channel_service_pb";
+import type { DirectMessage } from "#/gen/chat/v1/direct_message_service_pb";
+import type { PanelSearch } from "#/lib/overlaySearch";
 
 type ChannelHeaderProps = {
   workspaceId: string;
   channelId: string;
+  // DM のときは channel が、チャンネルのときは dm が undefined
+  channel: Channel | undefined;
+  dm: DirectMessage | undefined;
 };
 
-export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) => {
+export const ChannelHeader = ({ workspaceId, channelId, channel, dm }: ChannelHeaderProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -59,27 +61,17 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
     workspaceId,
     channelId,
   );
-  const { data: dms } = useDMs(workspaceId);
-  // 未参加のチャンネルをプレビューしているときは一覧にないため個別に取得する
-  const channel = useChannelById(
-    workspaceId,
-    dms === undefined || dms.some((candidate) => candidate.id === channelId) ? null : channelId,
-  );
   const { data: members = [] } = useChannelMembers(channelId);
   const { setStarred } = useChannelListActions(workspaceId);
   const displayName = useDisplayName();
 
-  const dm = dms?.find((candidate) => candidate.id === channelId);
   const isStarred = channel?.isStarred ?? dm?.isStarred ?? false;
   const isMuted = channel?.isMuted ?? dm?.isMuted ?? false;
   const isGroupDM = dm?.type === DirectMessageType.GROUP_DM;
   const [partner] = dm?.type === DirectMessageType.DM ? dm.members : [];
   // 1 対 1 の DM では相手に付けたメモをトピックの位置に出す
-  const { data: memo } = useQuery(
-    UserService.method.getUserNote,
-    partner ? { targetUserId: partner.userId } : skipToken,
-    { select: (res) => res.note?.memo ?? "" },
-  );
+  const { data: note } = useUserNote(partner?.userId ?? null);
+  const memo = note?.memo;
   const descendantsToggle = descendants.length > 0 && (
     <DescendantsToggle
       count={descendants.length}
@@ -147,7 +139,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
         {!isMobile && descendantsToggle}
         <p className="m-0 flex min-w-0 flex-1 items-center gap-1 truncate pl-1.5 text-label font-normal text-muted max-md:invisible [&_svg]:size-3.5 [&_svg]:shrink-0">
           {channel?.description}
-          {isGroupDM && t("dm.header.groupCount", { count: dm.members.length + 1 })}
+          {isGroupDM && t("dm.groupCount", { count: dm.members.length + 1 })}
           {memo && (
             <>
               <IconNote aria-label={t("member.note.memo")} role="img" />

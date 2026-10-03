@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// ChannelMember holds the schema definition for the ChannelMember entity.
 type ChannelMember struct {
 	ent.Schema
 }
@@ -21,7 +20,6 @@ func (ChannelMember) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "channel_member"}}
 }
 
-// Fields of the ChannelMember.
 func (ChannelMember) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -37,7 +35,6 @@ func (ChannelMember) Fields() []ent.Field {
 	}
 }
 
-// Edges of the ChannelMember.
 func (ChannelMember) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("channel", Channel.Type).
@@ -51,10 +48,8 @@ func (ChannelMember) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the ChannelMember.
 func (ChannelMember) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("role"),
 		index.Fields("channel_id", "user_id").
 			Unique(),
 		index.Fields("user_id"),

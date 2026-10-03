@@ -1,13 +1,12 @@
 export const common = {
+  actionFailed: "操作できませんでした",
   cancel: "キャンセル",
   close: "閉じる",
   copyFailed: "コピーできませんでした",
   delete: "削除",
-  loading: "読み込み中",
-  ok: "OK",
+  linkCopied: "リンクをコピーしました",
   save: "保存",
   upload: {
-    aborted: "アップロードがキャンセルされました",
     http: "アップロードに失敗しました（HTTP {{status}}）",
     network: "ネットワークエラーが発生しました",
   },

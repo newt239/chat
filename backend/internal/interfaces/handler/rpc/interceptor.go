@@ -8,11 +8,29 @@ import (
 	"strings"
 
 	"connectrpc.com/connect"
+	"connectrpc.com/validate"
 
 	"github.com/newt239/chat/internal/gen/chat/v1/chatv1connect"
 	"github.com/newt239/chat/internal/usecase/audit"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
+
+// maxRequestBytes は 1 リクエストの本文の上限。ファイルは署名付き URL で直接アップロードするため小さくてよい
+const maxRequestBytes = 1 << 20
+
+// HandlerOptions は全サービスに共通の interceptor と制限です
+func HandlerOptions(jwtService authuc.JWTService, allowedOrigins []string) []connect.HandlerOption {
+	// 外側から順にエラー変換・オリジン確認・操作元の記録・認証・入力検証を適用する
+	interceptors := connect.WithInterceptors(
+		newErrorInterceptor(),
+		newOriginInterceptor(allowedOrigins),
+		newClientInfoInterceptor(),
+		newAuthInterceptor(jwtService),
+		validate.NewInterceptor(),
+	)
+	// Connect-Protocol-Version ヘッダーを必須にし、フォームなどから単純リクエストで呼ばれる CSRF を防ぐ
+	return []connect.HandlerOption{interceptors, connect.WithRequireConnectProtocolHeader(), connect.WithReadMaxBytes(maxRequestBytes)}
+}
 
 var publicProcedures = map[string]struct{}{
 	chatv1connect.AuthServiceGetAuthConfigProcedure:               {},
@@ -31,6 +49,19 @@ var publicProcedures = map[string]struct{}{
 var cookieProcedures = map[string]struct{}{
 	chatv1connect.AuthServiceRefreshProcedure: {},
 	chatv1connect.AuthServiceLogoutProcedure:  {},
+}
+
+type claimsKey struct{}
+
+func claimsFrom(ctx context.Context) authuc.TokenClaims {
+	if claims, ok := ctx.Value(claimsKey{}).(*authuc.TokenClaims); ok {
+		return *claims
+	}
+	return authuc.TokenClaims{}
+}
+
+func userIDFrom(ctx context.Context) string {
+	return claimsFrom(ctx).UserID
 }
 
 // newAuthInterceptor は公開 RPC でもアクセストークンがあれば検証し、本人とセッションを context に載せます
@@ -52,7 +83,7 @@ func newAuthInterceptor(jwtService authuc.JWTService) connect.UnaryInterceptorFu
 				}
 				return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("トークンが無効または期限切れです"))
 			}
-			return next(withClaims(ctx, claims), req)
+			return next(context.WithValue(ctx, claimsKey{}, claims), req)
 		}
 	}
 }
@@ -84,7 +115,7 @@ func newErrorInterceptor() connect.UnaryInterceptorFunc {
 			if errors.As(err, &connectErr) {
 				return nil, err
 			}
-			return nil, toConnectError(req.Spec().Procedure, err)
+			return nil, toConnectError(ctx, req.Spec().Procedure, err)
 		}
 	}
 }

@@ -11,9 +11,9 @@ export const schedule: Messages["schedule"] = {
   list: {
     actionFailed: "Something went wrong",
     actions: "Scheduled message actions",
-    attachments: "{{count}} attachments",
+    attachments_one: "{{count}} attachment",
+    attachments_other: "{{count}} attachments",
     body: "Message",
-    delete: "Delete",
     deleted: "Scheduled message deleted",
     edit: "Edit",
     editTitle: "Edit scheduled message",

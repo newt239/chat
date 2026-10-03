@@ -1,8 +1,8 @@
 import { visit } from "unist-util-visit";
 
-import { splitMentionTokens } from "../../mentionToken";
+import { splitMentionTokens, toMentionToken } from "#/features/mention/utils/mentionToken";
 
-import type { MentionPart } from "../../mentionToken";
+import type { MentionPart } from "#/features/mention/utils/mentionToken";
 
 import type { Root, RootContent, Text } from "mdast";
 
@@ -10,18 +10,11 @@ const toNode = (part: MentionPart) => {
   if (part.kind === "text") {
     return { type: "text", value: part.text } satisfies RootContent;
   }
-  if (part.kind === "channel") {
-    return {
-      data: { hName: "span", hProperties: { className: ["channel-link"], dataChannel: part.id } },
-      type: "channelLink",
-      value: part.id,
-    } satisfies RootContent;
-  }
   // sanitize は hast のプロパティ名（キャメルケース）で判定する
   return {
     data: {
       hName: "span",
-      hProperties: { className: ["mention"], dataMention: `${part.kind}:${part.id}` },
+      hProperties: { className: ["mention"], dataMention: toMentionToken(part) },
     },
     type: "mention",
     value: part.id,

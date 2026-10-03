@@ -3,10 +3,9 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
-import { formatDuration } from "#/features/player/utils/formatDuration";
+import { formatDuration } from "#/lib/formatDuration";
 
 import { useVoiceRecorder } from "../hooks/useVoiceRecorder";
-import { RecordingPreview } from "./RecordingPreview";
 
 type VoiceRecorderProps = {
   // 録音時間は MediaRecorder の webm から読めないことがあるため、計測した値を一緒に渡す
@@ -50,7 +49,8 @@ export const VoiceRecorder = ({ onAttach, onDiscard }: VoiceRecorderProps) => {
       )}
       {state.status === "recorded" && (
         <>
-          <RecordingPreview url={state.url} durationSeconds={state.durationSeconds} />
+          {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- 自分の録音を聴き直すだけで字幕はない */}
+          <audio controls src={state.url} className="h-8 min-w-0 flex-1" />
           <Button
             size="sm"
             onPress={() => {

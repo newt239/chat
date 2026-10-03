@@ -1,4 +1,4 @@
-import { IconEdit, IconPlus, IconX } from "@tabler/icons-react";
+import { IconPlus, IconX } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
@@ -8,7 +8,7 @@ import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { openDialog } from "#/lib/overlaySearch";
 
 import { useAppActions, useApps, useChannelApps } from "../hooks/useApps";
 import { AppRow } from "./AppRow";
@@ -78,36 +78,21 @@ export const ChannelAppsSection = ({ workspaceId, channelId }: ChannelAppsSectio
             key={app.id}
             app={app}
             actions={
-              app.canManage && (
-                <>
-                  <IconButton
-                    label={t("app.editOf", { name: app.name })}
-                    onPress={() => {
-                      void navigate({
-                        search: openDialog({ app: app.id, dialog: "edit-app" }),
-                        to: ".",
-                      });
-                    }}
-                  >
-                    <IconEdit />
-                  </IconButton>
-                  <IconButton
-                    label={t("app.remove", { name: app.name })}
-                    onPress={() => {
-                      removeFromChannel.mutate(
-                        { appId: app.id, channelId },
-                        {
-                          onSuccess: () => {
-                            toast(t("app.removed", { name: app.name }));
-                          },
-                        },
-                      );
-                    }}
-                  >
-                    <IconX />
-                  </IconButton>
-                </>
-              )
+              <IconButton
+                label={t("app.remove", { name: app.name })}
+                onPress={() => {
+                  removeFromChannel.mutate(
+                    { appId: app.id, channelId },
+                    {
+                      onSuccess: () => {
+                        toast(t("app.removed", { name: app.name }));
+                      },
+                    },
+                  );
+                }}
+              >
+                <IconX />
+              </IconButton>
             }
           />
         ))}

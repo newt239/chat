@@ -22,7 +22,7 @@ func (s *DraftServer) SaveDraft(ctx context.Context, req *chatv1.SaveDraftReques
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.SaveDraftResponse{Draft: presenter.OptionalDraft(d)}, nil
+	return &chatv1.SaveDraftResponse{Draft: presenter.Draft(d)}, nil
 }
 
 func (s *DraftServer) GetDraft(ctx context.Context, req *chatv1.GetDraftRequest) (*chatv1.GetDraftResponse, error) {
@@ -30,14 +30,11 @@ func (s *DraftServer) GetDraft(ctx context.Context, req *chatv1.GetDraftRequest)
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.GetDraftResponse{Draft: presenter.OptionalDraft(d)}, nil
+	return &chatv1.GetDraftResponse{Draft: presenter.Draft(d)}, nil
 }
 
 func (s *DraftServer) DeleteDraft(ctx context.Context, req *chatv1.DeleteDraftRequest) (*chatv1.DeleteDraftResponse, error) {
-	if err := s.UC.Delete(ctx, draftTarget(ctx, req.ChannelId, req.ParentId)); err != nil {
-		return nil, err
-	}
-	return &chatv1.DeleteDraftResponse{}, nil
+	return &chatv1.DeleteDraftResponse{}, s.UC.Delete(ctx, draftTarget(ctx, req.ChannelId, req.ParentId))
 }
 
 func (s *DraftServer) ListDrafts(ctx context.Context, req *chatv1.ListDraftsRequest) (*chatv1.ListDraftsResponse, error) {

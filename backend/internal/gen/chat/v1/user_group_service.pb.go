@@ -10,7 +10,6 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -26,12 +25,8 @@ const (
 type UserGroup struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	WorkspaceId   string                 `protobuf:"bytes,2,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Description   *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	CreatedBy     string                 `protobuf:"bytes,5,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -73,13 +68,6 @@ func (x *UserGroup) GetId() string {
 	return ""
 }
 
-func (x *UserGroup) GetWorkspaceId() string {
-	if x != nil {
-		return x.WorkspaceId
-	}
-	return ""
-}
-
 func (x *UserGroup) GetName() string {
 	if x != nil {
 		return x.Name
@@ -94,33 +82,11 @@ func (x *UserGroup) GetDescription() string {
 	return ""
 }
 
-func (x *UserGroup) GetCreatedBy() string {
-	if x != nil {
-		return x.CreatedBy
-	}
-	return ""
-}
-
-func (x *UserGroup) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *UserGroup) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
-}
-
 type UserGroupMember struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	DisplayName   string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	AvatarUrl     *string                `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
-	JoinedAt      *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -174,13 +140,6 @@ func (x *UserGroupMember) GetAvatarUrl() string {
 		return *x.AvatarUrl
 	}
 	return ""
-}
-
-func (x *UserGroupMember) GetJoinedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.JoinedAt
-	}
-	return nil
 }
 
 type CreateUserGroupRequest struct {
@@ -375,94 +334,6 @@ func (x *ListUserGroupsResponse) GetUserGroups() []*UserGroup {
 	return nil
 }
 
-type GetUserGroupRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GroupId       string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetUserGroupRequest) Reset() {
-	*x = GetUserGroupRequest{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUserGroupRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUserGroupRequest) ProtoMessage() {}
-
-func (x *GetUserGroupRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetUserGroupRequest.ProtoReflect.Descriptor instead.
-func (*GetUserGroupRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *GetUserGroupRequest) GetGroupId() string {
-	if x != nil {
-		return x.GroupId
-	}
-	return ""
-}
-
-type GetUserGroupResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserGroup     *UserGroup             `protobuf:"bytes,1,opt,name=user_group,json=userGroup,proto3" json:"user_group,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetUserGroupResponse) Reset() {
-	*x = GetUserGroupResponse{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUserGroupResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUserGroupResponse) ProtoMessage() {}
-
-func (x *GetUserGroupResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetUserGroupResponse.ProtoReflect.Descriptor instead.
-func (*GetUserGroupResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *GetUserGroupResponse) GetUserGroup() *UserGroup {
-	if x != nil {
-		return x.UserGroup
-	}
-	return nil
-}
-
 type UpdateUserGroupRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GroupId       string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
@@ -474,7 +345,7 @@ type UpdateUserGroupRequest struct {
 
 func (x *UpdateUserGroupRequest) Reset() {
 	*x = UpdateUserGroupRequest{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[8]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -486,7 +357,7 @@ func (x *UpdateUserGroupRequest) String() string {
 func (*UpdateUserGroupRequest) ProtoMessage() {}
 
 func (x *UpdateUserGroupRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[8]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -499,7 +370,7 @@ func (x *UpdateUserGroupRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserGroupRequest.ProtoReflect.Descriptor instead.
 func (*UpdateUserGroupRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{8}
+	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *UpdateUserGroupRequest) GetGroupId() string {
@@ -532,7 +403,7 @@ type UpdateUserGroupResponse struct {
 
 func (x *UpdateUserGroupResponse) Reset() {
 	*x = UpdateUserGroupResponse{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[9]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -544,7 +415,7 @@ func (x *UpdateUserGroupResponse) String() string {
 func (*UpdateUserGroupResponse) ProtoMessage() {}
 
 func (x *UpdateUserGroupResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[9]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -557,7 +428,7 @@ func (x *UpdateUserGroupResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserGroupResponse.ProtoReflect.Descriptor instead.
 func (*UpdateUserGroupResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{9}
+	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateUserGroupResponse) GetUserGroup() *UserGroup {
@@ -576,7 +447,7 @@ type DeleteUserGroupRequest struct {
 
 func (x *DeleteUserGroupRequest) Reset() {
 	*x = DeleteUserGroupRequest{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[10]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -588,7 +459,7 @@ func (x *DeleteUserGroupRequest) String() string {
 func (*DeleteUserGroupRequest) ProtoMessage() {}
 
 func (x *DeleteUserGroupRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[10]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -601,7 +472,7 @@ func (x *DeleteUserGroupRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserGroupRequest.ProtoReflect.Descriptor instead.
 func (*DeleteUserGroupRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{10}
+	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DeleteUserGroupRequest) GetGroupId() string {
@@ -619,7 +490,7 @@ type DeleteUserGroupResponse struct {
 
 func (x *DeleteUserGroupResponse) Reset() {
 	*x = DeleteUserGroupResponse{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[11]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -631,7 +502,7 @@ func (x *DeleteUserGroupResponse) String() string {
 func (*DeleteUserGroupResponse) ProtoMessage() {}
 
 func (x *DeleteUserGroupResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[11]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -644,7 +515,7 @@ func (x *DeleteUserGroupResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserGroupResponse.ProtoReflect.Descriptor instead.
 func (*DeleteUserGroupResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{11}
+	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{9}
 }
 
 type ListUserGroupMembersRequest struct {
@@ -656,7 +527,7 @@ type ListUserGroupMembersRequest struct {
 
 func (x *ListUserGroupMembersRequest) Reset() {
 	*x = ListUserGroupMembersRequest{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[12]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -668,7 +539,7 @@ func (x *ListUserGroupMembersRequest) String() string {
 func (*ListUserGroupMembersRequest) ProtoMessage() {}
 
 func (x *ListUserGroupMembersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[12]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -681,7 +552,7 @@ func (x *ListUserGroupMembersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUserGroupMembersRequest.ProtoReflect.Descriptor instead.
 func (*ListUserGroupMembersRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{12}
+	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ListUserGroupMembersRequest) GetGroupId() string {
@@ -700,7 +571,7 @@ type ListUserGroupMembersResponse struct {
 
 func (x *ListUserGroupMembersResponse) Reset() {
 	*x = ListUserGroupMembersResponse{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[13]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -712,7 +583,7 @@ func (x *ListUserGroupMembersResponse) String() string {
 func (*ListUserGroupMembersResponse) ProtoMessage() {}
 
 func (x *ListUserGroupMembersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[13]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -725,7 +596,7 @@ func (x *ListUserGroupMembersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUserGroupMembersResponse.ProtoReflect.Descriptor instead.
 func (*ListUserGroupMembersResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{13}
+	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ListUserGroupMembersResponse) GetMembers() []*UserGroupMember {
@@ -745,7 +616,7 @@ type AddUserGroupMemberRequest struct {
 
 func (x *AddUserGroupMemberRequest) Reset() {
 	*x = AddUserGroupMemberRequest{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[14]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -757,7 +628,7 @@ func (x *AddUserGroupMemberRequest) String() string {
 func (*AddUserGroupMemberRequest) ProtoMessage() {}
 
 func (x *AddUserGroupMemberRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[14]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -770,7 +641,7 @@ func (x *AddUserGroupMemberRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddUserGroupMemberRequest.ProtoReflect.Descriptor instead.
 func (*AddUserGroupMemberRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{14}
+	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *AddUserGroupMemberRequest) GetGroupId() string {
@@ -795,7 +666,7 @@ type AddUserGroupMemberResponse struct {
 
 func (x *AddUserGroupMemberResponse) Reset() {
 	*x = AddUserGroupMemberResponse{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[15]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -807,7 +678,7 @@ func (x *AddUserGroupMemberResponse) String() string {
 func (*AddUserGroupMemberResponse) ProtoMessage() {}
 
 func (x *AddUserGroupMemberResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[15]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -820,7 +691,7 @@ func (x *AddUserGroupMemberResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddUserGroupMemberResponse.ProtoReflect.Descriptor instead.
 func (*AddUserGroupMemberResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{15}
+	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{13}
 }
 
 type RemoveUserGroupMemberRequest struct {
@@ -833,7 +704,7 @@ type RemoveUserGroupMemberRequest struct {
 
 func (x *RemoveUserGroupMemberRequest) Reset() {
 	*x = RemoveUserGroupMemberRequest{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[16]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -845,7 +716,7 @@ func (x *RemoveUserGroupMemberRequest) String() string {
 func (*RemoveUserGroupMemberRequest) ProtoMessage() {}
 
 func (x *RemoveUserGroupMemberRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[16]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -858,7 +729,7 @@ func (x *RemoveUserGroupMemberRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveUserGroupMemberRequest.ProtoReflect.Descriptor instead.
 func (*RemoveUserGroupMemberRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{16}
+	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *RemoveUserGroupMemberRequest) GetGroupId() string {
@@ -883,7 +754,7 @@ type RemoveUserGroupMemberResponse struct {
 
 func (x *RemoveUserGroupMemberResponse) Reset() {
 	*x = RemoveUserGroupMemberResponse{}
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[17]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -895,7 +766,7 @@ func (x *RemoveUserGroupMemberResponse) String() string {
 func (*RemoveUserGroupMemberResponse) ProtoMessage() {}
 
 func (x *RemoveUserGroupMemberResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_group_service_proto_msgTypes[17]
+	mi := &file_chat_v1_user_group_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -908,32 +779,24 @@ func (x *RemoveUserGroupMemberResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveUserGroupMemberResponse.ProtoReflect.Descriptor instead.
 func (*RemoveUserGroupMemberResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{17}
+	return file_chat_v1_user_group_service_proto_rawDescGZIP(), []int{15}
 }
 
 var File_chat_v1_user_group_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_user_group_service_proto_rawDesc = "" +
 	"\n" +
-	" chat/v1/user_group_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9e\x02\n" +
+	" chat/v1/user_group_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"f\n" +
 	"\tUserGroup\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
-	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12%\n" +
-	"\vdescription\x18\x04 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x1d\n" +
-	"\n" +
-	"created_by\x18\x05 \x01(\tR\tcreatedBy\x129\n" +
-	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\x0e\n" +
-	"\f_description\"\xb9\x01\n" +
+	"\vdescription\x18\x04 \x01(\tH\x00R\vdescription\x88\x01\x01B\x0e\n" +
+	"\f_description\"\x80\x01\n" +
 	"\x0fUserGroupMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\"\n" +
 	"\n" +
-	"avatar_url\x18\x03 \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x127\n" +
-	"\tjoined_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\bjoinedAtB\r\n" +
+	"avatar_url\x18\x03 \x01(\tH\x00R\tavatarUrl\x88\x01\x01B\r\n" +
 	"\v_avatar_url\"\x98\x01\n" +
 	"\x16CreateUserGroupRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12\x1b\n" +
@@ -947,12 +810,7 @@ const file_chat_v1_user_group_service_proto_rawDesc = "" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"M\n" +
 	"\x16ListUserGroupsResponse\x123\n" +
 	"\vuser_groups\x18\x01 \x03(\v2\x12.chat.v1.UserGroupR\n" +
-	"userGroups\":\n" +
-	"\x13GetUserGroupRequest\x12#\n" +
-	"\bgroup_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\agroupId\"I\n" +
-	"\x14GetUserGroupResponse\x121\n" +
-	"\n" +
-	"user_group\x18\x01 \x01(\v2\x12.chat.v1.UserGroupR\tuserGroup\"\x9f\x01\n" +
+	"userGroups\"\x9f\x01\n" +
 	"\x16UpdateUserGroupRequest\x12#\n" +
 	"\bgroup_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\agroupId\x12 \n" +
 	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x04name\x88\x01\x01\x12%\n" +
@@ -976,11 +834,10 @@ const file_chat_v1_user_group_service_proto_rawDesc = "" +
 	"\x1cRemoveUserGroupMemberRequest\x12#\n" +
 	"\bgroup_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\agroupId\x12!\n" +
 	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"\x1f\n" +
-	"\x1dRemoveUserGroupMemberResponse2\xe0\x05\n" +
+	"\x1dRemoveUserGroupMemberResponse2\x93\x05\n" +
 	"\x10UserGroupService\x12T\n" +
 	"\x0fCreateUserGroup\x12\x1f.chat.v1.CreateUserGroupRequest\x1a .chat.v1.CreateUserGroupResponse\x12Q\n" +
-	"\x0eListUserGroups\x12\x1e.chat.v1.ListUserGroupsRequest\x1a\x1f.chat.v1.ListUserGroupsResponse\x12K\n" +
-	"\fGetUserGroup\x12\x1c.chat.v1.GetUserGroupRequest\x1a\x1d.chat.v1.GetUserGroupResponse\x12T\n" +
+	"\x0eListUserGroups\x12\x1e.chat.v1.ListUserGroupsRequest\x1a\x1f.chat.v1.ListUserGroupsResponse\x12T\n" +
 	"\x0fUpdateUserGroup\x12\x1f.chat.v1.UpdateUserGroupRequest\x1a .chat.v1.UpdateUserGroupResponse\x12T\n" +
 	"\x0fDeleteUserGroup\x12\x1f.chat.v1.DeleteUserGroupRequest\x1a .chat.v1.DeleteUserGroupResponse\x12c\n" +
 	"\x14ListUserGroupMembers\x12$.chat.v1.ListUserGroupMembersRequest\x1a%.chat.v1.ListUserGroupMembersResponse\x12]\n" +
@@ -1000,7 +857,7 @@ func file_chat_v1_user_group_service_proto_rawDescGZIP() []byte {
 	return file_chat_v1_user_group_service_proto_rawDescData
 }
 
-var file_chat_v1_user_group_service_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_chat_v1_user_group_service_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_chat_v1_user_group_service_proto_goTypes = []any{
 	(*UserGroup)(nil),                     // 0: chat.v1.UserGroup
 	(*UserGroupMember)(nil),               // 1: chat.v1.UserGroupMember
@@ -1008,50 +865,41 @@ var file_chat_v1_user_group_service_proto_goTypes = []any{
 	(*CreateUserGroupResponse)(nil),       // 3: chat.v1.CreateUserGroupResponse
 	(*ListUserGroupsRequest)(nil),         // 4: chat.v1.ListUserGroupsRequest
 	(*ListUserGroupsResponse)(nil),        // 5: chat.v1.ListUserGroupsResponse
-	(*GetUserGroupRequest)(nil),           // 6: chat.v1.GetUserGroupRequest
-	(*GetUserGroupResponse)(nil),          // 7: chat.v1.GetUserGroupResponse
-	(*UpdateUserGroupRequest)(nil),        // 8: chat.v1.UpdateUserGroupRequest
-	(*UpdateUserGroupResponse)(nil),       // 9: chat.v1.UpdateUserGroupResponse
-	(*DeleteUserGroupRequest)(nil),        // 10: chat.v1.DeleteUserGroupRequest
-	(*DeleteUserGroupResponse)(nil),       // 11: chat.v1.DeleteUserGroupResponse
-	(*ListUserGroupMembersRequest)(nil),   // 12: chat.v1.ListUserGroupMembersRequest
-	(*ListUserGroupMembersResponse)(nil),  // 13: chat.v1.ListUserGroupMembersResponse
-	(*AddUserGroupMemberRequest)(nil),     // 14: chat.v1.AddUserGroupMemberRequest
-	(*AddUserGroupMemberResponse)(nil),    // 15: chat.v1.AddUserGroupMemberResponse
-	(*RemoveUserGroupMemberRequest)(nil),  // 16: chat.v1.RemoveUserGroupMemberRequest
-	(*RemoveUserGroupMemberResponse)(nil), // 17: chat.v1.RemoveUserGroupMemberResponse
-	(*timestamppb.Timestamp)(nil),         // 18: google.protobuf.Timestamp
+	(*UpdateUserGroupRequest)(nil),        // 6: chat.v1.UpdateUserGroupRequest
+	(*UpdateUserGroupResponse)(nil),       // 7: chat.v1.UpdateUserGroupResponse
+	(*DeleteUserGroupRequest)(nil),        // 8: chat.v1.DeleteUserGroupRequest
+	(*DeleteUserGroupResponse)(nil),       // 9: chat.v1.DeleteUserGroupResponse
+	(*ListUserGroupMembersRequest)(nil),   // 10: chat.v1.ListUserGroupMembersRequest
+	(*ListUserGroupMembersResponse)(nil),  // 11: chat.v1.ListUserGroupMembersResponse
+	(*AddUserGroupMemberRequest)(nil),     // 12: chat.v1.AddUserGroupMemberRequest
+	(*AddUserGroupMemberResponse)(nil),    // 13: chat.v1.AddUserGroupMemberResponse
+	(*RemoveUserGroupMemberRequest)(nil),  // 14: chat.v1.RemoveUserGroupMemberRequest
+	(*RemoveUserGroupMemberResponse)(nil), // 15: chat.v1.RemoveUserGroupMemberResponse
 }
 var file_chat_v1_user_group_service_proto_depIdxs = []int32{
-	18, // 0: chat.v1.UserGroup.created_at:type_name -> google.protobuf.Timestamp
-	18, // 1: chat.v1.UserGroup.updated_at:type_name -> google.protobuf.Timestamp
-	18, // 2: chat.v1.UserGroupMember.joined_at:type_name -> google.protobuf.Timestamp
-	0,  // 3: chat.v1.CreateUserGroupResponse.user_group:type_name -> chat.v1.UserGroup
-	0,  // 4: chat.v1.ListUserGroupsResponse.user_groups:type_name -> chat.v1.UserGroup
-	0,  // 5: chat.v1.GetUserGroupResponse.user_group:type_name -> chat.v1.UserGroup
-	0,  // 6: chat.v1.UpdateUserGroupResponse.user_group:type_name -> chat.v1.UserGroup
-	1,  // 7: chat.v1.ListUserGroupMembersResponse.members:type_name -> chat.v1.UserGroupMember
-	2,  // 8: chat.v1.UserGroupService.CreateUserGroup:input_type -> chat.v1.CreateUserGroupRequest
-	4,  // 9: chat.v1.UserGroupService.ListUserGroups:input_type -> chat.v1.ListUserGroupsRequest
-	6,  // 10: chat.v1.UserGroupService.GetUserGroup:input_type -> chat.v1.GetUserGroupRequest
-	8,  // 11: chat.v1.UserGroupService.UpdateUserGroup:input_type -> chat.v1.UpdateUserGroupRequest
-	10, // 12: chat.v1.UserGroupService.DeleteUserGroup:input_type -> chat.v1.DeleteUserGroupRequest
-	12, // 13: chat.v1.UserGroupService.ListUserGroupMembers:input_type -> chat.v1.ListUserGroupMembersRequest
-	14, // 14: chat.v1.UserGroupService.AddUserGroupMember:input_type -> chat.v1.AddUserGroupMemberRequest
-	16, // 15: chat.v1.UserGroupService.RemoveUserGroupMember:input_type -> chat.v1.RemoveUserGroupMemberRequest
-	3,  // 16: chat.v1.UserGroupService.CreateUserGroup:output_type -> chat.v1.CreateUserGroupResponse
-	5,  // 17: chat.v1.UserGroupService.ListUserGroups:output_type -> chat.v1.ListUserGroupsResponse
-	7,  // 18: chat.v1.UserGroupService.GetUserGroup:output_type -> chat.v1.GetUserGroupResponse
-	9,  // 19: chat.v1.UserGroupService.UpdateUserGroup:output_type -> chat.v1.UpdateUserGroupResponse
-	11, // 20: chat.v1.UserGroupService.DeleteUserGroup:output_type -> chat.v1.DeleteUserGroupResponse
-	13, // 21: chat.v1.UserGroupService.ListUserGroupMembers:output_type -> chat.v1.ListUserGroupMembersResponse
-	15, // 22: chat.v1.UserGroupService.AddUserGroupMember:output_type -> chat.v1.AddUserGroupMemberResponse
-	17, // 23: chat.v1.UserGroupService.RemoveUserGroupMember:output_type -> chat.v1.RemoveUserGroupMemberResponse
-	16, // [16:24] is the sub-list for method output_type
-	8,  // [8:16] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	0,  // 0: chat.v1.CreateUserGroupResponse.user_group:type_name -> chat.v1.UserGroup
+	0,  // 1: chat.v1.ListUserGroupsResponse.user_groups:type_name -> chat.v1.UserGroup
+	0,  // 2: chat.v1.UpdateUserGroupResponse.user_group:type_name -> chat.v1.UserGroup
+	1,  // 3: chat.v1.ListUserGroupMembersResponse.members:type_name -> chat.v1.UserGroupMember
+	2,  // 4: chat.v1.UserGroupService.CreateUserGroup:input_type -> chat.v1.CreateUserGroupRequest
+	4,  // 5: chat.v1.UserGroupService.ListUserGroups:input_type -> chat.v1.ListUserGroupsRequest
+	6,  // 6: chat.v1.UserGroupService.UpdateUserGroup:input_type -> chat.v1.UpdateUserGroupRequest
+	8,  // 7: chat.v1.UserGroupService.DeleteUserGroup:input_type -> chat.v1.DeleteUserGroupRequest
+	10, // 8: chat.v1.UserGroupService.ListUserGroupMembers:input_type -> chat.v1.ListUserGroupMembersRequest
+	12, // 9: chat.v1.UserGroupService.AddUserGroupMember:input_type -> chat.v1.AddUserGroupMemberRequest
+	14, // 10: chat.v1.UserGroupService.RemoveUserGroupMember:input_type -> chat.v1.RemoveUserGroupMemberRequest
+	3,  // 11: chat.v1.UserGroupService.CreateUserGroup:output_type -> chat.v1.CreateUserGroupResponse
+	5,  // 12: chat.v1.UserGroupService.ListUserGroups:output_type -> chat.v1.ListUserGroupsResponse
+	7,  // 13: chat.v1.UserGroupService.UpdateUserGroup:output_type -> chat.v1.UpdateUserGroupResponse
+	9,  // 14: chat.v1.UserGroupService.DeleteUserGroup:output_type -> chat.v1.DeleteUserGroupResponse
+	11, // 15: chat.v1.UserGroupService.ListUserGroupMembers:output_type -> chat.v1.ListUserGroupMembersResponse
+	13, // 16: chat.v1.UserGroupService.AddUserGroupMember:output_type -> chat.v1.AddUserGroupMemberResponse
+	15, // 17: chat.v1.UserGroupService.RemoveUserGroupMember:output_type -> chat.v1.RemoveUserGroupMemberResponse
+	11, // [11:18] is the sub-list for method output_type
+	4,  // [4:11] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_user_group_service_proto_init() }
@@ -1062,14 +910,14 @@ func file_chat_v1_user_group_service_proto_init() {
 	file_chat_v1_user_group_service_proto_msgTypes[0].OneofWrappers = []any{}
 	file_chat_v1_user_group_service_proto_msgTypes[1].OneofWrappers = []any{}
 	file_chat_v1_user_group_service_proto_msgTypes[2].OneofWrappers = []any{}
-	file_chat_v1_user_group_service_proto_msgTypes[8].OneofWrappers = []any{}
+	file_chat_v1_user_group_service_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_user_group_service_proto_rawDesc), len(file_chat_v1_user_group_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   18,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

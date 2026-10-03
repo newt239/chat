@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -15,24 +16,15 @@ import (
 )
 
 var (
-	ErrScheduledMessageNotFound = errors.New("予約メッセージが見つかりません")
-	ErrScheduleInPast           = fmt.Errorf("%w: 予約日時は現在より後にしてください", domerr.ErrValidation)
-	ErrNotEditable              = errors.New("送信中または送信済みの予約は変更できません")
-	errSendFailed               = errors.New("送信に失敗しました")
+	ErrScheduledMessageNotFound = domerr.New(domerr.ErrNotFound, "予約メッセージが見つかりません")
+	ErrScheduleInPast           = domerr.New(domerr.ErrValidation, "予約日時は現在より後にしてください")
+	ErrNotEditable              = domerr.New(domerr.ErrFailedPrecondition, "送信中または送信済みの予約は変更できません")
 )
-
-// 送信の失敗理由としてそのまま利用者に見せるエラー。それ以外は内部の詳細を隠す
-var userFacingErrors = []error{
-	domerr.ErrUnauthorized, domerr.ErrChannelNotFound, domerr.ErrChannelArchived,
-	domerr.ErrParentMessageNotFound, domerr.ErrAttachmentNotFound, messageuc.ErrEmptyMessage,
-}
 
 const (
 	dispatchBatchSize = 50
 	// 送信中のまま staleSendingAfter を過ぎた予約は、送信の途中でサーバーが止まったものとして失敗にする
 	staleSendingAfter = 5 * time.Minute
-	// 期限切れのセッションを消す間隔
-	sessionCleanupInterval = time.Hour
 )
 
 // MessagePoster は予約した内容を通常の投稿と同じ経路で投稿します
@@ -61,52 +53,42 @@ type Interactor struct {
 	scheduledRepo    domainrepository.ScheduledMessageRepository
 	messageRepo      domainrepository.MessageRepository
 	attachmentRepo   domainrepository.AttachmentRepository
-	sessionRepo      domainrepository.SessionRepository
 	channelAccessSvc service.ChannelAccessService
 	poster           MessagePoster
-	logger           service.Logger
 }
 
-func NewInteractor(
+func New(
 	scheduledRepo domainrepository.ScheduledMessageRepository,
 	messageRepo domainrepository.MessageRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
-	sessionRepo domainrepository.SessionRepository,
 	channelAccessSvc service.ChannelAccessService,
 	poster MessagePoster,
-	logger service.Logger,
 ) *Interactor {
 	return &Interactor{
 		scheduledRepo:    scheduledRepo,
 		messageRepo:      messageRepo,
 		attachmentRepo:   attachmentRepo,
-		sessionRepo:      sessionRepo,
 		channelAccessSvc: channelAccessSvc,
 		poster:           poster,
-		logger:           logger,
 	}
 }
 
 // Schedule は投稿できる内容かを今の時点で確かめてから予約します。送信時にも改めて確かめる
-func (i *Interactor) Schedule(ctx context.Context, input ScheduleInput) (*entity.ScheduledMessage, error) {
+func (i *Interactor) Schedule(ctx context.Context, input ScheduleInput) error {
 	if strings.TrimSpace(input.Body) == "" && len(input.AttachmentIDs) == 0 && input.Location == nil {
-		return nil, messageuc.ErrEmptyMessage
+		return messageuc.ErrEmptyMessage
 	}
 	if !input.ScheduledAt.After(time.Now()) {
-		return nil, ErrScheduleInPast
+		return ErrScheduleInPast
 	}
-	channel, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
-	if err != nil {
-		return nil, err
+	if _, err := i.channelAccessSvc.EnsureChannelMember(ctx, input.ChannelID, input.UserID); err != nil {
+		return err
 	}
-	if channel.ArchivedAt != nil {
-		return nil, domerr.ErrChannelArchived
+	if _, err := messageuc.EnsureReplyTarget(ctx, i.messageRepo, input.ParentID, input.ChannelID); err != nil {
+		return err
 	}
-	if err := i.ensureParent(ctx, input.ParentID, input.ChannelID); err != nil {
-		return nil, err
-	}
-	if err := i.ensureAttachments(ctx, input); err != nil {
-		return nil, err
+	if err := messageuc.VerifyAttachments(ctx, i.attachmentRepo, input.UserID, input.ChannelID, input.AttachmentIDs); err != nil {
+		return err
 	}
 
 	message := &entity.ScheduledMessage{
@@ -119,9 +101,9 @@ func (i *Interactor) Schedule(ctx context.Context, input ScheduleInput) (*entity
 		ScheduledAt:   input.ScheduledAt,
 	}
 	if err := i.scheduledRepo.Create(ctx, message); err != nil {
-		return nil, fmt.Errorf("failed to create scheduled message: %w", err)
+		return fmt.Errorf("failed to create scheduled message: %w", err)
 	}
-	return message, nil
+	return nil
 }
 
 func (i *Interactor) List(ctx context.Context, userID, workspaceID string) ([]*entity.ScheduledMessage, error) {
@@ -129,24 +111,24 @@ func (i *Interactor) List(ctx context.Context, userID, workspaceID string) ([]*e
 }
 
 // Reschedule は本文と日時を変えます。失敗した予約はこれで予約中に戻る
-func (i *Interactor) Reschedule(ctx context.Context, input RescheduleInput) (*entity.ScheduledMessage, error) {
+func (i *Interactor) Reschedule(ctx context.Context, input RescheduleInput) error {
 	message, err := i.findOwn(ctx, input.ID, input.UserID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if !message.IsEditable() {
-		return nil, ErrNotEditable
+		return ErrNotEditable
 	}
 	if strings.TrimSpace(input.Body) == "" && len(message.AttachmentIDs) == 0 && message.Location == nil {
-		return nil, messageuc.ErrEmptyMessage
+		return messageuc.ErrEmptyMessage
 	}
 	if !input.ScheduledAt.After(time.Now()) {
-		return nil, ErrScheduleInPast
+		return ErrScheduleInPast
 	}
 	if err := i.scheduledRepo.Reschedule(ctx, input.ID, input.Body, input.ScheduledAt); err != nil {
-		return nil, fmt.Errorf("failed to reschedule: %w", err)
+		return fmt.Errorf("failed to reschedule: %w", err)
 	}
-	return i.scheduledRepo.FindByID(ctx, input.ID)
+	return nil
 }
 
 func (i *Interactor) Delete(ctx context.Context, id, userID string) error {
@@ -160,20 +142,20 @@ func (i *Interactor) Delete(ctx context.Context, id, userID string) error {
 	return i.scheduledRepo.Delete(ctx, id)
 }
 
-// SendNow は予約日時を待たずに投稿し、結果を反映した予約を返します
-func (i *Interactor) SendNow(ctx context.Context, id, userID string) (*entity.ScheduledMessage, error) {
+// SendNow は予約日時を待たずに投稿します
+func (i *Interactor) SendNow(ctx context.Context, id, userID string) error {
 	if _, err := i.findOwn(ctx, id, userID); err != nil {
-		return nil, err
+		return err
 	}
 	message, err := i.scheduledRepo.Claim(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to claim scheduled message: %w", err)
+		return fmt.Errorf("failed to claim scheduled message: %w", err)
 	}
 	if message == nil {
-		return nil, ErrNotEditable
+		return ErrNotEditable
 	}
 	i.send(ctx, message)
-	return i.scheduledRepo.FindByID(ctx, id)
+	return nil
 }
 
 // DispatchDue は期限の来た予約を送り、処理した件数を返します
@@ -189,30 +171,6 @@ func (i *Interactor) DispatchDue(ctx context.Context) (int, error) {
 	return len(messages), nil
 }
 
-// RunDispatcher は ctx が終わるまで interval ごとに期限の来た予約を送り、ついでに期限切れのセッションを消します
-func (i *Interactor) RunDispatcher(ctx context.Context, interval time.Duration) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-	var cleanedAt time.Time
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case now := <-ticker.C:
-			if _, err := i.DispatchDue(ctx); err != nil {
-				i.logger.Error("予約メッセージの送信処理に失敗しました", service.LogField{Key: "error", Value: err.Error()})
-			}
-			if now.Sub(cleanedAt) < sessionCleanupInterval {
-				continue
-			}
-			cleanedAt = now
-			if err := i.sessionRepo.DeleteExpired(ctx); err != nil {
-				i.logger.Error("期限切れのセッションを削除できません", service.LogField{Key: "error", Value: err.Error()})
-			}
-		}
-	}
-}
-
 // send は通常の投稿と同じ経路（権限の確認・メンション・検索インデックス・配信）で投稿し、結果を記録します
 func (i *Interactor) send(ctx context.Context, message *entity.ScheduledMessage) {
 	out, err := i.poster.CreateMessage(ctx, messageuc.CreateMessageInput{
@@ -224,28 +182,25 @@ func (i *Interactor) send(ctx context.Context, message *entity.ScheduledMessage)
 		Location:      message.Location,
 	})
 	if err == nil {
-		err = i.scheduledRepo.MarkSent(ctx, message.ID, out.ID)
-		if err != nil {
-			i.logger.Error("予約メッセージの送信済みを記録できません", service.LogField{Key: "id", Value: message.ID}, service.LogField{Key: "error", Value: err.Error()})
+		if err := i.scheduledRepo.MarkSent(ctx, message.ID, out.ID); err != nil {
+			slog.ErrorContext(ctx, "予約メッセージの送信済みを記録できません", "id", message.ID, "error", err)
 		}
 		return
 	}
-	reason := failureReason(err)
-	if reason == errSendFailed.Error() {
-		i.logger.Error("予約メッセージを送信できません", service.LogField{Key: "id", Value: message.ID}, service.LogField{Key: "error", Value: err.Error()})
-	}
-	if err := i.scheduledRepo.MarkFailed(ctx, message.ID, reason); err != nil {
-		i.logger.Error("予約メッセージの失敗を記録できません", service.LogField{Key: "id", Value: message.ID}, service.LogField{Key: "error", Value: err.Error()})
+	if err := i.scheduledRepo.MarkFailed(ctx, message.ID, failureReason(ctx, message.ID, err)); err != nil {
+		slog.ErrorContext(ctx, "予約メッセージの失敗を記録できません", "id", message.ID, "error", err)
 	}
 }
 
-func failureReason(err error) string {
-	for _, target := range userFacingErrors {
-		if errors.Is(err, target) {
-			return target.Error()
+// failureReason は権限・存在・入力の誤りならそのまま利用者に見せ、それ以外は内部の詳細を隠します
+func failureReason(ctx context.Context, id string, err error) string {
+	for _, kind := range []error{domerr.ErrUnauthorized, domerr.ErrNotFound, domerr.ErrValidation} {
+		if errors.Is(err, kind) {
+			return err.Error()
 		}
 	}
-	return errSendFailed.Error()
+	slog.ErrorContext(ctx, "予約メッセージを送信できません", "id", id, "error", err)
+	return "送信に失敗しました"
 }
 
 // findOwn は他人の予約を存在しないものとして扱います
@@ -258,38 +213,4 @@ func (i *Interactor) findOwn(ctx context.Context, id, userID string) (*entity.Sc
 		return nil, ErrScheduledMessageNotFound
 	}
 	return message, nil
-}
-
-func (i *Interactor) ensureParent(ctx context.Context, parentID *string, channelID string) error {
-	if parentID == nil {
-		return nil
-	}
-	parent, err := i.messageRepo.FindByID(ctx, *parentID)
-	if err != nil {
-		return fmt.Errorf("failed to load parent message: %w", err)
-	}
-	if !parent.CanBeRepliedIn(channelID) {
-		return domerr.ErrParentMessageNotFound
-	}
-	return nil
-}
-
-// ensureAttachments は添付が本人のまだ使っていないもので、同じチャンネル宛てかを確かめます
-func (i *Interactor) ensureAttachments(ctx context.Context, input ScheduleInput) error {
-	if len(input.AttachmentIDs) == 0 {
-		return nil
-	}
-	attachments, err := i.attachmentRepo.FindPendingByIDsForUser(ctx, input.UserID, input.AttachmentIDs)
-	if err != nil {
-		return fmt.Errorf("failed to verify attachments: %w", err)
-	}
-	if len(attachments) != len(input.AttachmentIDs) {
-		return domerr.ErrAttachmentNotFound
-	}
-	for _, attachment := range attachments {
-		if attachment.ChannelID != input.ChannelID {
-			return domerr.ErrAttachmentNotFound
-		}
-	}
-	return nil
 }

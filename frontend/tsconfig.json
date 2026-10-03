@@ -1,27 +1,13 @@
 {
+  "extends": "../packages/tsconfig.base.json",
   "compilerOptions": {
     "incremental": true,
-    "target": "esnext",
     "jsx": "react-jsx",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "lib": ["dom", "esnext"],
     "paths": {
       "#/*": ["./src/*"]
     },
-    "resolveJsonModule": true,
-    "allowJs": false,
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true, // ファイル名の大文字・小文字の不一致によるバグを防ぐ
-    "noUncheckedIndexedAccess": true, // インデックスアクセスの型安全を強制
-    "noEmit": true,
-    "esModuleInterop": true,
-    "isolatedModules": true,
-    "skipLibCheck": true
+    "resolveJsonModule": true
   },
-  "include": ["src", "tests", "vite.config.ts"],
-  "exclude": ["node_modules"]
+  "include": ["src", "vite.config.ts"]
 }

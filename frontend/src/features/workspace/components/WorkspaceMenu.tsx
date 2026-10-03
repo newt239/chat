@@ -1,10 +1,4 @@
-import {
-  IconChartBar,
-  IconChevronDown,
-  IconPlus,
-  IconSettings,
-  IconShieldCheck,
-} from "@tabler/icons-react";
+import { IconChevronDown, IconPlus, IconSettings, IconShieldCheck } from "@tabler/icons-react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -13,9 +7,8 @@ import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { MenuSection } from "#/components/ui/MenuSection/MenuSection";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { focusRing } from "#/components/ui/styles/styles";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
-import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
-import { isAdminRole } from "#/lib/isAdminRole";
+import { useIsWorkspaceAdmin } from "#/hooks/useIsWorkspaceAdmin";
+import { openDialog } from "#/lib/overlaySearch";
 
 import { useWorkspaces } from "../hooks/useWorkspace";
 import { WorkspaceLogo } from "./WorkspaceLogo";
@@ -24,11 +17,11 @@ type WorkspaceMenuProps = {
   workspaceId: string;
 };
 
-// サイドバー上部のワークスペース名。切り替え・設定・インサイトと管理画面への移動をまとめる
+// サイドバー上部のワークスペース名。切り替え・設定と管理画面への移動をまとめる
 export const WorkspaceMenu = ({ workspaceId }: WorkspaceMenuProps) => {
   const { t } = useTranslation();
   const { data: workspaces = [] } = useWorkspaces();
-  const isAdmin = isAdminRole(useMyWorkspaceRole(workspaceId).data);
+  const isAdmin = useIsWorkspaceAdmin(workspaceId);
   const current = workspaces.find((workspace) => workspace.id === workspaceId);
   const name = current?.name ?? workspaceId;
 
@@ -66,13 +59,6 @@ export const WorkspaceMenu = ({ workspaceId }: WorkspaceMenuProps) => {
         </MenuItemLink>
       </MenuSection>
       <MenuSeparator />
-      <MenuItemLink
-        to="/app/$workspaceId/insights"
-        params={{ workspaceId }}
-        icon={<IconChartBar />}
-      >
-        {t("shell.nav.insights")}
-      </MenuItemLink>
       {isAdmin && (
         <MenuItemLink
           to="/app/$workspaceId/admin"
@@ -85,7 +71,7 @@ export const WorkspaceMenu = ({ workspaceId }: WorkspaceMenuProps) => {
       {current && (
         <MenuItemLink
           icon={<IconSettings />}
-          to="/app/$workspaceId/workspace-settings/$section"
+          to="/app/$workspaceId/workspace-settings/{-$section}"
           params={{ section: "general", workspaceId }}
         >
           {t("shell.workspace.settings")}

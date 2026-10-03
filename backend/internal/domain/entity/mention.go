@@ -3,7 +3,6 @@ package entity
 import (
 	"regexp"
 	"slices"
-	"time"
 )
 
 type MessageUserMention struct {
@@ -11,13 +10,11 @@ type MessageUserMention struct {
 	UserID    string
 	// グループへのメンションを投稿時点のメンバーに展開したときの展開元
 	ViaGroupID *string
-	CreatedAt  time.Time
 }
 
 type MessageGroupMention struct {
 	MessageID string
 	GroupID   string
-	CreatedAt time.Time
 }
 
 // MentionKind は本文に埋め込む ID 記法の種類です

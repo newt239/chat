@@ -2,10 +2,10 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vite-plus/test";
 
+import { notificationPreferencesAtom } from "#/features/notification/atoms";
 import { NotificationService, PushPlatform } from "#/gen/chat/v1/notification_service_pb";
 import { NotificationLevel } from "#/gen/chat/v1/user_pb";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
-import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { NotificationSettings } from "./NotificationSettings";
@@ -15,7 +15,7 @@ import type { UserPreferences } from "#/gen/chat/v1/user_pb";
 
 const push = vi.hoisted(() => ({ supported: false }));
 
-vi.mock("#/features/settings/utils/pushMessaging", () => ({
+vi.mock("#/features/notification/utils/pushMessaging", () => ({
   isPushSupported: () => push.supported,
   registerPush: vi.fn(() => Promise.resolve("token-1")),
   unregisterPush: vi.fn(() => Promise.resolve()),
@@ -65,6 +65,13 @@ describe("NotificationSettings", () => {
     setup();
     await screen.findByRole("radio", { name: "すべて" });
     expect(screen.queryByRole("switch", { name: "プッシュ通知" })).not.toBeInTheDocument();
+  });
+
+  test("Notification API がないときはデスクトップ通知の項目を出さない", async () => {
+    Reflect.deleteProperty(globalThis, "Notification");
+    setup();
+    await screen.findByRole("radio", { name: "すべて" });
+    expect(screen.queryByRole("switch", { name: "デスクトップ通知" })).not.toBeInTheDocument();
   });
 
   test("プッシュ通知をオンにするとトークンを登録して端末に覚える", async () => {

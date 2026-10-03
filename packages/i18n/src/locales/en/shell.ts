@@ -1,9 +1,6 @@
 import type { Messages } from "../../messages";
 
 export const shell: Messages["shell"] = {
-  admin: {
-    forbidden: "Only admins can open this page",
-  },
   back: "Back",
   channel: {
     links: "Channel links",
@@ -15,7 +12,6 @@ export const shell: Messages["shell"] = {
     createChild: "Create sub-channel",
     copyLink: "Copy link",
     label: "Channel actions",
-    linkCopied: "Link copied",
     markAsRead: "Mark all as read",
     more: "More",
     mute: "Mute",
@@ -23,7 +19,6 @@ export const shell: Messages["shell"] = {
     unmute: "Unmute",
     unstar: "Unstar",
   },
-  comingSoon: "This page is coming soon",
   error: {
     backToTop: "Back to top",
     description: "Something went wrong while loading the page",
@@ -36,10 +31,8 @@ export const shell: Messages["shell"] = {
     settings: "Settings",
   },
   nav: {
-    activity: "Activity",
     admin: "Admin",
     bookmarks: "Bookmarks",
-    insights: "Insights",
     mentions: "Mentions",
     search: "Search",
     threads: "Threads",
@@ -73,12 +66,6 @@ export const shell: Messages["shell"] = {
     dms: "DMs",
     home: "Home",
     me: "You",
-  },
-  thread: {
-    emptyDescription: "Threads you post or reply in appear here",
-    emptyTitle: "No threads",
-    notFound: "Thread not found",
-    replyCount: "Replies: {{count}}",
   },
   workspace: {
     create: "Create workspace",

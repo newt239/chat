@@ -10,7 +10,7 @@ type ChannelNameFieldProps = {
   onChange: (value: string) => void;
   description: string;
   errorMessage: string | null;
-  placeholder?: string;
+  placeholder: string;
 };
 
 // 英字は小文字にそろえて受け取る

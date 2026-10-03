@@ -38,24 +38,20 @@ type builderUserRepo struct {
 	users []*entity.User
 }
 
-func (r *builderUserRepo) FindByIDs(_ context.Context, _ []string) ([]*entity.User, error) {
-	return r.users, nil
+func (r *builderUserRepo) FindByIDs(_ context.Context, _ []string) (map[string]*entity.User, error) {
+	users := make(map[string]*entity.User, len(r.users))
+	for _, u := range r.users {
+		users[u.ID] = u
+	}
+	return users, nil
 }
 
-type builderUserMentionRepo struct {
-	domainrepository.MessageUserMentionRepository
+type builderMentionRepo struct {
+	domainrepository.MessageMentionRepository
 }
 
-func (r *builderUserMentionRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.MessageUserMention, error) {
-	return nil, nil
-}
-
-type builderGroupMentionRepo struct {
-	domainrepository.MessageGroupMentionRepository
-}
-
-func (r *builderGroupMentionRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.MessageGroupMention, error) {
-	return nil, nil
+func (builderMentionRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.MessageUserMention, []*entity.MessageGroupMention, error) {
+	return nil, nil, nil
 }
 
 type builderLinkRepo struct {
@@ -125,8 +121,7 @@ func newTestBuilder() *MessageOutputBuilder {
 		},
 		&builderUserRepo{users: []*entity.User{{ID: viewerID, DisplayName: "閲覧者"}, {ID: "author", DisplayName: "投稿者"}}},
 		nil,
-		&builderUserMentionRepo{},
-		&builderGroupMentionRepo{},
+		builderMentionRepo{},
 		&builderLinkRepo{links: []*entity.MessageLink{
 			{ID: "l1", MessageID: sourceID, URL: "https://example.com/public", LinkedMessageID: ptr(publicTargetID)},
 			{ID: "l2", MessageID: sourceID, URL: "https://example.com/secret", LinkedMessageID: ptr(secretTargetID)},

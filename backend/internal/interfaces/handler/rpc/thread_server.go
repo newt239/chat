@@ -3,20 +3,18 @@ package rpc
 import (
 	"context"
 
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
-	threaduc "github.com/newt239/chat/internal/usecase/thread"
 )
 
 type ThreadServer struct {
-	MessageLister *messageuc.MessageLister
-	ThreadLister  *threaduc.ThreadLister
-	ThreadReader  *threaduc.ThreadReader
+	UC *messageuc.Interactor
 }
 
 func (s *ThreadServer) GetThreadReplies(ctx context.Context, req *chatv1.GetThreadRepliesRequest) (*chatv1.GetThreadRepliesResponse, error) {
-	out, err := s.MessageLister.GetThreadReplies(ctx, messageuc.GetThreadRepliesInput{
+	out, err := s.UC.GetThreadReplies(ctx, messageuc.GetThreadRepliesInput{
 		MessageID:     req.MessageId,
 		UserID:        userIDFrom(ctx),
 		Limit:         int(req.Limit),
@@ -37,20 +35,19 @@ func (s *ThreadServer) GetThreadReplies(ctx context.Context, req *chatv1.GetThre
 }
 
 func (s *ThreadServer) GetThreadMetadata(ctx context.Context, req *chatv1.GetThreadMetadataRequest) (*chatv1.GetThreadMetadataResponse, error) {
-	out, err := s.MessageLister.GetThreadMetadata(ctx, messageuc.GetThreadMetadataInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
+	out, err := s.UC.GetThreadMetadata(ctx, messageuc.MessageInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.GetThreadMetadataResponse{Metadata: presenter.ThreadMetadata(*out)}, nil
+	return &chatv1.GetThreadMetadataResponse{Metadata: presenter.ThreadMetadata(out)}, nil
 }
 
 func (s *ThreadServer) ListParticipatingThreads(ctx context.Context, req *chatv1.ListParticipatingThreadsRequest) (*chatv1.ListParticipatingThreadsResponse, error) {
-	input := threaduc.ListParticipatingThreadsInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), Limit: int(req.Limit)}
-	if req.Cursor != nil {
-		input.CursorLastActivityAt = optionalTime(req.Cursor.LastActivityAt)
-		input.CursorThreadID = &req.Cursor.ThreadId
+	input := domainrepository.FindParticipatingThreadsInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), Limit: int(req.Limit)}
+	if c := req.Cursor; c != nil {
+		input.Cursor = &domainrepository.ThreadCursor{LastActivityAt: c.LastActivityAt.AsTime(), ThreadID: c.ThreadId}
 	}
-	out, err := s.ThreadLister.ListParticipatingThreads(ctx, input)
+	out, err := s.UC.ListParticipatingThreads(ctx, input)
 	if err != nil {
 		return nil, err
 	}
@@ -58,22 +55,13 @@ func (s *ThreadServer) ListParticipatingThreads(ctx context.Context, req *chatv1
 }
 
 func (s *ThreadServer) MarkThreadRead(ctx context.Context, req *chatv1.MarkThreadReadRequest) (*chatv1.MarkThreadReadResponse, error) {
-	if err := s.ThreadReader.MarkThreadRead(ctx, threaduc.MarkThreadReadInput{UserID: userIDFrom(ctx), ThreadID: req.ThreadId}); err != nil {
-		return nil, err
-	}
-	return &chatv1.MarkThreadReadResponse{}, nil
+	return &chatv1.MarkThreadReadResponse{}, s.UC.MarkThreadRead(ctx, req.ThreadId, userIDFrom(ctx))
 }
 
 func (s *ThreadServer) FollowThread(ctx context.Context, req *chatv1.FollowThreadRequest) (*chatv1.FollowThreadResponse, error) {
-	if err := s.ThreadReader.FollowThread(ctx, threaduc.FollowThreadInput{UserID: userIDFrom(ctx), ThreadID: req.MessageId}); err != nil {
-		return nil, err
-	}
-	return &chatv1.FollowThreadResponse{}, nil
+	return &chatv1.FollowThreadResponse{}, s.UC.SetFollowing(ctx, req.MessageId, userIDFrom(ctx), true)
 }
 
 func (s *ThreadServer) UnfollowThread(ctx context.Context, req *chatv1.UnfollowThreadRequest) (*chatv1.UnfollowThreadResponse, error) {
-	if err := s.ThreadReader.UnfollowThread(ctx, threaduc.FollowThreadInput{UserID: userIDFrom(ctx), ThreadID: req.MessageId}); err != nil {
-		return nil, err
-	}
-	return &chatv1.UnfollowThreadResponse{}, nil
+	return &chatv1.UnfollowThreadResponse{}, s.UC.SetFollowing(ctx, req.MessageId, userIDFrom(ctx), false)
 }

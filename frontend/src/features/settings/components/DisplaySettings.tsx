@@ -1,3 +1,4 @@
+import { locales } from "@chat/i18n/i18n";
 import { useTranslation } from "react-i18next";
 
 import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedControl";
@@ -17,7 +18,7 @@ export const DisplaySettings = () => {
       <SettingRow title={t("preferences.locale.title")} description={null}>
         <SegmentedControl
           label={t("preferences.locale.title")}
-          options={(["ja", "en"] as const).map((value) => ({
+          options={locales.map((value) => ({
             label: t(`preferences.locale.${value}`),
             value,
           }))}

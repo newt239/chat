@@ -9,7 +9,6 @@ import (
 	"github.com/newt239/chat/ent/channelstar"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type channelStarRepository struct {
@@ -21,58 +20,41 @@ func NewChannelStarRepository(client *ent.Client) domainrepository.ChannelStarRe
 }
 
 func (r *channelStarRepository) SetStarred(ctx context.Context, userID string, channelID string, starred bool) error {
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return err
 	}
-	cid, err := utils.ParseUUID(channelID, "channel ID")
+	cid, err := parseUUID(channelID, "channel ID")
 	if err != nil {
 		return err
 	}
-
 	client := transaction.ResolveClient(ctx, r.client)
 	if !starred {
-		_, err = client.ChannelStar.Delete().
-			Where(channelstar.UserID(uid), channelstar.ChannelID(cid)).
-			Exec(ctx)
+		_, err = client.ChannelStar.Delete().Where(channelstar.UserID(uid), channelstar.ChannelID(cid)).Exec(ctx)
 		return err
 	}
-	// 付与済みでも結果は同じなので成功とみなす
-	err = client.ChannelStar.Create().
+	return ignoreConflict(client.ChannelStar.Create().
 		SetUserID(uid).
 		SetChannelID(cid).
 		OnConflictColumns(channelstar.FieldUserID, channelstar.FieldChannelID).
 		DoNothing().
-		Exec(ctx)
-	return ignoreConflict(err)
+		Exec(ctx))
 }
 
 func (r *channelStarRepository) FindStarredChannelIDs(ctx context.Context, userID string, channelIDs []string) (map[string]bool, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
-	cids := make([]uuid.UUID, 0, len(channelIDs))
-	for _, id := range channelIDs {
-		cid, err := utils.ParseUUID(id, "channel ID")
-		if err != nil {
-			return nil, err
-		}
-		cids = append(cids, cid)
+	cids, err := parseUUIDs(channelIDs, "channel ID")
+	if err != nil {
+		return nil, err
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	starredIDs, err := client.ChannelStar.Query().
+	stars, err := transaction.ResolveClient(ctx, r.client).ChannelStar.Query().
 		Where(channelstar.UserID(uid), channelstar.ChannelIDIn(cids...)).
-		QueryChannel().
-		IDs(ctx)
+		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make(map[string]bool, len(starredIDs))
-	for _, id := range starredIDs {
-		result[id.String()] = true
-	}
-	return result, nil
+	return idSet(stars, func(s *ent.ChannelStar) uuid.UUID { return s.ChannelID }), nil
 }

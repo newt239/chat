@@ -18,6 +18,11 @@ export const message: Messages["message"] = {
     unbookmark: "Remove bookmark",
     unpin: "Unpin",
   },
+  card: {
+    inThread: "In thread",
+    showInChannel: "View in channel",
+    showInThread: "View in thread",
+  },
   composer: {
     attach: "Attach files",
     bold: "Bold",
@@ -34,6 +39,7 @@ export const message: Messages["message"] = {
     previewEmpty: "Type something to preview",
     quote: "Quote",
     send: "Send",
+    sendFailed: "Couldn't send",
     strikethrough: "Strikethrough",
     uploading: "Wait for the upload to finish",
   },
@@ -49,7 +55,6 @@ export const message: Messages["message"] = {
   },
   delete: {
     body: "This can't be undone.",
-    confirm: "Delete",
     done: "Message deleted",
     failed: "Couldn't delete the message",
     title: "Delete this message?",
@@ -82,7 +87,6 @@ export const message: Messages["message"] = {
     mention: "Mention",
   },
   link: {
-    copied: "Link copied",
     textCopied: "Text copied",
   },
   mention: {
@@ -109,8 +113,6 @@ export const message: Messages["message"] = {
     descriptionChanged: "The channel description was updated",
     memberAdded: "{{user}} was added by {{by}}",
     memberJoined: "{{user}} joined",
-    memberLeft: "{{user}} left",
-    memberRemoved: "{{user}} was removed from the channel",
     messagePinned: "{{user}} pinned <target>a message</target>",
     nameChanged: "The channel was renamed from “{{from}}” to “{{to}}”",
     privacyChanged: "The channel visibility changed from {{from}} to {{to}}",
@@ -121,7 +123,6 @@ export const message: Messages["message"] = {
     noReplies: "No replies yet",
     replies: "Replies: {{count}}",
     replyPlaceholder: "Reply in thread",
-    sendFailed: "Couldn't send the reply",
   },
   typing: {
     many: "Several people are typing",

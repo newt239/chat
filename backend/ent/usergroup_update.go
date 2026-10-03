@@ -12,11 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/messagegroupmention"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
-	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/ent/workspace"
 )
 
@@ -111,36 +109,6 @@ func (_u *UserGroupUpdate) SetCreatedBy(v *User) *UserGroupUpdate {
 	return _u.SetCreatedByID(v.ID)
 }
 
-// AddMemberIDs adds the "members" edge to the UserGroupMember entity by IDs.
-func (_u *UserGroupUpdate) AddMemberIDs(ids ...uuid.UUID) *UserGroupUpdate {
-	_u.mutation.AddMemberIDs(ids...)
-	return _u
-}
-
-// AddMembers adds the "members" edges to the UserGroupMember entity.
-func (_u *UserGroupUpdate) AddMembers(v ...*UserGroupMember) *UserGroupUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddMemberIDs(ids...)
-}
-
-// AddGroupMentionIDs adds the "group_mentions" edge to the MessageGroupMention entity by IDs.
-func (_u *UserGroupUpdate) AddGroupMentionIDs(ids ...uuid.UUID) *UserGroupUpdate {
-	_u.mutation.AddGroupMentionIDs(ids...)
-	return _u
-}
-
-// AddGroupMentions adds the "group_mentions" edges to the MessageGroupMention entity.
-func (_u *UserGroupUpdate) AddGroupMentions(v ...*MessageGroupMention) *UserGroupUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddGroupMentionIDs(ids...)
-}
-
 // Mutation returns the UserGroupMutation object of the builder.
 func (_u *UserGroupUpdate) Mutation() *UserGroupMutation {
 	return _u.mutation
@@ -156,48 +124,6 @@ func (_u *UserGroupUpdate) ClearWorkspace() *UserGroupUpdate {
 func (_u *UserGroupUpdate) ClearCreatedBy() *UserGroupUpdate {
 	_u.mutation.ClearCreatedBy()
 	return _u
-}
-
-// ClearMembers clears all "members" edges to the UserGroupMember entity.
-func (_u *UserGroupUpdate) ClearMembers() *UserGroupUpdate {
-	_u.mutation.ClearMembers()
-	return _u
-}
-
-// RemoveMemberIDs removes the "members" edge to UserGroupMember entities by IDs.
-func (_u *UserGroupUpdate) RemoveMemberIDs(ids ...uuid.UUID) *UserGroupUpdate {
-	_u.mutation.RemoveMemberIDs(ids...)
-	return _u
-}
-
-// RemoveMembers removes "members" edges to UserGroupMember entities.
-func (_u *UserGroupUpdate) RemoveMembers(v ...*UserGroupMember) *UserGroupUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveMemberIDs(ids...)
-}
-
-// ClearGroupMentions clears all "group_mentions" edges to the MessageGroupMention entity.
-func (_u *UserGroupUpdate) ClearGroupMentions() *UserGroupUpdate {
-	_u.mutation.ClearGroupMentions()
-	return _u
-}
-
-// RemoveGroupMentionIDs removes the "group_mentions" edge to MessageGroupMention entities by IDs.
-func (_u *UserGroupUpdate) RemoveGroupMentionIDs(ids ...uuid.UUID) *UserGroupUpdate {
-	_u.mutation.RemoveGroupMentionIDs(ids...)
-	return _u
-}
-
-// RemoveGroupMentions removes "group_mentions" edges to MessageGroupMention entities.
-func (_u *UserGroupUpdate) RemoveGroupMentions(v ...*MessageGroupMention) *UserGroupUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveGroupMentionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -334,96 +260,6 @@ func (_u *UserGroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.MembersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.MembersTable,
-			Columns: []string{usergroup.MembersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroupmember.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedMembersIDs(); len(nodes) > 0 && !_u.mutation.MembersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.MembersTable,
-			Columns: []string{usergroup.MembersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroupmember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.MembersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.MembersTable,
-			Columns: []string{usergroup.MembersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroupmember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.GroupMentionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.GroupMentionsTable,
-			Columns: []string{usergroup.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedGroupMentionsIDs(); len(nodes) > 0 && !_u.mutation.GroupMentionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.GroupMentionsTable,
-			Columns: []string{usergroup.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.GroupMentionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.GroupMentionsTable,
-			Columns: []string{usergroup.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{usergroup.Label}
@@ -522,36 +358,6 @@ func (_u *UserGroupUpdateOne) SetCreatedBy(v *User) *UserGroupUpdateOne {
 	return _u.SetCreatedByID(v.ID)
 }
 
-// AddMemberIDs adds the "members" edge to the UserGroupMember entity by IDs.
-func (_u *UserGroupUpdateOne) AddMemberIDs(ids ...uuid.UUID) *UserGroupUpdateOne {
-	_u.mutation.AddMemberIDs(ids...)
-	return _u
-}
-
-// AddMembers adds the "members" edges to the UserGroupMember entity.
-func (_u *UserGroupUpdateOne) AddMembers(v ...*UserGroupMember) *UserGroupUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddMemberIDs(ids...)
-}
-
-// AddGroupMentionIDs adds the "group_mentions" edge to the MessageGroupMention entity by IDs.
-func (_u *UserGroupUpdateOne) AddGroupMentionIDs(ids ...uuid.UUID) *UserGroupUpdateOne {
-	_u.mutation.AddGroupMentionIDs(ids...)
-	return _u
-}
-
-// AddGroupMentions adds the "group_mentions" edges to the MessageGroupMention entity.
-func (_u *UserGroupUpdateOne) AddGroupMentions(v ...*MessageGroupMention) *UserGroupUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddGroupMentionIDs(ids...)
-}
-
 // Mutation returns the UserGroupMutation object of the builder.
 func (_u *UserGroupUpdateOne) Mutation() *UserGroupMutation {
 	return _u.mutation
@@ -567,48 +373,6 @@ func (_u *UserGroupUpdateOne) ClearWorkspace() *UserGroupUpdateOne {
 func (_u *UserGroupUpdateOne) ClearCreatedBy() *UserGroupUpdateOne {
 	_u.mutation.ClearCreatedBy()
 	return _u
-}
-
-// ClearMembers clears all "members" edges to the UserGroupMember entity.
-func (_u *UserGroupUpdateOne) ClearMembers() *UserGroupUpdateOne {
-	_u.mutation.ClearMembers()
-	return _u
-}
-
-// RemoveMemberIDs removes the "members" edge to UserGroupMember entities by IDs.
-func (_u *UserGroupUpdateOne) RemoveMemberIDs(ids ...uuid.UUID) *UserGroupUpdateOne {
-	_u.mutation.RemoveMemberIDs(ids...)
-	return _u
-}
-
-// RemoveMembers removes "members" edges to UserGroupMember entities.
-func (_u *UserGroupUpdateOne) RemoveMembers(v ...*UserGroupMember) *UserGroupUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveMemberIDs(ids...)
-}
-
-// ClearGroupMentions clears all "group_mentions" edges to the MessageGroupMention entity.
-func (_u *UserGroupUpdateOne) ClearGroupMentions() *UserGroupUpdateOne {
-	_u.mutation.ClearGroupMentions()
-	return _u
-}
-
-// RemoveGroupMentionIDs removes the "group_mentions" edge to MessageGroupMention entities by IDs.
-func (_u *UserGroupUpdateOne) RemoveGroupMentionIDs(ids ...uuid.UUID) *UserGroupUpdateOne {
-	_u.mutation.RemoveGroupMentionIDs(ids...)
-	return _u
-}
-
-// RemoveGroupMentions removes "group_mentions" edges to MessageGroupMention entities.
-func (_u *UserGroupUpdateOne) RemoveGroupMentions(v ...*MessageGroupMention) *UserGroupUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveGroupMentionIDs(ids...)
 }
 
 // Where appends a list predicates to the UserGroupUpdate builder.
@@ -768,96 +532,6 @@ func (_u *UserGroupUpdateOne) sqlSave(ctx context.Context) (_node *UserGroup, er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.MembersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.MembersTable,
-			Columns: []string{usergroup.MembersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroupmember.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedMembersIDs(); len(nodes) > 0 && !_u.mutation.MembersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.MembersTable,
-			Columns: []string{usergroup.MembersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroupmember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.MembersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.MembersTable,
-			Columns: []string{usergroup.MembersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroupmember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.GroupMentionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.GroupMentionsTable,
-			Columns: []string{usergroup.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedGroupMentionsIDs(); len(nodes) > 0 && !_u.mutation.GroupMentionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.GroupMentionsTable,
-			Columns: []string{usergroup.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.GroupMentionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.GroupMentionsTable,
-			Columns: []string{usergroup.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

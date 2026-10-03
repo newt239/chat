@@ -61,7 +61,7 @@ func TestMessageIndexSearch(t *testing.T) {
 		{ID: "m5", ChannelID: "general", SenderID: "alice", ParentID: &parent, Body: "了解 設計"},
 		{ID: "m6", ChannelID: "dev", SenderID: "bob", Body: "スクショ", AttachmentNames: []string{"screenshot.png"}, Pinned: true,
 			Has: []domainrepository.MessageContentKind{domainrepository.MessageContentImage}},
-		{ID: "m7", ChannelID: "general", SenderID: "bob", Body: "group ping", MentionedGroupIDs: []string{"designers"}},
+		{ID: "m7", ChannelID: "general", SenderID: "bob", Body: "group ping"},
 	}
 	for i := range docs {
 		docs[i].WorkspaceID = "ws"

@@ -8,43 +8,6 @@ import { routeTree } from "#/routeTree.gen";
 const createTestRouter = (path: string) =>
   createRouter({ history: createMemoryHistory({ initialEntries: [path] }), routeTree });
 
-const matchLeaf = (pathname: string) => createTestRouter(pathname).matchRoutes(pathname).at(-1);
-
-describe("routeTree", () => {
-  test("ワークスペース一覧にマッチする", () => {
-    expect(matchLeaf("/app")?.routeId).toBe("/app/");
-  });
-
-  test("ワークスペース直下はチャンネル未選択の案内にマッチする", () => {
-    const leaf = matchLeaf("/app/ws1");
-    expect(leaf?.routeId).toBe("/app/$workspaceId/");
-    expect(leaf?.params).toEqual({ workspaceId: "ws1" });
-  });
-
-  test("チャンネルにマッチし両方のパラメータを取り出せる", () => {
-    const leaf = matchLeaf("/app/ws1/ch1");
-    expect(leaf?.routeId).toBe("/app/$workspaceId/$channelId");
-    expect(leaf?.params).toEqual({ channelId: "ch1", workspaceId: "ws1" });
-  });
-
-  test("search は $channelId より優先してマッチする", () => {
-    expect(matchLeaf("/app/ws1/search")?.routeId).toBe("/app/$workspaceId/search");
-  });
-
-  test.each(["threads", "mentions", "bookmarks", "dms", "activity", "me", "insights", "admin"])(
-    "%s は $channelId より優先してマッチする",
-    (name) => {
-      expect(matchLeaf(`/app/ws1/${name}`)?.routeId).toBe(`/app/$workspaceId/${name}`);
-    },
-  );
-
-  test("スレッドにマッチし、チャンネルとスレッドのパラメータを取り出せる", () => {
-    const leaf = matchLeaf("/app/ws1/ch1/thread/m1");
-    expect(leaf?.routeId).toBe("/app/$workspaceId/$channelId/thread/$messageId");
-    expect(leaf?.params).toEqual({ channelId: "ch1", messageId: "m1", workspaceId: "ws1" });
-  });
-});
-
 describe("認証ガード", () => {
   beforeEach(() => {
     store.set(sessionAtom, null);

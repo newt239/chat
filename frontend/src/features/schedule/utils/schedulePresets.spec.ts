@@ -1,7 +1,7 @@
 import { getLocalTimeZone } from "@internationalized/date";
 import { describe, expect, test } from "vite-plus/test";
 
-import { defaultScheduleDate, schedulePresets } from "./schedulePresets";
+import { schedulePresets } from "./schedulePresets";
 
 const dates = (now: Date) =>
   Object.fromEntries(schedulePresets(now, getLocalTimeZone()).map(({ key, date }) => [key, date]));
@@ -23,13 +23,5 @@ describe("schedulePresets", () => {
 
   test("日曜なら翌日の月曜にする", () => {
     expect(dates(new Date(2026, 9, 4, 20, 0)).nextMonday).toEqual(new Date(2026, 9, 5, 9, 0));
-  });
-});
-
-describe("defaultScheduleDate", () => {
-  test("明日の朝 9 時を初期値にする", () => {
-    expect(defaultScheduleDate(new Date(2026, 11, 31, 23, 0), getLocalTimeZone())).toEqual(
-      new Date(2027, 0, 1, 9, 0),
-    );
   });
 });

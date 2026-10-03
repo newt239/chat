@@ -112,7 +112,7 @@ export const PushPlatformSchema: GenEnum<PushPlatform> = /*@__PURE__*/
   enumDesc(file_chat_v1_notification_service, 0);
 
 /**
- * プッシュ通知の宛先となる端末のトークンを登録する。ウェブ（FCM）と将来のネイティブアプリで共通
+ * プッシュ通知の宛先となる端末のトークンを登録する。ウェブ・iOS・Android で共通（いずれも FCM 経由）
  *
  * @generated from service chat.v1.NotificationService
  */

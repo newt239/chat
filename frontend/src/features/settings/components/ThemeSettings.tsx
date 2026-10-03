@@ -1,4 +1,12 @@
-import { findThemePreset, themePresetNames, themePresets } from "@chat/design-tokens/theme";
+import {
+  chromaRange,
+  colorModePreferences,
+  findThemePreset,
+  hueRange,
+  sidebarStyles,
+  themePresetNames,
+  themePresets,
+} from "@chat/design-tokens/theme";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -61,8 +69,8 @@ export const ThemeSettings = () => {
           <Slider
             label={t("preferences.theme.hue")}
             value={theme.hue}
-            minValue={0}
-            maxValue={359}
+            minValue={hueRange.min}
+            maxValue={hueRange.max}
             step={1}
             trackBackground={hueTrack}
             onChange={(hue) => {
@@ -75,8 +83,8 @@ export const ThemeSettings = () => {
           <Slider
             label={t("preferences.theme.chroma")}
             value={theme.chroma}
-            minValue={0}
-            maxValue={0.3}
+            minValue={chromaRange.min}
+            maxValue={chromaRange.max}
             step={0.005}
             onChange={(chroma) => {
               preview({ theme: { ...theme, chroma } });
@@ -89,10 +97,10 @@ export const ThemeSettings = () => {
         <SettingRow title={t("preferences.theme.sidebar.title")} description={null}>
           <SegmentedControl
             label={t("preferences.theme.sidebar.title")}
-            options={[
-              { label: t("preferences.theme.sidebar.tinted"), value: "tinted" },
-              { label: t("preferences.theme.sidebar.light"), value: "light" },
-            ]}
+            options={sidebarStyles.map((value) => ({
+              label: t(`preferences.theme.sidebar.${value}`),
+              value,
+            }))}
             value={theme.sidebar}
             onChange={(sidebar) => {
               updatePreferences({ theme: { ...theme, sidebar } });
@@ -102,7 +110,7 @@ export const ThemeSettings = () => {
         <SettingRow title={t("preferences.mode.title")} description={null}>
           <SegmentedControl
             label={t("preferences.mode.title")}
-            options={(["system", "light", "dark"] as const).map((value) => ({
+            options={colorModePreferences.map((value) => ({
               label: t(`preferences.mode.${value}`),
               value,
             }))}

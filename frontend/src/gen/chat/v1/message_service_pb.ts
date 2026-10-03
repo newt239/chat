@@ -15,7 +15,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/message_service.proto.
  */
 export const file_chat_v1_message_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch1jaGF0L3YxL21lc3NhZ2Vfc2VydmljZS5wcm90bxIHY2hhdC52MSLsAQoTTGlzdE1lc3NhZ2VzUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIYCgVsaW1pdBgCIAEoBUIJukgGGgQYZCgAEikKBXNpbmNlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIpCgV1bnRpbBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGwoTaW5jbHVkZV9kZXNjZW5kYW50cxgFIAEoCBIqCgZhcm91bmQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wImQKFExpc3RNZXNzYWdlc1Jlc3BvbnNlEicKCG1lc3NhZ2VzGAEgAygLMhUuY2hhdC52MS5UaW1lbGluZUl0ZW0SEAoIaGFzX21vcmUYAiABKAgSEQoJaGFzX25ld2VyGAMgASgIIsoBCh1MaXN0TWVzc2FnZXNXaXRoVGhyZWFkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIYCgVsaW1pdBgCIAEoBUIJukgGGgQYZCgAEikKBXNpbmNlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIpCgV1bnRpbBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGwoTaW5jbHVkZV9kZXNjZW5kYW50cxgFIAEoCCJWCh5MaXN0TWVzc2FnZXNXaXRoVGhyZWFkUmVzcG9uc2USIgoIbWVzc2FnZXMYASADKAsyEC5jaGF0LnYxLk1lc3NhZ2USEAoIaGFzX21vcmUYAiABKAgitAMKFENyZWF0ZU1lc3NhZ2VSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBEhYKBGJvZHkYAiABKAlCCLpIBXIDGJBOEiAKCXBhcmVudF9pZBgDIAEoCUIIukgFcgOwAQFIAIgBARIlCg5hdHRhY2htZW50X2lkcxgEIAMoCUINukgKkgEHIgVyA7ABARIqCghsb2NhdGlvbhgFIAEoCzIYLmNoYXQudjEuTWVzc2FnZUxvY2F0aW9uEiAKBHBvbGwYBiABKAsyEi5jaGF0LnYxLlBvbGxJbnB1dDrAAbpIvAEauQEKFmNyZWF0ZV9tZXNzYWdlLmNvbnRlbnQSReacrOaWh+ODu+a3u+S7mOODu+S9jee9ruaDheWgseODu+aKleelqOOBruOBhOOBmuOCjOOBi+OBjOW/heimgeOBp+OBmRpYdGhpcy5ib2R5ICE9ICcnIHx8IHNpemUodGhpcy5hdHRhY2htZW50X2lkcykgPiAwIHx8IGhhcyh0aGlzLmxvY2F0aW9uKSB8fCBoYXModGhpcy5wb2xsKUIMCgpfcGFyZW50X2lkIjoKFUNyZWF0ZU1lc3NhZ2VSZXNwb25zZRIhCgdtZXNzYWdlGAEgASgLMhAuY2hhdC52MS5NZXNzYWdlIk4KFFVwZGF0ZU1lc3NhZ2VSZXF1ZXN0EhwKCm1lc3NhZ2VfaWQYASABKAlCCLpIBXIDsAEBEhgKBGJvZHkYAiABKAlCCrpIB3IFEAEYkE4iOgoVVXBkYXRlTWVzc2FnZVJlc3BvbnNlEiEKB21lc3NhZ2UYASABKAsyEC5jaGF0LnYxLk1lc3NhZ2UiNAoURGVsZXRlTWVzc2FnZVJlcXVlc3QSHAoKbWVzc2FnZV9pZBgBIAEoCUIIukgFcgOwAQEiFwoVRGVsZXRlTWVzc2FnZVJlc3BvbnNlIjgKGEdldE1lc3NhZ2VQcmV2aWV3UmVxdWVzdBIcCgptZXNzYWdlX2lkGAEgASgJQgi6SAVyA7ABASJFChlHZXRNZXNzYWdlUHJldmlld1Jlc3BvbnNlEigKB3ByZXZpZXcYASABKAsyFy5jaGF0LnYxLk1lc3NhZ2VQcmV2aWV3MpQECg5NZXNzYWdlU2VydmljZRJLCgxMaXN0TWVzc2FnZXMSHC5jaGF0LnYxLkxpc3RNZXNzYWdlc1JlcXVlc3QaHS5jaGF0LnYxLkxpc3RNZXNzYWdlc1Jlc3BvbnNlEmkKFkxpc3RNZXNzYWdlc1dpdGhUaHJlYWQSJi5jaGF0LnYxLkxpc3RNZXNzYWdlc1dpdGhUaHJlYWRSZXF1ZXN0GicuY2hhdC52MS5MaXN0TWVzc2FnZXNXaXRoVGhyZWFkUmVzcG9uc2USTgoNQ3JlYXRlTWVzc2FnZRIdLmNoYXQudjEuQ3JlYXRlTWVzc2FnZVJlcXVlc3QaHi5jaGF0LnYxLkNyZWF0ZU1lc3NhZ2VSZXNwb25zZRJOCg1VcGRhdGVNZXNzYWdlEh0uY2hhdC52MS5VcGRhdGVNZXNzYWdlUmVxdWVzdBoeLmNoYXQudjEuVXBkYXRlTWVzc2FnZVJlc3BvbnNlEk4KDURlbGV0ZU1lc3NhZ2USHS5jaGF0LnYxLkRlbGV0ZU1lc3NhZ2VSZXF1ZXN0Gh4uY2hhdC52MS5EZWxldGVNZXNzYWdlUmVzcG9uc2USWgoRR2V0TWVzc2FnZVByZXZpZXcSIS5jaGF0LnYxLkdldE1lc3NhZ2VQcmV2aWV3UmVxdWVzdBoiLmNoYXQudjEuR2V0TWVzc2FnZVByZXZpZXdSZXNwb25zZUKUAQoLY29tLmNoYXQudjFCE01lc3NhZ2VTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_chat_v1_message, file_google_protobuf_timestamp]);
+  fileDesc("Ch1jaGF0L3YxL21lc3NhZ2Vfc2VydmljZS5wcm90bxIHY2hhdC52MSLsAQoTTGlzdE1lc3NhZ2VzUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIYCgVsaW1pdBgCIAEoBUIJukgGGgQYZCgBEikKBXNpbmNlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIpCgV1bnRpbBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGwoTaW5jbHVkZV9kZXNjZW5kYW50cxgFIAEoCBIqCgZhcm91bmQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wImQKFExpc3RNZXNzYWdlc1Jlc3BvbnNlEicKCG1lc3NhZ2VzGAEgAygLMhUuY2hhdC52MS5UaW1lbGluZUl0ZW0SEAoIaGFzX21vcmUYAiABKAgSEQoJaGFzX25ld2VyGAMgASgIIrQDChRDcmVhdGVNZXNzYWdlUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIWCgRib2R5GAIgASgJQgi6SAVyAxiQThIgCglwYXJlbnRfaWQYAyABKAlCCLpIBXIDsAEBSACIAQESJQoOYXR0YWNobWVudF9pZHMYBCADKAlCDbpICpIBByIFcgOwAQESKgoIbG9jYXRpb24YBSABKAsyGC5jaGF0LnYxLk1lc3NhZ2VMb2NhdGlvbhIgCgRwb2xsGAYgASgLMhIuY2hhdC52MS5Qb2xsSW5wdXQ6wAG6SLwBGrkBChZjcmVhdGVfbWVzc2FnZS5jb250ZW50EkXmnKzmlofjg7vmt7vku5jjg7vkvY3nva7mg4XloLHjg7vmipXnpajjga7jgYTjgZrjgozjgYvjgYzlv4XopoHjgafjgZkaWHRoaXMuYm9keSAhPSAnJyB8fCBzaXplKHRoaXMuYXR0YWNobWVudF9pZHMpID4gMCB8fCBoYXModGhpcy5sb2NhdGlvbikgfHwgaGFzKHRoaXMucG9sbClCDAoKX3BhcmVudF9pZCI6ChVDcmVhdGVNZXNzYWdlUmVzcG9uc2USIQoHbWVzc2FnZRgBIAEoCzIQLmNoYXQudjEuTWVzc2FnZSJOChRVcGRhdGVNZXNzYWdlUmVxdWVzdBIcCgptZXNzYWdlX2lkGAEgASgJQgi6SAVyA7ABARIYCgRib2R5GAIgASgJQgq6SAdyBRABGJBOIjoKFVVwZGF0ZU1lc3NhZ2VSZXNwb25zZRIhCgdtZXNzYWdlGAEgASgLMhAuY2hhdC52MS5NZXNzYWdlIjQKFERlbGV0ZU1lc3NhZ2VSZXF1ZXN0EhwKCm1lc3NhZ2VfaWQYASABKAlCCLpIBXIDsAEBIhcKFURlbGV0ZU1lc3NhZ2VSZXNwb25zZSI4ChhHZXRNZXNzYWdlUHJldmlld1JlcXVlc3QSHAoKbWVzc2FnZV9pZBgBIAEoCUIIukgFcgOwAQEiRQoZR2V0TWVzc2FnZVByZXZpZXdSZXNwb25zZRIoCgdwcmV2aWV3GAEgASgLMhcuY2hhdC52MS5NZXNzYWdlUHJldmlldzKpAwoOTWVzc2FnZVNlcnZpY2USSwoMTGlzdE1lc3NhZ2VzEhwuY2hhdC52MS5MaXN0TWVzc2FnZXNSZXF1ZXN0Gh0uY2hhdC52MS5MaXN0TWVzc2FnZXNSZXNwb25zZRJOCg1DcmVhdGVNZXNzYWdlEh0uY2hhdC52MS5DcmVhdGVNZXNzYWdlUmVxdWVzdBoeLmNoYXQudjEuQ3JlYXRlTWVzc2FnZVJlc3BvbnNlEk4KDVVwZGF0ZU1lc3NhZ2USHS5jaGF0LnYxLlVwZGF0ZU1lc3NhZ2VSZXF1ZXN0Gh4uY2hhdC52MS5VcGRhdGVNZXNzYWdlUmVzcG9uc2USTgoNRGVsZXRlTWVzc2FnZRIdLmNoYXQudjEuRGVsZXRlTWVzc2FnZVJlcXVlc3QaHi5jaGF0LnYxLkRlbGV0ZU1lc3NhZ2VSZXNwb25zZRJaChFHZXRNZXNzYWdlUHJldmlldxIhLmNoYXQudjEuR2V0TWVzc2FnZVByZXZpZXdSZXF1ZXN0GiIuY2hhdC52MS5HZXRNZXNzYWdlUHJldmlld1Jlc3BvbnNlQpQBCgtjb20uY2hhdC52MUITTWVzc2FnZVNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_chat_v1_message, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.ListMessagesRequest
@@ -27,8 +27,6 @@ export type ListMessagesRequest = Message<"chat.v1.ListMessagesRequest"> & {
   channelId: string;
 
   /**
-   * 0 の場合はサーバーの既定値を使う
-   *
    * @generated from field: int32 limit = 2;
    */
   limit: number;
@@ -97,69 +95,6 @@ export const ListMessagesResponseSchema: GenMessage<ListMessagesResponse> = /*@_
   messageDesc(file_chat_v1_message_service, 1);
 
 /**
- * @generated from message chat.v1.ListMessagesWithThreadRequest
- */
-export type ListMessagesWithThreadRequest = Message<"chat.v1.ListMessagesWithThreadRequest"> & {
-  /**
-   * @generated from field: string channel_id = 1;
-   */
-  channelId: string;
-
-  /**
-   * 0 の場合はサーバーの既定値を使う
-   *
-   * @generated from field: int32 limit = 2;
-   */
-  limit: number;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp since = 3;
-   */
-  since?: Timestamp | undefined;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp until = 4;
-   */
-  until?: Timestamp | undefined;
-
-  /**
-   * 閲覧できる子孫チャンネルのメッセージもまとめて返す
-   *
-   * @generated from field: bool include_descendants = 5;
-   */
-  includeDescendants: boolean;
-};
-
-/**
- * Describes the message chat.v1.ListMessagesWithThreadRequest.
- * Use `create(ListMessagesWithThreadRequestSchema)` to create a new message.
- */
-export const ListMessagesWithThreadRequestSchema: GenMessage<ListMessagesWithThreadRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message_service, 2);
-
-/**
- * @generated from message chat.v1.ListMessagesWithThreadResponse
- */
-export type ListMessagesWithThreadResponse = Message<"chat.v1.ListMessagesWithThreadResponse"> & {
-  /**
-   * @generated from field: repeated chat.v1.Message messages = 1;
-   */
-  messages: Message$1[];
-
-  /**
-   * @generated from field: bool has_more = 2;
-   */
-  hasMore: boolean;
-};
-
-/**
- * Describes the message chat.v1.ListMessagesWithThreadResponse.
- * Use `create(ListMessagesWithThreadResponseSchema)` to create a new message.
- */
-export const ListMessagesWithThreadResponseSchema: GenMessage<ListMessagesWithThreadResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message_service, 3);
-
-/**
  * @generated from message chat.v1.CreateMessageRequest
  */
 export type CreateMessageRequest = Message<"chat.v1.CreateMessageRequest"> & {
@@ -199,7 +134,7 @@ export type CreateMessageRequest = Message<"chat.v1.CreateMessageRequest"> & {
  * Use `create(CreateMessageRequestSchema)` to create a new message.
  */
 export const CreateMessageRequestSchema: GenMessage<CreateMessageRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message_service, 4);
+  messageDesc(file_chat_v1_message_service, 2);
 
 /**
  * @generated from message chat.v1.CreateMessageResponse
@@ -216,7 +151,7 @@ export type CreateMessageResponse = Message<"chat.v1.CreateMessageResponse"> & {
  * Use `create(CreateMessageResponseSchema)` to create a new message.
  */
 export const CreateMessageResponseSchema: GenMessage<CreateMessageResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message_service, 5);
+  messageDesc(file_chat_v1_message_service, 3);
 
 /**
  * @generated from message chat.v1.UpdateMessageRequest
@@ -238,7 +173,7 @@ export type UpdateMessageRequest = Message<"chat.v1.UpdateMessageRequest"> & {
  * Use `create(UpdateMessageRequestSchema)` to create a new message.
  */
 export const UpdateMessageRequestSchema: GenMessage<UpdateMessageRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message_service, 6);
+  messageDesc(file_chat_v1_message_service, 4);
 
 /**
  * @generated from message chat.v1.UpdateMessageResponse
@@ -255,7 +190,7 @@ export type UpdateMessageResponse = Message<"chat.v1.UpdateMessageResponse"> & {
  * Use `create(UpdateMessageResponseSchema)` to create a new message.
  */
 export const UpdateMessageResponseSchema: GenMessage<UpdateMessageResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message_service, 7);
+  messageDesc(file_chat_v1_message_service, 5);
 
 /**
  * @generated from message chat.v1.DeleteMessageRequest
@@ -272,7 +207,7 @@ export type DeleteMessageRequest = Message<"chat.v1.DeleteMessageRequest"> & {
  * Use `create(DeleteMessageRequestSchema)` to create a new message.
  */
 export const DeleteMessageRequestSchema: GenMessage<DeleteMessageRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message_service, 8);
+  messageDesc(file_chat_v1_message_service, 6);
 
 /**
  * @generated from message chat.v1.DeleteMessageResponse
@@ -285,7 +220,7 @@ export type DeleteMessageResponse = Message<"chat.v1.DeleteMessageResponse"> & {
  * Use `create(DeleteMessageResponseSchema)` to create a new message.
  */
 export const DeleteMessageResponseSchema: GenMessage<DeleteMessageResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message_service, 9);
+  messageDesc(file_chat_v1_message_service, 7);
 
 /**
  * @generated from message chat.v1.GetMessagePreviewRequest
@@ -302,7 +237,7 @@ export type GetMessagePreviewRequest = Message<"chat.v1.GetMessagePreviewRequest
  * Use `create(GetMessagePreviewRequestSchema)` to create a new message.
  */
 export const GetMessagePreviewRequestSchema: GenMessage<GetMessagePreviewRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message_service, 10);
+  messageDesc(file_chat_v1_message_service, 8);
 
 /**
  * @generated from message chat.v1.GetMessagePreviewResponse
@@ -319,7 +254,7 @@ export type GetMessagePreviewResponse = Message<"chat.v1.GetMessagePreviewRespon
  * Use `create(GetMessagePreviewResponseSchema)` to create a new message.
  */
 export const GetMessagePreviewResponseSchema: GenMessage<GetMessagePreviewResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message_service, 11);
+  messageDesc(file_chat_v1_message_service, 9);
 
 /**
  * @generated from service chat.v1.MessageService
@@ -332,14 +267,6 @@ export const MessageService: GenService<{
     methodKind: "unary";
     input: typeof ListMessagesRequestSchema;
     output: typeof ListMessagesResponseSchema;
-  },
-  /**
-   * @generated from rpc chat.v1.MessageService.ListMessagesWithThread
-   */
-  listMessagesWithThread: {
-    methodKind: "unary";
-    input: typeof ListMessagesWithThreadRequestSchema;
-    output: typeof ListMessagesWithThreadResponseSchema;
   },
   /**
    * @generated from rpc chat.v1.MessageService.CreateMessage

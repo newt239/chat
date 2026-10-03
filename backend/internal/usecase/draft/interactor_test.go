@@ -50,7 +50,7 @@ func (allowAccess) EnsureChannelAccess(_ context.Context, channelID, _ string) (
 func TestSaveDraft(t *testing.T) {
 	ctx := context.Background()
 	repo := &fakeDraftRepo{}
-	uc := NewInteractor(repo, stubMessageRepo{}, allowAccess{})
+	uc := New(repo, stubMessageRepo{}, allowAccess{})
 	parent := "m1"
 
 	d, err := uc.Save(ctx, SaveInput{Target: domainrepository.DraftTarget{UserID: "u1", ChannelID: "ch1", ParentID: &parent}, Body: "書きかけ"})

@@ -13,11 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
-	"github.com/newt239/chat/ent/channelreadstate"
-	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/workspace"
@@ -26,18 +23,15 @@ import (
 // ChannelQuery is the builder for querying Channel entities.
 type ChannelQuery struct {
 	config
-	ctx             *QueryContext
-	order           []channel.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.Channel
-	withWorkspace   *WorkspaceQuery
-	withCreatedBy   *UserQuery
-	withMembers     *ChannelMemberQuery
-	withMessages    *MessageQuery
-	withAttachments *AttachmentQuery
-	withReadStates  *ChannelReadStateQuery
-	withParent      *ChannelQuery
-	withChildren    *ChannelQuery
+	ctx           *QueryContext
+	order         []channel.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Channel
+	withWorkspace *WorkspaceQuery
+	withCreatedBy *UserQuery
+	withMembers   *ChannelMemberQuery
+	withParent    *ChannelQuery
+	withChildren  *ChannelQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -133,72 +127,6 @@ func (_q *ChannelQuery) QueryMembers() *ChannelMemberQuery {
 			sqlgraph.From(channel.Table, channel.FieldID, selector),
 			sqlgraph.To(channelmember.Table, channelmember.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, channel.MembersTable, channel.MembersColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryMessages chains the current query on the "messages" edge.
-func (_q *ChannelQuery) QueryMessages() *MessageQuery {
-	query := (&MessageClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(channel.Table, channel.FieldID, selector),
-			sqlgraph.To(message.Table, message.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, channel.MessagesTable, channel.MessagesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryAttachments chains the current query on the "attachments" edge.
-func (_q *ChannelQuery) QueryAttachments() *AttachmentQuery {
-	query := (&AttachmentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(channel.Table, channel.FieldID, selector),
-			sqlgraph.To(attachment.Table, attachment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, channel.AttachmentsTable, channel.AttachmentsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryReadStates chains the current query on the "read_states" edge.
-func (_q *ChannelQuery) QueryReadStates() *ChannelReadStateQuery {
-	query := (&ChannelReadStateClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(channel.Table, channel.FieldID, selector),
-			sqlgraph.To(channelreadstate.Table, channelreadstate.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, channel.ReadStatesTable, channel.ReadStatesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -437,19 +365,16 @@ func (_q *ChannelQuery) Clone() *ChannelQuery {
 		return nil
 	}
 	return &ChannelQuery{
-		config:          _q.config,
-		ctx:             _q.ctx.Clone(),
-		order:           append([]channel.OrderOption{}, _q.order...),
-		inters:          append([]Interceptor{}, _q.inters...),
-		predicates:      append([]predicate.Channel{}, _q.predicates...),
-		withWorkspace:   _q.withWorkspace.Clone(),
-		withCreatedBy:   _q.withCreatedBy.Clone(),
-		withMembers:     _q.withMembers.Clone(),
-		withMessages:    _q.withMessages.Clone(),
-		withAttachments: _q.withAttachments.Clone(),
-		withReadStates:  _q.withReadStates.Clone(),
-		withParent:      _q.withParent.Clone(),
-		withChildren:    _q.withChildren.Clone(),
+		config:        _q.config,
+		ctx:           _q.ctx.Clone(),
+		order:         append([]channel.OrderOption{}, _q.order...),
+		inters:        append([]Interceptor{}, _q.inters...),
+		predicates:    append([]predicate.Channel{}, _q.predicates...),
+		withWorkspace: _q.withWorkspace.Clone(),
+		withCreatedBy: _q.withCreatedBy.Clone(),
+		withMembers:   _q.withMembers.Clone(),
+		withParent:    _q.withParent.Clone(),
+		withChildren:  _q.withChildren.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -486,39 +411,6 @@ func (_q *ChannelQuery) WithMembers(opts ...func(*ChannelMemberQuery)) *ChannelQ
 		opt(query)
 	}
 	_q.withMembers = query
-	return _q
-}
-
-// WithMessages tells the query-builder to eager-load the nodes that are connected to
-// the "messages" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ChannelQuery) WithMessages(opts ...func(*MessageQuery)) *ChannelQuery {
-	query := (&MessageClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withMessages = query
-	return _q
-}
-
-// WithAttachments tells the query-builder to eager-load the nodes that are connected to
-// the "attachments" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ChannelQuery) WithAttachments(opts ...func(*AttachmentQuery)) *ChannelQuery {
-	query := (&AttachmentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withAttachments = query
-	return _q
-}
-
-// WithReadStates tells the query-builder to eager-load the nodes that are connected to
-// the "read_states" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ChannelQuery) WithReadStates(opts ...func(*ChannelReadStateQuery)) *ChannelQuery {
-	query := (&ChannelReadStateClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withReadStates = query
 	return _q
 }
 
@@ -622,13 +514,10 @@ func (_q *ChannelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chan
 	var (
 		nodes       = []*Channel{}
 		_spec       = _q.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [5]bool{
 			_q.withWorkspace != nil,
 			_q.withCreatedBy != nil,
 			_q.withMembers != nil,
-			_q.withMessages != nil,
-			_q.withAttachments != nil,
-			_q.withReadStates != nil,
 			_q.withParent != nil,
 			_q.withChildren != nil,
 		}
@@ -667,27 +556,6 @@ func (_q *ChannelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chan
 		if err := _q.loadMembers(ctx, query, nodes,
 			func(n *Channel) { n.Edges.Members = []*ChannelMember{} },
 			func(n *Channel, e *ChannelMember) { n.Edges.Members = append(n.Edges.Members, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withMessages; query != nil {
-		if err := _q.loadMessages(ctx, query, nodes,
-			func(n *Channel) { n.Edges.Messages = []*Message{} },
-			func(n *Channel, e *Message) { n.Edges.Messages = append(n.Edges.Messages, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withAttachments; query != nil {
-		if err := _q.loadAttachments(ctx, query, nodes,
-			func(n *Channel) { n.Edges.Attachments = []*Attachment{} },
-			func(n *Channel, e *Attachment) { n.Edges.Attachments = append(n.Edges.Attachments, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withReadStates; query != nil {
-		if err := _q.loadReadStates(ctx, query, nodes,
-			func(n *Channel) { n.Edges.ReadStates = []*ChannelReadState{} },
-			func(n *Channel, e *ChannelReadState) { n.Edges.ReadStates = append(n.Edges.ReadStates, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -780,96 +648,6 @@ func (_q *ChannelQuery) loadMembers(ctx context.Context, query *ChannelMemberQue
 	}
 	query.Where(predicate.ChannelMember(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(channel.MembersColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.ChannelID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "channel_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *ChannelQuery) loadMessages(ctx context.Context, query *MessageQuery, nodes []*Channel, init func(*Channel), assign func(*Channel, *Message)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Channel)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(message.FieldChannelID)
-	}
-	query.Where(predicate.Message(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(channel.MessagesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.ChannelID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "channel_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *ChannelQuery) loadAttachments(ctx context.Context, query *AttachmentQuery, nodes []*Channel, init func(*Channel), assign func(*Channel, *Attachment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Channel)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(attachment.FieldChannelID)
-	}
-	query.Where(predicate.Attachment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(channel.AttachmentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.ChannelID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "channel_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *ChannelQuery) loadReadStates(ctx context.Context, query *ChannelReadStateQuery, nodes []*Channel, init func(*Channel), assign func(*Channel, *ChannelReadState)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Channel)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(channelreadstate.FieldChannelID)
-	}
-	query.Where(predicate.ChannelReadState(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(channel.ReadStatesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

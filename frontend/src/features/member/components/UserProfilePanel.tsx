@@ -9,10 +9,11 @@ import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Button } from "#/components/ui/Button/Button";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { focusRing } from "#/components/ui/styles/styles";
-import { useCreateDM } from "#/features/dm/hooks/useDM";
+import { useCreateDM } from "#/features/channel/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
+import { workspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
 import { usePreferences } from "#/hooks/usePreferences";
+import { toastError } from "#/lib/toastError";
 import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useUserNote } from "../hooks/useUserNote";
@@ -35,14 +36,21 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
   const isMe = myId === userId;
   const { data: note, isLoading: isLoadingNote } = useUserNote(isMe ? null : userId);
 
-  const startDM = async () => {
-    const { directMessage } = await createDM.mutateAsync({ userId, workspaceId });
-    if (directMessage !== undefined) {
-      void navigate({
-        params: { channelId: directMessage.id, workspaceId },
-        to: "/app/$workspaceId/$channelId",
-      });
-    }
+  const startDM = () => {
+    createDM.mutate(
+      { userId, workspaceId },
+      {
+        onError: toastError,
+        onSuccess: ({ directMessage }) => {
+          if (directMessage !== undefined) {
+            void navigate({
+              params: { channelId: directMessage.id, workspaceId },
+              to: "/app/$workspaceId/$channelId",
+            });
+          }
+        },
+      },
+    );
   };
 
   if (isLoading) {
@@ -85,7 +93,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
         </div>
         <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-1 text-label font-normal">
           <dt className="text-muted">{t("member.profile.role")}</dt>
-          <dd className="m-0">{t(workspaceRoleKeys[member.role])}</dd>
+          <dd className="m-0">{t(`member.role.${workspaceRoleKey(member.role)}`)}</dd>
           <dt className="text-muted">{t("member.profile.email")}</dt>
           <dd className="m-0 truncate">{member.email}</dd>
           {member.timezone !== "" && (
@@ -100,12 +108,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
         </dl>
         {!isMe && (
           <div className="flex gap-1.5">
-            <Button
-              isPending={createDM.isPending}
-              onPress={() => {
-                void startDM();
-              }}
-            >
+            <Button isPending={createDM.isPending} onPress={startDM}>
               <IconMessage aria-hidden />
               {t("member.profile.message")}
             </Button>

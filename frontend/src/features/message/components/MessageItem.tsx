@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 
+import { useMutation } from "@connectrpc/connect-query";
 import { IconBookmarkFilled, IconPin } from "@tabler/icons-react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -11,22 +12,23 @@ import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Badge } from "#/components/ui/Badge/Badge";
 import { cn, focusRing } from "#/components/ui/styles/styles";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { MessageAttachments } from "#/features/attachment/components/MessageAttachments";
-import { closeDialog, openDialog, openPanel } from "#/features/layout/utils/overlaySearch";
-import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
 import { MessageLocationCard } from "#/features/location/components/MessageLocationCard";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { MessagePollCard } from "#/features/poll/components/MessagePollCard";
 import { ReactionList } from "#/features/reaction/components/ReactionList";
 import { ReactionsDialog } from "#/features/reaction/components/ReactionsDialog";
 import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
-import { ALL_REACTIONS_TAB } from "#/features/reaction/utils/reactionTabs";
+import { ALL_REACTIONS_TAB } from "#/features/reaction/utils/groupReactions";
+import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { useIsMobile } from "#/hooks/useMediaQuery";
+import { closeDialog, openDialog, openPanel, workspaceRoute } from "#/lib/overlaySearch";
 import { toDate } from "#/lib/timestamp";
 import { myUserIdAtom } from "#/providers/store/auth";
 
+import { useInvalidateMessageLists } from "../hooks/useInvalidateMessageLists";
 import { useLongPress } from "../hooks/useLongPress";
-import { useMessageActions } from "../hooks/useMessageActions";
 import { useMessageMenuActions } from "../hooks/useMessageMenuActions";
 import { useOwnsMessageOverlay } from "../hooks/useOwnsMessageOverlay";
 import { MessageActionSheet } from "./MessageActionSheet";
@@ -36,29 +38,21 @@ import { MessageTime } from "./MessageTime";
 import { MessageToolbar } from "./MessageToolbar";
 import { ThreadMetadataPreview } from "./ThreadMetadataPreview";
 
-import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
+import type { Message } from "#/gen/chat/v1/message_pb";
 
 type MessageItemProps = {
   message: Message;
-  onCopyLink: (messageId: string) => void;
-  onCreateThread: (messageId: string) => void;
-  threadMetadata?: ThreadMetadata;
-  isHighlighted?: boolean;
+  isHighlighted: boolean;
   // 親チャンネルの集約表示で、子孫チャンネルのメッセージに付けるチップ
-  channelChip?: ReactNode;
+  channelChip: ReactNode;
 };
 
-export const MessageItem = ({
-  message,
-  onCopyLink,
-  onCreateThread,
-  threadMetadata,
-  isHighlighted = false,
-  channelChip = null,
-}: MessageItemProps) => {
+export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItemProps) => {
   const { t } = useTranslation();
   const myId = useAtomValue(myUserIdAtom);
   const navigate = useNavigate();
+  const { workspaceId } = workspaceRoute.useParams();
+  const routeChannelId = useParams({ select: (params) => params.channelId, strict: false });
   const isMobile = useIsMobile();
   const ownsOverlay = useOwnsMessageOverlay(message.id);
   // リアクション一覧（?reactions=&emoji=）と操作シート（?sheet=）は URL で開く
@@ -91,47 +85,71 @@ export const MessageItem = ({
   const { isPressed, longPressProps } = useLongPress(() => {
     void navigate({ search: openDialog({ sheet: message.id }), to: "." });
   }, isMobile && !isEditing);
-  const { handleEdit, handleDelete, isDeleting } = useMessageActions();
-  const toggleReaction = useToggleReaction(message.id);
+  const invalidateMessageLists = useInvalidateMessageLists();
+  const updateMessage = useMutation(MessageService.method.updateMessage, {
+    onError: (error) => {
+      toast(t("message.edit.failed"), { description: error.message || undefined, tone: "danger" });
+    },
+    onSuccess: () => {
+      invalidateMessageLists();
+      toast(t("message.edit.done"), { tone: "success" });
+    },
+  });
+  const deleteMessage = useMutation(MessageService.method.deleteMessage, {
+    onError: (error) => {
+      toast(t("message.delete.failed"), {
+        description: error.message || undefined,
+        tone: "danger",
+      });
+    },
+    onSettled: () => {
+      setIsDeleteOpen(false);
+    },
+    onSuccess: () => {
+      invalidateMessageLists();
+      toast(t("message.delete.done"), { tone: "success" });
+    },
+  });
+  const react = useToggleReaction(message);
   // グループ経由は投稿時点のメンバーに展開済み。@channel / @here はチャンネルのメンバー全員宛て
   const isMentioned =
     message.mentionsChannel ||
     message.mentionsHere ||
     message.mentions.some((mention) => mention.userId === myId);
 
+  // 返信からもスレッド全体を開く。集約表示では開いているチャンネルのままスレッドを開く
+  const openThread = () => {
+    void navigate({
+      params: {
+        channelId: routeChannelId ?? message.channelId,
+        messageId: message.parentId ?? message.id,
+        workspaceId,
+      },
+      to: "/app/$workspaceId/$channelId/thread/$messageId",
+    });
+  };
+
   const { actions, isBookmarked, toggleBookmark } = useMessageMenuActions({
     isAuthor: message.userId === myId,
     message,
-    onCopyLink: () => {
-      onCopyLink(message.id);
-    },
     onDelete: () => {
       setIsDeleteOpen(true);
     },
     onEdit: () => {
       setIsEditing(true);
     },
-    onReplyInThread: () => {
-      onCreateThread(message.id);
-    },
+    onReplyInThread: openThread,
     onViewReactions: () => {
       setReactionTab(ALL_REACTIONS_TAB);
     },
-    threadMetadata,
   });
-
-  const react = (emoji: string) => {
-    toggleReaction(
-      emoji,
-      message.reactions.some((reaction) => reaction.emoji === emoji && reaction.user?.id === myId),
-    );
-  };
 
   const openProfile = () => {
     void navigate({ search: openPanel({ profile: message.userId }), to: "." });
   };
 
-  const displayName = useDisplayName()(message.userId, message.user?.displayName ?? "");
+  const nameOf = useDisplayName();
+  const displayName = nameOf(message.userId, message.user?.displayName ?? "");
   // アプリの投稿者はプロフィールを持たないため開かない
   const isApp = message.user?.isApp ?? false;
   const avatar = (
@@ -194,7 +212,7 @@ export const MessageItem = ({
               name:
                 message.pin.pinnedBy?.id === myId
                   ? t("reaction.names.you")
-                  : (message.pin.pinnedBy?.displayName ?? ""),
+                  : nameOf(message.pin.pinnedBy?.id ?? "", message.pin.pinnedBy?.displayName ?? ""),
             })}
           </span>
         )}
@@ -230,13 +248,17 @@ export const MessageItem = ({
         {message.isDeleted ? (
           <p className="m-0 text-body text-muted italic">
             {message.deletedBy
-              ? t("message.deletedBy", { name: message.deletedBy.displayName })
+              ? t("message.deletedBy", {
+                  name: nameOf(message.deletedBy.id, message.deletedBy.displayName),
+                })
               : t("message.deleted")}
           </p>
         ) : isEditing ? (
           <MessageEditor
             initialBody={message.body}
-            onSave={(body) => handleEdit(message.id, body)}
+            onSave={async (body) => {
+              await updateMessage.mutateAsync({ body, messageId: message.id });
+            }}
             onClose={() => {
               setIsEditing(false);
             }}
@@ -251,21 +273,12 @@ export const MessageItem = ({
         {!message.isDeleted && message.poll && (
           <MessagePollCard poll={message.poll} isAuthor={message.userId === myId} />
         )}
-        {!message.isDeleted && <MessageAttachments message={message} />}
+        {!message.isDeleted && <MessageAttachments message={message} ownsOverlay={ownsOverlay} />}
 
-        <ReactionList
-          messageId={message.id}
-          reactions={message.reactions}
-          onOpenList={setReactionTab}
-        />
+        <ReactionList message={message} onOpenList={setReactionTab} onToggleReaction={react} />
 
-        {threadMetadata && threadMetadata.replyCount > 0 && (
-          <ThreadMetadataPreview
-            metadata={threadMetadata}
-            onPress={() => {
-              onCreateThread(message.id);
-            }}
-          />
+        {message.threadMetadata && message.threadMetadata.replyCount > 0 && (
+          <ThreadMetadataPreview metadata={message.threadMetadata} onPress={openThread} />
         )}
       </div>
 
@@ -274,9 +287,7 @@ export const MessageItem = ({
           actions={actions}
           isBookmarked={isBookmarked}
           onToggleBookmark={toggleBookmark}
-          onReplyInThread={() => {
-            onCreateThread(message.id);
-          }}
+          onReplyInThread={openThread}
           onReact={react}
           onOverlayOpenChange={setIsOverlayOpen}
         />
@@ -293,19 +304,24 @@ export const MessageItem = ({
         />
       )}
 
-      <ReactionsDialog message={message} tab={reactionTab} onTabChange={setReactionTab} />
+      {reactionTab !== null && (
+        <ReactionsDialog
+          message={message}
+          tab={reactionTab}
+          onTabChange={setReactionTab}
+          onToggleReaction={react}
+        />
+      )}
 
       <AlertDialog
         isOpen={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
         title={t("message.delete.title")}
-        confirmLabel={t("message.delete.confirm")}
+        confirmLabel={t("common.delete")}
         tone="danger"
-        isPending={isDeleting}
+        isPending={deleteMessage.isPending}
         onConfirm={() => {
-          void handleDelete(message).then(() => {
-            setIsDeleteOpen(false);
-          });
+          deleteMessage.mutate({ messageId: message.id });
         }}
       >
         {t("message.delete.body")}

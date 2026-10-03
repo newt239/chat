@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type userNoteRepository struct {
@@ -27,11 +27,11 @@ func notePredicate(ownerID, targetID uuid.UUID) predicate.UserNote {
 }
 
 func parseNoteUsers(ownerID, targetID string) (uuid.UUID, uuid.UUID, error) {
-	oid, err := utils.ParseUUID(ownerID, "owner ID")
+	oid, err := parseUUID(ownerID, "owner ID")
 	if err != nil {
 		return uuid.Nil, uuid.Nil, err
 	}
-	tid, err := utils.ParseUUID(targetID, "target user ID")
+	tid, err := parseUUID(targetID, "target user ID")
 	if err != nil {
 		return uuid.Nil, uuid.Nil, err
 	}
@@ -44,12 +44,8 @@ func (r *userNoteRepository) Find(ctx context.Context, ownerID string, targetID 
 		return nil, err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	note, err := client.UserNote.Query().Where(notePredicate(oid, tid)).Only(ctx)
-	if ent.IsNotFound(err) {
-		return nil, nil
-	}
-	if err != nil {
+	note, err := orNil(transaction.ResolveClient(ctx, r.client).UserNote.Query().Where(notePredicate(oid, tid)).Only(ctx))
+	if note == nil {
 		return nil, err
 	}
 	return &entity.UserNote{
@@ -62,7 +58,7 @@ func (r *userNoteRepository) Find(ctx context.Context, ownerID string, targetID 
 }
 
 func (r *userNoteRepository) FindNicknames(ctx context.Context, ownerID string) (map[string]string, error) {
-	oid, err := utils.ParseUUID(ownerID, "owner ID")
+	oid, err := parseUUID(ownerID, "owner ID")
 	if err != nil {
 		return nil, err
 	}
@@ -87,41 +83,17 @@ func (r *userNoteRepository) Upsert(ctx context.Context, note *entity.UserNote) 
 	if err != nil {
 		return err
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	existing, err := client.UserNote.Query().Where(notePredicate(oid, tid)).Only(ctx)
-	if err != nil && !ent.IsNotFound(err) {
-		return err
-	}
-
-	var saved *ent.UserNote
-	if existing == nil {
-		saved, err = client.UserNote.Create().
-			SetOwnerID(oid).
-			SetTargetID(tid).
-			SetNillableNickname(note.Nickname).
-			SetNillableMemo(note.Memo).
-			Save(ctx)
-	} else {
-		update := existing.Update()
-		if note.Nickname == nil {
-			update.ClearNickname()
-		} else {
-			update.SetNickname(*note.Nickname)
-		}
-		if note.Memo == nil {
-			update.ClearMemo()
-		} else {
-			update.SetMemo(*note.Memo)
-		}
-		saved, err = update.Save(ctx)
-	}
-	if err != nil {
-		return err
-	}
-
-	note.UpdatedAt = saved.UpdatedAt
-	return nil
+	note.UpdatedAt = time.Now()
+	// nil の項目は EXCLUDED が NULL になるため消える
+	return transaction.ResolveClient(ctx, r.client).UserNote.Create().
+		SetOwnerID(oid).
+		SetTargetID(tid).
+		SetNillableNickname(note.Nickname).
+		SetNillableMemo(note.Memo).
+		SetUpdatedAt(note.UpdatedAt).
+		OnConflictColumns(usernote.FieldOwnerID, usernote.FieldTargetID).
+		Update(func(u *ent.UserNoteUpsert) { u.UpdateNickname().UpdateMemo().UpdateUpdatedAt() }).
+		Exec(ctx)
 }
 
 func (r *userNoteRepository) Delete(ctx context.Context, ownerID string, targetID string) error {

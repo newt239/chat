@@ -26,7 +26,6 @@ const (
 type ParticipatingThread struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	ThreadId       string                 `protobuf:"bytes,1,opt,name=thread_id,json=threadId,proto3" json:"thread_id,omitempty"`
-	ChannelId      *string                `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3,oneof" json:"channel_id,omitempty"`
 	FirstMessage   *Message               `protobuf:"bytes,3,opt,name=first_message,json=firstMessage,proto3" json:"first_message,omitempty"`
 	ReplyCount     int32                  `protobuf:"varint,4,opt,name=reply_count,json=replyCount,proto3" json:"reply_count,omitempty"`
 	LastActivityAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=last_activity_at,json=lastActivityAt,proto3" json:"last_activity_at,omitempty"`
@@ -72,13 +71,6 @@ func (*ParticipatingThread) Descriptor() ([]byte, []int) {
 func (x *ParticipatingThread) GetThreadId() string {
 	if x != nil {
 		return x.ThreadId
-	}
-	return ""
-}
-
-func (x *ParticipatingThread) GetChannelId() string {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
 	}
 	return ""
 }
@@ -180,8 +172,7 @@ func (x *ThreadCursor) GetThreadId() string {
 type GetThreadRepliesRequest struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	MessageId string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
-	// 0 の場合はサーバーの既定値を使う
-	Limit int32 `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Limit     int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	// since だけなら直後から、until だけなら直前までを返す。どちらもなければ最新の返信を返す
 	Since *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=since,proto3" json:"since,omitempty"`
 	Until *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=until,proto3" json:"until,omitempty"`
@@ -427,9 +418,8 @@ type ListParticipatingThreadsRequest struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	WorkspaceId string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	// 前ページの next_cursor をそのまま渡す
-	Cursor *ThreadCursor `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
-	// 0 の場合はサーバーの既定値を使う
-	Limit         int32 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	Cursor        *ThreadCursor `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	Limit         int32         `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -781,26 +771,23 @@ var File_chat_v1_thread_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_thread_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1cchat/v1/thread_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x82\x03\n" +
+	"\x1cchat/v1/thread_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xcf\x02\n" +
 	"\x13ParticipatingThread\x12\x1b\n" +
-	"\tthread_id\x18\x01 \x01(\tR\bthreadId\x12\"\n" +
-	"\n" +
-	"channel_id\x18\x02 \x01(\tH\x00R\tchannelId\x88\x01\x01\x125\n" +
+	"\tthread_id\x18\x01 \x01(\tR\bthreadId\x125\n" +
 	"\rfirst_message\x18\x03 \x01(\v2\x10.chat.v1.MessageR\ffirstMessage\x12\x1f\n" +
 	"\vreply_count\x18\x04 \x01(\x05R\n" +
 	"replyCount\x12D\n" +
 	"\x10last_activity_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastActivityAt\x12!\n" +
 	"\funread_count\x18\x06 \x01(\x05R\vunreadCount\x127\n" +
 	"\x0elatest_replies\x18\a \x03(\v2\x10.chat.v1.MessageR\rlatestReplies\x12!\n" +
-	"\fis_following\x18\b \x01(\bR\visFollowingB\r\n" +
-	"\v_channel_id\"q\n" +
+	"\fis_following\x18\b \x01(\bR\visFollowing\"q\n" +
 	"\fThreadCursor\x12D\n" +
 	"\x10last_activity_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastActivityAt\x12\x1b\n" +
 	"\tthread_id\x18\x02 \x01(\tR\bthreadId\"\x92\x02\n" +
 	"\x17GetThreadRepliesRequest\x12'\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tmessageId\x12\x1f\n" +
-	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\x120\n" +
+	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x01R\x05limit\x120\n" +
 	"\x05since\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x05since\x120\n" +
 	"\x05until\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x125\n" +
 	"\x0faround_reply_id\x18\x05 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\raroundReplyId\x88\x01\x01B\x12\n" +
@@ -820,7 +807,7 @@ const file_chat_v1_thread_service_proto_rawDesc = "" +
 	"\x1fListParticipatingThreadsRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12-\n" +
 	"\x06cursor\x18\x02 \x01(\v2\x15.chat.v1.ThreadCursorR\x06cursor\x12\x1f\n" +
-	"\x05limit\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\"\x92\x01\n" +
+	"\x05limit\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x01R\x05limit\"\x92\x01\n" +
 	" ListParticipatingThreadsResponse\x126\n" +
 	"\athreads\x18\x01 \x03(\v2\x1c.chat.v1.ParticipatingThreadR\athreads\x126\n" +
 	"\vnext_cursor\x18\x02 \x01(\v2\x15.chat.v1.ThreadCursorR\n" +
@@ -915,7 +902,6 @@ func file_chat_v1_thread_service_proto_init() {
 		return
 	}
 	file_chat_v1_message_proto_init()
-	file_chat_v1_thread_service_proto_msgTypes[0].OneofWrappers = []any{}
 	file_chat_v1_thread_service_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

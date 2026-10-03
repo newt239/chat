@@ -1,5 +1,4 @@
 # External Secrets Operator の Helm の values。クラスタに 1 つだけ入れ、dev と prod の namespace で共有する
-# helm upgrade --install external-secrets external-secrets/external-secrets -n external-secrets --create-namespace -f infra/k8s/external-secrets/values.yaml
 resources:
   requests:
     cpu: 10m

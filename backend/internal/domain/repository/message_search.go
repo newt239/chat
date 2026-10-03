@@ -24,6 +24,9 @@ const (
 
 // MessageSearchIndex はメッセージの全文検索インデックスです
 type MessageSearchIndex interface {
+	// EnsureSettings はインデックスを作成し、検索に必要な設定が反映されるまで待ちます
+	EnsureSettings(ctx context.Context) error
+	IsEmpty(ctx context.Context) (bool, error)
 	Search(ctx context.Context, criteria MessageSearchCriteria) (*MessageSearchResult, error)
 	// Upsert は同じ ID の文書を置き換えます
 	Upsert(ctx context.Context, documents []MessageSearchDocument) error
@@ -66,16 +69,15 @@ type MessageSearchScope struct {
 
 // MessageSearchDocument は検索インデックスに載せる、削除されていないメッセージの内容です
 type MessageSearchDocument struct {
-	ID                string
-	WorkspaceID       string
-	ChannelID         string
-	SenderID          string
-	ParentID          *string
-	Body              string
-	AttachmentNames   []string
-	Has               []MessageContentKind
-	MentionedUserIDs  []string
-	MentionedGroupIDs []string
+	ID               string
+	WorkspaceID      string
+	ChannelID        string
+	SenderID         string
+	ParentID         *string
+	Body             string
+	AttachmentNames  []string
+	Has              []MessageContentKind
+	MentionedUserIDs []string
 	// MentionsChannel は本文が <@channel> / <@here> を含むかどうか
 	MentionsChannel bool
 	Pinned          bool

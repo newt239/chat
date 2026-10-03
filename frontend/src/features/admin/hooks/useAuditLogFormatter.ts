@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
-import { permissionKeyByName, roleKeyByName } from "#/features/admin/utils/labels";
+import { permissions } from "#/features/admin/utils/labels";
+import { workspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
 import { AuditAction } from "#/gen/chat/v1/admin_service_pb";
 
 import type { AuditLog } from "#/gen/chat/v1/admin_service_pb";
@@ -12,7 +13,7 @@ export const useAuditLogFormatter = () => {
   const { t } = useTranslation();
 
   const roleName = (name: string | undefined) => {
-    const key = name === undefined ? undefined : roleKeyByName[name];
+    const key = workspaceRoles.find((option) => option.key === name)?.key;
     return key === undefined ? (name ?? "") : t(`member.role.${key}`);
   };
 
@@ -26,7 +27,7 @@ export const useAuditLogFormatter = () => {
   const detailFormatters: Partial<Record<AuditAction, (metadata: Metadata) => string>> = {
     [AuditAction.MEMBER_ROLE_CHANGED]: ({ from, to }) => `${roleName(from)} → ${roleName(to)}`,
     [AuditAction.PERMISSION_CHANGED]: ({ permission, allowed }) => {
-      const key = permission === undefined ? undefined : permissionKeyByName[permission];
+      const key = permissions.find((entry) => entry.name === permission)?.key;
       const name = key === undefined ? (permission ?? "") : t(`admin.permissions.names.${key}`);
       const state =
         allowed === "true" ? t("admin.audit.detail.allowed") : t("admin.audit.detail.denied");

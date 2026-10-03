@@ -80,8 +80,6 @@ const (
 	SystemMessageKind_SYSTEM_MESSAGE_KIND_UNSPECIFIED                 SystemMessageKind = 0
 	SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_JOINED               SystemMessageKind = 1
 	SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_ADDED                SystemMessageKind = 2
-	SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_REMOVED              SystemMessageKind = 3
-	SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_LEFT                 SystemMessageKind = 4
 	SystemMessageKind_SYSTEM_MESSAGE_KIND_CHANNEL_PRIVACY_CHANGED     SystemMessageKind = 5
 	SystemMessageKind_SYSTEM_MESSAGE_KIND_CHANNEL_NAME_CHANGED        SystemMessageKind = 6
 	SystemMessageKind_SYSTEM_MESSAGE_KIND_CHANNEL_DESCRIPTION_CHANGED SystemMessageKind = 7
@@ -94,8 +92,6 @@ var (
 		0: "SYSTEM_MESSAGE_KIND_UNSPECIFIED",
 		1: "SYSTEM_MESSAGE_KIND_MEMBER_JOINED",
 		2: "SYSTEM_MESSAGE_KIND_MEMBER_ADDED",
-		3: "SYSTEM_MESSAGE_KIND_MEMBER_REMOVED",
-		4: "SYSTEM_MESSAGE_KIND_MEMBER_LEFT",
 		5: "SYSTEM_MESSAGE_KIND_CHANNEL_PRIVACY_CHANGED",
 		6: "SYSTEM_MESSAGE_KIND_CHANNEL_NAME_CHANGED",
 		7: "SYSTEM_MESSAGE_KIND_CHANNEL_DESCRIPTION_CHANGED",
@@ -105,8 +101,6 @@ var (
 		"SYSTEM_MESSAGE_KIND_UNSPECIFIED":                 0,
 		"SYSTEM_MESSAGE_KIND_MEMBER_JOINED":               1,
 		"SYSTEM_MESSAGE_KIND_MEMBER_ADDED":                2,
-		"SYSTEM_MESSAGE_KIND_MEMBER_REMOVED":              3,
-		"SYSTEM_MESSAGE_KIND_MEMBER_LEFT":                 4,
 		"SYSTEM_MESSAGE_KIND_CHANNEL_PRIVACY_CHANGED":     5,
 		"SYSTEM_MESSAGE_KIND_CHANNEL_NAME_CHANGED":        6,
 		"SYSTEM_MESSAGE_KIND_CHANNEL_DESCRIPTION_CHANGED": 7,
@@ -156,10 +150,9 @@ type Message struct {
 	Attachments []*MessageAttachment   `protobuf:"bytes,11,rep,name=attachments,proto3" json:"attachments,omitempty"`
 	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	EditedAt    *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=edited_at,json=editedAt,proto3" json:"edited_at,omitempty"`
-	DeletedAt   *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
 	IsDeleted   bool                   `protobuf:"varint,15,opt,name=is_deleted,json=isDeleted,proto3" json:"is_deleted,omitempty"`
 	DeletedBy   *UserSummary           `protobuf:"bytes,16,opt,name=deleted_by,json=deletedBy,proto3" json:"deleted_by,omitempty"`
-	// スレッド付きの一覧取得でのみ設定される
+	// ListMessages で返信のあるメッセージにのみ設定される
 	ThreadMetadata *ThreadMetadata `protobuf:"bytes,17,opt,name=thread_metadata,json=threadMetadata,proto3" json:"thread_metadata,omitempty"`
 	// ピン留めされている場合のみ設定される
 	Pin *MessagePin `protobuf:"bytes,18,opt,name=pin,proto3" json:"pin,omitempty"`
@@ -293,13 +286,6 @@ func (x *Message) GetCreatedAt() *timestamppb.Timestamp {
 func (x *Message) GetEditedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.EditedAt
-	}
-	return nil
-}
-
-func (x *Message) GetDeletedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.DeletedAt
 	}
 	return nil
 }
@@ -842,10 +828,8 @@ func (x *MessagePin) GetPinnedAt() *timestamppb.Timestamp {
 
 // 投稿時点でメンションの宛先になったユーザー。グループへのメンションは投稿時点のメンバーに展開する
 type UserMention struct {
-	state  protoimpl.MessageState `protogen:"open.v1"`
-	UserId string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	// グループ経由のときの展開元
-	ViaGroupId    *string `protobuf:"bytes,3,opt,name=via_group_id,json=viaGroupId,proto3,oneof" json:"via_group_id,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -883,13 +867,6 @@ func (*UserMention) Descriptor() ([]byte, []int) {
 func (x *UserMention) GetUserId() string {
 	if x != nil {
 		return x.UserId
-	}
-	return ""
-}
-
-func (x *UserMention) GetViaGroupId() string {
-	if x != nil && x.ViaGroupId != nil {
-		return *x.ViaGroupId
 	}
 	return ""
 }
@@ -1032,8 +1009,6 @@ type OgpData struct {
 	ImageUrl    *string                `protobuf:"bytes,3,opt,name=image_url,json=imageUrl,proto3,oneof" json:"image_url,omitempty"`
 	SiteName    *string                `protobuf:"bytes,4,opt,name=site_name,json=siteName,proto3,oneof" json:"site_name,omitempty"`
 	CardType    *string                `protobuf:"bytes,5,opt,name=card_type,json=cardType,proto3,oneof" json:"card_type,omitempty"`
-	ImageWidth  *int32                 `protobuf:"varint,6,opt,name=image_width,json=imageWidth,proto3,oneof" json:"image_width,omitempty"`
-	ImageHeight *int32                 `protobuf:"varint,7,opt,name=image_height,json=imageHeight,proto3,oneof" json:"image_height,omitempty"`
 	// YouTube の動画 URL のときのみ設定される
 	Youtube *YouTubeVideo `protobuf:"bytes,8,opt,name=youtube,proto3" json:"youtube,omitempty"`
 	// X(Twitter) の投稿 URL のときのみ設定される
@@ -1105,20 +1080,6 @@ func (x *OgpData) GetCardType() string {
 		return *x.CardType
 	}
 	return ""
-}
-
-func (x *OgpData) GetImageWidth() int32 {
-	if x != nil && x.ImageWidth != nil {
-		return *x.ImageWidth
-	}
-	return 0
-}
-
-func (x *OgpData) GetImageHeight() int32 {
-	if x != nil && x.ImageHeight != nil {
-		return *x.ImageHeight
-	}
-	return 0
 }
 
 func (x *OgpData) GetYoutube() *YouTubeVideo {
@@ -1343,7 +1304,6 @@ func (x *MessagePreview) GetCreatedAt() *timestamppb.Timestamp {
 
 type Reaction struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	User          *UserSummary           `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
 	Emoji         string                 `protobuf:"bytes,3,opt,name=emoji,proto3" json:"emoji,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
@@ -1379,13 +1339,6 @@ func (x *Reaction) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Reaction.ProtoReflect.Descriptor instead.
 func (*Reaction) Descriptor() ([]byte, []int) {
 	return file_chat_v1_message_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *Reaction) GetMessageId() string {
-	if x != nil {
-		return x.MessageId
-	}
-	return ""
 }
 
 func (x *Reaction) GetUser() *UserSummary {
@@ -1609,7 +1562,6 @@ func (x *MediaThumbnail) GetHeight() int32 {
 
 type ThreadMetadata struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	ReplyCount    int32                  `protobuf:"varint,2,opt,name=reply_count,json=replyCount,proto3" json:"reply_count,omitempty"`
 	LastReplyAt   *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=last_reply_at,json=lastReplyAt,proto3" json:"last_reply_at,omitempty"`
 	LastReplyUser *UserSummary           `protobuf:"bytes,4,opt,name=last_reply_user,json=lastReplyUser,proto3" json:"last_reply_user,omitempty"`
@@ -1647,13 +1599,6 @@ func (x *ThreadMetadata) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ThreadMetadata.ProtoReflect.Descriptor instead.
 func (*ThreadMetadata) Descriptor() ([]byte, []int) {
 	return file_chat_v1_message_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *ThreadMetadata) GetMessageId() string {
-	if x != nil {
-		return x.MessageId
-	}
-	return ""
 }
 
 func (x *ThreadMetadata) GetReplyCount() int32 {
@@ -1864,7 +1809,7 @@ var File_chat_v1_message_proto protoreflect.FileDescriptor
 
 const file_chat_v1_message_proto_rawDesc = "" +
 	"\n" +
-	"\x15chat/v1/message.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf1\a\n" +
+	"\x15chat/v1/message.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb6\a\n" +
 	"\aMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1881,9 +1826,7 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\vattachments\x18\v \x03(\v2\x1a.chat.v1.MessageAttachmentR\vattachments\x129\n" +
 	"\n" +
 	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x127\n" +
-	"\tedited_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\beditedAt\x129\n" +
-	"\n" +
-	"deleted_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x12\x1d\n" +
+	"\tedited_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\beditedAt\x12\x1d\n" +
 	"\n" +
 	"is_deleted\x18\x0f \x01(\bR\tisDeleted\x123\n" +
 	"\n" +
@@ -1944,12 +1887,9 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\n" +
 	"MessagePin\x121\n" +
 	"\tpinned_by\x18\x01 \x01(\v2\x14.chat.v1.UserSummaryR\bpinnedBy\x127\n" +
-	"\tpinned_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\bpinnedAt\"r\n" +
+	"\tpinned_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\bpinnedAt\"&\n" +
 	"\vUserMention\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12%\n" +
-	"\fvia_group_id\x18\x03 \x01(\tH\x00R\n" +
-	"viaGroupId\x88\x01\x01B\x0f\n" +
-	"\r_via_group_idJ\x04\b\x02\x10\x03R\fdisplay_name\"=\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"=\n" +
 	"\fGroupMention\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\"\xdc\x01\n" +
@@ -1959,16 +1899,13 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\x03ogp\x18\x03 \x01(\v2\x10.chat.v1.OgpDataR\x03ogp\x12/\n" +
 	"\x11linked_message_id\x18\x04 \x01(\tH\x00R\x0flinkedMessageId\x88\x01\x01\x12@\n" +
 	"\x0fmessage_preview\x18\x05 \x01(\v2\x17.chat.v1.MessagePreviewR\x0emessagePreviewB\x14\n" +
-	"\x12_linked_message_id\"\xbc\x03\n" +
+	"\x12_linked_message_id\"\xcd\x02\n" +
 	"\aOgpData\x12\x19\n" +
 	"\x05title\x18\x01 \x01(\tH\x00R\x05title\x88\x01\x01\x12%\n" +
 	"\vdescription\x18\x02 \x01(\tH\x01R\vdescription\x88\x01\x01\x12 \n" +
 	"\timage_url\x18\x03 \x01(\tH\x02R\bimageUrl\x88\x01\x01\x12 \n" +
 	"\tsite_name\x18\x04 \x01(\tH\x03R\bsiteName\x88\x01\x01\x12 \n" +
-	"\tcard_type\x18\x05 \x01(\tH\x04R\bcardType\x88\x01\x01\x12$\n" +
-	"\vimage_width\x18\x06 \x01(\x05H\x05R\n" +
-	"imageWidth\x88\x01\x01\x12&\n" +
-	"\fimage_height\x18\a \x01(\x05H\x06R\vimageHeight\x88\x01\x01\x12/\n" +
+	"\tcard_type\x18\x05 \x01(\tH\x04R\bcardType\x88\x01\x01\x12/\n" +
 	"\ayoutube\x18\b \x01(\v2\x15.chat.v1.YouTubeVideoR\ayoutube\x12%\n" +
 	"\x06x_post\x18\t \x01(\v2\x0e.chat.v1.XPostR\x05xPostB\b\n" +
 	"\x06_titleB\x0e\n" +
@@ -1978,9 +1915,7 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\n" +
 	"_site_nameB\f\n" +
 	"\n" +
-	"_card_typeB\x0e\n" +
-	"\f_image_widthB\x0f\n" +
-	"\r_image_height\"M\n" +
+	"_card_type\"M\n" +
 	"\x05XPost\x12\x1f\n" +
 	"\vauthor_name\x18\x01 \x01(\tR\n" +
 	"authorName\x12#\n" +
@@ -2003,10 +1938,8 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\f\n" +
 	"\n" +
-	"_parent_id\"\xa4\x01\n" +
-	"\bReaction\x12\x1d\n" +
-	"\n" +
-	"message_id\x18\x01 \x01(\tR\tmessageId\x12(\n" +
+	"_parent_id\"\x85\x01\n" +
+	"\bReaction\x12(\n" +
 	"\x04user\x18\x02 \x01(\v2\x14.chat.v1.UserSummaryR\x04user\x12\x14\n" +
 	"\x05emoji\x18\x03 \x01(\tR\x05emoji\x129\n" +
 	"\n" +
@@ -2028,10 +1961,8 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\x11_duration_seconds\">\n" +
 	"\x0eMediaThumbnail\x12\x14\n" +
 	"\x05width\x18\x01 \x01(\x05R\x05width\x12\x16\n" +
-	"\x06height\x18\x02 \x01(\x05R\x06height\"\xf1\x01\n" +
-	"\x0eThreadMetadata\x12\x1d\n" +
-	"\n" +
-	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x1f\n" +
+	"\x06height\x18\x02 \x01(\x05R\x06height\"\xd2\x01\n" +
+	"\x0eThreadMetadata\x12\x1f\n" +
 	"\vreply_count\x18\x02 \x01(\x05R\n" +
 	"replyCount\x12>\n" +
 	"\rlast_reply_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\vlastReplyAt\x12<\n" +
@@ -2056,13 +1987,11 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\bPollMode\x12\x19\n" +
 	"\x15POLL_MODE_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0ePOLL_MODE_TEXT\x10\x01\x12\x12\n" +
-	"\x0ePOLL_MODE_DATE\x10\x02*\x8e\x03\n" +
+	"\x0ePOLL_MODE_DATE\x10\x02*\xc1\x02\n" +
 	"\x11SystemMessageKind\x12#\n" +
 	"\x1fSYSTEM_MESSAGE_KIND_UNSPECIFIED\x10\x00\x12%\n" +
 	"!SYSTEM_MESSAGE_KIND_MEMBER_JOINED\x10\x01\x12$\n" +
-	" SYSTEM_MESSAGE_KIND_MEMBER_ADDED\x10\x02\x12&\n" +
-	"\"SYSTEM_MESSAGE_KIND_MEMBER_REMOVED\x10\x03\x12#\n" +
-	"\x1fSYSTEM_MESSAGE_KIND_MEMBER_LEFT\x10\x04\x12/\n" +
+	" SYSTEM_MESSAGE_KIND_MEMBER_ADDED\x10\x02\x12/\n" +
 	"+SYSTEM_MESSAGE_KIND_CHANNEL_PRIVACY_CHANGED\x10\x05\x12,\n" +
 	"(SYSTEM_MESSAGE_KIND_CHANNEL_NAME_CHANGED\x10\x06\x123\n" +
 	"/SYSTEM_MESSAGE_KIND_CHANNEL_DESCRIPTION_CHANGED\x10\a\x12&\n" +
@@ -2120,45 +2049,44 @@ var file_chat_v1_message_proto_depIdxs = []int32{
 	17, // 5: chat.v1.Message.attachments:type_name -> chat.v1.MessageAttachment
 	24, // 6: chat.v1.Message.created_at:type_name -> google.protobuf.Timestamp
 	24, // 7: chat.v1.Message.edited_at:type_name -> google.protobuf.Timestamp
-	24, // 8: chat.v1.Message.deleted_at:type_name -> google.protobuf.Timestamp
-	23, // 9: chat.v1.Message.deleted_by:type_name -> chat.v1.UserSummary
-	20, // 10: chat.v1.Message.thread_metadata:type_name -> chat.v1.ThreadMetadata
-	8,  // 11: chat.v1.Message.pin:type_name -> chat.v1.MessagePin
-	7,  // 12: chat.v1.Message.location:type_name -> chat.v1.MessageLocation
-	3,  // 13: chat.v1.Message.poll:type_name -> chat.v1.Poll
-	0,  // 14: chat.v1.Poll.mode:type_name -> chat.v1.PollMode
-	24, // 15: chat.v1.Poll.closes_at:type_name -> google.protobuf.Timestamp
-	4,  // 16: chat.v1.Poll.options:type_name -> chat.v1.PollOption
-	24, // 17: chat.v1.PollOption.starts_at:type_name -> google.protobuf.Timestamp
-	0,  // 18: chat.v1.PollInput.mode:type_name -> chat.v1.PollMode
-	24, // 19: chat.v1.PollInput.closes_at:type_name -> google.protobuf.Timestamp
-	6,  // 20: chat.v1.PollInput.options:type_name -> chat.v1.PollOptionInput
-	24, // 21: chat.v1.PollOptionInput.starts_at:type_name -> google.protobuf.Timestamp
-	23, // 22: chat.v1.MessagePin.pinned_by:type_name -> chat.v1.UserSummary
-	24, // 23: chat.v1.MessagePin.pinned_at:type_name -> google.protobuf.Timestamp
-	12, // 24: chat.v1.MessageLink.ogp:type_name -> chat.v1.OgpData
-	15, // 25: chat.v1.MessageLink.message_preview:type_name -> chat.v1.MessagePreview
-	14, // 26: chat.v1.OgpData.youtube:type_name -> chat.v1.YouTubeVideo
-	13, // 27: chat.v1.OgpData.x_post:type_name -> chat.v1.XPost
-	23, // 28: chat.v1.MessagePreview.user:type_name -> chat.v1.UserSummary
-	24, // 29: chat.v1.MessagePreview.created_at:type_name -> google.protobuf.Timestamp
-	23, // 30: chat.v1.Reaction.user:type_name -> chat.v1.UserSummary
-	24, // 31: chat.v1.Reaction.created_at:type_name -> google.protobuf.Timestamp
-	18, // 32: chat.v1.MessageAttachment.media:type_name -> chat.v1.MediaMetadata
-	19, // 33: chat.v1.MediaMetadata.thumbnail:type_name -> chat.v1.MediaThumbnail
-	24, // 34: chat.v1.ThreadMetadata.last_reply_at:type_name -> google.protobuf.Timestamp
-	23, // 35: chat.v1.ThreadMetadata.last_reply_user:type_name -> chat.v1.UserSummary
-	1,  // 36: chat.v1.SystemMessage.kind:type_name -> chat.v1.SystemMessageKind
-	25, // 37: chat.v1.SystemMessage.payload:type_name -> google.protobuf.Struct
-	24, // 38: chat.v1.SystemMessage.created_at:type_name -> google.protobuf.Timestamp
-	2,  // 39: chat.v1.TimelineItem.user_message:type_name -> chat.v1.Message
-	21, // 40: chat.v1.TimelineItem.system_message:type_name -> chat.v1.SystemMessage
-	24, // 41: chat.v1.TimelineItem.created_at:type_name -> google.protobuf.Timestamp
-	42, // [42:42] is the sub-list for method output_type
-	42, // [42:42] is the sub-list for method input_type
-	42, // [42:42] is the sub-list for extension type_name
-	42, // [42:42] is the sub-list for extension extendee
-	0,  // [0:42] is the sub-list for field type_name
+	23, // 8: chat.v1.Message.deleted_by:type_name -> chat.v1.UserSummary
+	20, // 9: chat.v1.Message.thread_metadata:type_name -> chat.v1.ThreadMetadata
+	8,  // 10: chat.v1.Message.pin:type_name -> chat.v1.MessagePin
+	7,  // 11: chat.v1.Message.location:type_name -> chat.v1.MessageLocation
+	3,  // 12: chat.v1.Message.poll:type_name -> chat.v1.Poll
+	0,  // 13: chat.v1.Poll.mode:type_name -> chat.v1.PollMode
+	24, // 14: chat.v1.Poll.closes_at:type_name -> google.protobuf.Timestamp
+	4,  // 15: chat.v1.Poll.options:type_name -> chat.v1.PollOption
+	24, // 16: chat.v1.PollOption.starts_at:type_name -> google.protobuf.Timestamp
+	0,  // 17: chat.v1.PollInput.mode:type_name -> chat.v1.PollMode
+	24, // 18: chat.v1.PollInput.closes_at:type_name -> google.protobuf.Timestamp
+	6,  // 19: chat.v1.PollInput.options:type_name -> chat.v1.PollOptionInput
+	24, // 20: chat.v1.PollOptionInput.starts_at:type_name -> google.protobuf.Timestamp
+	23, // 21: chat.v1.MessagePin.pinned_by:type_name -> chat.v1.UserSummary
+	24, // 22: chat.v1.MessagePin.pinned_at:type_name -> google.protobuf.Timestamp
+	12, // 23: chat.v1.MessageLink.ogp:type_name -> chat.v1.OgpData
+	15, // 24: chat.v1.MessageLink.message_preview:type_name -> chat.v1.MessagePreview
+	14, // 25: chat.v1.OgpData.youtube:type_name -> chat.v1.YouTubeVideo
+	13, // 26: chat.v1.OgpData.x_post:type_name -> chat.v1.XPost
+	23, // 27: chat.v1.MessagePreview.user:type_name -> chat.v1.UserSummary
+	24, // 28: chat.v1.MessagePreview.created_at:type_name -> google.protobuf.Timestamp
+	23, // 29: chat.v1.Reaction.user:type_name -> chat.v1.UserSummary
+	24, // 30: chat.v1.Reaction.created_at:type_name -> google.protobuf.Timestamp
+	18, // 31: chat.v1.MessageAttachment.media:type_name -> chat.v1.MediaMetadata
+	19, // 32: chat.v1.MediaMetadata.thumbnail:type_name -> chat.v1.MediaThumbnail
+	24, // 33: chat.v1.ThreadMetadata.last_reply_at:type_name -> google.protobuf.Timestamp
+	23, // 34: chat.v1.ThreadMetadata.last_reply_user:type_name -> chat.v1.UserSummary
+	1,  // 35: chat.v1.SystemMessage.kind:type_name -> chat.v1.SystemMessageKind
+	25, // 36: chat.v1.SystemMessage.payload:type_name -> google.protobuf.Struct
+	24, // 37: chat.v1.SystemMessage.created_at:type_name -> google.protobuf.Timestamp
+	2,  // 38: chat.v1.TimelineItem.user_message:type_name -> chat.v1.Message
+	21, // 39: chat.v1.TimelineItem.system_message:type_name -> chat.v1.SystemMessage
+	24, // 40: chat.v1.TimelineItem.created_at:type_name -> google.protobuf.Timestamp
+	41, // [41:41] is the sub-list for method output_type
+	41, // [41:41] is the sub-list for method input_type
+	41, // [41:41] is the sub-list for extension type_name
+	41, // [41:41] is the sub-list for extension extendee
+	0,  // [0:41] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_message_proto_init() }
@@ -2169,7 +2097,6 @@ func file_chat_v1_message_proto_init() {
 	file_chat_v1_user_proto_init()
 	file_chat_v1_message_proto_msgTypes[0].OneofWrappers = []any{}
 	file_chat_v1_message_proto_msgTypes[5].OneofWrappers = []any{}
-	file_chat_v1_message_proto_msgTypes[7].OneofWrappers = []any{}
 	file_chat_v1_message_proto_msgTypes[9].OneofWrappers = []any{}
 	file_chat_v1_message_proto_msgTypes[10].OneofWrappers = []any{}
 	file_chat_v1_message_proto_msgTypes[12].OneofWrappers = []any{}

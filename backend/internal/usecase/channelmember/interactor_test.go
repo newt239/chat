@@ -10,7 +10,7 @@ import (
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
-	"github.com/newt239/chat/internal/usecase/systemmessage"
+	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
 const channelID = "ch1"
@@ -87,24 +87,24 @@ type stubTx struct{}
 
 func (stubTx) Do(ctx context.Context, fn func(context.Context) error) error { return fn(ctx) }
 
-type stubSystemMessages struct{}
-
-func (stubSystemMessages) Create(context.Context, systemmessage.CreateInput) (*entity.SystemMessage, error) {
-	return &entity.SystemMessage{}, nil
+type stubSystemMessageRepo struct {
+	domainrepository.SystemMessageRepository
 }
+
+func (stubSystemMessageRepo) Create(context.Context, *entity.SystemMessage) error { return nil }
+
+type nopNotifier struct{ messageuc.Notifier }
+
+func (nopNotifier) NotifySystemMessageCreated(string, string, *entity.SystemMessage) {}
 
 type stubRevoker struct{ revoked []string }
 
 func (r *stubRevoker) RevokeChannel(_, _, userID string) { r.revoked = append(r.revoked, userID) }
 
-type nopLogger struct{ service.Logger }
-
-func (nopLogger) Warn(string, ...service.LogField) {}
-
-func newInteractor(members map[string]entity.ChannelRole) (ChannelMemberUseCase, *fakeMemberRepo, *stubRevoker) {
+func newInteractor(members map[string]entity.ChannelRole) (*Interactor, *fakeMemberRepo, *stubRevoker) {
 	repo := &fakeMemberRepo{members: members}
 	revoker := &stubRevoker{}
-	uc := NewChannelMemberInteractor(stubChannelRepo{}, repo, stubWorkspaceRepo{}, nil, stubSystemMessages{}, stubAccess{}, stubTx{}, revoker, nopLogger{})
+	uc := New(stubChannelRepo{}, repo, stubWorkspaceRepo{}, nil, messageuc.NewSystemMessages(stubSystemMessageRepo{}, nopNotifier{}), stubAccess{}, stubTx{}, revoker)
 	return uc, repo, revoker
 }
 
@@ -112,16 +112,16 @@ func TestLastAdminCannotLeaveOrBeDemoted(t *testing.T) {
 	uc, repo, revoker := newInteractor(map[string]entity.ChannelRole{"owner": entity.ChannelRoleAdmin, "bob": entity.ChannelRoleMember})
 	ctx := context.Background()
 
-	if err := uc.LeaveChannel(ctx, LeaveChannelInput{ChannelID: channelID, UserID: "owner"}); !errors.Is(err, ErrLastAdminRemoval) {
+	if err := uc.LeaveChannel(ctx, channelID, "owner"); !errors.Is(err, ErrLastAdminRemoval) {
 		t.Errorf("最後の管理者が退出できました: %v", err)
 	}
-	if err := uc.UpdateMemberRole(ctx, UpdateMemberRoleInput{ChannelID: channelID, OperatorID: "owner", TargetUserID: "owner", Role: "member"}); !errors.Is(err, ErrLastAdminRemoval) {
+	if err := uc.UpdateMemberRole(ctx, MemberInput{ChannelID: channelID, OperatorID: "owner", TargetUserID: "owner", Role: "member"}); !errors.Is(err, ErrLastAdminRemoval) {
 		t.Errorf("最後の管理者を降格できました: %v", err)
 	}
-	if err := uc.UpdateMemberRole(ctx, UpdateMemberRoleInput{ChannelID: channelID, OperatorID: "owner", TargetUserID: "bob", Role: "admin"}); err != nil {
+	if err := uc.UpdateMemberRole(ctx, MemberInput{ChannelID: channelID, OperatorID: "owner", TargetUserID: "bob", Role: "admin"}); err != nil {
 		t.Fatalf("管理者を増やせません: %v", err)
 	}
-	if err := uc.LeaveChannel(ctx, LeaveChannelInput{ChannelID: channelID, UserID: "owner"}); err != nil {
+	if err := uc.LeaveChannel(ctx, channelID, "owner"); err != nil {
 		t.Fatalf("管理者が他にいれば退出できるはず: %v", err)
 	}
 	if _, ok := repo.members["owner"]; ok || !slices.Equal(revoker.revoked, []string{"owner"}) {
@@ -133,7 +133,7 @@ func TestInviteMember(t *testing.T) {
 	uc, _, _ := newInteractor(map[string]entity.ChannelRole{"owner": entity.ChannelRoleAdmin, "bob": entity.ChannelRoleMember})
 	ctx := context.Background()
 	invite := func(operator, target string) error {
-		return uc.InviteMember(ctx, InviteMemberInput{ChannelID: channelID, OperatorID: operator, TargetUserID: target, Role: "member"})
+		return uc.InviteMember(ctx, MemberInput{ChannelID: channelID, OperatorID: operator, TargetUserID: target, Role: "member"})
 	}
 
 	if err := invite("owner", "bob"); !errors.Is(err, domerr.ErrAlreadyMember) {

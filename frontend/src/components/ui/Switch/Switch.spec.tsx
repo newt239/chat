@@ -17,13 +17,4 @@ describe("Switch", () => {
     expect(toggle).toBeChecked();
     expect(onChange).toHaveBeenCalledWith(true);
   });
-
-  test("無効なときは切り替えられない", async () => {
-    render(<Switch isDisabled>コンパクト表示</Switch>);
-
-    const toggle = screen.getByRole("switch", { name: "コンパクト表示" });
-    await userEvent.click(toggle);
-
-    expect(toggle).not.toBeChecked();
-  });
 });

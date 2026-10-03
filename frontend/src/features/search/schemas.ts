@@ -21,8 +21,7 @@ export const searchSortMessages: Record<SearchSortValue, SearchSort> = {
   relevance: SearchSort.RELEVANCE,
 };
 
-// q は修飾子を含む入力欄の文字列そのもの。チップはこれを解析して描き、操作したら書き戻す
-// TanStack Router は search params を JSON としてパースするため page は数値で届く
+// q は修飾子を含む入力欄の文字列そのもの。page は JSON としてパースされ数値で届く
 export const searchQuerySchema = z.object({
   filter: z.enum(searchFilterValues).default("all").catch("all"),
   page: z.number().int().min(1).default(1).catch(1),

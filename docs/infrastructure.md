@@ -123,7 +123,7 @@ helm upgrade --install external-secrets external-secrets/external-secrets \
 `infra/k8s/overlays/<環境>/` の 2 ファイルを `terraform output` の値で書き換えてコミットする。
 
 - `params.yaml`: `PROJECT_ID`、`CLUSTER_NAME`・`CLUSTER_LOCATION`（shared の `gke_cluster_*`）、`BACKEND_SERVICE_ACCOUNT`（envs の `backend_service_account_email`）、`CLOUDSQL_CONNECTION_NAME`（shared の `cloudsql_connection_name`）
-- `kustomization.yaml`: `images` の `newName`（shared の `artifact_registry_url` + `/backend`・`/frontend`）、`backend-env` の `CORS_ALLOWED_ORIGINS`（`https://FRONTEND_DOMAIN`）・`WASABI_BUCKET`（envs の `attachments_bucket`）・`GOOGLE_OAUTH_CLIENT_ID`・`FIREBASE_PROJECT_ID`・`PASSWORD_AUTH_ENABLED`
+- `kustomization.yaml`: `images` の `newName`（shared の `artifact_registry_url` + `/backend`・`/frontend`）、`backend-env` の `CORS_ALLOWED_ORIGINS`（`https://FRONTEND_DOMAIN`）・`WASABI_BUCKET`（envs の `attachments_bucket`）・`GOOGLE_OAUTH_CLIENT_ID`・`FIREBASE_PROJECT_ID`・`PASSWORD_AUTH_ENABLED`・`PUBLIC_BASE_URL`（`https://API_DOMAIN`）
 
 `kustomize build infra/k8s/overlays/dev` で展開結果を確認できる。
 
@@ -156,7 +156,7 @@ helm upgrade --install external-secrets external-secrets/external-secrets \
 gh workflow run deploy.yml -R newt239/chat -f environment=dev -f backend_ref=main -f frontend_ref=main
 ```
 
-`ENV=production` では自動シードしないため、テスト用データが必要なら `kubectl -n chat-dev exec deploy/backend -c backend -- ./seed` を実行する。
+`ENV=production` ではテスト用データを自動で作らない。検索インデックスを作り直すときは `kubectl -n chat-dev exec deploy/backend -c backend -- ./reindex` を実行する。
 
 ### 10. 動作確認
 
@@ -171,10 +171,6 @@ dev で次を確かめてから prod を作る。
 - [ ] プッシュ通知
 - [ ] Webhook（連続で送ると全レプリカ合わせて毎秒 1 回・瞬間 10 回で 429 になる）
 - [ ] `kubectl -n chat-dev delete pod <backend の Pod>` で、クライアントがつなぎ直して配信が続く
-
-### 11. 旧構成の片付け
-
-Autopilot の構成を作っていた場合は、動作確認のあとで旧 Autopilot クラスタ、外部 HTTP(S) LB、静的 IP、managed 証明書、GCS の添付ファイル用バケット、HMAC キーとそのサービスアカウント、旧シークレット（接頭辞のない `DATABASE_URL` など）を削除する。旧 `envs/dev` の state は `envs/dev` の prefix に残っているので、新しい `envs/dev` を apply する前に `gsutil rm -r gs://PROJECT_ID-tfstate/envs/dev` で消すか、旧構成を `terraform destroy` しておく。
 
 ## デプロイ
 
@@ -217,7 +213,7 @@ flowchart LR
 | GCP の権限 | Pod はメタデータサーバー経由で VM の SA を使う（Workload Identity なし） |
 | イメージの取得 | CronJob が 30 分ごとに VM の SA のトークンで imagePullSecret を作り直す |
 | デプロイ | k3s の API は公開せず、IAP 経由の SSH で VM に入って `sudo k3s kubectl` を実行する |
-| 予約投稿 | Neon を止められるよう 15 分ごとにしか確かめないので、最大 15 分遅れる（「今すぐ送信」はすぐ送られる） |
+| 予約投稿・リマインダー | Neon を止められるよう `DISPATCH_INTERVAL=15m` で 15 分ごとにしか確かめないので、最大 15 分遅れる（予約投稿の「今すぐ送信」はすぐ送られる） |
 
 mini で確かめられないのは Cloud SQL Auth Proxy・External Secrets・Workload Identity で、これらは GKE の構成で確かめる。
 
@@ -279,11 +275,11 @@ gh workflow run deploy.yml -R newt239/chat -f environment=mini -f backend_ref=ma
 
 初回は両方の ref を指定する。ワークフローは apply のあとに imagePullSecret を作る Job を動かすので、Pod が一時的に `ImagePullBackOff` になっても数分で起動する。シークレットを変えたときは Environment の Secrets を更新してデプロイし直す（`secretGenerator` が名前を変えるので Pod が作り直される）。
 
-テスト用データが必要なら次を実行する。
+検索インデックスを作り直すときは次を実行する。
 
 ```sh
 gcloud compute ssh chat-mini --zone asia-northeast1-b --tunnel-through-iap \
-  --command 'sudo k3s kubectl -n chat-mini exec deploy/backend -- ./seed'
+  --command 'sudo k3s kubectl -n chat-mini exec deploy/backend -- ./reindex'
 ```
 
 ### 6. 運用
@@ -299,7 +295,7 @@ gcloud compute ssh chat-mini --zone asia-northeast1-b --tunnel-through-iap \
 - [ ] 閲覧者一覧、既読と未読数
 - [ ] 添付ファイルのアップロードとダウンロード（Wasabi への署名付き URL）
 - [ ] 検索（Meilisearch）と、Meilisearch の PVC を消したあとのインデックスの作り直し
-- [ ] 予約投稿が一度だけ送られる（最大 15 分遅れる）
+- [ ] 予約投稿とリマインダーが一度だけ送られる（最大 15 分遅れる）
 - [ ] プッシュ通知（VM の SA の ADC で FCM に送る）
 - [ ] Webhook
 - [ ] backend の Pod を 1 つ削除したときに、クライアントがつなぎ直して配信が続く

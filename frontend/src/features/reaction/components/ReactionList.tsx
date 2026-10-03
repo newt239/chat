@@ -8,29 +8,27 @@ import { useTranslation } from "react-i18next";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { myUserIdAtom } from "#/providers/store/auth";
 
-import { useToggleReaction } from "../hooks/useReactions";
-import { reactionPillClassName } from "../styles";
 import { groupReactions } from "../utils/groupReactions";
+import { reactionPillClassName } from "../utils/reactionPillClassName";
 import { EmojiPickerPopover } from "./EmojiPickerPopover";
 import { ReactionButton } from "./ReactionButton";
 
-import type { Reaction } from "#/gen/chat/v1/message_pb";
+import type { Message } from "#/gen/chat/v1/message_pb";
 
 type ReactionListProps = {
-  messageId: string;
-  reactions: Reaction[];
+  message: Message;
   onOpenList: (emoji: string) => void;
+  onToggleReaction: (emoji: string) => void;
 };
 
 // これを超える種類は「+N」にまとめる
 const VISIBLE_LIMIT = 10;
 
-export const ReactionList = ({ messageId, reactions, onOpenList }: ReactionListProps) => {
+export const ReactionList = ({ message, onOpenList, onToggleReaction }: ReactionListProps) => {
   const { t } = useTranslation();
   const myId = useAtomValue(myUserIdAtom);
-  const toggleReaction = useToggleReaction(messageId);
   const [isExpanded, setIsExpanded] = useState(false);
-  const groups = groupReactions(reactions, myId);
+  const groups = groupReactions(message.reactions, myId);
 
   if (groups.length === 0) {
     return null;
@@ -45,7 +43,7 @@ export const ReactionList = ({ messageId, reactions, onOpenList }: ReactionListP
           key={group.emoji}
           group={group}
           onPress={() => {
-            toggleReaction(group.emoji, group.hasUserReacted);
+            onToggleReaction(group.emoji);
           }}
           onOpenList={() => {
             onOpenList(group.emoji);
@@ -79,12 +77,10 @@ export const ReactionList = ({ messageId, reactions, onOpenList }: ReactionListP
             <IconMoodPlus aria-hidden />
           </Button>
         }
-        onSelect={(emoji) => {
-          toggleReaction(
-            emoji,
-            groups.some((group) => group.emoji === emoji && group.hasUserReacted),
-          );
-        }}
+        onSelect={onToggleReaction}
+        onOpenChange={null}
+        label={t("reaction.add")}
+        placement="bottom end"
       />
     </div>
   );

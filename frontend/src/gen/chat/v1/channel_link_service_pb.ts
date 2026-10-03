@@ -5,15 +5,13 @@
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file chat/v1/channel_link_service.proto.
  */
 export const file_chat_v1_channel_link_service: GenFile = /*@__PURE__*/
-  fileDesc("CiJjaGF0L3YxL2NoYW5uZWxfbGlua19zZXJ2aWNlLnByb3RvEgdjaGF0LnYxIs8BCgtDaGFubmVsTGluaxIKCgJpZBgBIAEoCRISCgpjaGFubmVsX2lkGAIgASgJEg0KBXRpdGxlGAMgASgJEgsKA3VybBgEIAEoCRIQCghwb3NpdGlvbhgFIAEoBRISCgpjcmVhdGVkX2J5GAYgASgJEi4KCmNyZWF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjcKF0xpc3RDaGFubmVsTGlua3NSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBIlEKGExpc3RDaGFubmVsTGlua3NSZXNwb25zZRIjCgVsaW5rcxgBIAMoCzIULmNoYXQudjEuQ2hhbm5lbExpbmsSEAoIY2FuX2VkaXQYAiABKAgibAoYQ3JlYXRlQ2hhbm5lbExpbmtSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBEhgKBXRpdGxlGAIgASgJQgm6SAZyBBABGGQSGAoDdXJsGAMgASgJQgu6SAhyBhiAEIgBASI/ChlDcmVhdGVDaGFubmVsTGlua1Jlc3BvbnNlEiIKBGxpbmsYASABKAsyFC5jaGF0LnYxLkNoYW5uZWxMaW5rImkKGFVwZGF0ZUNoYW5uZWxMaW5rUmVxdWVzdBIZCgdsaW5rX2lkGAEgASgJQgi6SAVyA7ABARIYCgV0aXRsZRgCIAEoCUIJukgGcgQQARhkEhgKA3VybBgDIAEoCUILukgIcgYYgBCIAQEiPwoZVXBkYXRlQ2hhbm5lbExpbmtSZXNwb25zZRIiCgRsaW5rGAEgASgLMhQuY2hhdC52MS5DaGFubmVsTGluayI1ChhEZWxldGVDaGFubmVsTGlua1JlcXVlc3QSGQoHbGlua19pZBgBIAEoCUIIukgFcgOwAQEiGwoZRGVsZXRlQ2hhbm5lbExpbmtSZXNwb25zZSJdChpSZW9yZGVyQ2hhbm5lbExpbmtzUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIhCghsaW5rX2lkcxgCIAMoCUIPukgMkgEJGAEiBXIDsAEBIkIKG1Jlb3JkZXJDaGFubmVsTGlua3NSZXNwb25zZRIjCgVsaW5rcxgBIAMoCzIULmNoYXQudjEuQ2hhbm5lbExpbmsy4wMKEkNoYW5uZWxMaW5rU2VydmljZRJXChBMaXN0Q2hhbm5lbExpbmtzEiAuY2hhdC52MS5MaXN0Q2hhbm5lbExpbmtzUmVxdWVzdBohLmNoYXQudjEuTGlzdENoYW5uZWxMaW5rc1Jlc3BvbnNlEloKEUNyZWF0ZUNoYW5uZWxMaW5rEiEuY2hhdC52MS5DcmVhdGVDaGFubmVsTGlua1JlcXVlc3QaIi5jaGF0LnYxLkNyZWF0ZUNoYW5uZWxMaW5rUmVzcG9uc2USWgoRVXBkYXRlQ2hhbm5lbExpbmsSIS5jaGF0LnYxLlVwZGF0ZUNoYW5uZWxMaW5rUmVxdWVzdBoiLmNoYXQudjEuVXBkYXRlQ2hhbm5lbExpbmtSZXNwb25zZRJaChFEZWxldGVDaGFubmVsTGluaxIhLmNoYXQudjEuRGVsZXRlQ2hhbm5lbExpbmtSZXF1ZXN0GiIuY2hhdC52MS5EZWxldGVDaGFubmVsTGlua1Jlc3BvbnNlEmAKE1Jlb3JkZXJDaGFubmVsTGlua3MSIy5jaGF0LnYxLlJlb3JkZXJDaGFubmVsTGlua3NSZXF1ZXN0GiQuY2hhdC52MS5SZW9yZGVyQ2hhbm5lbExpbmtzUmVzcG9uc2VCmAEKC2NvbS5jaGF0LnYxQhdDaGFubmVsTGlua1NlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("CiJjaGF0L3YxL2NoYW5uZWxfbGlua19zZXJ2aWNlLnByb3RvEgdjaGF0LnYxIjUKC0NoYW5uZWxMaW5rEgoKAmlkGAEgASgJEg0KBXRpdGxlGAMgASgJEgsKA3VybBgEIAEoCSI3ChdMaXN0Q2hhbm5lbExpbmtzUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABASJRChhMaXN0Q2hhbm5lbExpbmtzUmVzcG9uc2USIwoFbGlua3MYASADKAsyFC5jaGF0LnYxLkNoYW5uZWxMaW5rEhAKCGNhbl9lZGl0GAIgASgIImwKGENyZWF0ZUNoYW5uZWxMaW5rUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIYCgV0aXRsZRgCIAEoCUIJukgGcgQQARhkEhgKA3VybBgDIAEoCUILukgIcgYYgBCIAQEiPwoZQ3JlYXRlQ2hhbm5lbExpbmtSZXNwb25zZRIiCgRsaW5rGAEgASgLMhQuY2hhdC52MS5DaGFubmVsTGluayJpChhVcGRhdGVDaGFubmVsTGlua1JlcXVlc3QSGQoHbGlua19pZBgBIAEoCUIIukgFcgOwAQESGAoFdGl0bGUYAiABKAlCCbpIBnIEEAEYZBIYCgN1cmwYAyABKAlCC7pICHIGGIAQiAEBIj8KGVVwZGF0ZUNoYW5uZWxMaW5rUmVzcG9uc2USIgoEbGluaxgBIAEoCzIULmNoYXQudjEuQ2hhbm5lbExpbmsiNQoYRGVsZXRlQ2hhbm5lbExpbmtSZXF1ZXN0EhkKB2xpbmtfaWQYASABKAlCCLpIBXIDsAEBIhsKGURlbGV0ZUNoYW5uZWxMaW5rUmVzcG9uc2UiXQoaUmVvcmRlckNoYW5uZWxMaW5rc1JlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQESIQoIbGlua19pZHMYAiADKAlCD7pIDJIBCRgBIgVyA7ABASIdChtSZW9yZGVyQ2hhbm5lbExpbmtzUmVzcG9uc2Uy4wMKEkNoYW5uZWxMaW5rU2VydmljZRJXChBMaXN0Q2hhbm5lbExpbmtzEiAuY2hhdC52MS5MaXN0Q2hhbm5lbExpbmtzUmVxdWVzdBohLmNoYXQudjEuTGlzdENoYW5uZWxMaW5rc1Jlc3BvbnNlEloKEUNyZWF0ZUNoYW5uZWxMaW5rEiEuY2hhdC52MS5DcmVhdGVDaGFubmVsTGlua1JlcXVlc3QaIi5jaGF0LnYxLkNyZWF0ZUNoYW5uZWxMaW5rUmVzcG9uc2USWgoRVXBkYXRlQ2hhbm5lbExpbmsSIS5jaGF0LnYxLlVwZGF0ZUNoYW5uZWxMaW5rUmVxdWVzdBoiLmNoYXQudjEuVXBkYXRlQ2hhbm5lbExpbmtSZXNwb25zZRJaChFEZWxldGVDaGFubmVsTGluaxIhLmNoYXQudjEuRGVsZXRlQ2hhbm5lbExpbmtSZXF1ZXN0GiIuY2hhdC52MS5EZWxldGVDaGFubmVsTGlua1Jlc3BvbnNlEmAKE1Jlb3JkZXJDaGFubmVsTGlua3MSIy5jaGF0LnYxLlJlb3JkZXJDaGFubmVsTGlua3NSZXF1ZXN0GiQuY2hhdC52MS5SZW9yZGVyQ2hhbm5lbExpbmtzUmVzcG9uc2VCmAEKC2NvbS5jaGF0LnYxQhdDaGFubmVsTGlua1NlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate]);
 
 /**
  * @generated from message chat.v1.ChannelLink
@@ -25,11 +23,6 @@ export type ChannelLink = Message<"chat.v1.ChannelLink"> & {
   id: string;
 
   /**
-   * @generated from field: string channel_id = 2;
-   */
-  channelId: string;
-
-  /**
    * @generated from field: string title = 3;
    */
   title: string;
@@ -38,26 +31,6 @@ export type ChannelLink = Message<"chat.v1.ChannelLink"> & {
    * @generated from field: string url = 4;
    */
   url: string;
-
-  /**
-   * @generated from field: int32 position = 5;
-   */
-  position: number;
-
-  /**
-   * @generated from field: string created_by = 6;
-   */
-  createdBy: string;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 7;
-   */
-  createdAt?: Timestamp | undefined;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 8;
-   */
-  updatedAt?: Timestamp | undefined;
 };
 
 /**
@@ -254,10 +227,6 @@ export const ReorderChannelLinksRequestSchema: GenMessage<ReorderChannelLinksReq
  * @generated from message chat.v1.ReorderChannelLinksResponse
  */
 export type ReorderChannelLinksResponse = Message<"chat.v1.ReorderChannelLinksResponse"> & {
-  /**
-   * @generated from field: repeated chat.v1.ChannelLink links = 1;
-   */
-  links: ChannelLink[];
 };
 
 /**

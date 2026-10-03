@@ -1,5 +1,4 @@
-# WebSocket の配信・閲覧者一覧・Webhook のレート制限を backend のレプリカ間で共有する
-# 消えても backend が数十秒で作り直せる値だけなので永続化しない
+# WebSocket の配信・閲覧者一覧・Webhook のレート制限をレプリカ間で共有する。作り直せる値だけなので永続化しない
 apiVersion: apps/v1
 kind: Deployment
 metadata:

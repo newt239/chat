@@ -4,7 +4,6 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
-import { downloadText } from "#/features/admin/utils/downloadText";
 import {
   AdminMemberSchema,
   AdminService,
@@ -17,7 +16,11 @@ import { AdminAuditTab } from "./AdminAuditTab";
 
 import type { ExportAuditLogsRequest, ListAuditLogsRequest } from "#/gen/chat/v1/admin_service_pb";
 
-vi.mock("#/features/admin/utils/downloadText", () => ({ downloadText: vi.fn() }));
+const createObjectURL = vi.fn((_blob: Blob) => "blob:audit");
+URL.createObjectURL = createObjectURL;
+URL.revokeObjectURL = vi.fn<(url: string) => void>();
+const click = vi.fn<(this: HTMLAnchorElement) => void>();
+HTMLAnchorElement.prototype.click = click;
 
 const bobId = "00000000-0000-0000-0000-000000000002";
 
@@ -90,8 +93,10 @@ describe("AdminAuditTab", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "CSV を書き出す" }));
     await waitFor(() => {
-      expect(downloadText).toHaveBeenCalledWith("a,b", "audit.csv", "text/csv;charset=utf-8");
+      expect(click).toHaveBeenCalled();
     });
+    expect(await createObjectURL.mock.lastCall?.[0].text()).toBe("a,b");
+    expect(click.mock.contexts.at(-1)).toMatchObject({ download: "audit.csv" });
     expect(exportLogs).toHaveBeenCalledWith(
       expect.objectContaining({ actions: [AuditAction.PERMISSION_CHANGED], actorId: bobId }),
     );

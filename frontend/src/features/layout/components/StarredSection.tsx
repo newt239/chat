@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
 
 import { ChannelRow } from "#/features/channel/components/ChannelRow";
+import { DMRow } from "#/features/channel/components/DMRow";
 import { useChannels } from "#/features/channel/hooks/useChannel";
-import { DMRow } from "#/features/dm/components/DMRow";
-import { useDMs } from "#/features/dm/hooks/useDM";
+import { useDMs } from "#/features/channel/hooks/useDM";
 
 import { SidebarSection } from "./SidebarSection";
 

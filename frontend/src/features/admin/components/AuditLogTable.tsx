@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { cn } from "#/components/ui/styles/styles";
 import { useAuditLogFormatter } from "#/features/admin/hooks/useAuditLogFormatter";
-import { auditActionKeys, sensitiveAuditActions } from "#/features/admin/utils/labels";
+import { auditActionKey, sensitiveAuditActions } from "#/features/admin/utils/labels";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";
 import { summarizeUserAgent } from "#/features/admin/utils/userAgent";
 import { useDateFormat } from "#/hooks/useDateFormat";
@@ -60,7 +60,7 @@ export const AuditLogTable = ({ logs }: AuditLogTableProps) => {
                       sensitiveAuditActions.has(log.action) && "border-danger/40 text-danger",
                     )}
                   >
-                    {t(`admin.audit.actions.${auditActionKeys[log.action]}`)}
+                    {t(`admin.audit.actions.${auditActionKey(log.action)}`)}
                   </span>
                 </td>
                 <td className={cn(tableClassNames.cell, "max-w-56 truncate")}>{target(log)}</td>

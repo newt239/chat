@@ -25,8 +25,6 @@ const (
 	FieldAllDay = "all_day"
 	// EdgePoll holds the string denoting the poll edge name in mutations.
 	EdgePoll = "poll"
-	// EdgeVotes holds the string denoting the votes edge name in mutations.
-	EdgeVotes = "votes"
 	// Table holds the table name of the polloption in the database.
 	Table = "poll_option"
 	// PollTable is the table that holds the poll relation/edge.
@@ -36,13 +34,6 @@ const (
 	PollInverseTable = "poll"
 	// PollColumn is the table column denoting the poll relation/edge.
 	PollColumn = "poll_id"
-	// VotesTable is the table that holds the votes relation/edge.
-	VotesTable = "poll_vote"
-	// VotesInverseTable is the table name for the PollVote entity.
-	// It exists in this package in order to avoid circular dependency with the "pollvote" package.
-	VotesInverseTable = "poll_vote"
-	// VotesColumn is the table column denoting the votes relation/edge.
-	VotesColumn = "option_id"
 )
 
 // Columns holds all SQL columns for polloption fields.
@@ -113,31 +104,10 @@ func ByPollField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newPollStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByVotesCount orders the results by votes count.
-func ByVotesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newVotesStep(), opts...)
-	}
-}
-
-// ByVotes orders the results by votes terms.
-func ByVotes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newVotesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newPollStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PollInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, PollTable, PollColumn),
-	)
-}
-func newVotesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(VotesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, VotesTable, VotesColumn),
 	)
 }

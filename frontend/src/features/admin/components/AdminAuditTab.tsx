@@ -2,7 +2,9 @@ import { useState } from "react";
 
 import { timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { formatNumber } from "@chat/i18n/format";
+import { useInfiniteQuery } from "@connectrpc/connect-query";
 import { IconDownload } from "@tabler/icons-react";
+import { keepPreviousData } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
@@ -12,12 +14,9 @@ import { cn } from "#/components/ui/styles/styles";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
-import { useAuditLogPages } from "#/features/admin/hooks/useAdminQueries";
-import { auditActionKeyValues, auditPeriodValues } from "#/features/admin/schemas";
-import { downloadText } from "#/features/admin/utils/downloadText";
-import { auditActionKeys } from "#/features/admin/utils/labels";
-import { toLocalDateTime } from "#/features/admin/utils/localDateTime";
-import { AuditAction } from "#/gen/chat/v1/admin_service_pb";
+import { auditPeriodValues } from "#/features/admin/schemas";
+import { auditActions } from "#/features/admin/utils/labels";
+import { AdminService } from "#/gen/chat/v1/admin_service_pb";
 import { usePreferences } from "#/hooks/usePreferences";
 
 import { AuditLogTable } from "./AuditLogTable";
@@ -40,21 +39,13 @@ const presetDurations = {
   week: 7 * 24 * HOUR,
 } as const;
 
-const actions = [
-  AuditAction.LOGIN,
-  AuditAction.LOGIN_FAILED,
-  AuditAction.MEMBER_ROLE_CHANGED,
-  AuditAction.MEMBER_SUSPENDED,
-  AuditAction.MEMBER_RESUMED,
-  AuditAction.CHANNEL_CREATED,
-  AuditAction.CHANNEL_DELETED,
-  AuditAction.CHANNEL_ARCHIVED,
-  AuditAction.CHANNEL_UNARCHIVED,
-  AuditAction.PERMISSION_CHANGED,
-  AuditAction.AUDIT_LOG_EXPORTED,
-];
-
 const adminRoute = getRouteApi("/app/$workspaceId/admin");
+
+const pad = (value: number) => String(value).padStart(2, "0");
+
+// <input type="datetime-local"> の形式（ブラウザのタイムゾーン、分まで）にする
+const toLocalDateTime = (date: Date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
 const parseLocalDateTime = (value: string | undefined) =>
   value === undefined ? undefined : new Date(value);
@@ -86,17 +77,26 @@ export const AdminAuditTab = ({ workspaceId, members }: AdminAuditTabProps) => {
   const period = search.period ?? "month";
   const { since, until } = auditRange(search, now);
   const isInvalidRange = since !== undefined && until !== undefined && since >= until;
-  const action = actions.find((value) => auditActionKeys[value] === search.action);
+  const action = auditActions.find((entry) => entry.key === search.action);
 
   const filter = {
-    actions: action === undefined ? [] : [action],
+    actions: action === undefined ? [] : [action.action],
     actorId: search.actor,
     since: since === undefined ? undefined : timestampFromDate(since),
     until: until === undefined ? undefined : timestampFromDate(until),
     workspaceId,
   };
   const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData } =
-    useAuditLogPages({ ...filter, limit: PAGE_SIZE });
+    // 保存先を NoSQL に移せるよう総件数やオフセットは使わず、ページトークンで続きを読み込む。絞り込みを変えても前の結果を表示したままにする
+    useInfiniteQuery(
+      AdminService.method.listAuditLogs,
+      { ...filter, limit: PAGE_SIZE, pageToken: "" },
+      {
+        getNextPageParam: (res) => res.nextPageToken || undefined,
+        pageParamKey: "pageToken",
+        placeholderData: keepPreviousData,
+      },
+    );
   const logs = data?.pages.flatMap((page) => page.logs) ?? [];
 
   const updateSearch = (patch: Partial<AdminSearch>) => {
@@ -123,15 +123,15 @@ export const AdminAuditTab = ({ workspaceId, members }: AdminAuditTabProps) => {
           <Select
             label={t("admin.audit.actionFilter")}
             className="w-52"
-            value={action === undefined ? "all" : auditActionKeys[action]}
+            value={action?.key ?? "all"}
             onChange={(value) => {
-              updateSearch({ action: auditActionKeyValues.find((key) => key === value) });
+              updateSearch({ action: value === "all" ? undefined : value });
             }}
             options={[
               { label: t("admin.audit.allActions"), value: "all" },
-              ...actions.map((value) => ({
-                label: t(`admin.audit.actions.${auditActionKeys[value]}`),
-                value: auditActionKeys[value],
+              ...auditActions.map(({ key }) => ({
+                label: t(`admin.audit.actions.${key}`),
+                value: key,
               })),
             ]}
           />
@@ -187,7 +187,14 @@ export const AdminAuditTab = ({ workspaceId, members }: AdminAuditTabProps) => {
           onPress={() => {
             exportAuditLogs.mutate(filter, {
               onSuccess: ({ content, fileName }) => {
-                downloadText(content, fileName, "text/csv;charset=utf-8");
+                const url = URL.createObjectURL(
+                  new Blob([content], { type: "text/csv;charset=utf-8" }),
+                );
+                const anchor = document.createElement("a");
+                anchor.href = url;
+                anchor.download = fileName;
+                anchor.click();
+                URL.revokeObjectURL(url);
                 toast(t("admin.audit.exported"), { tone: "success" });
               },
             });

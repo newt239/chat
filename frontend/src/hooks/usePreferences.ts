@@ -6,9 +6,13 @@ import { useTranslation } from "react-i18next";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { useMe } from "#/hooks/useMe";
-import { preferencesFromProto, preferencesToProto } from "#/lib/preferences";
-import { storedPreferencesAtom } from "#/providers/store/preferences";
+import {
+  preferencesFromProto,
+  preferencesToProto,
+  storedPreferencesAtom,
+} from "#/providers/store/preferences";
 
+import type { UserPreferences } from "#/gen/chat/v1/user_pb";
 import type { GetMeResponse } from "#/gen/chat/v1/user_service_pb";
 import type { Preferences } from "#/providers/store/preferences";
 
@@ -17,8 +21,7 @@ const getMeKey = createConnectQueryKey({ cardinality: "finite", schema: UserServ
 /** アカウントの表示設定。ログイン前や読み込み中は端末に残した直近の設定を使う */
 export const usePreferences = () => {
   const stored = useAtomValue(storedPreferencesAtom);
-  const saved = useMe().data?.preferences;
-  return saved ? preferencesFromProto(saved) : stored;
+  return preferencesFromProto(useMe().data?.preferences ?? stored);
 };
 
 /** 表示設定を変える。preview は画面に反映するだけで、update はアカウントにも保存し、失敗したら元に戻す */
@@ -29,32 +32,32 @@ export const useUpdatePreferences = () => {
   const setStored = useSetAtom(storedPreferencesAtom);
   const { mutate } = useMutation(UserService.method.updatePreferences);
 
-  const apply = (next: Preferences) => {
+  const apply = (next: UserPreferences) => {
     setStored(next);
     queryClient.setQueriesData<GetMeResponse>(
       { queryKey: getMeKey },
-      (old) =>
-        old?.user && { ...old, user: { ...old.user, preferences: preferencesToProto(next) } },
+      (old) => old?.user && { ...old, user: { ...old.user, preferences: next } },
     );
   };
 
   // 同じコミットで続けて呼ばれても前の変更を消さないよう、呼ばれた時点の値を読む
-  const current = () => {
-    const saved = queryClient.getQueriesData<GetMeResponse>({ queryKey: getMeKey })[0]?.[1]?.user
-      ?.preferences;
-    return saved ? preferencesFromProto(saved) : store.get(storedPreferencesAtom);
-  };
+  const current = () =>
+    queryClient.getQueriesData<GetMeResponse>({ queryKey: getMeKey })[0]?.[1]?.user?.preferences ??
+    store.get(storedPreferencesAtom);
+
+  const patched = (patch: Partial<Preferences>) =>
+    preferencesToProto({ ...preferencesFromProto(current()), ...patch });
 
   const preview = (patch: Partial<Preferences>) => {
-    apply({ ...current(), ...patch });
+    apply(patched(patch));
   };
 
   const update = (patch: Partial<Preferences>) => {
     const previous = current();
-    const next = { ...previous, ...patch };
+    const next = patched(patch);
     apply(next);
     mutate(
-      { preferences: preferencesToProto(next) },
+      { preferences: next },
       {
         onError: () => {
           apply(previous);

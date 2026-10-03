@@ -1,5 +1,4 @@
-# GKE でだけ使う部分（Cloud SQL Auth Proxy・External Secrets・Workload Identity）
-# overlay の params.yaml（ConfigMap params）の値をプレースホルダに埋め込む
+# GKE 専用の部分（Cloud SQL Auth Proxy・External Secrets・Workload Identity）。overlay の params.yaml の値をプレースホルダに埋め込む
 apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 

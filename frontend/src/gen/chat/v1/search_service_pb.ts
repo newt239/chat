@@ -21,7 +21,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/search_service.proto.
  */
 export const file_chat_v1_search_service: GenFile = /*@__PURE__*/
-  fileDesc("ChxjaGF0L3YxL3NlYXJjaF9zZXJ2aWNlLnByb3RvEgdjaGF0LnYxIukCChNNZXNzYWdlU2VhcmNoRmlsdGVyEiYKDWZyb21fdXNlcl9pZHMYASADKAlCD7pIDJIBCRAUIgVyA7ABARIkCgtjaGFubmVsX2lkcxgCIAMoCUIPukgMkgEJEBQiBXIDsAEBEiMKG2luY2x1ZGVfZGVzY2VuZGFudF9jaGFubmVscxgDIAEoCBIwCgNoYXMYBCADKA4yEi5jaGF0LnYxLlNlYXJjaEhhc0IPukgMkgEJIgeCAQQQASAAEhMKC3Bpbm5lZF9vbmx5GAUgASgIEhMKC3RocmVhZF9vbmx5GAYgASgIEikKBWFmdGVyGAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIqCgZiZWZvcmUYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhMKC21lbnRpb25zX21lGAkgASgIEhcKD2V4Y2x1ZGVfcmVwbGllcxgKIAEoCCKEAgoWU2VhcmNoV29ya3NwYWNlUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAESFwoFcXVlcnkYAiABKAlCCLpIBXIDGMgBEiUKBnRhcmdldBgDIAEoDjIVLmNoYXQudjEuU2VhcmNoVGFyZ2V0EhUKBHBhZ2UYBCABKAVCB7pIBBoCKAASGwoIcGVyX3BhZ2UYBSABKAVCCbpIBhoEGDIoABI0Cg5tZXNzYWdlX2ZpbHRlchgGIAEoCzIcLmNoYXQudjEuTWVzc2FnZVNlYXJjaEZpbHRlchIhCgRzb3J0GAcgASgOMhMuY2hhdC52MS5TZWFyY2hTb3J0ItMBChdTZWFyY2hXb3Jrc3BhY2VSZXNwb25zZRIuCghtZXNzYWdlcxgBIAEoCzIcLmNoYXQudjEuTWVzc2FnZVNlYXJjaFJlc3VsdBIuCghjaGFubmVscxgCIAEoCzIcLmNoYXQudjEuQ2hhbm5lbFNlYXJjaFJlc3VsdBIoCgV1c2VycxgDIAEoCzIZLmNoYXQudjEuVXNlclNlYXJjaFJlc3VsdBIuCgZncm91cHMYBCABKAsyHi5jaGF0LnYxLlVzZXJHcm91cFNlYXJjaFJlc3VsdCInCglUZXh0UmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIgASgFIl0KEE1lc3NhZ2VTZWFyY2hIaXQSIQoHbWVzc2FnZRgBIAEoCzIQLmNoYXQudjEuTWVzc2FnZRImCgpoaWdobGlnaHRzGAIgAygLMhIuY2hhdC52MS5UZXh0UmFuZ2UigAEKE01lc3NhZ2VTZWFyY2hSZXN1bHQSKAoFaXRlbXMYASADKAsyGS5jaGF0LnYxLk1lc3NhZ2VTZWFyY2hIaXQSDQoFdG90YWwYAiABKAUSDAoEcGFnZRgDIAEoBRIQCghwZXJfcGFnZRgEIAEoBRIQCghoYXNfbW9yZRgFIAEoCCJ3ChNDaGFubmVsU2VhcmNoUmVzdWx0Eh8KBWl0ZW1zGAEgAygLMhAuY2hhdC52MS5DaGFubmVsEg0KBXRvdGFsGAIgASgFEgwKBHBhZ2UYAyABKAUSEAoIcGVyX3BhZ2UYBCABKAUSEAoIaGFzX21vcmUYBSABKAgifAoQVXNlclNlYXJjaFJlc3VsdBInCgVpdGVtcxgBIAMoCzIYLmNoYXQudjEuV29ya3NwYWNlTWVtYmVyEg0KBXRvdGFsGAIgASgFEgwKBHBhZ2UYAyABKAUSEAoIcGVyX3BhZ2UYBCABKAUSEAoIaGFzX21vcmUYBSABKAgiewoVVXNlckdyb3VwU2VhcmNoUmVzdWx0EiEKBWl0ZW1zGAEgAygLMhIuY2hhdC52MS5Vc2VyR3JvdXASDQoFdG90YWwYAiABKAUSDAoEcGFnZRgDIAEoBRIQCghwZXJfcGFnZRgEIAEoBRIQCghoYXNfbW9yZRgFIAEoCCqvAQoMU2VhcmNoVGFyZ2V0Eh0KGVNFQVJDSF9UQVJHRVRfVU5TUEVDSUZJRUQQABIVChFTRUFSQ0hfVEFSR0VUX0FMTBABEhoKFlNFQVJDSF9UQVJHRVRfTUVTU0FHRVMQAhIaChZTRUFSQ0hfVEFSR0VUX0NIQU5ORUxTEAMSFwoTU0VBUkNIX1RBUkdFVF9VU0VSUxAEEhgKFFNFQVJDSF9UQVJHRVRfR1JPVVBTEAUqXAoKU2VhcmNoU29ydBIbChdTRUFSQ0hfU09SVF9VTlNQRUNJRklFRBAAEhYKElNFQVJDSF9TT1JUX05FV0VTVBABEhkKFVNFQVJDSF9TT1JUX1JFTEVWQU5DRRACKpYBCglTZWFyY2hIYXMSGgoWU0VBUkNIX0hBU19VTlNQRUNJRklFRBAAEhQKEFNFQVJDSF9IQVNfSU1BR0UQARITCg9TRUFSQ0hfSEFTX0ZJTEUQAhITCg9TRUFSQ0hfSEFTX0xJTksQAxIUChBTRUFSQ0hfSEFTX1ZJREVPEAQSFwoTU0VBUkNIX0hBU19MT0NBVElPThAFMmUKDVNlYXJjaFNlcnZpY2USVAoPU2VhcmNoV29ya3NwYWNlEh8uY2hhdC52MS5TZWFyY2hXb3Jrc3BhY2VSZXF1ZXN0GiAuY2hhdC52MS5TZWFyY2hXb3Jrc3BhY2VSZXNwb25zZUKTAQoLY29tLmNoYXQudjFCElNlYXJjaFNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_chat_v1_channel_service, file_chat_v1_message, file_chat_v1_user_group_service, file_chat_v1_workspace_service, file_google_protobuf_timestamp]);
+  fileDesc("ChxjaGF0L3YxL3NlYXJjaF9zZXJ2aWNlLnByb3RvEgdjaGF0LnYxIukCChNNZXNzYWdlU2VhcmNoRmlsdGVyEiYKDWZyb21fdXNlcl9pZHMYASADKAlCD7pIDJIBCRAUIgVyA7ABARIkCgtjaGFubmVsX2lkcxgCIAMoCUIPukgMkgEJEBQiBXIDsAEBEiMKG2luY2x1ZGVfZGVzY2VuZGFudF9jaGFubmVscxgDIAEoCBIwCgNoYXMYBCADKA4yEi5jaGF0LnYxLlNlYXJjaEhhc0IPukgMkgEJIgeCAQQQASAAEhMKC3Bpbm5lZF9vbmx5GAUgASgIEhMKC3RocmVhZF9vbmx5GAYgASgIEikKBWFmdGVyGAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIqCgZiZWZvcmUYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhMKC21lbnRpb25zX21lGAkgASgIEhcKD2V4Y2x1ZGVfcmVwbGllcxgKIAEoCCKEAgoWU2VhcmNoV29ya3NwYWNlUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAESFwoFcXVlcnkYAiABKAlCCLpIBXIDGMgBEiUKBnRhcmdldBgDIAEoDjIVLmNoYXQudjEuU2VhcmNoVGFyZ2V0EhUKBHBhZ2UYBCABKAVCB7pIBBoCKAESGwoIcGVyX3BhZ2UYBSABKAVCCbpIBhoEGDIoARI0Cg5tZXNzYWdlX2ZpbHRlchgGIAEoCzIcLmNoYXQudjEuTWVzc2FnZVNlYXJjaEZpbHRlchIhCgRzb3J0GAcgASgOMhMuY2hhdC52MS5TZWFyY2hTb3J0ItMBChdTZWFyY2hXb3Jrc3BhY2VSZXNwb25zZRIuCghtZXNzYWdlcxgBIAEoCzIcLmNoYXQudjEuTWVzc2FnZVNlYXJjaFJlc3VsdBIuCghjaGFubmVscxgCIAEoCzIcLmNoYXQudjEuQ2hhbm5lbFNlYXJjaFJlc3VsdBIoCgV1c2VycxgDIAEoCzIZLmNoYXQudjEuVXNlclNlYXJjaFJlc3VsdBIuCgZncm91cHMYBCABKAsyHi5jaGF0LnYxLlVzZXJHcm91cFNlYXJjaFJlc3VsdCInCglUZXh0UmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIgASgFIl0KEE1lc3NhZ2VTZWFyY2hIaXQSIQoHbWVzc2FnZRgBIAEoCzIQLmNoYXQudjEuTWVzc2FnZRImCgpoaWdobGlnaHRzGAIgAygLMhIuY2hhdC52MS5UZXh0UmFuZ2UiTgoTTWVzc2FnZVNlYXJjaFJlc3VsdBIoCgVpdGVtcxgBIAMoCzIZLmNoYXQudjEuTWVzc2FnZVNlYXJjaEhpdBINCgV0b3RhbBgCIAEoBSJFChNDaGFubmVsU2VhcmNoUmVzdWx0Eh8KBWl0ZW1zGAEgAygLMhAuY2hhdC52MS5DaGFubmVsEg0KBXRvdGFsGAIgASgFIkoKEFVzZXJTZWFyY2hSZXN1bHQSJwoFaXRlbXMYASADKAsyGC5jaGF0LnYxLldvcmtzcGFjZU1lbWJlchINCgV0b3RhbBgCIAEoBSJJChVVc2VyR3JvdXBTZWFyY2hSZXN1bHQSIQoFaXRlbXMYASADKAsyEi5jaGF0LnYxLlVzZXJHcm91cBINCgV0b3RhbBgCIAEoBSqvAQoMU2VhcmNoVGFyZ2V0Eh0KGVNFQVJDSF9UQVJHRVRfVU5TUEVDSUZJRUQQABIVChFTRUFSQ0hfVEFSR0VUX0FMTBABEhoKFlNFQVJDSF9UQVJHRVRfTUVTU0FHRVMQAhIaChZTRUFSQ0hfVEFSR0VUX0NIQU5ORUxTEAMSFwoTU0VBUkNIX1RBUkdFVF9VU0VSUxAEEhgKFFNFQVJDSF9UQVJHRVRfR1JPVVBTEAUqXAoKU2VhcmNoU29ydBIbChdTRUFSQ0hfU09SVF9VTlNQRUNJRklFRBAAEhYKElNFQVJDSF9TT1JUX05FV0VTVBABEhkKFVNFQVJDSF9TT1JUX1JFTEVWQU5DRRACKpYBCglTZWFyY2hIYXMSGgoWU0VBUkNIX0hBU19VTlNQRUNJRklFRBAAEhQKEFNFQVJDSF9IQVNfSU1BR0UQARITCg9TRUFSQ0hfSEFTX0ZJTEUQAhITCg9TRUFSQ0hfSEFTX0xJTksQAxIUChBTRUFSQ0hfSEFTX1ZJREVPEAQSFwoTU0VBUkNIX0hBU19MT0NBVElPThAFMmUKDVNlYXJjaFNlcnZpY2USVAoPU2VhcmNoV29ya3NwYWNlEh8uY2hhdC52MS5TZWFyY2hXb3Jrc3BhY2VSZXF1ZXN0GiAuY2hhdC52MS5TZWFyY2hXb3Jrc3BhY2VSZXNwb25zZUKTAQoLY29tLmNoYXQudjFCElNlYXJjaFNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_chat_v1_channel_service, file_chat_v1_message, file_chat_v1_user_group_service, file_chat_v1_workspace_service, file_google_protobuf_timestamp]);
 
 /**
  * メッセージ検索の絞り込み条件。指定した条件はすべて AND で結合する
@@ -125,15 +125,11 @@ export type SearchWorkspaceRequest = Message<"chat.v1.SearchWorkspaceRequest"> &
   target: SearchTarget;
 
   /**
-   * 0 の場合は 1 ページ目として扱う
-   *
    * @generated from field: int32 page = 4;
    */
   page: number;
 
   /**
-   * 0 の場合はサーバーの既定値を使う
-   *
    * @generated from field: int32 per_page = 5;
    */
   perPage: number;
@@ -251,21 +247,6 @@ export type MessageSearchResult = Message<"chat.v1.MessageSearchResult"> & {
    * @generated from field: int32 total = 2;
    */
   total: number;
-
-  /**
-   * @generated from field: int32 page = 3;
-   */
-  page: number;
-
-  /**
-   * @generated from field: int32 per_page = 4;
-   */
-  perPage: number;
-
-  /**
-   * @generated from field: bool has_more = 5;
-   */
-  hasMore: boolean;
 };
 
 /**
@@ -288,21 +269,6 @@ export type ChannelSearchResult = Message<"chat.v1.ChannelSearchResult"> & {
    * @generated from field: int32 total = 2;
    */
   total: number;
-
-  /**
-   * @generated from field: int32 page = 3;
-   */
-  page: number;
-
-  /**
-   * @generated from field: int32 per_page = 4;
-   */
-  perPage: number;
-
-  /**
-   * @generated from field: bool has_more = 5;
-   */
-  hasMore: boolean;
 };
 
 /**
@@ -325,21 +291,6 @@ export type UserSearchResult = Message<"chat.v1.UserSearchResult"> & {
    * @generated from field: int32 total = 2;
    */
   total: number;
-
-  /**
-   * @generated from field: int32 page = 3;
-   */
-  page: number;
-
-  /**
-   * @generated from field: int32 per_page = 4;
-   */
-  perPage: number;
-
-  /**
-   * @generated from field: bool has_more = 5;
-   */
-  hasMore: boolean;
 };
 
 /**
@@ -362,21 +313,6 @@ export type UserGroupSearchResult = Message<"chat.v1.UserGroupSearchResult"> & {
    * @generated from field: int32 total = 2;
    */
   total: number;
-
-  /**
-   * @generated from field: int32 page = 3;
-   */
-  page: number;
-
-  /**
-   * @generated from field: int32 per_page = 4;
-   */
-  perPage: number;
-
-  /**
-   * @generated from field: bool has_more = 5;
-   */
-  hasMore: boolean;
 };
 
 /**

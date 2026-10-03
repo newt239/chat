@@ -52,34 +52,6 @@ func (_c *ThreadReadStateCreate) SetNillableLastReadAt(v *time.Time) *ThreadRead
 	return _c
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (_c *ThreadReadStateCreate) SetCreatedAt(v time.Time) *ThreadReadStateCreate {
-	_c.mutation.SetCreatedAt(v)
-	return _c
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *ThreadReadStateCreate) SetNillableCreatedAt(v *time.Time) *ThreadReadStateCreate {
-	if v != nil {
-		_c.SetCreatedAt(*v)
-	}
-	return _c
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_c *ThreadReadStateCreate) SetUpdatedAt(v time.Time) *ThreadReadStateCreate {
-	_c.mutation.SetUpdatedAt(v)
-	return _c
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (_c *ThreadReadStateCreate) SetNillableUpdatedAt(v *time.Time) *ThreadReadStateCreate {
-	if v != nil {
-		_c.SetUpdatedAt(*v)
-	}
-	return _c
-}
-
 // SetID sets the "id" field.
 func (_c *ThreadReadStateCreate) SetID(v uuid.UUID) *ThreadReadStateCreate {
 	_c.mutation.SetID(v)
@@ -143,14 +115,6 @@ func (_c *ThreadReadStateCreate) defaults() {
 		v := threadreadstate.DefaultLastReadAt()
 		_c.mutation.SetLastReadAt(v)
 	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		v := threadreadstate.DefaultCreatedAt()
-		_c.mutation.SetCreatedAt(v)
-	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		v := threadreadstate.DefaultUpdatedAt()
-		_c.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := threadreadstate.DefaultID()
 		_c.mutation.SetID(v)
@@ -167,12 +131,6 @@ func (_c *ThreadReadStateCreate) check() error {
 	}
 	if _, ok := _c.mutation.LastReadAt(); !ok {
 		return &ValidationError{Name: "last_read_at", err: errors.New(`ent: missing required field "ThreadReadState.last_read_at"`)}
-	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "ThreadReadState.created_at"`)}
-	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "ThreadReadState.updated_at"`)}
 	}
 	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "ThreadReadState.user"`)}
@@ -219,14 +177,6 @@ func (_c *ThreadReadStateCreate) createSpec() (*ThreadReadState, *sqlgraph.Creat
 	if value, ok := _c.mutation.LastReadAt(); ok {
 		_spec.SetField(threadreadstate.FieldLastReadAt, field.TypeTime, value)
 		_node.LastReadAt = value
-	}
-	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(threadreadstate.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := _c.mutation.UpdatedAt(); ok {
-		_spec.SetField(threadreadstate.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -350,18 +300,6 @@ func (u *ThreadReadStateUpsert) UpdateLastReadAt() *ThreadReadStateUpsert {
 	return u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (u *ThreadReadStateUpsert) SetUpdatedAt(v time.Time) *ThreadReadStateUpsert {
-	u.Set(threadreadstate.FieldUpdatedAt, v)
-	return u
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *ThreadReadStateUpsert) UpdateUpdatedAt() *ThreadReadStateUpsert {
-	u.SetExcluded(threadreadstate.FieldUpdatedAt)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -378,9 +316,6 @@ func (u *ThreadReadStateUpsertOne) UpdateNewValues() *ThreadReadStateUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(threadreadstate.FieldID)
-		}
-		if _, exists := u.create.mutation.CreatedAt(); exists {
-			s.SetIgnore(threadreadstate.FieldCreatedAt)
 		}
 	}))
 	return u
@@ -452,20 +387,6 @@ func (u *ThreadReadStateUpsertOne) SetLastReadAt(v time.Time) *ThreadReadStateUp
 func (u *ThreadReadStateUpsertOne) UpdateLastReadAt() *ThreadReadStateUpsertOne {
 	return u.Update(func(s *ThreadReadStateUpsert) {
 		s.UpdateLastReadAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *ThreadReadStateUpsertOne) SetUpdatedAt(v time.Time) *ThreadReadStateUpsertOne {
-	return u.Update(func(s *ThreadReadStateUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *ThreadReadStateUpsertOne) UpdateUpdatedAt() *ThreadReadStateUpsertOne {
-	return u.Update(func(s *ThreadReadStateUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 
@@ -652,9 +573,6 @@ func (u *ThreadReadStateUpsertBulk) UpdateNewValues() *ThreadReadStateUpsertBulk
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(threadreadstate.FieldID)
 			}
-			if _, exists := b.mutation.CreatedAt(); exists {
-				s.SetIgnore(threadreadstate.FieldCreatedAt)
-			}
 		}
 	}))
 	return u
@@ -726,20 +644,6 @@ func (u *ThreadReadStateUpsertBulk) SetLastReadAt(v time.Time) *ThreadReadStateU
 func (u *ThreadReadStateUpsertBulk) UpdateLastReadAt() *ThreadReadStateUpsertBulk {
 	return u.Update(func(s *ThreadReadStateUpsert) {
 		s.UpdateLastReadAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *ThreadReadStateUpsertBulk) SetUpdatedAt(v time.Time) *ThreadReadStateUpsertBulk {
-	return u.Update(func(s *ThreadReadStateUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *ThreadReadStateUpsertBulk) UpdateUpdatedAt() *ThreadReadStateUpsertBulk {
-	return u.Update(func(s *ThreadReadStateUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 

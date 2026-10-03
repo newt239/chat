@@ -105,8 +105,6 @@ func (PollOption) Edges() []ent.Edge {
 			Required().
 			Immutable().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
-		edge.From("votes", PollVote.Type).
-			Ref("option"),
 	}
 }
 

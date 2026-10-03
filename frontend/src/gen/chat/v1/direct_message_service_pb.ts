@@ -5,15 +5,13 @@
 import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file chat/v1/direct_message_service.proto.
  */
 export const file_chat_v1_direct_message_service: GenFile = /*@__PURE__*/
-  fileDesc("CiRjaGF0L3YxL2RpcmVjdF9tZXNzYWdlX3NlcnZpY2UucHJvdG8SB2NoYXQudjEi8wIKDURpcmVjdE1lc3NhZ2USCgoCaWQYASABKAkSFAoMd29ya3NwYWNlX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSGAoLZGVzY3JpcHRpb24YBCABKAlIAIgBARIoCgR0eXBlGAUgASgOMhouY2hhdC52MS5EaXJlY3RNZXNzYWdlVHlwZRItCgdtZW1iZXJzGAYgAygLMhwuY2hhdC52MS5EaXJlY3RNZXNzYWdlTWVtYmVyEi4KCmNyZWF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhIKCmlzX3N0YXJyZWQYCSABKAgSEAoIaXNfbXV0ZWQYCiABKAgSFAoMdW5yZWFkX2NvdW50GAsgASgFEhMKC2hhc19tZW50aW9uGAwgASgIQg4KDF9kZXNjcmlwdGlvbiJkChNEaXJlY3RNZXNzYWdlTWVtYmVyEg8KB3VzZXJfaWQYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJEhcKCmF2YXRhcl91cmwYAyABKAlIAIgBAUINCgtfYXZhdGFyX3VybCI6ChlMaXN0RGlyZWN0TWVzc2FnZXNSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQASJNChpMaXN0RGlyZWN0TWVzc2FnZXNSZXNwb25zZRIvCg9kaXJlY3RfbWVzc2FnZXMYASADKAsyFi5jaGF0LnYxLkRpcmVjdE1lc3NhZ2UiVgoaQ3JlYXRlRGlyZWN0TWVzc2FnZVJlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABEhkKB3VzZXJfaWQYAiABKAlCCLpIBXIDsAEBIk0KG0NyZWF0ZURpcmVjdE1lc3NhZ2VSZXNwb25zZRIuCg5kaXJlY3RfbWVzc2FnZRgBIAEoCzIWLmNoYXQudjEuRGlyZWN0TWVzc2FnZSKBAQofQ3JlYXRlR3JvdXBEaXJlY3RNZXNzYWdlUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAESIwoIdXNlcl9pZHMYAiADKAlCEbpIDpIBCwgCEAkiBXIDsAEBEhEKBG5hbWUYAyABKAlIAIgBAUIHCgVfbmFtZSJSCiBDcmVhdGVHcm91cERpcmVjdE1lc3NhZ2VSZXNwb25zZRIuCg5kaXJlY3RfbWVzc2FnZRgBIAEoCzIWLmNoYXQudjEuRGlyZWN0TWVzc2FnZSp2ChFEaXJlY3RNZXNzYWdlVHlwZRIjCh9ESVJFQ1RfTUVTU0FHRV9UWVBFX1VOU1BFQ0lGSUVEEAASGgoWRElSRUNUX01FU1NBR0VfVFlQRV9ETRABEiAKHERJUkVDVF9NRVNTQUdFX1RZUEVfR1JPVVBfRE0QAjLIAgoURGlyZWN0TWVzc2FnZVNlcnZpY2USXQoSTGlzdERpcmVjdE1lc3NhZ2VzEiIuY2hhdC52MS5MaXN0RGlyZWN0TWVzc2FnZXNSZXF1ZXN0GiMuY2hhdC52MS5MaXN0RGlyZWN0TWVzc2FnZXNSZXNwb25zZRJgChNDcmVhdGVEaXJlY3RNZXNzYWdlEiMuY2hhdC52MS5DcmVhdGVEaXJlY3RNZXNzYWdlUmVxdWVzdBokLmNoYXQudjEuQ3JlYXRlRGlyZWN0TWVzc2FnZVJlc3BvbnNlEm8KGENyZWF0ZUdyb3VwRGlyZWN0TWVzc2FnZRIoLmNoYXQudjEuQ3JlYXRlR3JvdXBEaXJlY3RNZXNzYWdlUmVxdWVzdBopLmNoYXQudjEuQ3JlYXRlR3JvdXBEaXJlY3RNZXNzYWdlUmVzcG9uc2VCmgEKC2NvbS5jaGF0LnYxQhlEaXJlY3RNZXNzYWdlU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("CiRjaGF0L3YxL2RpcmVjdF9tZXNzYWdlX3NlcnZpY2UucHJvdG8SB2NoYXQudjEisAEKDURpcmVjdE1lc3NhZ2USCgoCaWQYASABKAkSKAoEdHlwZRgFIAEoDjIaLmNoYXQudjEuRGlyZWN0TWVzc2FnZVR5cGUSLQoHbWVtYmVycxgGIAMoCzIcLmNoYXQudjEuRGlyZWN0TWVzc2FnZU1lbWJlchISCgppc19zdGFycmVkGAkgASgIEhAKCGlzX211dGVkGAogASgIEhQKDHVucmVhZF9jb3VudBgLIAEoBSJkChNEaXJlY3RNZXNzYWdlTWVtYmVyEg8KB3VzZXJfaWQYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJEhcKCmF2YXRhcl91cmwYAyABKAlIAIgBAUINCgtfYXZhdGFyX3VybCI6ChlMaXN0RGlyZWN0TWVzc2FnZXNSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQASJNChpMaXN0RGlyZWN0TWVzc2FnZXNSZXNwb25zZRIvCg9kaXJlY3RfbWVzc2FnZXMYASADKAsyFi5jaGF0LnYxLkRpcmVjdE1lc3NhZ2UiVgoaQ3JlYXRlRGlyZWN0TWVzc2FnZVJlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABEhkKB3VzZXJfaWQYAiABKAlCCLpIBXIDsAEBIk0KG0NyZWF0ZURpcmVjdE1lc3NhZ2VSZXNwb25zZRIuCg5kaXJlY3RfbWVzc2FnZRgBIAEoCzIWLmNoYXQudjEuRGlyZWN0TWVzc2FnZSJlCh9DcmVhdGVHcm91cERpcmVjdE1lc3NhZ2VSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARIjCgh1c2VyX2lkcxgCIAMoCUIRukgOkgELCAIQCSIFcgOwAQEiUgogQ3JlYXRlR3JvdXBEaXJlY3RNZXNzYWdlUmVzcG9uc2USLgoOZGlyZWN0X21lc3NhZ2UYASABKAsyFi5jaGF0LnYxLkRpcmVjdE1lc3NhZ2UqdgoRRGlyZWN0TWVzc2FnZVR5cGUSIwofRElSRUNUX01FU1NBR0VfVFlQRV9VTlNQRUNJRklFRBAAEhoKFkRJUkVDVF9NRVNTQUdFX1RZUEVfRE0QARIgChxESVJFQ1RfTUVTU0FHRV9UWVBFX0dST1VQX0RNEAIyyAIKFERpcmVjdE1lc3NhZ2VTZXJ2aWNlEl0KEkxpc3REaXJlY3RNZXNzYWdlcxIiLmNoYXQudjEuTGlzdERpcmVjdE1lc3NhZ2VzUmVxdWVzdBojLmNoYXQudjEuTGlzdERpcmVjdE1lc3NhZ2VzUmVzcG9uc2USYAoTQ3JlYXRlRGlyZWN0TWVzc2FnZRIjLmNoYXQudjEuQ3JlYXRlRGlyZWN0TWVzc2FnZVJlcXVlc3QaJC5jaGF0LnYxLkNyZWF0ZURpcmVjdE1lc3NhZ2VSZXNwb25zZRJvChhDcmVhdGVHcm91cERpcmVjdE1lc3NhZ2USKC5jaGF0LnYxLkNyZWF0ZUdyb3VwRGlyZWN0TWVzc2FnZVJlcXVlc3QaKS5jaGF0LnYxLkNyZWF0ZUdyb3VwRGlyZWN0TWVzc2FnZVJlc3BvbnNlQpoBCgtjb20uY2hhdC52MUIZRGlyZWN0TWVzc2FnZVNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate]);
 
 /**
  * @generated from message chat.v1.DirectMessage
@@ -25,21 +23,6 @@ export type DirectMessage = Message<"chat.v1.DirectMessage"> & {
   id: string;
 
   /**
-   * @generated from field: string workspace_id = 2;
-   */
-  workspaceId: string;
-
-  /**
-   * @generated from field: string name = 3;
-   */
-  name: string;
-
-  /**
-   * @generated from field: optional string description = 4;
-   */
-  description?: string | undefined;
-
-  /**
    * @generated from field: chat.v1.DirectMessageType type = 5;
    */
   type: DirectMessageType;
@@ -48,16 +31,6 @@ export type DirectMessage = Message<"chat.v1.DirectMessage"> & {
    * @generated from field: repeated chat.v1.DirectMessageMember members = 6;
    */
   members: DirectMessageMember[];
-
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 7;
-   */
-  createdAt?: Timestamp | undefined;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 8;
-   */
-  updatedAt?: Timestamp | undefined;
 
   /**
    * @generated from field: bool is_starred = 9;
@@ -75,11 +48,6 @@ export type DirectMessage = Message<"chat.v1.DirectMessage"> & {
    * @generated from field: int32 unread_count = 11;
    */
   unreadCount: number;
-
-  /**
-   * @generated from field: bool has_mention = 12;
-   */
-  hasMention: boolean;
 };
 
 /**
@@ -202,11 +170,6 @@ export type CreateGroupDirectMessageRequest = Message<"chat.v1.CreateGroupDirect
    * @generated from field: repeated string user_ids = 2;
    */
   userIds: string[];
-
-  /**
-   * @generated from field: optional string name = 3;
-   */
-  name?: string | undefined;
 };
 
 /**

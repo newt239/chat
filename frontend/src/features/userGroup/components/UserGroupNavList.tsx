@@ -1,8 +1,8 @@
-import { IconSettings, IconUsers } from "@tabler/icons-react";
-import { useTranslation } from "react-i18next";
+import { IconUsers } from "@tabler/icons-react";
 
-import { NavLink } from "#/components/block/NavLink/NavLink";
-import { openPanel } from "#/features/layout/utils/overlaySearch";
+import { Link } from "#/components/ui/Link/Link";
+import { navItemClassName } from "#/components/ui/styles/navTone";
+import { openPanel } from "#/lib/overlaySearch";
 
 import { useUserGroups } from "../hooks/useUserGroups";
 
@@ -12,21 +12,17 @@ type UserGroupNavListProps = {
 
 // サイドバーのユーザーグループ。押すと右パネルに詳細を開く
 export const UserGroupNavList = ({ workspaceId }: UserGroupNavListProps) => {
-  const { t } = useTranslation();
   const { data: groups = [] } = useUserGroups(workspaceId);
 
-  return (
-    <>
-      {groups.map((group) => (
-        <NavLink key={group.id} to="." search={openPanel({ group: group.id })}>
-          <IconUsers aria-hidden />
-          <span className="min-w-0 flex-1 truncate">@{group.name}</span>
-        </NavLink>
-      ))}
-      <NavLink to="/app/$workspaceId/groups" params={{ workspaceId }}>
-        <IconSettings aria-hidden />
-        {t("userGroup.manage")}
-      </NavLink>
-    </>
-  );
+  return groups.map((group) => (
+    <Link
+      className={navItemClassName}
+      key={group.id}
+      to="."
+      search={openPanel({ group: group.id })}
+    >
+      <IconUsers aria-hidden />
+      <span className="min-w-0 flex-1 truncate">@{group.name}</span>
+    </Link>
+  ));
 };

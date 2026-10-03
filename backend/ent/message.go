@@ -31,11 +31,11 @@ type Message struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// EditedAt holds the value of the "edited_at" field.
-	EditedAt time.Time `json:"edited_at,omitempty"`
+	EditedAt *time.Time `json:"edited_at,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
-	DeletedAt time.Time `json:"deleted_at,omitempty"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	// DeletedBy holds the value of the "deleted_by" field.
-	DeletedBy uuid.UUID `json:"deleted_by,omitempty"`
+	DeletedBy *uuid.UUID `json:"deleted_by,omitempty"`
 	// LocationLatitude holds the value of the "location_latitude" field.
 	LocationLatitude *float64 `json:"location_latitude,omitempty"`
 	// LocationLongitude holds the value of the "location_longitude" field.
@@ -64,27 +64,13 @@ type MessageEdges struct {
 	Parent *Message `json:"parent,omitempty"`
 	// Replies holds the value of the replies edge.
 	Replies []*Message `json:"replies,omitempty"`
-	// Reactions holds the value of the reactions edge.
-	Reactions []*MessageReaction `json:"reactions,omitempty"`
-	// Bookmarks holds the value of the bookmarks edge.
-	Bookmarks []*MessageBookmark `json:"bookmarks,omitempty"`
 	// UserMentions holds the value of the user_mentions edge.
 	UserMentions []*MessageUserMention `json:"user_mentions,omitempty"`
-	// GroupMentions holds the value of the group_mentions edge.
-	GroupMentions []*MessageGroupMention `json:"group_mentions,omitempty"`
-	// Links holds the value of the links edge.
-	Links []*MessageLink `json:"links,omitempty"`
-	// Attachments holds the value of the attachments edge.
-	Attachments []*Attachment `json:"attachments,omitempty"`
-	// Pins holds the value of the pins edge.
-	Pins []*MessagePin `json:"pins,omitempty"`
 	// UserThreadFollows holds the value of the user_thread_follows edge.
 	UserThreadFollows []*UserThreadFollow `json:"user_thread_follows,omitempty"`
-	// ThreadReadStates holds the value of the thread_read_states edge.
-	ThreadReadStates []*ThreadReadState `json:"thread_read_states,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [13]bool
+	loadedTypes [6]bool
 }
 
 // ChannelOrErr returns the Channel value or an error if the edge
@@ -129,85 +115,22 @@ func (e MessageEdges) RepliesOrErr() ([]*Message, error) {
 	return nil, &NotLoadedError{edge: "replies"}
 }
 
-// ReactionsOrErr returns the Reactions value or an error if the edge
-// was not loaded in eager-loading.
-func (e MessageEdges) ReactionsOrErr() ([]*MessageReaction, error) {
-	if e.loadedTypes[4] {
-		return e.Reactions, nil
-	}
-	return nil, &NotLoadedError{edge: "reactions"}
-}
-
-// BookmarksOrErr returns the Bookmarks value or an error if the edge
-// was not loaded in eager-loading.
-func (e MessageEdges) BookmarksOrErr() ([]*MessageBookmark, error) {
-	if e.loadedTypes[5] {
-		return e.Bookmarks, nil
-	}
-	return nil, &NotLoadedError{edge: "bookmarks"}
-}
-
 // UserMentionsOrErr returns the UserMentions value or an error if the edge
 // was not loaded in eager-loading.
 func (e MessageEdges) UserMentionsOrErr() ([]*MessageUserMention, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[4] {
 		return e.UserMentions, nil
 	}
 	return nil, &NotLoadedError{edge: "user_mentions"}
 }
 
-// GroupMentionsOrErr returns the GroupMentions value or an error if the edge
-// was not loaded in eager-loading.
-func (e MessageEdges) GroupMentionsOrErr() ([]*MessageGroupMention, error) {
-	if e.loadedTypes[7] {
-		return e.GroupMentions, nil
-	}
-	return nil, &NotLoadedError{edge: "group_mentions"}
-}
-
-// LinksOrErr returns the Links value or an error if the edge
-// was not loaded in eager-loading.
-func (e MessageEdges) LinksOrErr() ([]*MessageLink, error) {
-	if e.loadedTypes[8] {
-		return e.Links, nil
-	}
-	return nil, &NotLoadedError{edge: "links"}
-}
-
-// AttachmentsOrErr returns the Attachments value or an error if the edge
-// was not loaded in eager-loading.
-func (e MessageEdges) AttachmentsOrErr() ([]*Attachment, error) {
-	if e.loadedTypes[9] {
-		return e.Attachments, nil
-	}
-	return nil, &NotLoadedError{edge: "attachments"}
-}
-
-// PinsOrErr returns the Pins value or an error if the edge
-// was not loaded in eager-loading.
-func (e MessageEdges) PinsOrErr() ([]*MessagePin, error) {
-	if e.loadedTypes[10] {
-		return e.Pins, nil
-	}
-	return nil, &NotLoadedError{edge: "pins"}
-}
-
 // UserThreadFollowsOrErr returns the UserThreadFollows value or an error if the edge
 // was not loaded in eager-loading.
 func (e MessageEdges) UserThreadFollowsOrErr() ([]*UserThreadFollow, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[5] {
 		return e.UserThreadFollows, nil
 	}
 	return nil, &NotLoadedError{edge: "user_thread_follows"}
-}
-
-// ThreadReadStatesOrErr returns the ThreadReadStates value or an error if the edge
-// was not loaded in eager-loading.
-func (e MessageEdges) ThreadReadStatesOrErr() ([]*ThreadReadState, error) {
-	if e.loadedTypes[12] {
-		return e.ThreadReadStates, nil
-	}
-	return nil, &NotLoadedError{edge: "thread_read_states"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -215,7 +138,7 @@ func (*Message) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case message.FieldParentID:
+		case message.FieldParentID, message.FieldDeletedBy:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case message.FieldMentionsChannel, message.FieldMentionsHere:
 			values[i] = new(sql.NullBool)
@@ -225,7 +148,7 @@ func (*Message) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case message.FieldCreatedAt, message.FieldEditedAt, message.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
-		case message.FieldID, message.FieldChannelID, message.FieldUserID, message.FieldDeletedBy:
+		case message.FieldID, message.FieldChannelID, message.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -283,19 +206,22 @@ func (_m *Message) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field edited_at", values[i])
 			} else if value.Valid {
-				_m.EditedAt = value.Time
+				_m.EditedAt = new(time.Time)
+				*_m.EditedAt = value.Time
 			}
 		case message.FieldDeletedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
 			} else if value.Valid {
-				_m.DeletedAt = value.Time
+				_m.DeletedAt = new(time.Time)
+				*_m.DeletedAt = value.Time
 			}
 		case message.FieldDeletedBy:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted_by", values[i])
-			} else if value != nil {
-				_m.DeletedBy = *value
+			} else if value.Valid {
+				_m.DeletedBy = new(uuid.UUID)
+				*_m.DeletedBy = *value.S.(*uuid.UUID)
 			}
 		case message.FieldLocationLatitude:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -370,49 +296,14 @@ func (_m *Message) QueryReplies() *MessageQuery {
 	return NewMessageClient(_m.config).QueryReplies(_m)
 }
 
-// QueryReactions queries the "reactions" edge of the Message entity.
-func (_m *Message) QueryReactions() *MessageReactionQuery {
-	return NewMessageClient(_m.config).QueryReactions(_m)
-}
-
-// QueryBookmarks queries the "bookmarks" edge of the Message entity.
-func (_m *Message) QueryBookmarks() *MessageBookmarkQuery {
-	return NewMessageClient(_m.config).QueryBookmarks(_m)
-}
-
 // QueryUserMentions queries the "user_mentions" edge of the Message entity.
 func (_m *Message) QueryUserMentions() *MessageUserMentionQuery {
 	return NewMessageClient(_m.config).QueryUserMentions(_m)
 }
 
-// QueryGroupMentions queries the "group_mentions" edge of the Message entity.
-func (_m *Message) QueryGroupMentions() *MessageGroupMentionQuery {
-	return NewMessageClient(_m.config).QueryGroupMentions(_m)
-}
-
-// QueryLinks queries the "links" edge of the Message entity.
-func (_m *Message) QueryLinks() *MessageLinkQuery {
-	return NewMessageClient(_m.config).QueryLinks(_m)
-}
-
-// QueryAttachments queries the "attachments" edge of the Message entity.
-func (_m *Message) QueryAttachments() *AttachmentQuery {
-	return NewMessageClient(_m.config).QueryAttachments(_m)
-}
-
-// QueryPins queries the "pins" edge of the Message entity.
-func (_m *Message) QueryPins() *MessagePinQuery {
-	return NewMessageClient(_m.config).QueryPins(_m)
-}
-
 // QueryUserThreadFollows queries the "user_thread_follows" edge of the Message entity.
 func (_m *Message) QueryUserThreadFollows() *UserThreadFollowQuery {
 	return NewMessageClient(_m.config).QueryUserThreadFollows(_m)
-}
-
-// QueryThreadReadStates queries the "thread_read_states" edge of the Message entity.
-func (_m *Message) QueryThreadReadStates() *ThreadReadStateQuery {
-	return NewMessageClient(_m.config).QueryThreadReadStates(_m)
 }
 
 // Update returns a builder for updating this Message.
@@ -455,14 +346,20 @@ func (_m *Message) String() string {
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("edited_at=")
-	builder.WriteString(_m.EditedAt.Format(time.ANSIC))
+	if v := _m.EditedAt; v != nil {
+		builder.WriteString("edited_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("deleted_at=")
-	builder.WriteString(_m.DeletedAt.Format(time.ANSIC))
+	if v := _m.DeletedAt; v != nil {
+		builder.WriteString("deleted_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("deleted_by=")
-	builder.WriteString(fmt.Sprintf("%v", _m.DeletedBy))
+	if v := _m.DeletedBy; v != nil {
+		builder.WriteString("deleted_by=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	if v := _m.LocationLatitude; v != nil {
 		builder.WriteString("location_latitude=")

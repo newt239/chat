@@ -86,9 +86,6 @@ type Workspace struct {
 	IconUrl            *string                `protobuf:"bytes,4,opt,name=icon_url,json=iconUrl,proto3,oneof" json:"icon_url,omitempty"`
 	IsPublic           bool                   `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
 	Role               WorkspaceRole          `protobuf:"varint,6,opt,name=role,proto3,enum=chat.v1.WorkspaceRole" json:"role,omitempty"`
-	CreatedBy          string                 `protobuf:"bytes,7,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
-	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt          *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	SignupEnabled      bool                   `protobuf:"varint,10,opt,name=signup_enabled,json=signupEnabled,proto3" json:"signup_enabled,omitempty"`
 	EmailSignupEnabled bool                   `protobuf:"varint,11,opt,name=email_signup_enabled,json=emailSignupEnabled,proto3" json:"email_signup_enabled,omitempty"`
 	unknownFields      protoimpl.UnknownFields
@@ -167,27 +164,6 @@ func (x *Workspace) GetRole() WorkspaceRole {
 	return WorkspaceRole_WORKSPACE_ROLE_UNSPECIFIED
 }
 
-func (x *Workspace) GetCreatedBy() string {
-	if x != nil {
-		return x.CreatedBy
-	}
-	return ""
-}
-
-func (x *Workspace) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *Workspace) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
-}
-
 func (x *Workspace) GetSignupEnabled() bool {
 	if x != nil {
 		return x.SignupEnabled
@@ -210,7 +186,6 @@ type WorkspaceMember struct {
 	AvatarUrl   *string                `protobuf:"bytes,4,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
 	Bio         *string                `protobuf:"bytes,5,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
 	Role        WorkspaceRole          `protobuf:"varint,6,opt,name=role,proto3,enum=chat.v1.WorkspaceRole" json:"role,omitempty"`
-	JoinedAt    *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
 	// 自分だけに見えるニックネーム
 	Nickname *string `protobuf:"bytes,8,opt,name=nickname,proto3,oneof" json:"nickname,omitempty"`
 	// 停止中の場合だけ設定される
@@ -295,13 +270,6 @@ func (x *WorkspaceMember) GetRole() WorkspaceRole {
 	return WorkspaceRole_WORKSPACE_ROLE_UNSPECIFIED
 }
 
-func (x *WorkspaceMember) GetJoinedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.JoinedAt
-	}
-	return nil
-}
-
 func (x *WorkspaceMember) GetNickname() string {
 	if x != nil && x.Nickname != nil {
 		return *x.Nickname
@@ -338,7 +306,6 @@ type PublicWorkspace struct {
 	IconUrl       *string                `protobuf:"bytes,4,opt,name=icon_url,json=iconUrl,proto3,oneof" json:"icon_url,omitempty"`
 	MemberCount   int32                  `protobuf:"varint,5,opt,name=member_count,json=memberCount,proto3" json:"member_count,omitempty"`
 	IsJoined      bool                   `protobuf:"varint,6,opt,name=is_joined,json=isJoined,proto3" json:"is_joined,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -413,13 +380,6 @@ func (x *PublicWorkspace) GetIsJoined() bool {
 		return x.IsJoined
 	}
 	return false
-}
-
-func (x *PublicWorkspace) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
 }
 
 type ListWorkspacesRequest struct {
@@ -1475,25 +1435,19 @@ var File_chat_v1_workspace_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1fchat/v1/workspace_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xca\x03\n" +
+	"\x1fchat/v1/workspace_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb5\x02\n" +
 	"\tWorkspace\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x1e\n" +
 	"\bicon_url\x18\x04 \x01(\tH\x01R\aiconUrl\x88\x01\x01\x12\x1b\n" +
 	"\tis_public\x18\x05 \x01(\bR\bisPublic\x12*\n" +
-	"\x04role\x18\x06 \x01(\x0e2\x16.chat.v1.WorkspaceRoleR\x04role\x12\x1d\n" +
-	"\n" +
-	"created_by\x18\a \x01(\tR\tcreatedBy\x129\n" +
-	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12%\n" +
+	"\x04role\x18\x06 \x01(\x0e2\x16.chat.v1.WorkspaceRoleR\x04role\x12%\n" +
 	"\x0esignup_enabled\x18\n" +
 	" \x01(\bR\rsignupEnabled\x120\n" +
 	"\x14email_signup_enabled\x18\v \x01(\bR\x12emailSignupEnabledB\x0e\n" +
 	"\f_descriptionB\v\n" +
-	"\t_icon_url\"\xcf\x03\n" +
+	"\t_icon_url\"\x96\x03\n" +
 	"\x0fWorkspaceMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
@@ -1501,8 +1455,7 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\n" +
 	"avatar_url\x18\x04 \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x12\x15\n" +
 	"\x03bio\x18\x05 \x01(\tH\x01R\x03bio\x88\x01\x01\x12*\n" +
-	"\x04role\x18\x06 \x01(\x0e2\x16.chat.v1.WorkspaceRoleR\x04role\x127\n" +
-	"\tjoined_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\bjoinedAt\x12\x1f\n" +
+	"\x04role\x18\x06 \x01(\x0e2\x16.chat.v1.WorkspaceRoleR\x04role\x12\x1f\n" +
 	"\bnickname\x18\b \x01(\tH\x02R\bnickname\x88\x01\x01\x12B\n" +
 	"\fsuspended_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampH\x03R\vsuspendedAt\x88\x01\x01\x12\x1a\n" +
 	"\btimezone\x18\n" +
@@ -1511,16 +1464,14 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\v_avatar_urlB\x06\n" +
 	"\x04_bioB\v\n" +
 	"\t_nicknameB\x0f\n" +
-	"\r_suspended_at\"\x94\x02\n" +
+	"\r_suspended_at\"\xd9\x01\n" +
 	"\x0fPublicWorkspace\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x1e\n" +
 	"\bicon_url\x18\x04 \x01(\tH\x01R\aiconUrl\x88\x01\x01\x12!\n" +
 	"\fmember_count\x18\x05 \x01(\x05R\vmemberCount\x12\x1b\n" +
-	"\tis_joined\x18\x06 \x01(\bR\bisJoined\x129\n" +
-	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\x0e\n" +
+	"\tis_joined\x18\x06 \x01(\bR\bisJoinedB\x0e\n" +
 	"\f_descriptionB\v\n" +
 	"\t_icon_url\"\x17\n" +
 	"\x15ListWorkspacesRequest\"L\n" +
@@ -1657,46 +1608,42 @@ var file_chat_v1_workspace_service_proto_goTypes = []any{
 }
 var file_chat_v1_workspace_service_proto_depIdxs = []int32{
 	0,  // 0: chat.v1.Workspace.role:type_name -> chat.v1.WorkspaceRole
-	26, // 1: chat.v1.Workspace.created_at:type_name -> google.protobuf.Timestamp
-	26, // 2: chat.v1.Workspace.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 3: chat.v1.WorkspaceMember.role:type_name -> chat.v1.WorkspaceRole
-	26, // 4: chat.v1.WorkspaceMember.joined_at:type_name -> google.protobuf.Timestamp
-	26, // 5: chat.v1.WorkspaceMember.suspended_at:type_name -> google.protobuf.Timestamp
-	26, // 6: chat.v1.PublicWorkspace.created_at:type_name -> google.protobuf.Timestamp
-	1,  // 7: chat.v1.ListWorkspacesResponse.workspaces:type_name -> chat.v1.Workspace
-	1,  // 8: chat.v1.CreateWorkspaceResponse.workspace:type_name -> chat.v1.Workspace
-	1,  // 9: chat.v1.GetWorkspaceResponse.workspace:type_name -> chat.v1.Workspace
-	1,  // 10: chat.v1.UpdateWorkspaceResponse.workspace:type_name -> chat.v1.Workspace
-	3,  // 11: chat.v1.ListPublicWorkspacesResponse.workspaces:type_name -> chat.v1.PublicWorkspace
-	2,  // 12: chat.v1.ListMembersResponse.members:type_name -> chat.v1.WorkspaceMember
-	0,  // 13: chat.v1.UpdateMemberRoleRequest.role:type_name -> chat.v1.WorkspaceRole
-	4,  // 14: chat.v1.WorkspaceService.ListWorkspaces:input_type -> chat.v1.ListWorkspacesRequest
-	6,  // 15: chat.v1.WorkspaceService.CreateWorkspace:input_type -> chat.v1.CreateWorkspaceRequest
-	8,  // 16: chat.v1.WorkspaceService.GetWorkspace:input_type -> chat.v1.GetWorkspaceRequest
-	10, // 17: chat.v1.WorkspaceService.UpdateWorkspace:input_type -> chat.v1.UpdateWorkspaceRequest
-	12, // 18: chat.v1.WorkspaceService.DeleteWorkspace:input_type -> chat.v1.DeleteWorkspaceRequest
-	14, // 19: chat.v1.WorkspaceService.ListPublicWorkspaces:input_type -> chat.v1.ListPublicWorkspacesRequest
-	16, // 20: chat.v1.WorkspaceService.JoinPublicWorkspace:input_type -> chat.v1.JoinPublicWorkspaceRequest
-	18, // 21: chat.v1.WorkspaceService.GetWorkspaceSignupInfo:input_type -> chat.v1.GetWorkspaceSignupInfoRequest
-	20, // 22: chat.v1.WorkspaceService.ListMembers:input_type -> chat.v1.ListMembersRequest
-	22, // 23: chat.v1.WorkspaceService.UpdateMemberRole:input_type -> chat.v1.UpdateMemberRoleRequest
-	24, // 24: chat.v1.WorkspaceService.RemoveMember:input_type -> chat.v1.RemoveMemberRequest
-	5,  // 25: chat.v1.WorkspaceService.ListWorkspaces:output_type -> chat.v1.ListWorkspacesResponse
-	7,  // 26: chat.v1.WorkspaceService.CreateWorkspace:output_type -> chat.v1.CreateWorkspaceResponse
-	9,  // 27: chat.v1.WorkspaceService.GetWorkspace:output_type -> chat.v1.GetWorkspaceResponse
-	11, // 28: chat.v1.WorkspaceService.UpdateWorkspace:output_type -> chat.v1.UpdateWorkspaceResponse
-	13, // 29: chat.v1.WorkspaceService.DeleteWorkspace:output_type -> chat.v1.DeleteWorkspaceResponse
-	15, // 30: chat.v1.WorkspaceService.ListPublicWorkspaces:output_type -> chat.v1.ListPublicWorkspacesResponse
-	17, // 31: chat.v1.WorkspaceService.JoinPublicWorkspace:output_type -> chat.v1.JoinPublicWorkspaceResponse
-	19, // 32: chat.v1.WorkspaceService.GetWorkspaceSignupInfo:output_type -> chat.v1.GetWorkspaceSignupInfoResponse
-	21, // 33: chat.v1.WorkspaceService.ListMembers:output_type -> chat.v1.ListMembersResponse
-	23, // 34: chat.v1.WorkspaceService.UpdateMemberRole:output_type -> chat.v1.UpdateMemberRoleResponse
-	25, // 35: chat.v1.WorkspaceService.RemoveMember:output_type -> chat.v1.RemoveMemberResponse
-	25, // [25:36] is the sub-list for method output_type
-	14, // [14:25] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	0,  // 1: chat.v1.WorkspaceMember.role:type_name -> chat.v1.WorkspaceRole
+	26, // 2: chat.v1.WorkspaceMember.suspended_at:type_name -> google.protobuf.Timestamp
+	1,  // 3: chat.v1.ListWorkspacesResponse.workspaces:type_name -> chat.v1.Workspace
+	1,  // 4: chat.v1.CreateWorkspaceResponse.workspace:type_name -> chat.v1.Workspace
+	1,  // 5: chat.v1.GetWorkspaceResponse.workspace:type_name -> chat.v1.Workspace
+	1,  // 6: chat.v1.UpdateWorkspaceResponse.workspace:type_name -> chat.v1.Workspace
+	3,  // 7: chat.v1.ListPublicWorkspacesResponse.workspaces:type_name -> chat.v1.PublicWorkspace
+	2,  // 8: chat.v1.ListMembersResponse.members:type_name -> chat.v1.WorkspaceMember
+	0,  // 9: chat.v1.UpdateMemberRoleRequest.role:type_name -> chat.v1.WorkspaceRole
+	4,  // 10: chat.v1.WorkspaceService.ListWorkspaces:input_type -> chat.v1.ListWorkspacesRequest
+	6,  // 11: chat.v1.WorkspaceService.CreateWorkspace:input_type -> chat.v1.CreateWorkspaceRequest
+	8,  // 12: chat.v1.WorkspaceService.GetWorkspace:input_type -> chat.v1.GetWorkspaceRequest
+	10, // 13: chat.v1.WorkspaceService.UpdateWorkspace:input_type -> chat.v1.UpdateWorkspaceRequest
+	12, // 14: chat.v1.WorkspaceService.DeleteWorkspace:input_type -> chat.v1.DeleteWorkspaceRequest
+	14, // 15: chat.v1.WorkspaceService.ListPublicWorkspaces:input_type -> chat.v1.ListPublicWorkspacesRequest
+	16, // 16: chat.v1.WorkspaceService.JoinPublicWorkspace:input_type -> chat.v1.JoinPublicWorkspaceRequest
+	18, // 17: chat.v1.WorkspaceService.GetWorkspaceSignupInfo:input_type -> chat.v1.GetWorkspaceSignupInfoRequest
+	20, // 18: chat.v1.WorkspaceService.ListMembers:input_type -> chat.v1.ListMembersRequest
+	22, // 19: chat.v1.WorkspaceService.UpdateMemberRole:input_type -> chat.v1.UpdateMemberRoleRequest
+	24, // 20: chat.v1.WorkspaceService.RemoveMember:input_type -> chat.v1.RemoveMemberRequest
+	5,  // 21: chat.v1.WorkspaceService.ListWorkspaces:output_type -> chat.v1.ListWorkspacesResponse
+	7,  // 22: chat.v1.WorkspaceService.CreateWorkspace:output_type -> chat.v1.CreateWorkspaceResponse
+	9,  // 23: chat.v1.WorkspaceService.GetWorkspace:output_type -> chat.v1.GetWorkspaceResponse
+	11, // 24: chat.v1.WorkspaceService.UpdateWorkspace:output_type -> chat.v1.UpdateWorkspaceResponse
+	13, // 25: chat.v1.WorkspaceService.DeleteWorkspace:output_type -> chat.v1.DeleteWorkspaceResponse
+	15, // 26: chat.v1.WorkspaceService.ListPublicWorkspaces:output_type -> chat.v1.ListPublicWorkspacesResponse
+	17, // 27: chat.v1.WorkspaceService.JoinPublicWorkspace:output_type -> chat.v1.JoinPublicWorkspaceResponse
+	19, // 28: chat.v1.WorkspaceService.GetWorkspaceSignupInfo:output_type -> chat.v1.GetWorkspaceSignupInfoResponse
+	21, // 29: chat.v1.WorkspaceService.ListMembers:output_type -> chat.v1.ListMembersResponse
+	23, // 30: chat.v1.WorkspaceService.UpdateMemberRole:output_type -> chat.v1.UpdateMemberRoleResponse
+	25, // 31: chat.v1.WorkspaceService.RemoveMember:output_type -> chat.v1.RemoveMemberResponse
+	21, // [21:32] is the sub-list for method output_type
+	10, // [10:21] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_workspace_service_proto_init() }

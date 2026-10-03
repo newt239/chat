@@ -12,16 +12,9 @@ import { useLoadMoreRef } from "#/hooks/useLoadMoreRef";
 export const ThreadListPage = () => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
-  const {
-    data: threads,
-    isLoading,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  } = useParticipatingThreads(workspaceId);
-  const loadMoreRef = useLoadMoreRef(() => {
-    void fetchNextPage();
-  }, hasNextPage && !isFetchingNextPage);
+  const participating = useParticipatingThreads(workspaceId);
+  const { data: threads, isLoading, isError, isFetchingNextPage } = participating;
+  const loadMoreRef = useLoadMoreRef(participating);
 
   return (
     <>
@@ -29,11 +22,15 @@ export const ThreadListPage = () => {
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4.5 py-3 max-md:px-2.5">
         {isLoading ? (
           <Skeleton className="h-32 w-full rounded-lg" />
+        ) : isError ? (
+          <p role="alert" className="m-0 p-4 text-caption text-danger">
+            {t("thread.list.failed")}
+          </p>
         ) : threads === undefined || threads.length === 0 ? (
           <EmptyState
             icon={<IconMessages />}
-            title={t("shell.thread.emptyTitle")}
-            description={t("shell.thread.emptyDescription")}
+            title={t("thread.list.emptyTitle")}
+            description={t("thread.list.emptyDescription")}
           />
         ) : (
           threads.map((thread) => (

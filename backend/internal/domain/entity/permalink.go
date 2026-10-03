@@ -14,9 +14,7 @@ type MessagePermalink struct {
 	MessageID   string
 }
 
-// ParseMessagePermalink は次の形式の URL を解釈します。ホストは問いません
-//   - /app/{workspaceId}/{channelId}?message={messageId}
-//   - /app/{workspaceId}/{channelId}/thread/{threadId}（?message={replyId} があれば返信を指す）
+// ParseMessagePermalink は /app/{ws}/{ch}?message={id} と /app/{ws}/{ch}/thread/{threadId}[?message={replyId}] を解釈します
 func ParseMessagePermalink(rawURL string) (MessagePermalink, bool) {
 	u, err := url.Parse(rawURL)
 	if err != nil {

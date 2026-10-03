@@ -4,13 +4,15 @@ import { useTranslation } from "react-i18next";
 import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedControl";
 import { Switch } from "#/components/ui/Switch/Switch";
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { notificationPreferencesAtom } from "#/features/notification/atoms";
+import { usePushNotifications } from "#/features/notification/hooks/usePushNotifications";
+import {
+  isNotificationSupported,
+  requestNotificationPermission,
+} from "#/features/notification/utils/notify";
 import { usePreferences, useUpdatePreferences } from "#/hooks/usePreferences";
-import { logger } from "#/lib/logger";
-import { requestNotificationPermission } from "#/lib/platform/notify";
-import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
 import { notificationLevels } from "#/providers/store/preferences";
 
-import { usePushNotifications } from "../hooks/usePushNotifications";
 import { SettingRow } from "./SettingRow";
 
 export const NotificationSettings = () => {
@@ -35,31 +37,33 @@ export const NotificationSettings = () => {
           }}
         />
       </SettingRow>
-      <SettingRow
-        title={t("settings.notifications.desktop")}
-        description={t("settings.notifications.desktopDescription")}
-      >
-        <Switch
-          aria-label={t("settings.notifications.desktop")}
-          isSelected={device.desktop}
-          onChange={(desktop) => {
-            if (!desktop) {
-              setDevice((prev) => ({ ...prev, desktop }));
-              return;
-            }
-            // 許可を求められるのはユーザー操作の中だけなので、ここで尋ねる
-            void requestNotificationPermission().then((granted) => {
-              if (granted) {
-                setDevice((prev) => ({ ...prev, desktop }));
-              } else {
-                toast(t("settings.notifications.denied"), { tone: "danger" });
-              }
-            });
-          }}
+      {isNotificationSupported() && (
+        <SettingRow
+          title={t("settings.notifications.desktop")}
+          description={t("settings.notifications.desktopDescription")}
         >
-          {null}
-        </Switch>
-      </SettingRow>
+          <Switch
+            aria-label={t("settings.notifications.desktop")}
+            isSelected={device.desktop}
+            onChange={(desktop) => {
+              if (!desktop) {
+                setDevice((prev) => ({ ...prev, desktop }));
+                return;
+              }
+              // 許可を求められるのはユーザー操作の中だけなので、ここで尋ねる
+              void requestNotificationPermission().then((granted) => {
+                if (granted) {
+                  setDevice((prev) => ({ ...prev, desktop }));
+                } else {
+                  toast(t("settings.notifications.denied"), { tone: "danger" });
+                }
+              });
+            }}
+          >
+            {null}
+          </Switch>
+        </SettingRow>
+      )}
       {push.supported && (
         <SettingRow
           title={t("settings.notifications.push")}
@@ -79,7 +83,7 @@ export const NotificationSettings = () => {
                     toast(t("settings.notifications.denied"), { tone: "danger" });
                   }
                 } catch (error) {
-                  logger.warn("プッシュ通知を登録できませんでした", error);
+                  console.warn("プッシュ通知を登録できませんでした", error);
                   toast(t("settings.notifications.pushFailed"), { tone: "danger" });
                 }
               })();

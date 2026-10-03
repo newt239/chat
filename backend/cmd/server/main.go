@@ -2,20 +2,18 @@ package main
 
 import (
 	"context"
-	"log"
+	"errors"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
-	_ "time/tzdata" // インサイトでクライアントのタイムゾーンを扱うため、tzdata のないイメージでも読み込めるよう埋め込む
-
-	goredis "github.com/redis/go-redis/v9"
 
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
-	"github.com/newt239/chat/internal/infrastructure/logger"
 	"github.com/newt239/chat/internal/infrastructure/redis"
 	"github.com/newt239/chat/internal/infrastructure/seed"
 	"github.com/newt239/chat/internal/registry"
@@ -24,116 +22,117 @@ import (
 // shutdownDrainDelay は readiness probe の失敗が kube-proxy と cloudflared に伝わるまで待つ時間
 const shutdownDrainDelay = 5 * time.Second
 
+func fatal(msg string, err error) {
+	slog.Error(msg, "error", err)
+	os.Exit(1)
+}
+
+// every は ctx が終わるまで interval ごとに task を実行します
+func every(ctx context.Context, interval time.Duration, name string, task func(context.Context) error) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		if err := task(ctx); err != nil && ctx.Err() == nil {
+			slog.Error("定期処理に失敗しました", "task", name, "error", err)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
+}
+
 func main() {
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
+	cfg := config.Load()
+	if cfg.Server.Env == "production" {
+		slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 	}
-
 	if err := cfg.Validate(); err != nil {
-		log.Fatalf("config validation failed: %v", err)
+		fatal("設定が不正です", err)
 	}
-
-	if err := logger.Init(cfg.Server.Env); err != nil {
-		log.Fatalf("failed to initialize logger: %v", err)
-	}
-	defer logger.Sync()
 
 	client, db, err := database.InitDB(cfg.Database)
 	if err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
+		fatal("データベースに接続できません", err)
 	}
-
 	ctx := context.Background()
 	if err := database.Migrate(ctx, client, db); err != nil {
-		log.Fatalf("failed to migrate database schema: %v", err)
+		fatal("スキーマを移行できません", err)
 	}
-
 	// 既知のテストアカウントを作るため本番ではシードしない
-	if cfg.Server.Env == "production" {
-		log.Println("Production environment: skipping auto-seed")
-	} else if err := seed.AutoSeed(client); err != nil {
-		log.Fatalf("failed to auto-seed database: %v", err)
-	}
-
-	var rdb *goredis.Client
-	if cfg.Redis.URL != "" {
-		if rdb, err = redis.NewClient(cfg.Redis.URL); err != nil {
-			log.Fatalf("failed to connect to redis: %v", err)
+	if cfg.Server.Env != "production" {
+		if err := seed.AutoSeed(ctx, client); err != nil {
+			fatal("シードデータを作成できません", err)
 		}
-	} else {
-		log.Println("REDIS_URL is not set: WebSocket events and rate limits are not shared between replicas")
 	}
 
-	reg := registry.NewRegistry(client, cfg, rdb)
-	go prepareSearchIndex(reg)
+	rdb, err := redis.NewClient(cfg.Redis.URL)
+	if err != nil {
+		fatal("Redis に接続できません", err)
+	}
 
-	// 停止時に DB を閉じる前に終わりを待つ
-	var background sync.WaitGroup
-	runCtx, stopRun := context.WithCancel(context.Background())
-	background.Go(func() {
-		reg.UseCase().NewScheduledMessageUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval)
-	})
-	// リマインダーも予約メッセージと同じ間隔で確かめる
-	background.Go(func() { reg.UseCase().NewCommandUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval) })
+	var ready atomic.Bool
+	ready.Store(true)
+	app := registry.New(client, cfg, rdb, ready.Load)
 
-	hub := reg.Hub()
-	background.Go(func() { hub.Run(runCtx) })
-
-	e := reg.NewRouter()
-
-	addr := ":" + cfg.Server.Port
-	log.Printf("Starting server on %s", addr)
-
+	// 検索インデックスの準備に失敗しても検索以外の機能は止めない
 	go func() {
-		if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("server error: %v", err)
+		count, err := app.SearchIndexer.Prepare(ctx, false)
+		if err != nil {
+			slog.Warn("検索インデックスを準備できません", "error", err)
+			return
+		}
+		if count > 0 {
+			slog.Info("検索インデックスに登録しました", "messages", count)
 		}
 	}()
 
-	sigCtx, stopSignal := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	// 停止時に DB を閉じる前に終わりを待つ
+	var background sync.WaitGroup
+	runCtx, stopRun := context.WithCancel(ctx)
+	interval := cfg.DispatchInterval
+	background.Go(func() {
+		every(runCtx, interval, "scheduled_message", func(ctx context.Context) error {
+			_, err := app.ScheduledMessage.DispatchDue(ctx)
+			return err
+		})
+	})
+	background.Go(func() {
+		every(runCtx, interval, "reminder", func(ctx context.Context) error {
+			_, err := app.Command.DispatchDue(ctx)
+			return err
+		})
+	})
+	background.Go(func() { every(runCtx, time.Hour, "session_cleanup", app.Sessions.DeleteExpired) })
+	background.Go(func() { app.Hub.Run(runCtx) })
+
+	addr := ":" + cfg.Server.Port
+	slog.Info("サーバーを起動します", "addr", addr)
+	go func() {
+		if err := app.Router.Start(addr); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			fatal("サーバーが停止しました", err)
+		}
+	}()
+
+	sigCtx, stopSignal := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	<-sigCtx.Done()
 	stopSignal()
-
-	log.Println("Shutting down server...")
+	slog.Info("サーバーを停止します")
 
 	// readiness を落としてから Service の宛先から外れるまで待ち、新しい接続を他のレプリカへ向ける
-	reg.Infrastructure().SetReady(false)
+	ready.Store(false)
 	time.Sleep(shutdownDrainDelay)
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(ctx, 40*time.Second)
 	defer cancel()
-
-	hub.Shutdown(shutdownCtx)
-	if err := e.Shutdown(shutdownCtx); err != nil {
-		log.Printf("Server forced to shutdown: %v", err)
+	app.Hub.Shutdown(shutdownCtx)
+	if err := app.Router.Shutdown(shutdownCtx); err != nil {
+		slog.Error("接続を閉じきれずに停止します", "error", err)
 	}
 	stopRun()
 	background.Wait()
-	if rdb != nil {
-		_ = rdb.Close()
-	}
+	_ = rdb.Close()
 	_ = client.Close()
-
-	log.Println("Server exited")
-}
-
-// prepareSearchIndex は検索インデックスの設定を反映し、空なら全件を登録します。検索以外の機能は止めない
-func prepareSearchIndex(reg *registry.Registry) {
-	ctx := context.Background()
-	index := reg.Infrastructure().MessageSearchIndex()
-	if err := index.EnsureSettings(ctx); err != nil {
-		log.Printf("Warning: failed to configure the search index: %v", err)
-		return
-	}
-	empty, err := index.IsEmpty(ctx)
-	if err != nil || !empty {
-		return
-	}
-	count, err := reg.UseCase().NewSearchIndexer().Reindex(ctx)
-	if err != nil {
-		log.Printf("Warning: failed to build the search index: %v", err)
-		return
-	}
-	log.Printf("Indexed %d messages for search", count)
+	slog.Info("サーバーを停止しました")
 }

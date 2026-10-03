@@ -17,7 +17,7 @@ func TestFollowThreadIsIdempotent(t *testing.T) {
 	alice, thread, other := f.alice.ID.String(), f.messages["mention"].ID.String(), f.messages["link"].ID.String()
 
 	for range 2 {
-		if err := repo.FollowThread(ctx, alice, thread); err != nil {
+		if err := repo.SetFollowing(ctx, alice, thread, true); err != nil {
 			t.Fatalf("フォローを繰り返すと失敗しました: %v", err)
 		}
 	}
@@ -30,7 +30,7 @@ func TestFollowThreadIsIdempotent(t *testing.T) {
 	}
 
 	for range 2 {
-		if err := repo.UnfollowThread(ctx, alice, thread); err != nil {
+		if err := repo.SetFollowing(ctx, alice, thread, false); err != nil {
 			t.Fatalf("フォロー解除を繰り返すと失敗しました: %v", err)
 		}
 	}
@@ -55,5 +55,23 @@ func TestUpsertThreadReadState(t *testing.T) {
 	states := client.ThreadReadState.Query().Where(threadreadstate.UserID(f.alice.ID)).AllX(ctx)
 	if len(states) != 1 || !states[0].LastReadAt.Equal(later) {
 		t.Errorf("既読位置が 1 件に更新されていません: %+v", states)
+	}
+}
+
+func TestCalculateMetadataExcludesDeletedReplies(t *testing.T) {
+	client := openTestClient(t)
+	f := newSearchFixture(t, client)
+	ctx := context.Background()
+	thread := f.messages["mention"]
+	client.Message.Create().SetChannel(f.channels["general"]).SetUser(f.bob).SetParent(thread).SetBody("消した返信").
+		SetCreatedAt(time.Date(2026, 9, 2, 0, 0, 0, 0, time.UTC)).SetDeletedAt(time.Now()).SaveX(ctx)
+
+	got, err := NewThreadRepository(client).CalculateMetadataByMessageIDs(ctx, []string{thread.ID.String()})
+	if err != nil {
+		t.Fatalf("取得に失敗しました: %v", err)
+	}
+	m := got[thread.ID.String()]
+	if m.ReplyCount != 1 || !m.LastReplyAt.Equal(f.messages["reply"].CreatedAt) || *m.LastReplyUserID != f.alice.ID.String() {
+		t.Errorf("削除した返信を数えています: count=%d last=%v by=%v", m.ReplyCount, m.LastReplyAt, *m.LastReplyUserID)
 	}
 }

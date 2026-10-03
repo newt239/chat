@@ -24,7 +24,7 @@ var messageIndexSettings = &meili.Settings{
 	SearchableAttributes: []string{"body", "attachment_names"},
 	FilterableAttributes: []string{
 		"workspace_id", "channel_id", "sender_id", "parent_id", "has", "has_replies", "pinned",
-		"mentioned_user_ids", "mentioned_group_ids", "mentions_channel", "created_at",
+		"mentioned_user_ids", "mentions_channel", "created_at",
 	},
 	SortableAttributes:  []string{"created_at"},
 	LocalizedAttributes: localizedAttributes,
@@ -43,23 +43,21 @@ func NewMessageIndex(url, apiKey string) *MessageIndex {
 
 // messageDocument はインデックスに保存する形です。日時はミリ秒の UNIX 時刻で持ち、範囲で絞り込む
 type messageDocument struct {
-	ID                string                                `json:"id"`
-	WorkspaceID       string                                `json:"workspace_id"`
-	ChannelID         string                                `json:"channel_id"`
-	SenderID          string                                `json:"sender_id"`
-	ParentID          *string                               `json:"parent_id"`
-	Body              string                                `json:"body"`
-	AttachmentNames   []string                              `json:"attachment_names"`
-	Has               []domainrepository.MessageContentKind `json:"has"`
-	MentionedUserIDs  []string                              `json:"mentioned_user_ids"`
-	MentionedGroupIDs []string                              `json:"mentioned_group_ids"`
-	MentionsChannel   bool                                  `json:"mentions_channel"`
-	Pinned            bool                                  `json:"pinned"`
-	HasReplies        bool                                  `json:"has_replies"`
-	CreatedAt         int64                                 `json:"created_at"`
+	ID               string                                `json:"id"`
+	WorkspaceID      string                                `json:"workspace_id"`
+	ChannelID        string                                `json:"channel_id"`
+	SenderID         string                                `json:"sender_id"`
+	ParentID         *string                               `json:"parent_id"`
+	Body             string                                `json:"body"`
+	AttachmentNames  []string                              `json:"attachment_names"`
+	Has              []domainrepository.MessageContentKind `json:"has"`
+	MentionedUserIDs []string                              `json:"mentioned_user_ids"`
+	MentionsChannel  bool                                  `json:"mentions_channel"`
+	Pinned           bool                                  `json:"pinned"`
+	HasReplies       bool                                  `json:"has_replies"`
+	CreatedAt        int64                                 `json:"created_at"`
 }
 
-// EnsureSettings はインデックスを作成し、検索に必要な設定が反映されるまで待ちます
 func (i *MessageIndex) EnsureSettings(ctx context.Context) error {
 	task, err := i.index.UpdateSettingsWithContext(ctx, messageIndexSettings)
 	if err != nil {
@@ -68,7 +66,6 @@ func (i *MessageIndex) EnsureSettings(ctx context.Context) error {
 	return i.wait(ctx, task)
 }
 
-// IsEmpty はインデックスに文書が 1 件もないかを返します
 func (i *MessageIndex) IsEmpty(ctx context.Context) (bool, error) {
 	stats, err := i.index.GetStatsWithContext(ctx, nil)
 	if err != nil {
@@ -115,20 +112,19 @@ func (i *MessageIndex) Upsert(ctx context.Context, documents []domainrepository.
 	docs := make([]messageDocument, 0, len(documents))
 	for _, d := range documents {
 		docs = append(docs, messageDocument{
-			ID:                d.ID,
-			WorkspaceID:       d.WorkspaceID,
-			ChannelID:         d.ChannelID,
-			SenderID:          d.SenderID,
-			ParentID:          d.ParentID,
-			Body:              d.Body,
-			AttachmentNames:   d.AttachmentNames,
-			Has:               d.Has,
-			MentionedUserIDs:  d.MentionedUserIDs,
-			MentionedGroupIDs: d.MentionedGroupIDs,
-			MentionsChannel:   d.MentionsChannel,
-			Pinned:            d.Pinned,
-			HasReplies:        d.HasReplies,
-			CreatedAt:         d.CreatedAt.UnixMilli(),
+			ID:               d.ID,
+			WorkspaceID:      d.WorkspaceID,
+			ChannelID:        d.ChannelID,
+			SenderID:         d.SenderID,
+			ParentID:         d.ParentID,
+			Body:             d.Body,
+			AttachmentNames:  d.AttachmentNames,
+			Has:              d.Has,
+			MentionedUserIDs: d.MentionedUserIDs,
+			MentionsChannel:  d.MentionsChannel,
+			Pinned:           d.Pinned,
+			HasReplies:       d.HasReplies,
+			CreatedAt:        d.CreatedAt.UnixMilli(),
 		})
 	}
 	_, err := i.index.AddDocumentsWithContext(ctx, docs, &meili.DocumentOptions{PrimaryKey: &primaryKey})

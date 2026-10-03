@@ -11,7 +11,7 @@ import { GoogleSignInButtonNative } from "./GoogleSignInButtonNative";
 const deepLink = vi.hoisted(() => ({ handler: (_url: string) => {} }));
 
 vi.mock("#/lib/platform/openExternal", () => ({ openExternal: vi.fn() }));
-vi.mock("#/lib/platform/tauri/deepLink", () => ({
+vi.mock("#/features/auth/utils/deepLink", () => ({
   listenDeepLinks: (handler: (url: string) => void) => {
     deepLink.handler = handler;
     return () => {};

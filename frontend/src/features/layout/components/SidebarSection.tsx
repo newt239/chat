@@ -6,16 +6,15 @@ import { AnimatePresence, motion } from "motion/react";
 import { Button } from "react-aria-components";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { navIconButtonClassName } from "#/components/ui/styles/navTone";
 import { focusRing } from "#/components/ui/styles/styles";
+import { collapsedSidebarSectionsAtom } from "#/features/layout/atoms";
 import { transitions } from "#/lib/motion";
-import { collapsedSidebarSectionsAtom } from "#/providers/store/ui";
 
 type SidebarSectionProps = {
   id: string;
   title: string;
-  // 見出しの右に出す追加ボタン。null なら出さない
   onAdd: { label: string; onPress: () => void } | null;
-  // 見出しの右に出すメニュー。null なら出さない
   menu: ReactNode;
   children: ReactNode;
 };
@@ -44,11 +43,7 @@ export const SidebarSection = ({ id, title, onAdd, menu, children }: SidebarSect
         </Button>
         {menu}
         {onAdd && (
-          <IconButton
-            label={onAdd.label}
-            onPress={handleAdd}
-            className="size-6 text-(--nav-muted) data-hovered:bg-(--nav-hover) data-hovered:text-(--nav-strong) [&_svg]:size-3.5"
-          >
+          <IconButton label={onAdd.label} onPress={handleAdd} className={navIconButtonClassName}>
             <IconPlus />
           </IconButton>
         )}

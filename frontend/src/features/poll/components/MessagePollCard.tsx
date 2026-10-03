@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { formatRelativeTime } from "@chat/i18n/format";
+import { useMutation } from "@connectrpc/connect-query";
 import { IconChartBar, IconCheck } from "@tabler/icons-react";
 import { Button as AriaButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -9,12 +11,14 @@ import { Badge } from "#/components/ui/Badge/Badge";
 import { Button } from "#/components/ui/Button/Button";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
+import { useInvalidateMessageLists } from "#/features/message/hooks/useInvalidateMessageLists";
 import { PollMode } from "#/gen/chat/v1/message_pb";
+import { PollService } from "#/gen/chat/v1/poll_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-
-import { usePollActions } from "../hooks/usePollActions";
+import { toastError } from "#/lib/toastError";
 
 import type { Poll, PollOption } from "#/gen/chat/v1/message_pb";
 
@@ -29,9 +33,16 @@ const MAX_VOTER_AVATARS = 5;
 /** メッセージに付けた投票。押した選択肢に投票し、もう一度押すと取り消す */
 export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
   const { t } = useTranslation();
-  const { formatDateTime, formatDateWithWeekday, formatRelativeTime, formatTime } = useDateFormat();
+  const { formatDateTime, formatDateWithWeekday, formatTime, locale } = useDateFormat();
   const { member } = useMentionDirectory();
-  const { close, vote } = usePollActions();
+  const nameOf = useDisplayName();
+  // 集計の変化はメッセージの更新として WebSocket で届く
+  const invalidateMessageLists = useInvalidateMessageLists();
+  const close = useMutation(PollService.method.closePoll, {
+    onError: toastError,
+    onSuccess: invalidateMessageLists,
+  });
+  const vote = useMutation(PollService.method.vote, { onSuccess: invalidateMessageLists });
   // 配信されるメッセージには自分の投票が含まれないため、読み込んだ時点と投票した結果を覚えておく
   const [myOptionIds, setMyOptionIds] = useState(poll.myOptionIds);
   const maxVotes = Math.max(1, ...poll.options.map((option) => option.voteCount));
@@ -113,7 +124,7 @@ export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
                       return (
                         <Avatar
                           key={userId}
-                          name={voter?.nickname ?? voter?.displayName ?? ""}
+                          name={nameOf(userId, "")}
                           src={voter?.avatarUrl}
                           size={18}
                         />
@@ -134,7 +145,7 @@ export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
         {poll.closesAt && !poll.isClosed && (
           <span>
             {t("poll.closesAt", {
-              relative: formatRelativeTime(toDate(poll.closesAt), new Date()),
+              relative: formatRelativeTime(toDate(poll.closesAt), new Date(), locale),
               time: formatDateTime(toDate(poll.closesAt)),
             })}
           </span>

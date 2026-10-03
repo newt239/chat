@@ -39,11 +39,15 @@ func (r *stubMessageRepo) FindSearchDocumentsAfter(_ context.Context, afterID st
 }
 
 type stubIndex struct {
-	upserted  []string
-	deleted   []string
-	cleared   bool
-	upsertErr error
+	upserted []string
+	deleted  []string
+	cleared  bool
+	empty    bool
 }
+
+func (i *stubIndex) EnsureSettings(context.Context) error { return nil }
+
+func (i *stubIndex) IsEmpty(context.Context) (bool, error) { return i.empty, nil }
 
 func (i *stubIndex) Search(context.Context, domainrepository.MessageSearchCriteria) (*domainrepository.MessageSearchResult, error) {
 	return nil, errors.New("not implemented")
@@ -53,7 +57,7 @@ func (i *stubIndex) Upsert(_ context.Context, docs []domainrepository.MessageSea
 	for _, d := range docs {
 		i.upserted = append(i.upserted, d.ID)
 	}
-	return i.upsertErr
+	return nil
 }
 
 func (i *stubIndex) Delete(_ context.Context, ids []string) error {
@@ -66,13 +70,6 @@ func (i *stubIndex) DeleteAll(context.Context) error {
 	return nil
 }
 
-type stubLogger struct {
-	service.Logger
-	warnings int
-}
-
-func (l *stubLogger) Warn(string, ...service.LogField) { l.warnings++ }
-
 func docs(ids ...string) []domainrepository.MessageSearchDocument {
 	result := []domainrepository.MessageSearchDocument{}
 	for _, id := range ids {
@@ -83,7 +80,7 @@ func docs(ids ...string) []domainrepository.MessageSearchDocument {
 
 func TestSyncUpsertsLiveAndDeletesRemoved(t *testing.T) {
 	index := &stubIndex{}
-	indexer := NewIndexer(&stubMessageRepo{docs: docs("a", "b")}, index, stubMentionService{}, &stubLogger{})
+	indexer := NewIndexer(&stubMessageRepo{docs: docs("a", "b")}, index, stubMentionService{})
 
 	indexer.Sync(context.Background(), "a", "deleted", "b")
 
@@ -95,26 +92,24 @@ func TestSyncUpsertsLiveAndDeletesRemoved(t *testing.T) {
 	}
 }
 
-func TestSyncOnlyLogsFailure(t *testing.T) {
-	logger := &stubLogger{}
-	indexer := NewIndexer(&stubMessageRepo{docs: docs("a")}, &stubIndex{upsertErr: errors.New("unavailable")}, stubMentionService{}, logger)
+func TestPrepareSkipsNonEmptyIndex(t *testing.T) {
+	index := &stubIndex{}
+	indexer := NewIndexer(&stubMessageRepo{docs: docs("a")}, index, stubMentionService{})
 
-	indexer.Sync(context.Background(), "a")
-
-	if logger.warnings != 1 {
-		t.Errorf("失敗がログに残っていません: %d", logger.warnings)
+	if count, err := indexer.Prepare(context.Background(), false); err != nil || count != 0 || index.cleared {
+		t.Errorf("空でないインデックスは登録し直さないはず: count=%d err=%v", count, err)
 	}
 }
 
-func TestReindexRegistersAllInBatches(t *testing.T) {
+func TestPrepareRegistersAllInBatches(t *testing.T) {
 	ids := []string{}
 	for i := range reindexBatchSize + 3 {
 		ids = append(ids, fmt.Sprintf("%04d", i))
 	}
 	index := &stubIndex{}
-	indexer := NewIndexer(&stubMessageRepo{docs: docs(ids...)}, index, stubMentionService{}, &stubLogger{})
+	indexer := NewIndexer(&stubMessageRepo{docs: docs(ids...)}, index, stubMentionService{})
 
-	count, err := indexer.Reindex(context.Background())
+	count, err := indexer.Prepare(context.Background(), true)
 	if err != nil {
 		t.Fatalf("再インデックスに失敗しました: %v", err)
 	}

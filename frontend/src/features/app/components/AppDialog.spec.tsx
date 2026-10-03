@@ -77,6 +77,7 @@ describe("AppDialog", () => {
     expect(
       await screen.findByText(/\/webhooks\/a2\/first-token$/, { selector: "code" }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/curl -X POST/)).toHaveTextContent("channel_id");
   });
 
   test("送信 Webhook を選んだら送信先の URL を必須にする", async () => {
@@ -112,7 +113,7 @@ describe("AppDialog", () => {
     const { onClose, remove } = await setup(app);
     await userEvent.click(screen.getByRole("button", { name: "削除" }));
     await userEvent.click(
-      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "削除する" }),
+      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "削除" }),
     );
     await waitFor(() => {
       expect(remove).toHaveBeenCalledWith(expect.objectContaining({ appId: "a1" }));

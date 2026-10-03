@@ -8,7 +8,7 @@ import { toast } from "#/components/ui/ToastRegion/toast";
 import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
 import { usePasswordAuthEnabled } from "#/features/auth/hooks/usePasswordAuthEnabled";
 import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
-import { toShareUrl } from "#/lib/platform/appOrigin";
+import { toShareUrl } from "#/lib/shareUrl";
 
 type AdminSignupSettingsProps = {
   workspaceId: string;

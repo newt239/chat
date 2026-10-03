@@ -1,20 +1,19 @@
 import { useNavigate, useParams } from "@tanstack/react-router";
 
-import { AppDialogLoader } from "#/features/app/components/AppDialogLoader";
+import { AppDialog } from "#/features/app/components/AppDialog";
+import { useApps } from "#/features/app/hooks/useApps";
 import { ChannelCategoryDialog } from "#/features/channel/components/ChannelCategoryDialog";
-import { ChannelLinkDialogLoader } from "#/features/channel/components/ChannelLinkDialogLoader";
+import { ChannelLinkDialog } from "#/features/channel/components/ChannelLinkDialog";
 import { CreateChannelModal } from "#/features/channel/components/CreateChannelModal";
+import { CreateDMModal } from "#/features/channel/components/CreateDMModal";
 import { useChannelCategories } from "#/features/channel/hooks/useChannelCategories";
-import { CreateDMModal } from "#/features/dm/components/CreateDMModal";
+import { useChannelLinks } from "#/features/channel/hooks/useChannelLinks";
 import { MarkdownHelpModal } from "#/features/message/components/MarkdownHelpModal";
 import { UserGroupDialog } from "#/features/userGroup/components/UserGroupDialog";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { CreateWorkspaceModal } from "#/features/workspace/components/CreateWorkspaceModal";
-import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
-import { isAdminRole } from "#/lib/isAdminRole";
-
-import { closeDialog, openPanel } from "../utils/overlaySearch";
-import { workspaceRoute } from "../utils/workspaceRoute";
+import { useIsWorkspaceAdmin } from "#/hooks/useIsWorkspaceAdmin";
+import { closeDialog, openPanel, workspaceRoute } from "#/lib/overlaySearch";
 
 type WorkspaceDialogsProps = {
   workspaceId: string;
@@ -26,18 +25,20 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
   const { app, assign, category, dialog, group, link, parent } = workspaceRoute.useSearch();
   const channelId = useParams({ select: (params) => params.channelId, strict: false });
   const { data: groups } = useUserGroups(workspaceId);
-  const canManageGroups = isAdminRole(useMyWorkspaceRole(workspaceId).data);
+  const canManageGroups = useIsWorkspaceAdmin(workspaceId);
   const editingGroup = groups?.find((candidate) => candidate.id === group);
   const { data: categories } = useChannelCategories(workspaceId);
   const editingCategory = categories?.find((candidate) => candidate.id === category);
+  const isLinkDialog = dialog === "add-link" || dialog === "edit-link";
+  const { data: channelLinks } = useChannelLinks(
+    isLinkDialog && channelId !== undefined ? channelId : null,
+  );
+  const editingLink = channelLinks?.links.find((candidate) => candidate.id === link);
+  const { data: apps } = useApps(dialog === "edit-app" ? workspaceId : null);
+  const editingApp = apps?.apps.find((candidate) => candidate.id === app && candidate.canManage);
 
   const close = () => {
     void navigate({ search: closeDialog, to: "." });
-  };
-  const onOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      close();
-    }
   };
 
   return (
@@ -60,8 +61,8 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
         />
       )}
       {dialog === "create-dm" && <CreateDMModal workspaceId={workspaceId} onClose={close} />}
-      <CreateWorkspaceModal isOpen={dialog === "create-workspace"} onOpenChange={onOpenChange} />
-      <MarkdownHelpModal isOpen={dialog === "markdown-help"} onOpenChange={onOpenChange} />
+      {dialog === "create-workspace" && <CreateWorkspaceModal onClose={close} />}
+      <MarkdownHelpModal isOpen={dialog === "markdown-help"} onOpenChange={close} />
       {canManageGroups &&
         (dialog === "create-group" || (dialog === "edit-group" && editingGroup)) && (
           <UserGroupDialog
@@ -79,17 +80,20 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
           />
         )}
       {channelId !== undefined &&
-        (dialog === "add-link" || (dialog === "edit-link" && link !== undefined)) && (
-          <ChannelLinkDialogLoader
+        channelLinks?.canEdit &&
+        (dialog === "add-link" || (dialog === "edit-link" && editingLink)) && (
+          <ChannelLinkDialog
+            key={dialog}
             channelId={channelId}
-            linkId={dialog === "edit-link" ? (link ?? null) : null}
+            link={dialog === "edit-link" ? (editingLink ?? null) : null}
             onClose={close}
           />
         )}
-      {(dialog === "add-app" || (dialog === "edit-app" && app !== undefined)) && (
-        <AppDialogLoader
+      {(dialog === "add-app" || (dialog === "edit-app" && editingApp)) && (
+        <AppDialog
+          key={dialog}
           workspaceId={workspaceId}
-          appId={dialog === "edit-app" ? (app ?? null) : null}
+          app={dialog === "edit-app" ? (editingApp ?? null) : null}
           initialChannelId={channelId ?? null}
           onClose={close}
         />

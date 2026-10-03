@@ -13,7 +13,7 @@ type ScheduledMessageServer struct {
 }
 
 func (s *ScheduledMessageServer) CreateScheduledMessage(ctx context.Context, req *chatv1.CreateScheduledMessageRequest) (*chatv1.CreateScheduledMessageResponse, error) {
-	out, err := s.UC.Schedule(ctx, scheduledmessageuc.ScheduleInput{
+	err := s.UC.Schedule(ctx, scheduledmessageuc.ScheduleInput{
 		UserID:        userIDFrom(ctx),
 		ChannelID:     req.ChannelId,
 		ParentID:      req.ParentId,
@@ -22,10 +22,7 @@ func (s *ScheduledMessageServer) CreateScheduledMessage(ctx context.Context, req
 		Location:      locationInput(req.Location),
 		ScheduledAt:   req.ScheduledAt.AsTime(),
 	})
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.CreateScheduledMessageResponse{ScheduledMessage: presenter.ScheduledMessage(out)}, nil
+	return &chatv1.CreateScheduledMessageResponse{}, err
 }
 
 func (s *ScheduledMessageServer) ListScheduledMessages(ctx context.Context, req *chatv1.ListScheduledMessagesRequest) (*chatv1.ListScheduledMessagesResponse, error) {
@@ -37,29 +34,19 @@ func (s *ScheduledMessageServer) ListScheduledMessages(ctx context.Context, req 
 }
 
 func (s *ScheduledMessageServer) UpdateScheduledMessage(ctx context.Context, req *chatv1.UpdateScheduledMessageRequest) (*chatv1.UpdateScheduledMessageResponse, error) {
-	out, err := s.UC.Reschedule(ctx, scheduledmessageuc.RescheduleInput{
+	err := s.UC.Reschedule(ctx, scheduledmessageuc.RescheduleInput{
 		ID:          req.Id,
 		UserID:      userIDFrom(ctx),
 		Body:        req.Body,
 		ScheduledAt: req.ScheduledAt.AsTime(),
 	})
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.UpdateScheduledMessageResponse{ScheduledMessage: presenter.ScheduledMessage(out)}, nil
+	return &chatv1.UpdateScheduledMessageResponse{}, err
 }
 
 func (s *ScheduledMessageServer) DeleteScheduledMessage(ctx context.Context, req *chatv1.DeleteScheduledMessageRequest) (*chatv1.DeleteScheduledMessageResponse, error) {
-	if err := s.UC.Delete(ctx, req.Id, userIDFrom(ctx)); err != nil {
-		return nil, err
-	}
-	return &chatv1.DeleteScheduledMessageResponse{}, nil
+	return &chatv1.DeleteScheduledMessageResponse{}, s.UC.Delete(ctx, req.Id, userIDFrom(ctx))
 }
 
 func (s *ScheduledMessageServer) SendScheduledMessageNow(ctx context.Context, req *chatv1.SendScheduledMessageNowRequest) (*chatv1.SendScheduledMessageNowResponse, error) {
-	out, err := s.UC.SendNow(ctx, req.Id, userIDFrom(ctx))
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.SendScheduledMessageNowResponse{ScheduledMessage: presenter.ScheduledMessage(out)}, nil
+	return &chatv1.SendScheduledMessageNowResponse{}, s.UC.SendNow(ctx, req.Id, userIDFrom(ctx))
 }

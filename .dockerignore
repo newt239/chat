@@ -1,7 +1,6 @@
 **/node_modules
 **/dist
-**/dev-dist
-**/.turbo
+**/.env*.local
 .git
 frontend/src-tauri/target
 frontend/src-tauri/gen

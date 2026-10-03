@@ -48,16 +48,16 @@ type MemberActionInput struct {
 	OperatorID   string
 }
 
+type UpdateMemberRoleInput struct {
+	MemberActionInput
+	Role entity.WorkspaceRole
+}
+
 type MemberOutput struct {
-	UserID      string
-	Email       string
-	DisplayName string
-	AvatarURL   *string
-	Role        entity.WorkspaceRole
-	JoinedAt    time.Time
-	SuspendedAt *time.Time
-	LastLogin   *entity.Session
-	Activity    entity.MemberActivity
+	*entity.WorkspaceMember
+	User      *entity.User
+	LastLogin *entity.Session
+	Activity  entity.MemberActivity
 }
 
 type PermissionsOutput struct {

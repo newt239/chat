@@ -1,14 +1,26 @@
 import { useState } from "react";
 
+import { formatBytes } from "@chat/i18n/format";
+import { useMutation } from "@connectrpc/connect-query";
 import { useTranslation } from "react-i18next";
 
-import { putToStorage } from "#/lib/storage";
+import { AttachmentService } from "#/gen/chat/v1/attachment_service_pb";
+import { usePreferences } from "#/hooks/usePreferences";
+import { putToStorage } from "#/lib/upload";
 
-import { usePresignUpload } from "../api/client";
 import { measureMedia } from "../utils/measureMedia";
-import { formatFileSize, validateFile } from "../utils/validator";
 
-import type { PendingAttachment } from "../api/types";
+export type PendingAttachment = {
+  id: string;
+  file: File;
+  state:
+    | { status: "presigning" }
+    | { status: "uploading"; progress: number }
+    | { status: "completed"; attachmentId: string }
+    | { status: "error"; error: string };
+};
+
+const MAX_FILE_SIZE = 1024 * 1024 * 1024;
 
 type UploadOptions = {
   channelId: string;
@@ -18,8 +30,9 @@ type UploadOptions = {
 
 export const useFileUpload = () => {
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
-  const presignMutation = usePresignUpload();
+  const presignMutation = useMutation(AttachmentService.method.presignUpload);
   const { t } = useTranslation();
+  const { locale } = usePreferences();
 
   // 並行して上げても互いの行を上書きしないよう、添付ごとの id で更新する
   const setState = (id: string, state: PendingAttachment["state"]) => {
@@ -30,8 +43,7 @@ export const useFileUpload = () => {
 
   const uploadFile = async (file: File, options: UploadOptions) => {
     const id = crypto.randomUUID();
-    const invalidReason = validateFile(file);
-    if (invalidReason !== null) {
+    if (file.size === 0 || file.size > MAX_FILE_SIZE) {
       setPendingAttachments((prev) => [
         ...prev,
         {
@@ -39,14 +51,14 @@ export const useFileUpload = () => {
           id,
           state: {
             error:
-              invalidReason === "empty"
+              file.size === 0
                 ? t("attachment.errors.empty")
-                : t("attachment.errors.tooLarge", { size: formatFileSize(file.size) }),
+                : t("attachment.errors.tooLarge", { size: formatBytes(file.size, locale) }),
             status: "error",
           },
         },
       ]);
-      return null;
+      return;
     }
 
     setPendingAttachments((prev) => [...prev, { file, id, state: { status: "presigning" } }]);
@@ -84,16 +96,14 @@ export const useFileUpload = () => {
       await thumbnailUpload;
 
       setState(id, { attachmentId: presignData.attachmentId, status: "completed" });
-      return presignData.attachmentId;
     };
     try {
-      return await upload();
+      await upload();
     } catch (error) {
       setState(id, {
         error: error instanceof Error ? error.message : t("attachment.errors.unknown"),
         status: "error",
       });
-      return null;
     }
   };
 

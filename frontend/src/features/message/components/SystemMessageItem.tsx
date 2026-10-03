@@ -7,6 +7,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { Link } from "#/components/ui/Link/Link";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { SystemMessageKind } from "#/gen/chat/v1/message_pb";
+import { messageLocation } from "#/lib/messageLocation";
 import { toDate } from "#/lib/timestamp";
 
 import { MessageTime } from "./MessageTime";
@@ -26,43 +27,32 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
   const { workspaceId } = useParams({ strict: false });
   const displayName = useDisplayName();
   const payload = message.payload ?? {};
-  const nameOf = (key: string) => {
-    const userId = textOf(payload[key]);
-    return displayName(userId, userId);
-  };
+  const nameOf = (userId: string) => displayName(userId, userId);
+  const actor = nameOf(message.actorId ?? "");
+  const user = nameOf(textOf(payload.userId));
   const from = textOf(payload.from);
   const to = textOf(payload.to);
 
-  const pinnedMessageId = textOf(payload.messageId);
-  const pinnedParentId = textOf(payload.parentId);
   const pinnedLink =
     workspaceId === undefined ? (
       <span />
-    ) : pinnedParentId === "" ? (
-      <Link
-        to="/app/$workspaceId/$channelId"
-        params={{ channelId: message.channelId, workspaceId }}
-        search={{ message: pinnedMessageId }}
-      />
     ) : (
       <Link
-        to="/app/$workspaceId/$channelId/thread/$messageId"
-        params={{ channelId: message.channelId, messageId: pinnedParentId, workspaceId }}
-        search={{ message: pinnedMessageId }}
+        {...messageLocation({
+          channelId: message.channelId,
+          messageId: textOf(payload.messageId),
+          parentId: textOf(payload.parentId) || undefined,
+          workspaceId,
+        })}
       />
     );
 
-  const texts: Record<SystemMessageKind, ReactNode> = {
-    [SystemMessageKind.UNSPECIFIED]: t("message.system.unspecified"),
-    [SystemMessageKind.MEMBER_JOINED]: t("message.system.memberJoined", { user: nameOf("userId") }),
+  const texts: Partial<Record<SystemMessageKind, ReactNode>> = {
+    [SystemMessageKind.MEMBER_JOINED]: t("message.system.memberJoined", { user }),
     [SystemMessageKind.MEMBER_ADDED]: t("message.system.memberAdded", {
-      by: nameOf("addedBy"),
-      user: nameOf("userId"),
+      by: actor,
+      user,
     }),
-    [SystemMessageKind.MEMBER_REMOVED]: t("message.system.memberRemoved", {
-      user: nameOf("userId"),
-    }),
-    [SystemMessageKind.MEMBER_LEFT]: t("message.system.memberLeft", { user: nameOf("userId") }),
     [SystemMessageKind.CHANNEL_PRIVACY_CHANGED]: t("message.system.privacyChanged", {
       from: from || "public",
       to: to || "public",
@@ -72,7 +62,7 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
     [SystemMessageKind.MESSAGE_PINNED]: (
       <Trans
         i18nKey="message.system.messagePinned"
-        values={{ user: nameOf("pinnedBy") }}
+        values={{ user: actor }}
         components={{ target: pinnedLink }}
       />
     ),
@@ -84,7 +74,7 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
       <span className="grid w-8 shrink-0 place-items-center text-subtle [&_svg]:size-3.5">
         <IconInfoCircle aria-hidden />
       </span>
-      <span className="min-w-0">{texts[message.kind]}</span>
+      <span className="min-w-0">{texts[message.kind] ?? t("message.system.unspecified")}</span>
       <MessageTime date={createdAt} />
     </div>
   );

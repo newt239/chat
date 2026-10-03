@@ -14,7 +14,6 @@ export const app = {
   defaultChannelNone: "指定しない",
   delete: {
     body: "着信 Webhook の URL は使えなくなり、参加中のチャンネルからも外れます。これまでの投稿は残ります。",
-    confirm: "削除する",
     done: "アプリを削除しました",
     title: "{{name}} を削除しますか？",
   },
@@ -31,7 +30,6 @@ export const app = {
   namePlaceholder: "例: デプロイ通知",
   nameRequired: "名前を入力してください",
   neverUsed: "未使用",
-  noneToAdd: "追加できるアプリはありません",
   official: "公式",
   outgoingSecret: "署名の秘密鍵",
   outgoingSecretHint:

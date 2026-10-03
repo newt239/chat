@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Workspace holds the schema definition for the Workspace entity.
 type Workspace struct {
 	ent.Schema
 }
@@ -22,7 +21,6 @@ func (Workspace) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "workspace"}}
 }
 
-// Fields of the Workspace.
 func (Workspace) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id").
@@ -36,9 +34,11 @@ func (Workspace) Fields() []ent.Field {
 		field.String("name").
 			NotEmpty(),
 		field.String("description").
-			Optional(),
+			Optional().
+			Nillable(),
 		field.String("icon_url").
-			Optional(),
+			Optional().
+			Nillable(),
 		field.Bool("is_public").
 			Default(false),
 		field.Bool("signup_enabled").
@@ -54,7 +54,6 @@ func (Workspace) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Workspace.
 func (Workspace) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("created_by", User.Type).
@@ -63,17 +62,11 @@ func (Workspace) Edges() []ent.Edge {
 			Required(),
 		edge.From("members", WorkspaceMember.Type).
 			Ref("workspace"),
-		edge.From("channels", Channel.Type).
-			Ref("workspace"),
-		edge.From("user_groups", UserGroup.Type).
-			Ref("workspace"),
 	}
 }
 
-// Indexes of the Workspace.
 func (Workspace) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("id").Unique(),
 		index.Fields("is_public"),
 	}
 }

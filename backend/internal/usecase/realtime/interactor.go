@@ -32,7 +32,7 @@ type Interactor struct {
 	sessionRepo   domainrepository.SessionRepository
 }
 
-func NewInteractor(tickets TicketStore, workspaceRepo domainrepository.WorkspaceRepository, sessionRepo domainrepository.SessionRepository) *Interactor {
+func New(tickets TicketStore, workspaceRepo domainrepository.WorkspaceRepository, sessionRepo domainrepository.SessionRepository) *Interactor {
 	return &Interactor{tickets: tickets, workspaceRepo: workspaceRepo, sessionRepo: sessionRepo}
 }
 

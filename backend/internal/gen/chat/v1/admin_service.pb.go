@@ -33,17 +33,13 @@ const (
 	AuditAction_AUDIT_ACTION_MEMBER_SUSPENDED     AuditAction = 4
 	AuditAction_AUDIT_ACTION_MEMBER_RESUMED       AuditAction = 5
 	AuditAction_AUDIT_ACTION_CHANNEL_CREATED      AuditAction = 6
-	AuditAction_AUDIT_ACTION_CHANNEL_DELETED      AuditAction = 7
-	AuditAction_AUDIT_ACTION_CHANNEL_ARCHIVED     AuditAction = 8
-	AuditAction_AUDIT_ACTION_CHANNEL_UNARCHIVED   AuditAction = 9
 	AuditAction_AUDIT_ACTION_PERMISSION_CHANGED   AuditAction = 10
 	AuditAction_AUDIT_ACTION_AUDIT_LOG_EXPORTED   AuditAction = 11
-	AuditAction_AUDIT_ACTION_WEBHOOK_CREATED      AuditAction = 12
-	AuditAction_AUDIT_ACTION_WEBHOOK_DELETED      AuditAction = 13
 	AuditAction_AUDIT_ACTION_CUSTOM_EMOJI_CREATED AuditAction = 14
 	AuditAction_AUDIT_ACTION_CUSTOM_EMOJI_DELETED AuditAction = 15
 	AuditAction_AUDIT_ACTION_APP_CREATED          AuditAction = 16
 	AuditAction_AUDIT_ACTION_APP_DELETED          AuditAction = 17
+	AuditAction_AUDIT_ACTION_MEMBER_REMOVED       AuditAction = 18
 )
 
 // Enum value maps for AuditAction.
@@ -56,17 +52,13 @@ var (
 		4:  "AUDIT_ACTION_MEMBER_SUSPENDED",
 		5:  "AUDIT_ACTION_MEMBER_RESUMED",
 		6:  "AUDIT_ACTION_CHANNEL_CREATED",
-		7:  "AUDIT_ACTION_CHANNEL_DELETED",
-		8:  "AUDIT_ACTION_CHANNEL_ARCHIVED",
-		9:  "AUDIT_ACTION_CHANNEL_UNARCHIVED",
 		10: "AUDIT_ACTION_PERMISSION_CHANGED",
 		11: "AUDIT_ACTION_AUDIT_LOG_EXPORTED",
-		12: "AUDIT_ACTION_WEBHOOK_CREATED",
-		13: "AUDIT_ACTION_WEBHOOK_DELETED",
 		14: "AUDIT_ACTION_CUSTOM_EMOJI_CREATED",
 		15: "AUDIT_ACTION_CUSTOM_EMOJI_DELETED",
 		16: "AUDIT_ACTION_APP_CREATED",
 		17: "AUDIT_ACTION_APP_DELETED",
+		18: "AUDIT_ACTION_MEMBER_REMOVED",
 	}
 	AuditAction_value = map[string]int32{
 		"AUDIT_ACTION_UNSPECIFIED":          0,
@@ -76,17 +68,13 @@ var (
 		"AUDIT_ACTION_MEMBER_SUSPENDED":     4,
 		"AUDIT_ACTION_MEMBER_RESUMED":       5,
 		"AUDIT_ACTION_CHANNEL_CREATED":      6,
-		"AUDIT_ACTION_CHANNEL_DELETED":      7,
-		"AUDIT_ACTION_CHANNEL_ARCHIVED":     8,
-		"AUDIT_ACTION_CHANNEL_UNARCHIVED":   9,
 		"AUDIT_ACTION_PERMISSION_CHANGED":   10,
 		"AUDIT_ACTION_AUDIT_LOG_EXPORTED":   11,
-		"AUDIT_ACTION_WEBHOOK_CREATED":      12,
-		"AUDIT_ACTION_WEBHOOK_DELETED":      13,
 		"AUDIT_ACTION_CUSTOM_EMOJI_CREATED": 14,
 		"AUDIT_ACTION_CUSTOM_EMOJI_DELETED": 15,
 		"AUDIT_ACTION_APP_CREATED":          16,
 		"AUDIT_ACTION_APP_DELETED":          17,
+		"AUDIT_ACTION_MEMBER_REMOVED":       18,
 	}
 )
 
@@ -123,7 +111,7 @@ type AuditLog struct {
 	// ログインの失敗など実行者を特定できない場合は空
 	Actor  *UserSummary `protobuf:"bytes,2,opt,name=actor,proto3,oneof" json:"actor,omitempty"`
 	Action AuditAction  `protobuf:"varint,3,opt,name=action,proto3,enum=chat.v1.AuditAction" json:"action,omitempty"`
-	// user / channel / role / webhook / app / custom_emoji。対象がない操作（監査ログの書き出し）は空
+	// user / channel / role / app / custom_emoji。対象がない操作（監査ログの書き出し）は空
 	TargetType string `protobuf:"bytes,4,opt,name=target_type,json=targetType,proto3" json:"target_type,omitempty"`
 	TargetId   string `protobuf:"bytes,5,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
 	// 記録時点の対象の名前（ユーザーの表示名、チャンネル名、ロール名など）
@@ -246,8 +234,7 @@ type ListAuditLogsRequest struct {
 	// since 以上 until 未満
 	Since *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=since,proto3,oneof" json:"since,omitempty"`
 	Until *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=until,proto3,oneof" json:"until,omitempty"`
-	// 未指定 (0) の場合は 50 件
-	Limit int32 `protobuf:"varint,6,opt,name=limit,proto3" json:"limit,omitempty"`
+	Limit int32                  `protobuf:"varint,6,opt,name=limit,proto3" json:"limit,omitempty"`
 	// 前ページの next_page_token。最初のページは空。保存先ごとに形式が違うため中身を解釈しない
 	PageToken     string `protobuf:"bytes,7,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -523,7 +510,6 @@ type AdminMember struct {
 	DisplayName string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	AvatarUrl   *string                `protobuf:"bytes,4,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
 	Role        WorkspaceRole          `protobuf:"varint,5,opt,name=role,proto3,enum=chat.v1.WorkspaceRole" json:"role,omitempty"`
-	JoinedAt    *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
 	// 停止中の場合だけ設定される
 	SuspendedAt        *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=suspended_at,json=suspendedAt,proto3,oneof" json:"suspended_at,omitempty"`
 	LastLoginAt        *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=last_login_at,json=lastLoginAt,proto3,oneof" json:"last_login_at,omitempty"`
@@ -601,13 +587,6 @@ func (x *AdminMember) GetRole() WorkspaceRole {
 		return x.Role
 	}
 	return WorkspaceRole_WORKSPACE_ROLE_UNSPECIFIED
-}
-
-func (x *AdminMember) GetJoinedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.JoinedAt
-	}
-	return nil
 }
 
 func (x *AdminMember) GetSuspendedAt() *timestamppb.Timestamp {
@@ -955,7 +934,7 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x05since\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampH\x01R\x05since\x88\x01\x01\x125\n" +
 	"\x05until\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampH\x02R\x05until\x88\x01\x01\x12 \n" +
 	"\x05limit\x18\x06 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xc8\x01(\x00R\x05limit\x12\x1d\n" +
+	"\xbaH\a\x1a\x05\x18\xc8\x01(\x01R\x05limit\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\a \x01(\tR\tpageTokenB\v\n" +
 	"\t_actor_idB\b\n" +
@@ -975,15 +954,14 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x06_until\"P\n" +
 	"\x17ExportAuditLogsResponse\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\tR\acontent\x12\x1b\n" +
-	"\tfile_name\x18\x02 \x01(\tR\bfileName\"\xc8\x05\n" +
+	"\tfile_name\x18\x02 \x01(\tR\bfileName\"\xf5\x04\n" +
 	"\vAdminMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
 	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\x12\"\n" +
 	"\n" +
 	"avatar_url\x18\x04 \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x12*\n" +
-	"\x04role\x18\x05 \x01(\x0e2\x16.chat.v1.WorkspaceRoleR\x04role\x127\n" +
-	"\tjoined_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\bjoinedAt\x12B\n" +
+	"\x04role\x18\x05 \x01(\x0e2\x16.chat.v1.WorkspaceRoleR\x04role\x12B\n" +
 	"\fsuspended_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampH\x01R\vsuspendedAt\x88\x01\x01\x12C\n" +
 	"\rlast_login_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampH\x02R\vlastLoginAt\x88\x01\x01\x12\"\n" +
 	"\rlast_login_ip\x18\t \x01(\tR\vlastLoginIp\x121\n" +
@@ -995,7 +973,7 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\v_avatar_urlB\x0f\n" +
 	"\r_suspended_atB\x10\n" +
 	"\x0e_last_login_atB\x12\n" +
-	"\x10_last_message_atJ\x04\b\v\x10\fR\x12two_factor_enabled\"E\n" +
+	"\x10_last_message_at\"E\n" +
 	"\x17ListAdminMembersRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"J\n" +
 	"\x18ListAdminMembersResponse\x12.\n" +
@@ -1007,7 +985,7 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x13ResumeMemberRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12!\n" +
 	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"\x16\n" +
-	"\x14ResumeMemberResponse*\xf0\x04\n" +
+	"\x14ResumeMemberResponse*\xe3\x03\n" +
 	"\vAuditAction\x12\x1c\n" +
 	"\x18AUDIT_ACTION_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12AUDIT_ACTION_LOGIN\x10\x01\x12\x1d\n" +
@@ -1015,19 +993,15 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	" AUDIT_ACTION_MEMBER_ROLE_CHANGED\x10\x03\x12!\n" +
 	"\x1dAUDIT_ACTION_MEMBER_SUSPENDED\x10\x04\x12\x1f\n" +
 	"\x1bAUDIT_ACTION_MEMBER_RESUMED\x10\x05\x12 \n" +
-	"\x1cAUDIT_ACTION_CHANNEL_CREATED\x10\x06\x12 \n" +
-	"\x1cAUDIT_ACTION_CHANNEL_DELETED\x10\a\x12!\n" +
-	"\x1dAUDIT_ACTION_CHANNEL_ARCHIVED\x10\b\x12#\n" +
-	"\x1fAUDIT_ACTION_CHANNEL_UNARCHIVED\x10\t\x12#\n" +
+	"\x1cAUDIT_ACTION_CHANNEL_CREATED\x10\x06\x12#\n" +
 	"\x1fAUDIT_ACTION_PERMISSION_CHANGED\x10\n" +
 	"\x12#\n" +
-	"\x1fAUDIT_ACTION_AUDIT_LOG_EXPORTED\x10\v\x12 \n" +
-	"\x1cAUDIT_ACTION_WEBHOOK_CREATED\x10\f\x12 \n" +
-	"\x1cAUDIT_ACTION_WEBHOOK_DELETED\x10\r\x12%\n" +
+	"\x1fAUDIT_ACTION_AUDIT_LOG_EXPORTED\x10\v\x12%\n" +
 	"!AUDIT_ACTION_CUSTOM_EMOJI_CREATED\x10\x0e\x12%\n" +
 	"!AUDIT_ACTION_CUSTOM_EMOJI_DELETED\x10\x0f\x12\x1c\n" +
 	"\x18AUDIT_ACTION_APP_CREATED\x10\x10\x12\x1c\n" +
-	"\x18AUDIT_ACTION_APP_DELETED\x10\x112\xaa\x03\n" +
+	"\x18AUDIT_ACTION_APP_DELETED\x10\x11\x12\x1f\n" +
+	"\x1bAUDIT_ACTION_MEMBER_REMOVED\x10\x122\xaa\x03\n" +
 	"\fAdminService\x12N\n" +
 	"\rListAuditLogs\x12\x1d.chat.v1.ListAuditLogsRequest\x1a\x1e.chat.v1.ListAuditLogsResponse\x12T\n" +
 	"\x0fExportAuditLogs\x12\x1f.chat.v1.ExportAuditLogsRequest\x1a .chat.v1.ExportAuditLogsResponse\x12W\n" +
@@ -1082,26 +1056,25 @@ var file_chat_v1_admin_service_proto_depIdxs = []int32{
 	15, // 9: chat.v1.ExportAuditLogsRequest.since:type_name -> google.protobuf.Timestamp
 	15, // 10: chat.v1.ExportAuditLogsRequest.until:type_name -> google.protobuf.Timestamp
 	16, // 11: chat.v1.AdminMember.role:type_name -> chat.v1.WorkspaceRole
-	15, // 12: chat.v1.AdminMember.joined_at:type_name -> google.protobuf.Timestamp
-	15, // 13: chat.v1.AdminMember.suspended_at:type_name -> google.protobuf.Timestamp
-	15, // 14: chat.v1.AdminMember.last_login_at:type_name -> google.protobuf.Timestamp
-	15, // 15: chat.v1.AdminMember.last_message_at:type_name -> google.protobuf.Timestamp
-	6,  // 16: chat.v1.ListAdminMembersResponse.members:type_name -> chat.v1.AdminMember
-	2,  // 17: chat.v1.AdminService.ListAuditLogs:input_type -> chat.v1.ListAuditLogsRequest
-	4,  // 18: chat.v1.AdminService.ExportAuditLogs:input_type -> chat.v1.ExportAuditLogsRequest
-	7,  // 19: chat.v1.AdminService.ListAdminMembers:input_type -> chat.v1.ListAdminMembersRequest
-	9,  // 20: chat.v1.AdminService.SuspendMember:input_type -> chat.v1.SuspendMemberRequest
-	11, // 21: chat.v1.AdminService.ResumeMember:input_type -> chat.v1.ResumeMemberRequest
-	3,  // 22: chat.v1.AdminService.ListAuditLogs:output_type -> chat.v1.ListAuditLogsResponse
-	5,  // 23: chat.v1.AdminService.ExportAuditLogs:output_type -> chat.v1.ExportAuditLogsResponse
-	8,  // 24: chat.v1.AdminService.ListAdminMembers:output_type -> chat.v1.ListAdminMembersResponse
-	10, // 25: chat.v1.AdminService.SuspendMember:output_type -> chat.v1.SuspendMemberResponse
-	12, // 26: chat.v1.AdminService.ResumeMember:output_type -> chat.v1.ResumeMemberResponse
-	22, // [22:27] is the sub-list for method output_type
-	17, // [17:22] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	15, // 12: chat.v1.AdminMember.suspended_at:type_name -> google.protobuf.Timestamp
+	15, // 13: chat.v1.AdminMember.last_login_at:type_name -> google.protobuf.Timestamp
+	15, // 14: chat.v1.AdminMember.last_message_at:type_name -> google.protobuf.Timestamp
+	6,  // 15: chat.v1.ListAdminMembersResponse.members:type_name -> chat.v1.AdminMember
+	2,  // 16: chat.v1.AdminService.ListAuditLogs:input_type -> chat.v1.ListAuditLogsRequest
+	4,  // 17: chat.v1.AdminService.ExportAuditLogs:input_type -> chat.v1.ExportAuditLogsRequest
+	7,  // 18: chat.v1.AdminService.ListAdminMembers:input_type -> chat.v1.ListAdminMembersRequest
+	9,  // 19: chat.v1.AdminService.SuspendMember:input_type -> chat.v1.SuspendMemberRequest
+	11, // 20: chat.v1.AdminService.ResumeMember:input_type -> chat.v1.ResumeMemberRequest
+	3,  // 21: chat.v1.AdminService.ListAuditLogs:output_type -> chat.v1.ListAuditLogsResponse
+	5,  // 22: chat.v1.AdminService.ExportAuditLogs:output_type -> chat.v1.ExportAuditLogsResponse
+	8,  // 23: chat.v1.AdminService.ListAdminMembers:output_type -> chat.v1.ListAdminMembersResponse
+	10, // 24: chat.v1.AdminService.SuspendMember:output_type -> chat.v1.SuspendMemberResponse
+	12, // 25: chat.v1.AdminService.ResumeMember:output_type -> chat.v1.ResumeMemberResponse
+	21, // [21:26] is the sub-list for method output_type
+	16, // [16:21] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_admin_service_proto_init() }

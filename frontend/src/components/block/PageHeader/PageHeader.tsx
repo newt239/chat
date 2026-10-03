@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { BackButton } from "#/features/layout/components/BackButton";
+import { BackButton } from "#/components/block/BackButton/BackButton";
 
 type PageHeaderProps = {
   icon: ReactNode;

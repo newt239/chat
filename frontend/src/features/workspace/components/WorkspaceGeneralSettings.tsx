@@ -9,9 +9,11 @@ import { Button } from "#/components/ui/Button/Button";
 import { Checkbox } from "#/components/ui/Checkbox/Checkbox";
 import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { TextField } from "#/components/ui/TextField/TextField";
-import { useWorkspaceActions } from "#/features/workspace/hooks/useWorkspaceActions";
+import { useWorkspaceMutation } from "#/features/workspace/hooks/useWorkspace";
 import { ImagePurpose } from "#/gen/chat/v1/image_service_pb";
-import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
+import { WorkspaceRole, WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
+import { isAdminRole } from "#/lib/isAdminRole";
+import { toastError } from "#/lib/toastError";
 
 import type { Workspace as WorkspaceSummary } from "#/gen/chat/v1/workspace_service_pb";
 
@@ -22,10 +24,11 @@ type WorkspaceGeneralSettingsProps = {
 // 名前・説明・公開設定。編集は管理者以上、削除はオーナーだけ（API 側でも同じ制限）
 export const WorkspaceGeneralSettings = ({ workspace }: WorkspaceGeneralSettingsProps) => {
   const { t } = useTranslation();
-  const { update, remove } = useWorkspaceActions();
+  const update = useWorkspaceMutation(WorkspaceService.method.updateWorkspace);
+  const remove = useWorkspaceMutation(WorkspaceService.method.deleteWorkspace);
   const navigate = useNavigate();
   const isOwner = workspace.role === WorkspaceRole.OWNER;
-  const canEdit = isOwner || workspace.role === WorkspaceRole.ADMIN;
+  const canEdit = isAdminRole(workspace.role);
 
   const [name, setName] = useState(workspace.name);
   const [description, setDescription] = useState(workspace.description ?? "");
@@ -112,6 +115,7 @@ export const WorkspaceGeneralSettings = ({ workspace }: WorkspaceGeneralSettings
           remove.mutate(
             { workspaceId: workspace.id },
             {
+              onError: toastError,
               onSuccess: () => {
                 setIsDeleteConfirming(false);
                 void navigate({ to: "/app" });

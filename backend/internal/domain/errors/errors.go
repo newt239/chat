@@ -1,58 +1,59 @@
 package errors
 
-import (
-	"errors"
-	"fmt"
+import "errors"
+
+// 種類を表す番兵。個々のエラーは New で種類を持たせ、rpc はこの種類だけで応答コードを決める
+var (
+	ErrNotFound           = errors.New("指定されたリソースが見つかりません")
+	ErrUnauthenticated    = errors.New("認証されていません")
+	ErrUnauthorized       = errors.New("操作を実行する権限がありません")
+	ErrAlreadyExists      = errors.New("既に存在します")
+	ErrValidation         = errors.New("入力値が条件を満たしていません")
+	ErrFailedPrecondition = errors.New("現在の状態ではこの操作を行えません")
 )
 
-var (
-	ErrInvalidCredentials = errors.New("メールアドレスまたはパスワードが正しくありません")
-	ErrUserAlreadyExists  = errors.New("ユーザーはすでに登録されています")
-	ErrInvalidToken       = errors.New("トークンが無効または期限切れです")
-	ErrSessionNotFound    = errors.New("セッションが見つかりません")
-	// 未登録のメールアドレスは招待がなければアカウントを作れない
-	ErrInvitationRequired   = errors.New("このメールアドレスは招待されていません")
-	ErrInvitationNotFound   = errors.New("招待が見つからないか、有効期限が切れています")
-	ErrEmailNotVerified     = errors.New("メールアドレスが確認されていない Google アカウントです")
-	ErrPasswordAuthDisabled = errors.New("パスワードによるログインは無効です")
-	ErrGoogleAuthDisabled   = errors.New("このサーバーでは Google ログインが設定されていません")
-	ErrSignupDisabled       = errors.New("このワークスペースでは新規登録を受け付けていません")
-	ErrUnauthorized         = errors.New("操作を実行する権限がありません")
-	ErrForbidden            = errors.New("アクセスが禁止されています")
-	ErrInvalidInput         = errors.New("入力内容が不正です")
-	ErrConflict             = errors.New("処理が競合しました")
-	ErrValidation           = errors.New("入力値が条件を満たしていません")
-	ErrInternal             = errors.New("サーバー内部でエラーが発生しました")
-)
+type kindError struct {
+	kind error
+	msg  string
+}
 
-// 見つからない
-var (
-	ErrNotFound              = errors.New("指定されたリソースが見つかりません")
-	ErrWorkspaceNotFound     = errors.New("ワークスペースが見つかりません")
-	ErrUserNotFound          = errors.New("ユーザーが見つかりません")
-	ErrChannelNotFound       = errors.New("チャンネルが見つかりません")
-	ErrMessageNotFound       = errors.New("メッセージが見つかりません")
-	ErrParentMessageNotFound = errors.New("返信先のメッセージが見つかりません")
-	ErrAttachmentNotFound    = errors.New("添付ファイルが見つかりません")
-)
+func (e *kindError) Error() string { return e.msg }
 
-// 状態が操作を許さない
-var (
-	ErrChannelArchived  = errors.New("アーカイブされたチャンネルには投稿できません")
-	ErrNotChannelMember = errors.New("チャンネルに参加すると投稿できます")
-)
+func (e *kindError) Unwrap() error { return e.kind }
 
-// 一意制約に当たった
-var (
-	ErrAlreadyMember     = errors.New("既にメンバーです")
-	ErrPinExists         = errors.New("このメッセージは既にピン留めされています")
-	ErrReactionExists    = errors.New("同じリアクションが既に追加されています")
-	ErrBookmarkExists    = errors.New("このメッセージは既にブックマークされています")
-	ErrWorkspaceIDExists = errors.New("このワークスペースIDは既に使用されています")
-)
+// New は errors.Is で kind と一致し、メッセージは msg だけのエラーを作ります
+func New(kind error, msg string) error {
+	return &kindError{kind: kind, msg: msg}
+}
 
-// 入力が条件を満たさない
 var (
-	ErrInvalidRole     = fmt.Errorf("%w: 指定できないロールです", ErrValidation)
-	ErrInvalidTimeZone = fmt.Errorf("%w: タイムゾーンの指定が正しくありません", ErrValidation)
+	ErrInvalidCredentials = New(ErrUnauthenticated, "メールアドレスまたはパスワードが正しくありません")
+	ErrInvalidToken       = New(ErrUnauthenticated, "トークンが無効または期限切れです")
+
+	ErrForbidden          = New(ErrUnauthorized, "アクセスが禁止されています")
+	ErrNotChannelMember   = New(ErrUnauthorized, "チャンネルに参加すると投稿できます")
+	ErrInvitationRequired = New(ErrUnauthorized, "このメールアドレスは招待されていません")
+	ErrEmailNotVerified   = New(ErrUnauthorized, "メールアドレスが確認されていない Google アカウントです")
+
+	ErrWorkspaceNotFound     = New(ErrNotFound, "ワークスペースが見つかりません")
+	ErrUserNotFound          = New(ErrNotFound, "ユーザーが見つかりません")
+	ErrChannelNotFound       = New(ErrNotFound, "チャンネルが見つかりません")
+	ErrMessageNotFound       = New(ErrNotFound, "メッセージが見つかりません")
+	ErrParentMessageNotFound = New(ErrNotFound, "返信先のメッセージが見つかりません")
+	ErrAttachmentNotFound    = New(ErrNotFound, "添付ファイルが見つかりません")
+	ErrInvitationNotFound    = New(ErrNotFound, "招待が見つからないか、有効期限が切れています")
+
+	ErrUserAlreadyExists     = New(ErrAlreadyExists, "ユーザーはすでに登録されています")
+	ErrAlreadyMember         = New(ErrAlreadyExists, "既にメンバーです")
+	ErrPinExists             = New(ErrAlreadyExists, "このメッセージは既にピン留めされています")
+	ErrReactionExists        = New(ErrAlreadyExists, "同じリアクションが既に追加されています")
+	ErrBookmarkExists        = New(ErrAlreadyExists, "このメッセージは既にブックマークされています")
+	ErrWorkspaceIDExists     = New(ErrAlreadyExists, "このワークスペースIDは既に使用されています")
+	ErrCustomEmojiNameExists = New(ErrAlreadyExists, "同じ名前のカスタム絵文字がすでにあります")
+
+	ErrPasswordAuthDisabled = New(ErrFailedPrecondition, "パスワードによるログインは無効です")
+	ErrGoogleAuthDisabled   = New(ErrFailedPrecondition, "このサーバーでは Google ログインが設定されていません")
+	ErrSignupDisabled       = New(ErrFailedPrecondition, "このワークスペースでは新規登録を受け付けていません")
+
+	ErrInvalidTimeZone = New(ErrValidation, "タイムゾーンの指定が正しくありません")
 )

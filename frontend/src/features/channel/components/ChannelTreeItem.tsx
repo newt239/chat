@@ -5,8 +5,8 @@ import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { cn, focusRing } from "#/components/ui/styles/styles";
+import { collapsedChannelsAtom } from "#/features/channel/atoms";
 import { transitions } from "#/lib/motion";
-import { collapsedChannelsAtom } from "#/providers/store/ui";
 
 import { lastSegment } from "../utils/channelPath";
 import { sumUnread } from "../utils/channelTree";

@@ -62,7 +62,7 @@ func TestUpdateReadStateIncludeDescendants(t *testing.T) {
 	repo := &fakeReadStateRepo{lastReadAt: map[string]time.Time{"newer": later}}
 	access := stubAccess{descendants: []*entity.Channel{{ID: "unread"}, {ID: "newer"}}}
 	notifier := &recordingNotifier{}
-	uc := NewReadStateInteractor(repo, notifier, access)
+	uc := New(repo, notifier, access)
 
 	if err := uc.UpdateReadState(context.Background(), UpdateReadStateInput{ChannelID: "parent", UserID: "u", LastReadAt: now, IncludeDescendants: true}); err != nil {
 		t.Fatalf("既読にできません: %v", err)
@@ -82,7 +82,7 @@ func TestUpdateReadStateIncludeDescendants(t *testing.T) {
 func TestUpdateReadStateWithoutDescendants(t *testing.T) {
 	repo := &fakeReadStateRepo{lastReadAt: map[string]time.Time{}}
 	access := stubAccess{descendants: []*entity.Channel{{ID: "child"}}}
-	uc := NewReadStateInteractor(repo, &recordingNotifier{}, access)
+	uc := New(repo, &recordingNotifier{}, access)
 
 	if err := uc.UpdateReadState(context.Background(), UpdateReadStateInput{ChannelID: "parent", UserID: "u", LastReadAt: time.Now()}); err != nil {
 		t.Fatal(err)

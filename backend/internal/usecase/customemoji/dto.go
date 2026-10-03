@@ -1,10 +1,6 @@
 package customemoji
 
-import (
-	"time"
-
-	messageuc "github.com/newt239/chat/internal/usecase/message"
-)
+import messageuc "github.com/newt239/chat/internal/usecase/message"
 
 type ListInput struct {
 	WorkspaceID string
@@ -36,14 +32,7 @@ type Output struct {
 	Name      string
 	ImageURL  string
 	CreatedBy messageuc.UserInfo
-	CreatedAt time.Time
 	CanDelete bool
-}
-
-type ListOutput struct {
-	Emojis []Output
-	// ImageURL の有効期限
-	ExpiresAt time.Time
 }
 
 type PresignOutput struct {

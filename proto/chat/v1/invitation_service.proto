@@ -23,7 +23,6 @@ message Invitation {
   WorkspaceRole role = 3;
   string invited_by_name = 4;
   google.protobuf.Timestamp expires_at = 5;
-  google.protobuf.Timestamp created_at = 6;
 }
 
 message CreateInvitationRequest {

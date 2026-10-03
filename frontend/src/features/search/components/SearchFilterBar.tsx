@@ -1,28 +1,32 @@
-import {
-  emptySearchQuery,
-  formatSearchQuery,
-  hasSearchConditions,
-  searchHasValues,
-} from "@chat/search-query/query";
 import { getRouteApi } from "@tanstack/react-router";
 import { Button, ToggleButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { focusRing } from "#/components/ui/styles/styles";
-import { useResolvedSearchQuery } from "#/features/search/hooks/useResolvedSearchQuery";
 import { chipClassName } from "#/features/search/utils/chipClassName";
+import {
+  emptySearchQuery,
+  formatSearchQuery,
+  hasSearchConditions,
+  searchHasValues,
+  searchIsValues,
+} from "#/features/search/utils/searchQuery";
 
 import { SearchDateFilter } from "./SearchDateFilter";
 import { SearchFilterPicker } from "./SearchFilterPicker";
 
+import type { ResolvedSearchQuery } from "#/features/search/hooks/useWorkspaceSearch";
 import type { SearchParams } from "#/features/search/schemas";
-
-import type { SearchIs, SearchQuery } from "@chat/search-query/query";
+import type { SearchQuery } from "#/features/search/utils/searchQuery";
 
 const searchRoute = getRouteApi("/app/$workspaceId/search");
 
 const toggle = <T,>(list: readonly T[], value: T) =>
   list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
+
+// 選んだ候補に当たる名前があれば外し、なければ足す
+const toggleName = (names: readonly string[], matched: readonly string[], added: string) =>
+  matched.length > 0 ? names.filter((name) => !matched.includes(name)) : [...names, added];
 
 const summarize = (labels: readonly string[]) =>
   labels.length === 0
@@ -31,16 +35,18 @@ const summarize = (labels: readonly string[]) =>
       ? (labels[0] ?? null)
       : `${labels[0]} +${labels.length - 1}`;
 
-const isToggles = ["pinned", "thread", "mention"] as const satisfies readonly SearchIs[];
+type SearchFilterBarProps = {
+  resolved: ResolvedSearchQuery;
+  // 解決できなかった修飾子（@名前 / #チャンネル名）
+  unresolved: string[];
+};
 
 // 入力欄の修飾子と同じ条件をチップで操作する。操作すると q を書き換える
-export const SearchFilterBar = () => {
+export const SearchFilterBar = ({ resolved, unresolved }: SearchFilterBarProps) => {
   const { t } = useTranslation();
-  const { workspaceId } = searchRoute.useParams();
   const search = searchRoute.useSearch();
   const navigate = searchRoute.useNavigate();
-  const { query, users, inChannels, members, channels, hasDescendants, isResolving } =
-    useResolvedSearchQuery(workspaceId, search.q);
+  const { query, users, inChannels, members, channels, hasDescendants } = resolved;
 
   const update = (patch: Partial<SearchParams>) => {
     void navigate({ search: (prev) => ({ ...prev, ...patch, page: 1 }) });
@@ -63,17 +69,16 @@ export const SearchFilterBar = () => {
         options={members.map((member) => ({ label: member.displayName, value: member.userId }))}
         selected={users.flatMap(({ member }) => (member ? [member.userId] : []))}
         onToggle={(userId) => {
-          const member = members.find((item) => item.userId === userId);
-          const matched = users.filter((user) => user.member?.userId === userId);
           setQuery({
-            from:
-              matched.length > 0
-                ? query.from.filter((name) => !matched.some((user) => user.name === name))
-                : [...query.from, member?.displayName ?? userId],
+            from: toggleName(
+              query.from,
+              users.flatMap(({ member, name }) => (member?.userId === userId ? [name] : [])),
+              members.find((item) => item.userId === userId)?.displayName ?? userId,
+            ),
           });
         }}
         isSearchable
-        isInvalid={!isResolving && users.some(({ member }) => member === undefined)}
+        isInvalid={unresolved.some((name) => name.startsWith("@"))}
       />
       <SearchFilterPicker
         label={t("search.filters.in")}
@@ -81,17 +86,16 @@ export const SearchFilterBar = () => {
         options={channels.map((channel) => ({ label: `#${channel.name}`, value: channel.id }))}
         selected={inChannels.flatMap(({ channel }) => (channel ? [channel.id] : []))}
         onToggle={(channelId) => {
-          const channel = channels.find((item) => item.id === channelId);
-          const matched = inChannels.filter((item) => item.channel?.id === channelId);
           setQuery({
-            in:
-              matched.length > 0
-                ? query.in.filter((name) => !matched.some((item) => item.name === name))
-                : [...query.in, channel?.name ?? channelId],
+            in: toggleName(
+              query.in,
+              inChannels.flatMap(({ channel, name }) => (channel?.id === channelId ? [name] : [])),
+              channels.find((item) => item.id === channelId)?.name ?? channelId,
+            ),
           });
         }}
         isSearchable
-        isInvalid={!isResolving && inChannels.some(({ channel }) => channel === undefined)}
+        isInvalid={unresolved.some((name) => name.startsWith("#"))}
       />
       {hasDescendants && (
         <ToggleButton
@@ -123,7 +127,7 @@ export const SearchFilterBar = () => {
         isSearchable={false}
         isInvalid={false}
       />
-      {isToggles.map((is) => (
+      {searchIsValues.map((is) => (
         <ToggleButton
           key={is}
           isSelected={query.is.includes(is)}

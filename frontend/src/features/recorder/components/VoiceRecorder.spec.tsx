@@ -53,7 +53,7 @@ describe("VoiceRecorder", () => {
     await userEvent.click(screen.getByRole("button", { name: "停止" }));
 
     expect(stopTrack).toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "再生" })).toBeInTheDocument();
+    expect(document.querySelector("audio")).toHaveAttribute("src", "blob:voice");
     await userEvent.click(screen.getByRole("button", { name: "添付する" }));
 
     const [file] = onAttach.mock.calls[0] ?? [];

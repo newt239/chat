@@ -24,9 +24,9 @@ type Workspace struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 	// IconURL holds the value of the "icon_url" field.
-	IconURL string `json:"icon_url,omitempty"`
+	IconURL *string `json:"icon_url,omitempty"`
 	// IsPublic holds the value of the "is_public" field.
 	IsPublic bool `json:"is_public,omitempty"`
 	// SignupEnabled holds the value of the "signup_enabled" field.
@@ -49,13 +49,9 @@ type WorkspaceEdges struct {
 	CreatedBy *User `json:"created_by,omitempty"`
 	// Members holds the value of the members edge.
 	Members []*WorkspaceMember `json:"members,omitempty"`
-	// Channels holds the value of the channels edge.
-	Channels []*Channel `json:"channels,omitempty"`
-	// UserGroups holds the value of the user_groups edge.
-	UserGroups []*UserGroup `json:"user_groups,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [2]bool
 }
 
 // CreatedByOrErr returns the CreatedBy value or an error if the edge
@@ -76,24 +72,6 @@ func (e WorkspaceEdges) MembersOrErr() ([]*WorkspaceMember, error) {
 		return e.Members, nil
 	}
 	return nil, &NotLoadedError{edge: "members"}
-}
-
-// ChannelsOrErr returns the Channels value or an error if the edge
-// was not loaded in eager-loading.
-func (e WorkspaceEdges) ChannelsOrErr() ([]*Channel, error) {
-	if e.loadedTypes[2] {
-		return e.Channels, nil
-	}
-	return nil, &NotLoadedError{edge: "channels"}
-}
-
-// UserGroupsOrErr returns the UserGroups value or an error if the edge
-// was not loaded in eager-loading.
-func (e WorkspaceEdges) UserGroupsOrErr() ([]*UserGroup, error) {
-	if e.loadedTypes[3] {
-		return e.UserGroups, nil
-	}
-	return nil, &NotLoadedError{edge: "user_groups"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -146,13 +124,15 @@ func (_m *Workspace) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				_m.Description = value.String
+				_m.Description = new(string)
+				*_m.Description = value.String
 			}
 		case workspace.FieldIconURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field icon_url", values[i])
 			} else if value.Valid {
-				_m.IconURL = value.String
+				_m.IconURL = new(string)
+				*_m.IconURL = value.String
 			}
 		case workspace.FieldIsPublic:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -207,16 +187,6 @@ func (_m *Workspace) QueryMembers() *WorkspaceMemberQuery {
 	return NewWorkspaceClient(_m.config).QueryMembers(_m)
 }
 
-// QueryChannels queries the "channels" edge of the Workspace entity.
-func (_m *Workspace) QueryChannels() *ChannelQuery {
-	return NewWorkspaceClient(_m.config).QueryChannels(_m)
-}
-
-// QueryUserGroups queries the "user_groups" edge of the Workspace entity.
-func (_m *Workspace) QueryUserGroups() *UserGroupQuery {
-	return NewWorkspaceClient(_m.config).QueryUserGroups(_m)
-}
-
 // Update returns a builder for updating this Workspace.
 // Note that you need to call Workspace.Unwrap() before calling this method if this Workspace
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -246,11 +216,15 @@ func (_m *Workspace) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	builder.WriteString("description=")
-	builder.WriteString(_m.Description)
+	if v := _m.Description; v != nil {
+		builder.WriteString("description=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
-	builder.WriteString("icon_url=")
-	builder.WriteString(_m.IconURL)
+	if v := _m.IconURL; v != nil {
+		builder.WriteString("icon_url=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("is_public=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsPublic))

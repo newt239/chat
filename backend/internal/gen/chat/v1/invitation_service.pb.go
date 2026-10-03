@@ -30,7 +30,6 @@ type Invitation struct {
 	Role          WorkspaceRole          `protobuf:"varint,3,opt,name=role,proto3,enum=chat.v1.WorkspaceRole" json:"role,omitempty"`
 	InvitedByName string                 `protobuf:"bytes,4,opt,name=invited_by_name,json=invitedByName,proto3" json:"invited_by_name,omitempty"`
 	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -96,13 +95,6 @@ func (x *Invitation) GetInvitedByName() string {
 func (x *Invitation) GetExpiresAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.ExpiresAt
-	}
-	return nil
-}
-
-func (x *Invitation) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
 	}
 	return nil
 }
@@ -506,7 +498,7 @@ var File_chat_v1_invitation_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_invitation_service_proto_rawDesc = "" +
 	"\n" +
-	" chat/v1/invitation_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fchat/v1/workspace_service.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfc\x01\n" +
+	" chat/v1/invitation_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fchat/v1/workspace_service.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc1\x01\n" +
 	"\n" +
 	"Invitation\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
@@ -514,9 +506,7 @@ const file_chat_v1_invitation_service_proto_rawDesc = "" +
 	"\x04role\x18\x03 \x01(\x0e2\x16.chat.v1.WorkspaceRoleR\x04role\x12&\n" +
 	"\x0finvited_by_name\x18\x04 \x01(\tR\rinvitedByName\x129\n" +
 	"\n" +
-	"expires_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x129\n" +
-	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xa0\x01\n" +
+	"expires_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"\xa0\x01\n" +
 	"\x17CreateInvitationRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12\x1d\n" +
 	"\x05email\x18\x02 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12:\n" +
@@ -577,23 +567,22 @@ var file_chat_v1_invitation_service_proto_goTypes = []any{
 var file_chat_v1_invitation_service_proto_depIdxs = []int32{
 	9,  // 0: chat.v1.Invitation.role:type_name -> chat.v1.WorkspaceRole
 	10, // 1: chat.v1.Invitation.expires_at:type_name -> google.protobuf.Timestamp
-	10, // 2: chat.v1.Invitation.created_at:type_name -> google.protobuf.Timestamp
-	9,  // 3: chat.v1.CreateInvitationRequest.role:type_name -> chat.v1.WorkspaceRole
-	0,  // 4: chat.v1.CreateInvitationResponse.invitation:type_name -> chat.v1.Invitation
-	0,  // 5: chat.v1.ListInvitationsResponse.invitations:type_name -> chat.v1.Invitation
-	1,  // 6: chat.v1.InvitationService.CreateInvitation:input_type -> chat.v1.CreateInvitationRequest
-	3,  // 7: chat.v1.InvitationService.ListInvitations:input_type -> chat.v1.ListInvitationsRequest
-	5,  // 8: chat.v1.InvitationService.RevokeInvitation:input_type -> chat.v1.RevokeInvitationRequest
-	7,  // 9: chat.v1.InvitationService.GetInvitation:input_type -> chat.v1.GetInvitationRequest
-	2,  // 10: chat.v1.InvitationService.CreateInvitation:output_type -> chat.v1.CreateInvitationResponse
-	4,  // 11: chat.v1.InvitationService.ListInvitations:output_type -> chat.v1.ListInvitationsResponse
-	6,  // 12: chat.v1.InvitationService.RevokeInvitation:output_type -> chat.v1.RevokeInvitationResponse
-	8,  // 13: chat.v1.InvitationService.GetInvitation:output_type -> chat.v1.GetInvitationResponse
-	10, // [10:14] is the sub-list for method output_type
-	6,  // [6:10] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	9,  // 2: chat.v1.CreateInvitationRequest.role:type_name -> chat.v1.WorkspaceRole
+	0,  // 3: chat.v1.CreateInvitationResponse.invitation:type_name -> chat.v1.Invitation
+	0,  // 4: chat.v1.ListInvitationsResponse.invitations:type_name -> chat.v1.Invitation
+	1,  // 5: chat.v1.InvitationService.CreateInvitation:input_type -> chat.v1.CreateInvitationRequest
+	3,  // 6: chat.v1.InvitationService.ListInvitations:input_type -> chat.v1.ListInvitationsRequest
+	5,  // 7: chat.v1.InvitationService.RevokeInvitation:input_type -> chat.v1.RevokeInvitationRequest
+	7,  // 8: chat.v1.InvitationService.GetInvitation:input_type -> chat.v1.GetInvitationRequest
+	2,  // 9: chat.v1.InvitationService.CreateInvitation:output_type -> chat.v1.CreateInvitationResponse
+	4,  // 10: chat.v1.InvitationService.ListInvitations:output_type -> chat.v1.ListInvitationsResponse
+	6,  // 11: chat.v1.InvitationService.RevokeInvitation:output_type -> chat.v1.RevokeInvitationResponse
+	8,  // 12: chat.v1.InvitationService.GetInvitation:output_type -> chat.v1.GetInvitationResponse
+	9,  // [9:13] is the sub-list for method output_type
+	5,  // [5:9] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_invitation_service_proto_init() }

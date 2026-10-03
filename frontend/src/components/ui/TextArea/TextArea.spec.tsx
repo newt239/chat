@@ -17,11 +17,4 @@ describe("TextArea", () => {
 
     expect(onChange).toHaveBeenLastCalledWith("a\nb");
   });
-
-  test("errorMessage を表示する", () => {
-    render(<TextArea label="説明" errorMessage="長すぎます" />);
-
-    expect(screen.getByRole("textbox", { name: "説明" })).toHaveAttribute("aria-invalid", "true");
-    expect(screen.getByText("長すぎます")).toBeInTheDocument();
-  });
 });

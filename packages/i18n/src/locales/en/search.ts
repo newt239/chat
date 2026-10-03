@@ -1,7 +1,8 @@
 import type { Messages } from "../../messages";
 
 export const search: Messages["search"] = {
-  count: "{{count}} results",
+  count_one: "{{count}} result",
+  count_other: "{{count}} results",
   empty: "No results match",
   emptyHint: "Try fewer keywords or remove some filters",
   failed: "Couldn't load search results",
@@ -42,13 +43,9 @@ export const search: Messages["search"] = {
     thread: "Thread replies and posts with replies",
   },
   invalidDate: "Use the YYYY-MM-DD format for dates: {{tokens}}",
-  inThread: "In thread",
   input: "Search keywords",
-  next: "Next page",
   noDescription: "No description",
-  page: "Page {{page}} of {{total}}",
   placeholder: "Keywords, from:@name in:#channel has:image",
-  prev: "Previous page",
   prompt: "Enter keywords or filters to search",
   sections: {
     all: "All",
@@ -57,8 +54,6 @@ export const search: Messages["search"] = {
     messages: "Messages",
     users: "People",
   },
-  showInChannel: "View in channel",
-  showInThread: "View in thread",
   sort: {
     label: "Sort",
     newest: "Newest",

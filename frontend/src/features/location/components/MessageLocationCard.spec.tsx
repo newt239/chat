@@ -1,14 +1,10 @@
 import { create } from "@bufbuild/protobuf";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test, vi } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { MessageLocationSchema } from "#/gen/chat/v1/message_pb";
 
 import { MessageLocationCard } from "./MessageLocationCard";
-
-vi.mock("#/features/location/components/LocationMap", () => ({
-  LocationMap: () => <div data-testid="map" />,
-}));
 
 describe("MessageLocationCard", () => {
   test("ラベル・座標・誤差と、地図アプリで開くリンクを出す", () => {
@@ -23,7 +19,6 @@ describe("MessageLocationCard", () => {
       />,
     );
 
-    expect(screen.getByTestId("map")).toBeInTheDocument();
     expect(screen.getByText("正面入口")).toBeInTheDocument();
     expect(screen.getByText("35.68120, 139.76710 · 誤差 約 12 m")).toBeInTheDocument();
     const link = screen.getByRole("link", { name: "地図アプリで開く" });

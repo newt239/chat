@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"slices"
+	"time"
+)
 
 type PollMode string
 
@@ -8,11 +11,6 @@ const (
 	PollModeText PollMode = "text"
 	// PollModeDate は日時の候補から選ぶ日程調整
 	PollModeDate PollMode = "date"
-)
-
-const (
-	MinPollOptions = 2
-	MaxPollOptions = 20
 )
 
 type Poll struct {
@@ -26,8 +24,7 @@ type Poll struct {
 	ClosesAt  *time.Time
 	ClosedAt  *time.Time
 	// 並び順
-	Options   []PollOption
-	CreatedAt time.Time
+	Options []PollOption
 }
 
 type PollOption struct {
@@ -50,10 +47,5 @@ func (p *Poll) IsClosed(now time.Time) bool {
 
 // HasOption は選択肢がこの投票のものかを返します
 func (p *Poll) HasOption(optionID string) bool {
-	for _, o := range p.Options {
-		if o.ID == optionID {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(p.Options, func(o PollOption) bool { return o.ID == optionID })
 }

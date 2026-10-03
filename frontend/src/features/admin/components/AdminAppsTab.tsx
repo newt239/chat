@@ -1,12 +1,11 @@
-import { IconEdit, IconPlus } from "@tabler/icons-react";
+import { IconPlus } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
-import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { AppRow } from "#/features/app/components/AppRow";
 import { useApps } from "#/features/app/hooks/useApps";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { openDialog } from "#/lib/overlaySearch";
 
 type AdminAppsTabProps = {
   workspaceId: string;
@@ -38,25 +37,7 @@ export const AdminAppsTab = ({ workspaceId }: AdminAppsTabProps) => {
       ) : (
         <ul className="m-0 flex list-none flex-col p-0">
           {apps.map((app) => (
-            <AppRow
-              key={app.id}
-              app={app}
-              actions={
-                app.canManage && (
-                  <IconButton
-                    label={t("app.editOf", { name: app.name })}
-                    onPress={() => {
-                      void navigate({
-                        search: openDialog({ app: app.id, dialog: "edit-app" }),
-                        to: ".",
-                      });
-                    }}
-                  >
-                    <IconEdit />
-                  </IconButton>
-                )
-              }
-            />
+            <AppRow key={app.id} app={app} actions={null} />
           ))}
         </ul>
       )}

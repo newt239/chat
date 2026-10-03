@@ -30,7 +30,7 @@ func newInteractor(memberIDs ...string) *Interactor {
 	for _, id := range memberIDs {
 		members[id] = &entity.WorkspaceMember{Role: entity.WorkspaceRoleMember}
 	}
-	return NewInteractor(nil, nil, nil, nil, nil, nil, &stubWorkspaceRepo{members: members})
+	return New(nil, nil, nil, nil, nil, nil, &stubWorkspaceRepo{members: members})
 }
 
 func TestCreateDMRejectsNonWorkspaceMember(t *testing.T) {
@@ -58,6 +58,13 @@ func TestCreateDMRejectsNonMemberRequester(t *testing.T) {
 
 	if !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("ワークスペース外からの DM 作成が拒否されていません: %v", err)
+	}
+}
+
+func TestListDMsRejectsNonWorkspaceMember(t *testing.T) {
+	_, err := newInteractor("bob").ListDMs(context.Background(), ListDMsInput{WorkspaceID: "general", UserID: "outsider"})
+	if !errors.Is(err, domerr.ErrUnauthorized) {
+		t.Fatalf("ワークスペース外からの DM 一覧の取得が拒否されていません: %v", err)
 	}
 }
 
@@ -97,11 +104,11 @@ type stubUserRepo struct {
 	calls int
 }
 
-func (r *stubUserRepo) FindByIDs(_ context.Context, ids []string) ([]*entity.User, error) {
+func (r *stubUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*entity.User, error) {
 	r.calls++
-	users := make([]*entity.User, 0, len(ids))
+	users := make(map[string]*entity.User, len(ids))
 	for _, id := range ids {
-		users = append(users, &entity.User{ID: id, DisplayName: id})
+		users[id] = &entity.User{ID: id, DisplayName: id}
 	}
 	return users, nil
 }
@@ -130,7 +137,8 @@ func (stubFlags) GetUnreadMentionCountBatch(context.Context, []string, string) (
 
 func TestListDMsLoadsMembersAtOnce(t *testing.T) {
 	users := &stubUserRepo{}
-	uc := NewInteractor(stubDMChannelRepo{}, stubMemberRepo{}, stubFlags{}, stubFlags{}, stubFlags{}, users, nil)
+	ws := &stubWorkspaceRepo{members: map[string]*entity.WorkspaceMember{"alice": {Role: entity.WorkspaceRoleMember}}}
+	uc := New(stubDMChannelRepo{}, stubMemberRepo{}, stubFlags{}, stubFlags{}, stubFlags{}, users, ws)
 
 	dms, err := uc.ListDMs(context.Background(), ListDMsInput{WorkspaceID: "ws", UserID: "alice"})
 	if err != nil {
@@ -139,7 +147,7 @@ func TestListDMsLoadsMembersAtOnce(t *testing.T) {
 	if users.calls != 1 {
 		t.Errorf("参加者をまとめて読み込んでいません: %d 回", users.calls)
 	}
-	if len(dms[0].Members) != 1 || dms[0].Members[0].UserID != "bob" || dms[0].UnreadCount != 2 {
+	if len(dms[0].Members) != 1 || dms[0].Members[0].ID != "bob" || dms[0].UnreadCount != 2 {
 		t.Errorf("DM の内容が期待と異なります: %+v", dms[0])
 	}
 	if len(dms[1].Members) != 2 || !dms[1].IsStarred {

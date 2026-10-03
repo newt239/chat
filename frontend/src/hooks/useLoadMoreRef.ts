@@ -1,19 +1,20 @@
-import { useEffect, useEffectEvent, useRef } from "react";
+type LoadMoreQuery = {
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => void;
+};
 
-// 一覧の末尾に置いた要素が見えたら次のページを読み込む（無限スクロール）
-export const useLoadMoreRef = (onLoadMore: () => void, isEnabled: boolean) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const handleLoadMore = useEffectEvent(onLoadMore);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (element === null || !isEnabled) {
+// 一覧の末尾に置いた要素が見えたら次のページを読み込む（無限スクロール）。戻り値は callback ref
+export const useLoadMoreRef =
+  ({ hasNextPage, isFetchingNextPage, fetchNextPage }: LoadMoreQuery) =>
+  (element: HTMLElement | null) => {
+    if (element === null || !hasNextPage || isFetchingNextPage) {
       return undefined;
     }
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          handleLoadMore();
+          fetchNextPage();
         }
       },
       { rootMargin: "200px" },
@@ -22,7 +23,4 @@ export const useLoadMoreRef = (onLoadMore: () => void, isEnabled: boolean) => {
     return () => {
       observer.disconnect();
     };
-  }, [isEnabled]);
-
-  return ref;
-};
+  };

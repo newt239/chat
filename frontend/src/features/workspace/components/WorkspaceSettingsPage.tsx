@@ -1,27 +1,34 @@
-import { IconAdjustments, IconBuilding, IconMoodSmile, IconUsers } from "@tabler/icons-react";
+import { IconAdjustments, IconBuilding, IconMoodSmile } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { SettingsLayout } from "#/components/block/SettingsLayout/SettingsLayout";
+import { settingsNavLinkClassName } from "#/components/block/SettingsLayout/settingsNavLinkClassName";
+import { Link } from "#/components/ui/Link/Link";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { CustomEmojiSettings } from "#/features/customEmoji/components/CustomEmojiSettings";
-import { SettingsLayout } from "#/features/settings/components/SettingsLayout";
-import { SettingsNavLink } from "#/features/settings/components/SettingsNavLink";
-import { isAdminRole } from "#/lib/isAdminRole";
 
 import { useWorkspaces } from "../hooks/useWorkspace";
 import { findWorkspaceSettingsSection, workspaceSettingsSections } from "../schemas";
 import { WorkspaceGeneralSettings } from "./WorkspaceGeneralSettings";
-import { WorkspaceMemberManager } from "./WorkspaceMemberManager";
 
 import type { WorkspaceSettingsSection } from "../schemas";
 
-const sectionIcons: Record<WorkspaceSettingsSection, typeof IconUsers> = {
+import type { Workspace } from "#/gen/chat/v1/workspace_service_pb";
+
+const sectionIcons: Record<WorkspaceSettingsSection, typeof IconBuilding> = {
   emoji: IconMoodSmile,
   general: IconAdjustments,
-  members: IconUsers,
 };
 
-const workspaceSettingsRoute = getRouteApi("/app/$workspaceId/workspace-settings/$section");
+const sectionBodies: Record<WorkspaceSettingsSection, (workspace: Workspace) => React.JSX.Element> =
+  {
+    emoji: (workspace) => <CustomEmojiSettings workspaceId={workspace.id} />,
+    // 保存後に一覧が更新されてもフォームを作り直さない
+    general: (workspace) => <WorkspaceGeneralSettings key={workspace.id} workspace={workspace} />,
+  };
+
+const workspaceSettingsRoute = getRouteApi("/app/$workspaceId/workspace-settings/{-$section}");
 
 export const WorkspaceSettingsPage = () => {
   const { t } = useTranslation();
@@ -29,32 +36,6 @@ export const WorkspaceSettingsPage = () => {
   const current = findWorkspaceSettingsSection(section) ?? "general";
   const { data: workspaces } = useWorkspaces();
   const workspace = workspaces?.find((candidate) => candidate.id === workspaceId);
-
-  const renderBody = () => {
-    if (workspace === undefined) {
-      return <Skeleton className="h-64 w-full rounded-xl" />;
-    }
-    switch (current) {
-      case "general": {
-        // 保存後に一覧が更新されてもフォームを作り直さない
-        return <WorkspaceGeneralSettings key={workspace.id} workspace={workspace} />;
-      }
-      case "members": {
-        return (
-          <WorkspaceMemberManager
-            workspaceId={workspaceId}
-            canManage={isAdminRole(workspace.role)}
-          />
-        );
-      }
-      case "emoji": {
-        return <CustomEmojiSettings workspaceId={workspaceId} />;
-      }
-      default: {
-        return null;
-      }
-    }
-  };
 
   return (
     <SettingsLayout
@@ -64,19 +45,24 @@ export const WorkspaceSettingsPage = () => {
       nav={workspaceSettingsSections.map((name) => {
         const Icon = sectionIcons[name];
         return (
-          <SettingsNavLink
+          <Link
+            className={settingsNavLinkClassName}
             key={name}
-            to="/app/$workspaceId/workspace-settings/$section"
+            to="/app/$workspaceId/workspace-settings/{-$section}"
             params={{ section: name, workspaceId }}
             replace
           >
             <Icon aria-hidden />
             {t(`workspace.settings.sections.${name}`)}
-          </SettingsNavLink>
+          </Link>
         );
       })}
     >
-      {renderBody()}
+      {workspace === undefined ? (
+        <Skeleton className="h-64 w-full rounded-xl" />
+      ) : (
+        sectionBodies[current](workspace)
+      )}
     </SettingsLayout>
   );
 };

@@ -11,34 +11,27 @@ import (
 
 var googleIssuers = map[string]bool{"accounts.google.com": true, "https://accounts.google.com": true}
 
-type googleVerifier struct {
-	clientID string
+// GoogleVerifier は ClientID が空なら常に ErrGoogleAuthDisabled を返します
+type GoogleVerifier struct {
+	ClientID string
 }
 
-// NewGoogleVerifier は clientID が空なら常に ErrGoogleAuthDisabled を返す検証器を作ります
-func NewGoogleVerifier(clientID string) authuc.GoogleVerifier {
-	return &googleVerifier{clientID: clientID}
-}
-
-func (v *googleVerifier) Verify(ctx context.Context, token string) (*authuc.GoogleIdentity, error) {
-	if v.clientID == "" {
+func (v GoogleVerifier) Verify(ctx context.Context, token string) (*authuc.GoogleIdentity, error) {
+	if v.ClientID == "" {
 		return nil, domerr.ErrGoogleAuthDisabled
 	}
-	payload, err := idtoken.Validate(ctx, token, v.clientID)
+	payload, err := idtoken.Validate(ctx, token, v.ClientID)
 	if err != nil {
 		return nil, domerr.ErrInvalidToken
 	}
 	if !googleIssuers[payload.Issuer] {
 		return nil, domerr.ErrInvalidToken
 	}
-	return identityFromClaims(payload.Subject, payload.Claims), nil
-}
-
-func identityFromClaims(sub string, claims map[string]any) *authuc.GoogleIdentity {
+	claims := payload.Claims
 	email, _ := claims["email"].(string)
 	verified, _ := claims["email_verified"].(bool)
 	name, _ := claims["name"].(string)
 	picture, _ := claims["picture"].(string)
 	nonce, _ := claims["nonce"].(string)
-	return &authuc.GoogleIdentity{Sub: sub, Email: email, EmailVerified: verified, Name: name, Picture: picture, Nonce: nonce}
+	return &authuc.GoogleIdentity{Sub: payload.Subject, Email: email, EmailVerified: verified, Name: name, Picture: picture, Nonce: nonce}, nil
 }

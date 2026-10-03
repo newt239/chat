@@ -79,11 +79,9 @@ message SearchWorkspaceRequest {
   string query = 2 [(buf.validate.field).string.max_len = 200];
   // 未指定の場合はすべての種類を検索する
   SearchTarget target = 3;
-  // 0 の場合は 1 ページ目として扱う
-  int32 page = 4 [(buf.validate.field).int32.gte = 0];
-  // 0 の場合はサーバーの既定値を使う
+  int32 page = 4 [(buf.validate.field).int32.gte = 1];
   int32 per_page = 5 [(buf.validate.field).int32 = {
-    gte: 0
+    gte: 1
     lte: 50
   }];
   MessageSearchFilter message_filter = 6;
@@ -113,31 +111,19 @@ message MessageSearchHit {
 message MessageSearchResult {
   repeated MessageSearchHit items = 1;
   int32 total = 2;
-  int32 page = 3;
-  int32 per_page = 4;
-  bool has_more = 5;
 }
 
 message ChannelSearchResult {
   repeated Channel items = 1;
   int32 total = 2;
-  int32 page = 3;
-  int32 per_page = 4;
-  bool has_more = 5;
 }
 
 message UserSearchResult {
   repeated WorkspaceMember items = 1;
   int32 total = 2;
-  int32 page = 3;
-  int32 per_page = 4;
-  bool has_more = 5;
 }
 
 message UserGroupSearchResult {
   repeated UserGroup items = 1;
   int32 total = 2;
-  int32 page = 3;
-  int32 per_page = 4;
-  bool has_more = 5;
 }

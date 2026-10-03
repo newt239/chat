@@ -37,7 +37,6 @@ export const preferences = {
       tinted: "色付き",
       title: "サイドバー",
     },
-    title: "テーマ",
   },
   timezone: {
     autoUpdate: "タイムゾーンを自動で更新する",

@@ -1,8 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "lib": ["esnext", "webworker"],
-    "types": []
+    "lib": ["esnext", "webworker"]
   },
   "include": [".", "../src/vite-env.d.ts"]
 }

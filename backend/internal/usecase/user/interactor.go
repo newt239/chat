@@ -3,8 +3,6 @@ package user
 import (
 	"context"
 	"fmt"
-	"net/url"
-	"strings"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
@@ -13,16 +11,13 @@ import (
 	"github.com/newt239/chat/internal/usecase/auth"
 )
 
-var (
-	ErrInvalidLink = fmt.Errorf("%w: リンクは %d 件までの http(s) の URL で指定してください", domerr.ErrValidation, entity.MaxProfileLinks)
-)
-
-type UseCase interface {
-	GetMe(ctx context.Context, userID string) (*MeOutput, error)
-	UpdateMe(ctx context.Context, input UpdateMeInput) (*MeOutput, error)
-	UpdatePreferences(ctx context.Context, input UpdatePreferencesInput) (*entity.UserPreferences, error)
-	UpdatePassword(ctx context.Context, input UpdatePasswordInput) error
-	DeleteMe(ctx context.Context, userID string) error
+type UpdateMeInput struct {
+	UserID      string
+	DisplayName *string
+	Bio         *string
+	AvatarURL   *string
+	// nil なら変えない。空ならすべて外す
+	Links *[]string
 }
 
 // UserCloser は全セッションを失効させたユーザーのリアルタイム接続を切ります
@@ -30,34 +25,37 @@ type UserCloser interface {
 	CloseUser(userID string)
 }
 
-type interactor struct {
-	userRepo    domainrepository.UserRepository
-	sessionRepo domainrepository.SessionRepository
-	passwordSvc auth.PasswordService
-	userCloser  UserCloser
+// ErrOwnerCannotDelete はオーナーのいないワークスペースを残さないためのエラーです
+var ErrOwnerCannotDelete = domerr.New(domerr.ErrFailedPrecondition, "ワークスペースのオーナーはアカウントを削除できません。先にワークスペースを削除してください")
+
+type Interactor struct {
+	userRepo      domainrepository.UserRepository
+	sessionRepo   domainrepository.SessionRepository
+	workspaceRepo domainrepository.WorkspaceRepository
+	passwordSvc   auth.PasswordService
+	userCloser    UserCloser
 }
 
-func NewInteractor(
+func New(
 	userRepo domainrepository.UserRepository,
 	sessionRepo domainrepository.SessionRepository,
+	workspaceRepo domainrepository.WorkspaceRepository,
 	passwordSvc auth.PasswordService,
 	userCloser UserCloser,
-) UseCase {
-	return &interactor{userRepo: userRepo, sessionRepo: sessionRepo, passwordSvc: passwordSvc, userCloser: userCloser}
+) *Interactor {
+	return &Interactor{userRepo: userRepo, sessionRepo: sessionRepo, workspaceRepo: workspaceRepo, passwordSvc: passwordSvc, userCloser: userCloser}
 }
 
 // UpdatePassword は現在のパスワードを確認した上でパスワードを変更し、全セッションを失効させます
-func (i *interactor) UpdatePassword(ctx context.Context, input UpdatePasswordInput) error {
-	u, err := i.findMe(ctx, input.UserID)
+func (i *Interactor) UpdatePassword(ctx context.Context, userID, currentPassword, newPassword string) error {
+	u, err := i.findMe(ctx, userID)
 	if err != nil {
 		return err
 	}
-
-	if err := i.passwordSvc.VerifyPassword(input.CurrentPassword, u.PasswordHash); err != nil {
+	if err := i.passwordSvc.VerifyPassword(currentPassword, u.PasswordHash); err != nil {
 		return domerr.ErrInvalidCredentials
 	}
-
-	hashed, err := i.passwordSvc.HashPassword(input.NewPassword)
+	hashed, err := i.passwordSvc.HashPassword(newPassword)
 	if err != nil {
 		return err
 	}
@@ -68,10 +66,10 @@ func (i *interactor) UpdatePassword(ctx context.Context, input UpdatePasswordInp
 	}
 
 	// パスワード変更後は他端末のセッションも無効化する
-	return i.revokeAllSessions(ctx, input.UserID)
+	return i.revokeAllSessions(ctx, userID)
 }
 
-func (i *interactor) revokeAllSessions(ctx context.Context, userID string) error {
+func (i *Interactor) revokeAllSessions(ctx context.Context, userID string) error {
 	if err := i.sessionRepo.RevokeAllByUserID(ctx, userID); err != nil {
 		return err
 	}
@@ -79,29 +77,33 @@ func (i *interactor) revokeAllSessions(ctx context.Context, userID string) error
 	return nil
 }
 
-// DeleteMe はアカウントを削除します
-func (i *interactor) DeleteMe(ctx context.Context, userID string) error {
+// DeleteMe は投稿などを残したまま本人のデータを消して退会させます
+func (i *Interactor) DeleteMe(ctx context.Context, userID string) error {
 	if _, err := i.findMe(ctx, userID); err != nil {
 		return err
 	}
-
-	if err := i.revokeAllSessions(ctx, userID); err != nil {
+	memberships, err := i.workspaceRepo.FindMembershipsByUserID(ctx, userID)
+	if err != nil {
 		return err
 	}
-
-	return i.userRepo.Delete(ctx, userID)
-}
-
-func (i *interactor) GetMe(ctx context.Context, userID string) (*MeOutput, error) {
-	u, err := i.findMe(ctx, userID)
-	if err != nil {
-		return nil, err
+	for _, m := range memberships {
+		if m.Role == entity.WorkspaceRoleOwner {
+			return ErrOwnerCannotDelete
+		}
 	}
 
-	return toMeOutput(u), nil
+	if err := i.userRepo.Delete(ctx, userID); err != nil {
+		return err
+	}
+	i.userCloser.CloseUser(userID)
+	return nil
 }
 
-func (i *interactor) UpdateMe(ctx context.Context, input UpdateMeInput) (*MeOutput, error) {
+func (i *Interactor) GetMe(ctx context.Context, userID string) (*entity.User, error) {
+	return i.findMe(ctx, userID)
+}
+
+func (i *Interactor) UpdateMe(ctx context.Context, input UpdateMeInput) (*entity.User, error) {
 	u, err := i.findMe(ctx, input.UserID)
 	if err != nil {
 		return nil, err
@@ -122,52 +124,30 @@ func (i *interactor) UpdateMe(ctx context.Context, input UpdateMeInput) (*MeOutp
 	}
 
 	if input.Links != nil {
-		links, err := normalizeLinks(*input.Links)
-		if err != nil {
-			return nil, err
-		}
-		u.Links = links
+		u.Links = *input.Links
 	}
 
 	if err := i.userRepo.Update(ctx, u); err != nil {
 		return nil, err
 	}
-
-	return toMeOutput(u), nil
-}
-
-// normalizeLinks は前後の空白を除き、数と URL の形式を確かめます
-func normalizeLinks(links []string) ([]string, error) {
-	if len(links) > entity.MaxProfileLinks {
-		return nil, ErrInvalidLink
-	}
-	result := make([]string, 0, len(links))
-	for _, link := range links {
-		link = strings.TrimSpace(link)
-		u, err := url.Parse(link)
-		if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
-			return nil, ErrInvalidLink
-		}
-		result = append(result, link)
-	}
-	return result, nil
+	return u, nil
 }
 
 // UpdatePreferences はテーマ・表示モード・言語・通知の設定を丸ごと置き換えます
-func (i *interactor) UpdatePreferences(ctx context.Context, input UpdatePreferencesInput) (*entity.UserPreferences, error) {
-	u, err := i.findMe(ctx, input.UserID)
+func (i *Interactor) UpdatePreferences(ctx context.Context, userID string, preferences entity.UserPreferences) (*entity.UserPreferences, error) {
+	u, err := i.findMe(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	if tz := input.Preferences.Timezone; tz != "" {
+	if tz := preferences.Timezone; tz != "" {
 		// "Local" はサーバーのタイムゾーンを指すため受け付けない
 		if _, err := time.LoadLocation(tz); err != nil || tz == "Local" {
 			return nil, fmt.Errorf("%w: %s", domerr.ErrInvalidTimeZone, tz)
 		}
 	}
 
-	u.Preferences = input.Preferences
+	u.Preferences = preferences
 	if err := i.userRepo.Update(ctx, u); err != nil {
 		return nil, err
 	}
@@ -175,7 +155,7 @@ func (i *interactor) UpdatePreferences(ctx context.Context, input UpdatePreferen
 	return &u.Preferences, nil
 }
 
-func (i *interactor) findMe(ctx context.Context, userID string) (*entity.User, error) {
+func (i *Interactor) findMe(ctx context.Context, userID string) (*entity.User, error) {
 	if userID == "" {
 		return nil, domerr.ErrUnauthorized
 	}
@@ -184,20 +164,8 @@ func (i *interactor) findMe(ctx context.Context, userID string) (*entity.User, e
 	if err != nil {
 		return nil, err
 	}
-	if u == nil {
+	if u == nil || u.DeletedAt != nil {
 		return nil, domerr.ErrUserNotFound
 	}
 	return u, nil
-}
-
-func toMeOutput(u *entity.User) *MeOutput {
-	return &MeOutput{
-		ID:          u.ID,
-		Email:       u.Email,
-		DisplayName: u.DisplayName,
-		Bio:         u.Bio,
-		AvatarURL:   u.AvatarURL,
-		Links:       u.Links,
-		Preferences: u.Preferences,
-	}
 }

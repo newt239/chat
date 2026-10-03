@@ -615,10 +615,10 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\vpreferences\x18\x06 \x01(\v2\x18.chat.v1.UserPreferencesR\vpreferences\x12\x14\n" +
 	"\x05links\x18\a \x03(\tR\x05linksB\r\n" +
 	"\v_avatar_urlB\x06\n" +
-	"\x04_bio\"\xaf\x01\n" +
-	"\fProfileLinks\x12\x9e\x01\n" +
-	"\x04urls\x18\x01 \x03(\tB\x89\x01\xbaH\x85\x01\x92\x01\x81\x01\x10\x05\"}\xba\x01r\n" +
-	"\bhttp_url\x12+http(s) の URL を指定してください\x1a9this.startsWith('http://') || this.startsWith('https://')r\x06\x18\x80\x10\x88\x01\x01R\x04urls\"\x9d\x01\n" +
+	"\x04_bio\"\x93\x01\n" +
+	"\fProfileLinks\x12\x82\x01\n" +
+	"\x04urls\x18\x01 \x03(\tBn\xbaHk\x92\x01h\x10\x05\"d\xba\x01Y\n" +
+	"\bhttp_url\x12+http(s) の URL を指定してください\x1a this.matches('^https?://[^/?#]')r\x06\x18\x80\x10\x88\x01\x01R\x04urls\"\x9d\x01\n" +
 	"\x0fThemePreference\x12\x1c\n" +
 	"\x03hue\x18\x01 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x10\xe8\x02(\x00R\x03hue\x12/\n" +

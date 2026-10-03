@@ -18,10 +18,10 @@ type stubUserRepo struct {
 	levels map[string]entity.NotificationLevel
 }
 
-func (r stubUserRepo) FindByIDs(_ context.Context, ids []string) ([]*entity.User, error) {
-	users := []*entity.User{}
+func (r stubUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*entity.User, error) {
+	users := map[string]*entity.User{}
 	for _, id := range ids {
-		users = append(users, &entity.User{ID: id, Preferences: entity.UserPreferences{NotificationLevel: r.levels[id]}})
+		users[id] = &entity.User{ID: id, Preferences: entity.UserPreferences{NotificationLevel: r.levels[id]}}
 	}
 	return users, nil
 }
@@ -31,7 +31,7 @@ type stubMemberRepo struct {
 	members []string
 }
 
-func (r stubMemberRepo) FindMembers(context.Context, string) ([]*entity.ChannelMember, error) {
+func (r stubMemberRepo) FindMembersByChannelIDs(context.Context, []string) ([]*entity.ChannelMember, error) {
 	result := []*entity.ChannelMember{}
 	for _, id := range r.members {
 		result = append(result, &entity.ChannelMember{UserID: id})
@@ -129,9 +129,8 @@ func (f fixture) run(t *testing.T, channel *entity.Channel, message messageuc.Me
 		stubMentionService{},
 		stubAccess{denied: f.denied},
 		sender,
-		nil,
 	)
-	if err := d.dispatch(context.Background(), channel, message); err != nil {
+	if err := d.NotifyNewMessage(context.Background(), channel, message); err != nil {
 		t.Fatalf("送信に失敗しました: %v", err)
 	}
 	return sender, tokens
@@ -156,7 +155,7 @@ func TestDispatchChannelMessage(t *testing.T) {
 		ParentID: &parentID,
 		Body:     "hello <@u1>",
 		// グループへのメンションは投稿時点のメンバーに展開済み
-		Mentions: []messageuc.UserMention{{UserID: "mentioned"}, {UserID: "muted"}, {UserID: "outsider"}, {UserID: "grouped", ViaGroupID: new("g1")}, {UserID: "silent", ViaGroupID: new("g1")}},
+		Mentions: []messageuc.UserMention{{UserID: "mentioned"}, {UserID: "muted"}, {UserID: "outsider"}, {UserID: "grouped"}, {UserID: "silent"}},
 	}
 	f := fixture{
 		levels: map[string]entity.NotificationLevel{
@@ -203,7 +202,31 @@ func TestDispatchDM(t *testing.T) {
 	}
 }
 
+func TestDispatchChannelMention(t *testing.T) {
+	channel := &entity.Channel{ID: "c1", WorkspaceID: "ws", Name: "general", Type: entity.ChannelTypePublic}
+	f := fixture{
+		levels: map[string]entity.NotificationLevel{
+			"sender": entity.NotificationLevelAll, "mentions": entity.NotificationLevelMentions,
+			"muted": entity.NotificationLevelAll, "silent": entity.NotificationLevelNone,
+		},
+		members: []string{"sender", "mentions", "muted", "silent"},
+		mutedBy: "muted",
+	}
+
+	sender, _ := f.run(t, channel, messageuc.MessageOutput{ID: "m1", UserID: "sender", Body: "<@channel> hi", MentionsChannel: true})
+	if got := recipients(sender.sent); !reflect.DeepEqual(got, []string{"token-mentions"}) {
+		t.Errorf("@channel がミュート・本人・通知オフ以外のメンバーに送られていません: %v", got)
+	}
+
+	sender, _ = f.run(t, channel, messageuc.MessageOutput{ID: "m2", UserID: "sender", Body: "<@here> hi", MentionsHere: true})
+	if len(sender.sent) != 0 {
+		t.Errorf("@here はプッシュで送らないはず: %v", recipients(sender.sent))
+	}
+}
+
 func TestNotifyNewMessageWithoutSenderDoesNothing(t *testing.T) {
-	d := NewDispatcher(nil, nil, nil, nil, nil, nil, nil, nil, nil)
-	d.NotifyNewMessage(context.Background(), &entity.Channel{}, messageuc.MessageOutput{})
+	d := NewDispatcher(nil, nil, nil, nil, nil, nil, nil, nil)
+	if err := d.NotifyNewMessage(context.Background(), &entity.Channel{}, messageuc.MessageOutput{}); err != nil {
+		t.Fatal(err)
+	}
 }

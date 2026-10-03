@@ -39,11 +39,9 @@ type PollOption struct {
 type PollOptionEdges struct {
 	// Poll holds the value of the poll edge.
 	Poll *Poll `json:"poll,omitempty"`
-	// Votes holds the value of the votes edge.
-	Votes []*PollVote `json:"votes,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // PollOrErr returns the Poll value or an error if the edge
@@ -55,15 +53,6 @@ func (e PollOptionEdges) PollOrErr() (*Poll, error) {
 		return nil, &NotFoundError{label: poll.Label}
 	}
 	return nil, &NotLoadedError{edge: "poll"}
-}
-
-// VotesOrErr returns the Votes value or an error if the edge
-// was not loaded in eager-loading.
-func (e PollOptionEdges) VotesOrErr() ([]*PollVote, error) {
-	if e.loadedTypes[1] {
-		return e.Votes, nil
-	}
-	return nil, &NotLoadedError{edge: "votes"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -149,11 +138,6 @@ func (_m *PollOption) Value(name string) (ent.Value, error) {
 // QueryPoll queries the "poll" edge of the PollOption entity.
 func (_m *PollOption) QueryPoll() *PollQuery {
 	return NewPollOptionClient(_m.config).QueryPoll(_m)
-}
-
-// QueryVotes queries the "votes" edge of the PollOption entity.
-func (_m *PollOption) QueryVotes() *PollVoteQuery {
-	return NewPollOptionClient(_m.config).QueryVotes(_m)
 }
 
 // Update returns a builder for updating this PollOption.

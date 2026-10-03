@@ -13,7 +13,7 @@ type PollServer struct {
 }
 
 func (s *PollServer) Vote(ctx context.Context, req *chatv1.VoteRequest) (*chatv1.VoteResponse, error) {
-	out, err := s.UC.Vote(ctx, polluc.VoteInput{PollID: req.PollId, UserID: userIDFrom(ctx), OptionIDs: req.OptionIds})
+	out, err := s.UC.Vote(ctx, polluc.PollInput{PollID: req.PollId, UserID: userIDFrom(ctx), OptionIDs: req.OptionIds})
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +21,7 @@ func (s *PollServer) Vote(ctx context.Context, req *chatv1.VoteRequest) (*chatv1
 }
 
 func (s *PollServer) ClosePoll(ctx context.Context, req *chatv1.ClosePollRequest) (*chatv1.ClosePollResponse, error) {
-	out, err := s.UC.Close(ctx, polluc.CloseInput{PollID: req.PollId, UserID: userIDFrom(ctx)})
+	out, err := s.UC.Close(ctx, polluc.PollInput{PollID: req.PollId, UserID: userIDFrom(ctx)})
 	if err != nil {
 		return nil, err
 	}

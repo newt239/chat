@@ -3,8 +3,6 @@
 package messageusermention
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -21,8 +19,6 @@ const (
 	FieldUserID = "user_id"
 	// FieldViaGroupID holds the string denoting the via_group_id field in the database.
 	FieldViaGroupID = "via_group_id"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
 	// EdgeMessage holds the string denoting the message edge name in mutations.
 	EdgeMessage = "message"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -51,7 +47,6 @@ var Columns = []string{
 	FieldMessageID,
 	FieldUserID,
 	FieldViaGroupID,
-	FieldCreatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -65,8 +60,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -92,11 +85,6 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 // ByViaGroupID orders the results by the via_group_id field.
 func ByViaGroupID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldViaGroupID, opts...).ToFunc()
-}
-
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByMessageField orders the results by message field.

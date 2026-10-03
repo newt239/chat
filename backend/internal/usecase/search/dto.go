@@ -1,14 +1,14 @@
 package search
 
 import (
-	"fmt"
+	"cmp"
 	"time"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
-	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -23,8 +23,8 @@ const (
 )
 
 var (
-	ErrInvalidQuery     = fmt.Errorf("%w: 検索キーワードか絞り込み条件を指定してください", domerr.ErrValidation)
-	ErrInvalidDateRange = fmt.Errorf("%w: 期間の開始は終了より前にしてください", domerr.ErrValidation)
+	ErrInvalidQuery     = domerr.New(domerr.ErrValidation, "検索キーワードか絞り込み条件を指定してください")
+	ErrInvalidDateRange = domerr.New(domerr.ErrValidation, "期間の開始は終了より前にしてください")
 )
 
 // MessageFilter はメッセージ検索の絞り込み条件です（条件はすべて AND）
@@ -68,67 +68,19 @@ type MessageHit struct {
 	Highlights []TextRange
 }
 
-type PaginatedMessages struct {
-	Items   []MessageHit
-	Total   int
-	Page    int
-	PerPage int
-	HasMore bool
-}
-
-type PaginatedChannels struct {
-	Items   []channeluc.ChannelOutput `json:"items"`
-	Total   int                       `json:"total"`
-	Page    int                       `json:"page"`
-	PerPage int                       `json:"perPage"`
-	HasMore bool                      `json:"hasMore"`
-}
-
-type PaginatedUsers struct {
-	Items   []workspaceuc.MemberInfo `json:"items"`
-	Total   int                      `json:"total"`
-	Page    int                      `json:"page"`
-	PerPage int                      `json:"perPage"`
-	HasMore bool                     `json:"hasMore"`
-}
-
-type PaginatedUserGroups struct {
-	Items   []usergroupuc.UserGroupOutput `json:"items"`
-	Total   int                           `json:"total"`
-	Page    int                           `json:"page"`
-	PerPage int                           `json:"perPage"`
-	HasMore bool                          `json:"hasMore"`
+type Paginated[T any] struct {
+	Items []T
+	Total int
 }
 
 type WorkspaceSearchOutput struct {
-	Messages PaginatedMessages   `json:"messages"`
-	Channels PaginatedChannels   `json:"channels"`
-	Users    PaginatedUsers      `json:"users"`
-	Groups   PaginatedUserGroups `json:"groups"`
+	Messages Paginated[MessageHit]
+	Channels Paginated[channeluc.ChannelOutput]
+	Users    Paginated[workspaceuc.MemberInfo]
+	Groups   Paginated[*entity.UserGroup]
 }
 
-// Normalize はサポートされていない検索対象を all に丸めます
-func (f SearchTarget) Normalize() SearchTarget {
-	switch f {
-	case SearchTargetAll, SearchTargetMessages, SearchTargetChannels, SearchTargetUsers, SearchTargetGroups:
-		return f
-	default:
-		return SearchTargetAll
-	}
-}
-
-func (f SearchTarget) includesMessages() bool {
-	return f == SearchTargetAll || f == SearchTargetMessages
-}
-
-func (f SearchTarget) includesChannels() bool {
-	return f == SearchTargetAll || f == SearchTargetChannels
-}
-
-func (f SearchTarget) includesUsers() bool {
-	return f == SearchTargetAll || f == SearchTargetUsers
-}
-
-func (f SearchTarget) includesGroups() bool {
-	return f == SearchTargetAll || f == SearchTargetGroups
+// includes は未指定なら all として扱います
+func (t SearchTarget) includes(k SearchTarget) bool {
+	return cmp.Or(t, SearchTargetAll) == SearchTargetAll || t == k
 }

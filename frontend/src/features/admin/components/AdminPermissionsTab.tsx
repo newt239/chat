@@ -5,29 +5,12 @@ import { cn } from "#/components/ui/styles/styles";
 import { Switch } from "#/components/ui/Switch/Switch";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
-import { permissionKeys } from "#/features/admin/utils/labels";
+import { permissions } from "#/features/admin/utils/labels";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";
-import { Permission } from "#/gen/chat/v1/permission_service_pb";
+import { workspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 
-import type { PermissionGrant } from "#/gen/chat/v1/permission_service_pb";
-
-const roleColumns = [
-  { key: "owner", role: WorkspaceRole.OWNER },
-  { key: "admin", role: WorkspaceRole.ADMIN },
-  { key: "member", role: WorkspaceRole.MEMBER },
-  { key: "guest", role: WorkspaceRole.GUEST },
-] as const;
-
-const permissions = [
-  Permission.CREATE_PUBLIC_CHANNEL,
-  Permission.CREATE_PRIVATE_CHANNEL,
-  Permission.INVITE_MEMBERS,
-  Permission.EDIT_CHANNEL_LINKS,
-  Permission.PIN_MESSAGES,
-  Permission.DELETE_OTHERS_MESSAGES,
-  Permission.CREATE_CUSTOM_EMOJI,
-];
+import type { Permission, PermissionGrant } from "#/gen/chat/v1/permission_service_pb";
 
 type AdminPermissionsTabProps = {
   workspaceId: string;
@@ -56,7 +39,7 @@ export const AdminPermissionsTab = ({ workspaceId, grants, myRole }: AdminPermis
               <th scope="col" className={tableClassNames.header}>
                 {t("admin.permissions.operation")}
               </th>
-              {roleColumns.map(({ key }) => (
+              {workspaceRoles.map(({ key }) => (
                 <th key={key} scope="col" className={cn(tableClassNames.header, "text-center")}>
                   {t(`member.role.${key}`)}
                 </th>
@@ -64,14 +47,14 @@ export const AdminPermissionsTab = ({ workspaceId, grants, myRole }: AdminPermis
             </tr>
           </thead>
           <tbody>
-            {permissions.map((permission) => {
-              const permissionName = t(`admin.permissions.names.${permissionKeys[permission]}`);
+            {permissions.map(({ key: permissionKey, permission }) => {
+              const permissionName = t(`admin.permissions.names.${permissionKey}`);
               return (
                 <tr key={permission} className={tableClassNames.row}>
                   <th scope="row" className={cn(tableClassNames.cell, "text-left font-normal")}>
                     {permissionName}
                   </th>
-                  {roleColumns.map(({ key, role }) => {
+                  {workspaceRoles.map(({ key, role }) => {
                     const label = t("admin.permissions.toggle", {
                       permission: permissionName,
                       role: t(`member.role.${key}`),

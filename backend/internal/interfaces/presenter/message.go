@@ -7,6 +7,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
+	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 )
 
 func UserSummary(u messageuc.UserInfo) *chatv1.UserSummary {
@@ -22,7 +23,7 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 		ParentId:  m.ParentID,
 		Body:      m.Body,
 		Mentions: ConvertAll(m.Mentions, func(u messageuc.UserMention) *chatv1.UserMention {
-			return &chatv1.UserMention{UserId: u.UserID, ViaGroupId: u.ViaGroupID}
+			return &chatv1.UserMention{UserId: u.UserID}
 		}),
 		Groups: ConvertAll(m.Groups, func(g messageuc.GroupMention) *chatv1.GroupMention {
 			return &chatv1.GroupMention{GroupId: g.GroupID, Name: g.Name}
@@ -33,19 +34,18 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 				Url:             l.URL,
 				Ogp:             OGPData(l.OGP),
 				LinkedMessageId: l.LinkedMessageID,
-				MessagePreview:  messagePreview(l.MessagePreview),
+				MessagePreview:  MessagePreview(l.MessagePreview),
 			}
 		}),
 		Reactions: ConvertAll(m.Reactions, func(r messageuc.ReactionInfo) *chatv1.Reaction {
-			return &chatv1.Reaction{MessageId: m.ID, User: UserSummary(r.User), Emoji: r.Emoji, CreatedAt: timestamppb.New(r.CreatedAt)}
+			return &chatv1.Reaction{User: UserSummary(r.User), Emoji: r.Emoji, CreatedAt: timestamppb.New(r.CreatedAt)}
 		}),
 		Attachments: ConvertAll(m.Attachments, func(a messageuc.AttachmentInfo) *chatv1.MessageAttachment {
 			return &chatv1.MessageAttachment{Id: a.ID, FileName: a.FileName, MimeType: a.MimeType, SizeBytes: a.SizeBytes, Media: MediaMetadata(a.Media)}
 		}),
 		CreatedAt: timestamppb.New(m.CreatedAt),
 		EditedAt:  optionalTimestamp(m.EditedAt),
-		DeletedAt: optionalTimestamp(m.DeletedAt),
-		IsDeleted: m.IsDeleted,
+		IsDeleted: m.DeletedAt != nil,
 
 		MentionsChannel: m.MentionsChannel,
 		MentionsHere:    m.MentionsHere,
@@ -59,6 +59,7 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 	}
 	msg.Location = MessageLocation(m.Location)
 	msg.Poll = Poll(m.Poll)
+	msg.ThreadMetadata = ThreadMetadata(m.ThreadMetadata)
 	return msg
 }
 
@@ -76,8 +77,6 @@ func OGPData(o entity.OGPData) *chatv1.OgpData {
 		ImageUrl:    o.ImageURL,
 		SiteName:    o.SiteName,
 		CardType:    o.CardType,
-		ImageWidth:  o.ImageWidth,
-		ImageHeight: o.ImageHeight,
 	}
 	if o.YouTube != nil {
 		data.Youtube = &chatv1.YouTubeVideo{VideoId: o.YouTube.VideoID, ChannelName: o.YouTube.ChannelName, DurationSeconds: o.YouTube.DurationSeconds}
@@ -96,7 +95,10 @@ func MediaMetadata(m entity.MediaMetadata) *chatv1.MediaMetadata {
 	return out
 }
 
-func MessagePreview(p messageuc.MessagePreviewOutput) *chatv1.MessagePreview {
+func MessagePreview(p *messageuc.MessagePreviewOutput) *chatv1.MessagePreview {
+	if p == nil {
+		return nil
+	}
 	return &chatv1.MessagePreview{
 		MessageId:   p.MessageID,
 		ChannelId:   p.ChannelID,
@@ -108,24 +110,11 @@ func MessagePreview(p messageuc.MessagePreviewOutput) *chatv1.MessagePreview {
 	}
 }
 
-func messagePreview(p *messageuc.MessagePreviewOutput) *chatv1.MessagePreview {
-	if p == nil {
+func ThreadMetadata(t *messageuc.ThreadMetadataOutput) *chatv1.ThreadMetadata {
+	if t == nil {
 		return nil
 	}
-	return MessagePreview(*p)
-}
-
-func MessageWithThread(m messageuc.MessageWithThreadOutput) *chatv1.Message {
-	msg := Message(m.MessageOutput)
-	if m.ThreadMetadata != nil {
-		msg.ThreadMetadata = ThreadMetadata(*m.ThreadMetadata)
-	}
-	return msg
-}
-
-func ThreadMetadata(t messageuc.ThreadMetadataOutput) *chatv1.ThreadMetadata {
 	metadata := &chatv1.ThreadMetadata{
-		MessageId:   t.MessageID,
 		ReplyCount:  int32(t.ReplyCount),
 		LastReplyAt: optionalTimestamp(t.LastReplyAt),
 		IsFollowing: t.IsFollowing,
@@ -139,15 +128,13 @@ func ThreadMetadata(t messageuc.ThreadMetadataOutput) *chatv1.ThreadMetadata {
 var systemMessageKinds = map[entity.SystemMessageKind]chatv1.SystemMessageKind{
 	entity.SystemMessageKindMemberJoined:              chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_JOINED,
 	entity.SystemMessageKindMemberAdded:               chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_ADDED,
-	entity.SystemMessageKindMemberRemoved:             chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_REMOVED,
-	entity.SystemMessageKindMemberLeft:                chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_LEFT,
 	entity.SystemMessageKindChannelPrivacyChanged:     chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_CHANNEL_PRIVACY_CHANGED,
 	entity.SystemMessageKindChannelNameChanged:        chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_CHANNEL_NAME_CHANGED,
 	entity.SystemMessageKindChannelDescriptionChanged: chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_CHANNEL_DESCRIPTION_CHANGED,
 	entity.SystemMessageKindMessagePinned:             chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_MESSAGE_PINNED,
 }
 
-func SystemMessage(s messageuc.SystemMessageOutput) *chatv1.SystemMessage {
+func SystemMessage(s *entity.SystemMessage) *chatv1.SystemMessage {
 	// payload は文字列など JSON で表せる値だけを持つため変換に失敗しない
 	payload, _ := structpb.NewStruct(s.Payload)
 	return &chatv1.SystemMessage{
@@ -166,7 +153,31 @@ func TimelineItem(i messageuc.TimelineItem) *chatv1.TimelineItem {
 	case i.UserMessage != nil:
 		item.Content = &chatv1.TimelineItem_UserMessage{UserMessage: Message(*i.UserMessage)}
 	case i.SystemMessage != nil:
-		item.Content = &chatv1.TimelineItem_SystemMessage{SystemMessage: SystemMessage(*i.SystemMessage)}
+		item.Content = &chatv1.TimelineItem_SystemMessage{SystemMessage: SystemMessage(i.SystemMessage)}
 	}
 	return item
+}
+
+func ReactionEvent(channelID string, r reactionuc.ReactionNotification) *chatv1.ReactionEvent {
+	event := &chatv1.ReactionEvent{ChannelId: channelID, MessageId: r.MessageID, UserId: r.UserID, Emoji: r.Emoji}
+	if r.User != nil {
+		event.User = UserSummary(*r.User)
+		event.CreatedAt = timestamppb.New(r.CreatedAt)
+	}
+	return event
+}
+
+func Mentions(out *messageuc.ListMentionsOutput) *chatv1.ListMentionsResponse {
+	res := &chatv1.ListMentionsResponse{Messages: ConvertAll(out.Messages, Message)}
+	if c := out.NextCursor; c != nil {
+		res.NextCursor = &chatv1.MentionCursor{CreatedAt: timestamppb.New(c.CreatedAt), MessageId: c.MessageID}
+	}
+	return res
+}
+
+func Draft(d *entity.Draft) *chatv1.Draft {
+	if d == nil {
+		return nil
+	}
+	return &chatv1.Draft{Id: d.ID, ChannelId: d.ChannelID, ParentId: d.ParentID, Body: d.Body, UpdatedAt: timestamppb.New(d.UpdatedAt)}
 }

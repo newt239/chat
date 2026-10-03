@@ -1,15 +1,12 @@
 import { oklchToHex } from "@chat/design-tokens/color";
 
-import { cn } from "#/components/ui/styles/styles";
 import { useColorMode } from "#/providers/theme/colorMode";
-
-type Presence = "online" | "away" | "offline";
 
 type AvatarProps = {
   name: string;
   src?: string | null;
   size?: number;
-  presence?: Presence;
+  isOnline?: boolean;
 };
 
 const hueOf = (seed: string) => {
@@ -25,15 +22,8 @@ const initialOf = (name: string) => {
   return first?.segment.toUpperCase();
 };
 
-const presenceClassNames: Record<Presence, string> = {
-  away: "bg-(--dot-ring,var(--c-surface)) shadow-[inset_0_0_0_1.5px_var(--c-subtle)]",
-  offline: "bg-(--dot-ring,var(--c-surface)) shadow-[inset_0_0_0_1.5px_var(--c-subtle)]",
-  online: "bg-success",
-};
-
-// 画像がなければ名前の頭文字を、名前から決めた色相の背景に表示する。
-// 状態の点の縁は --dot-ring で背景色に合わせる（サイドバーなど）
-export const Avatar = ({ name, src, size = 32, presence }: AvatarProps) => {
+// 画像がなければ名前の頭文字を名前から決めた色相の背景に出す。在席の点の縁は --dot-ring で背景色に合わせる
+export const Avatar = ({ name, src, size = 32, isOnline }: AvatarProps) => {
   const isDark = useColorMode() === "dark";
   const hue = hueOf(name);
   const dotSize = Math.max(9, Math.round(size * 0.28));
@@ -56,13 +46,10 @@ export const Avatar = ({ name, src, size = 32, presence }: AvatarProps) => {
       ) : (
         <span aria-hidden>{initialOf(name)}</span>
       )}
-      {presence && (
+      {isOnline && (
         <span
-          data-presence={presence}
-          className={cn(
-            "absolute -right-0.5 -bottom-0.5 rounded-full border-2 border-(--dot-ring,var(--c-surface))",
-            presenceClassNames[presence],
-          )}
+          data-online
+          className="absolute -right-0.5 -bottom-0.5 rounded-full border-2 border-(--dot-ring,var(--c-surface)) bg-success"
           style={{ height: dotSize, width: dotSize }}
         />
       )}

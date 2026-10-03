@@ -4,7 +4,6 @@ package chat.v1;
 
 import "buf/validate/validate.proto";
 import "chat/v1/message.proto";
-import "google/protobuf/timestamp.proto";
 
 service PinService {
   rpc ListPins(ListPinsRequest) returns (ListPinsResponse);
@@ -12,25 +11,13 @@ service PinService {
   rpc DeletePin(DeletePinRequest) returns (DeletePinResponse);
 }
 
-message PinnedMessage {
-  Message message = 1;
-  string pinned_by = 2;
-  google.protobuf.Timestamp pinned_at = 3;
-}
-
 message ListPinsRequest {
   string channel_id = 1 [(buf.validate.field).string.uuid = true];
-  // 0 の場合はサーバーの既定値を使う
-  int32 limit = 2 [(buf.validate.field).int32 = {
-    gte: 0
-    lte: 100
-  }];
-  optional string cursor = 3;
 }
 
+// ピン留めした新しい順。ピン留めの情報は Message.pin に入る
 message ListPinsResponse {
-  repeated PinnedMessage pins = 1;
-  optional string next_cursor = 2;
+  repeated Message messages = 1;
 }
 
 message CreatePinRequest {

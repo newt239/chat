@@ -6,18 +6,14 @@ import { useTranslation } from "react-i18next";
 import { PostTargetPicker } from "#/features/channel/components/PostTargetPicker";
 import { useChannelAggregation } from "#/features/channel/hooks/useChannelAggregation";
 
-import { useSendMessage } from "../hooks/useMessage";
 import { BaseMessageInput } from "./BaseMessageInput";
 
-import type { ComposerContent } from "../utils/composerContent";
-
 type MessageInputProps = {
-  channelId: string | null;
+  channelId: string;
 };
 
 export const MessageInput = ({ channelId }: MessageInputProps) => {
   const { t } = useTranslation();
-  const sendMessage = useSendMessage();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { channel, descendants, includesDescendants } = useChannelAggregation(
     workspaceId,
@@ -29,37 +25,24 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
     includesDescendants && channel
       ? ([channel, ...descendants].find((candidate) => candidate.id === selectedId) ?? channel)
       : null;
-  const targetId = target?.id ?? channelId;
-
-  const handleSubmit = (content: ComposerContent) => {
-    if (targetId !== null) {
-      sendMessage.mutate({ ...content, channelId: targetId });
-    }
-  };
-
-  if (!channelId || targetId === null) {
-    return null;
-  }
 
   return (
     <BaseMessageInput
-      onSubmit={handleSubmit}
       placeholder={
         target
           ? t("channel.aggregate.placeholder", { name: target.name })
           : t("message.composer.placeholder")
       }
-      isPending={sendMessage.isPending}
-      error={sendMessage.isError ? sendMessage.error.message : undefined}
-      channelId={targetId}
+      channelId={target?.id ?? channelId}
       parentId={null}
+      onSent={null}
       targetPicker={
         target &&
         channel && (
           <PostTargetPicker
             parent={channel}
             descendants={descendants}
-            value={target.id}
+            value={target}
             onChange={setSelectedId}
           />
         )

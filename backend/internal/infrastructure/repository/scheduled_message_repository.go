@@ -4,15 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/scheduledmessage"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 // 期限の来た予約を他のワーカーがロック中のものを飛ばして取り出し、同じ文で送信中にする
@@ -27,8 +24,7 @@ const claimDueSQL = `
 	)
 	RETURNING id`
 
-// 送信の途中でサーバーが止まり、送信中のまま残った予約を失敗にする
-// $1: 現在時刻, $2: これより前から送信中なら止まったとみなす時刻
+// 送信中のまま残った予約を失敗にする ($1: 現在時刻, $2: これより前から送信中なら止まったとみなす時刻)
 const failStaleSendingSQL = `
 	UPDATE scheduled_message SET status = 'failed', failure_reason = '送信が中断されました', updated_at = $1
 	WHERE status = 'sending' AND updated_at < $2`
@@ -42,27 +38,21 @@ func NewScheduledMessageRepository(client *ent.Client) domainrepository.Schedule
 }
 
 func (r *scheduledMessageRepository) Create(ctx context.Context, m *entity.ScheduledMessage) error {
-	userID, err := utils.ParseUUID(m.UserID, "user ID")
+	userID, err := parseUUID(m.UserID, "user ID")
 	if err != nil {
 		return err
 	}
-	channelID, err := utils.ParseUUID(m.ChannelID, "channel ID")
+	channelID, err := parseUUID(m.ChannelID, "channel ID")
 	if err != nil {
 		return err
 	}
 	builder := transaction.ResolveClient(ctx, r.client).ScheduledMessage.Create().
 		SetUserID(userID).
 		SetChannelID(channelID).
+		SetNillableParentID(parseUUIDPtr(m.ParentID)).
 		SetBody(m.Body).
 		SetAttachmentIds(m.AttachmentIDs).
 		SetScheduledAt(m.ScheduledAt)
-	if m.ParentID != nil {
-		parentID, err := utils.ParseUUID(*m.ParentID, "parent ID")
-		if err != nil {
-			return err
-		}
-		builder.SetParentID(parentID)
-	}
 	if loc := m.Location; loc != nil {
 		builder.
 			SetLocationLatitude(loc.Latitude).
@@ -79,40 +69,34 @@ func (r *scheduledMessageRepository) Create(ctx context.Context, m *entity.Sched
 }
 
 func (r *scheduledMessageRepository) FindByID(ctx context.Context, id string) (*entity.ScheduledMessage, error) {
-	sid, err := utils.ParseUUID(id, "scheduled message ID")
+	sid, err := parseUUID(id, "scheduled message ID")
 	if err != nil {
 		return nil, err
 	}
-	m, err := transaction.ResolveClient(ctx, r.client).ScheduledMessage.Get(ctx, sid)
-	if ent.IsNotFound(err) {
-		return nil, nil
-	}
-	if err != nil {
+	m, err := orNil(transaction.ResolveClient(ctx, r.client).ScheduledMessage.Get(ctx, sid))
+	if m == nil {
 		return nil, err
 	}
 	return scheduledMessageToEntity(m), nil
 }
 
 func (r *scheduledMessageRepository) FindByWorkspace(ctx context.Context, userID string, workspaceID string) ([]*entity.ScheduledMessage, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
 	messages, err := transaction.ResolveClient(ctx, r.client).ScheduledMessage.Query().
-		Where(
-			scheduledmessage.UserID(uid),
-			scheduledmessage.HasChannelWith(channel.WorkspaceID(workspaceID)),
-		).
+		Where(scheduledmessage.UserID(uid), scheduledmessage.HasChannelWith(channel.WorkspaceID(workspaceID))).
 		Order(ent.Asc(scheduledmessage.FieldScheduledAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return scheduledMessagesToEntities(messages), nil
+	return convertAll(messages, scheduledMessageToEntity), nil
 }
 
 func (r *scheduledMessageRepository) Reschedule(ctx context.Context, id string, body string, scheduledAt time.Time) error {
-	sid, err := utils.ParseUUID(id, "scheduled message ID")
+	sid, err := parseUUID(id, "scheduled message ID")
 	if err != nil {
 		return err
 	}
@@ -125,7 +109,7 @@ func (r *scheduledMessageRepository) Reschedule(ctx context.Context, id string, 
 }
 
 func (r *scheduledMessageRepository) Delete(ctx context.Context, id string) error {
-	sid, err := utils.ParseUUID(id, "scheduled message ID")
+	sid, err := parseUUID(id, "scheduled message ID")
 	if err != nil {
 		return err
 	}
@@ -137,24 +121,9 @@ func (r *scheduledMessageRepository) ClaimDue(ctx context.Context, now, staleBef
 	if _, err := client.ExecContext(ctx, failStaleSendingSQL, now, staleBefore); err != nil {
 		return nil, err
 	}
-	rows, err := client.QueryContext(ctx, claimDueSQL, now, limit)
+	ids, err := queryUUIDs(ctx, r.client, claimDueSQL, now, limit)
 	if err != nil {
 		return nil, err
-	}
-	defer func() { _ = rows.Close() }()
-	ids := []uuid.UUID{}
-	for rows.Next() {
-		var id uuid.UUID
-		if err := rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		ids = append(ids, id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	if len(ids) == 0 {
-		return []*entity.ScheduledMessage{}, nil
 	}
 	messages, err := client.ScheduledMessage.Query().
 		Where(scheduledmessage.IDIn(ids...)).
@@ -163,11 +132,11 @@ func (r *scheduledMessageRepository) ClaimDue(ctx context.Context, now, staleBef
 	if err != nil {
 		return nil, err
 	}
-	return scheduledMessagesToEntities(messages), nil
+	return convertAll(messages, scheduledMessageToEntity), nil
 }
 
 func (r *scheduledMessageRepository) Claim(ctx context.Context, id string) (*entity.ScheduledMessage, error) {
-	sid, err := utils.ParseUUID(id, "scheduled message ID")
+	sid, err := parseUUID(id, "scheduled message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -186,11 +155,11 @@ func (r *scheduledMessageRepository) Claim(ctx context.Context, id string) (*ent
 }
 
 func (r *scheduledMessageRepository) MarkSent(ctx context.Context, id string, messageID string) error {
-	sid, err := utils.ParseUUID(id, "scheduled message ID")
+	sid, err := parseUUID(id, "scheduled message ID")
 	if err != nil {
 		return err
 	}
-	mid, err := utils.ParseUUID(messageID, "message ID")
+	mid, err := parseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}
@@ -201,7 +170,7 @@ func (r *scheduledMessageRepository) MarkSent(ctx context.Context, id string, me
 }
 
 func (r *scheduledMessageRepository) MarkFailed(ctx context.Context, id string, reason string) error {
-	sid, err := utils.ParseUUID(id, "scheduled message ID")
+	sid, err := parseUUID(id, "scheduled message ID")
 	if err != nil {
 		return err
 	}
@@ -211,38 +180,23 @@ func (r *scheduledMessageRepository) MarkFailed(ctx context.Context, id string, 
 		Exec(ctx)
 }
 
-func scheduledMessagesToEntities(messages []*ent.ScheduledMessage) []*entity.ScheduledMessage {
-	result := make([]*entity.ScheduledMessage, 0, len(messages))
-	for _, m := range messages {
-		result = append(result, scheduledMessageToEntity(m))
-	}
-	return result
-}
-
 func scheduledMessageToEntity(m *ent.ScheduledMessage) *entity.ScheduledMessage {
-	result := &entity.ScheduledMessage{
+	attachmentIDs := m.AttachmentIds
+	if attachmentIDs == nil {
+		attachmentIDs = []string{}
+	}
+	return &entity.ScheduledMessage{
 		ID:            m.ID.String(),
 		UserID:        m.UserID.String(),
 		ChannelID:     m.ChannelID.String(),
+		ParentID:      optionalString(m.ParentID),
 		Body:          m.Body,
-		AttachmentIDs: m.AttachmentIds,
-		Location:      utils.LocationToEntity(m.LocationLatitude, m.LocationLongitude, m.LocationAccuracy, m.LocationLabel),
+		AttachmentIDs: attachmentIDs,
+		Location:      locationToEntity(m.LocationLatitude, m.LocationLongitude, m.LocationAccuracy, m.LocationLabel),
 		ScheduledAt:   m.ScheduledAt,
 		Status:        entity.ScheduledMessageStatus(m.Status),
+		SentMessageID: optionalString(m.SentMessageID),
 		FailureReason: m.FailureReason,
-		CreatedAt:     m.CreatedAt,
 		UpdatedAt:     m.UpdatedAt,
 	}
-	if result.AttachmentIDs == nil {
-		result.AttachmentIDs = []string{}
-	}
-	if m.ParentID != nil {
-		pid := m.ParentID.String()
-		result.ParentID = &pid
-	}
-	if m.SentMessageID != nil {
-		sid := m.SentMessageID.String()
-		result.SentMessageID = &sid
-	}
-	return result
 }

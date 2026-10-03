@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// WorkspaceMember holds the schema definition for the WorkspaceMember entity.
 type WorkspaceMember struct {
 	ent.Schema
 }
@@ -21,7 +20,6 @@ func (WorkspaceMember) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "workspace_member"}}
 }
 
-// Fields of the WorkspaceMember.
 func (WorkspaceMember) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -41,7 +39,6 @@ func (WorkspaceMember) Fields() []ent.Field {
 	}
 }
 
-// Edges of the WorkspaceMember.
 func (WorkspaceMember) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("workspace", Workspace.Type).
@@ -55,10 +52,8 @@ func (WorkspaceMember) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the WorkspaceMember.
 func (WorkspaceMember) Indexes() []ent.Index {
 	return []ent.Index{
-		// workspace と user の組み合わせで一意
 		index.Fields("workspace_id", "user_id").Unique(),
 	}
 }

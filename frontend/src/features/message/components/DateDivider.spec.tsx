@@ -15,8 +15,8 @@ describe("DateDivider", () => {
   test("今日・昨日は言葉で、それ以外は曜日付きの日付で表示する", async () => {
     await renderWithProviders(
       <>
-        <DateDivider dateKey={presets.today} />
-        <DateDivider dateKey="2026-09-01" />
+        <DateDivider dateKey={presets.today} floating={false} />
+        <DateDivider dateKey="2026-09-01" floating={false} />
       </>,
       "/app/ws1/ch1",
       () => {},
@@ -28,7 +28,7 @@ describe("DateDivider", () => {
 
   test("メニューで選んだ日へ ?date= で移動し、?message= は外す", async () => {
     const { router } = await renderWithProviders(
-      <DateDivider dateKey={presets.today} />,
+      <DateDivider dateKey={presets.today} floating={false} />,
       "/app/ws1/ch1?message=m1",
       () => {},
     );
@@ -42,7 +42,11 @@ describe("DateDivider", () => {
   });
 
   test("日付を指定するとカレンダーを開く", async () => {
-    await renderWithProviders(<DateDivider dateKey={presets.today} />, "/app/ws1/ch1", () => {});
+    await renderWithProviders(
+      <DateDivider dateKey={presets.today} floating={false} />,
+      "/app/ws1/ch1",
+      () => {},
+    );
 
     await userEvent.click(await screen.findByRole("button", { name: /^今日/ }));
     await userEvent.click(await screen.findByRole("menuitem", { name: "日付を指定" }));

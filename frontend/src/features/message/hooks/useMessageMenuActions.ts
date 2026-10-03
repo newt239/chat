@@ -13,21 +13,19 @@ import {
   IconPinnedOff,
   IconTrash,
 } from "@tabler/icons-react";
-import { useParams, useRouter } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { toast } from "#/components/ui/ToastRegion/toast";
-import {
-  useAddBookmark,
-  useIsBookmarked,
-  useRemoveBookmark,
-} from "#/features/bookmark/hooks/useBookmarks";
-import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
-import { usePinActions } from "#/features/pin/hooks/usePinActions";
+import { useToggleBookmark } from "#/features/bookmark/hooks/useBookmarks";
+import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
+import { useTogglePin } from "#/features/pin/hooks/useTogglePin";
 import { useToggleThreadFollow } from "#/features/thread/hooks/useToggleThreadFollow";
 import { copyWithToast } from "#/lib/clipboard";
+import { messageLocation } from "#/lib/messageLocation";
+import { workspaceRoute } from "#/lib/overlaySearch";
+import { toShareUrl } from "#/lib/shareUrl";
 
-import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
+import type { Message } from "#/gen/chat/v1/message_pb";
 
 import type { Icon } from "@tabler/icons-react";
 
@@ -41,12 +39,13 @@ export type MessageMenuAction = {
   onAction?: () => void;
 };
 
+// ツールバーは先頭の 3 つ、モバイルのシートはすべてを並べる
+export const quickReactions = ["👍", "✅", "👀", "🎉", "🙏"] as const;
+
 type Options = {
   message: Message;
-  threadMetadata: ThreadMetadata | undefined;
   isAuthor: boolean;
   onReplyInThread: () => void;
-  onCopyLink: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onViewReactions: () => void;
@@ -55,10 +54,8 @@ type Options = {
 // ホバー時の「その他」メニューとモバイルのシートで同じ操作を並べる
 export const useMessageMenuActions = ({
   message,
-  threadMetadata,
   isAuthor,
   onReplyInThread,
-  onCopyLink,
   onEdit,
   onDelete,
   onViewReactions,
@@ -66,51 +63,39 @@ export const useMessageMenuActions = ({
   const { t } = useTranslation();
   const { toText } = useMentionDirectory();
   const router = useRouter();
-  const { workspaceId } = useParams({ strict: false });
-  const isBookmarked = useIsBookmarked(message.id);
-  const addBookmark = useAddBookmark();
-  const removeBookmark = useRemoveBookmark();
+  const { workspaceId } = workspaceRoute.useParams();
+  const { isBookmarked, toggleBookmark } = useToggleBookmark(message.id, workspaceId);
   const isPinned = message.pin !== undefined;
-  const { pin, unpin } = usePinActions();
+  const togglePin = useTogglePin(message);
   const canModify = isAuthor && !message.isDeleted;
   const { setFollowing } = useToggleThreadFollow(message.id);
-  const isFollowing = threadMetadata?.isFollowing ?? false;
-
-  const toggleBookmark = () => {
-    (isBookmarked ? removeBookmark : addBookmark).mutate(
-      { messageId: message.id },
-      {
-        onSuccess: () => {
-          toast(t(isBookmarked ? "bookmark.removed" : "bookmark.added"));
-        },
-      },
-    );
-  };
+  const isFollowing = message.threadMetadata?.isFollowing ?? false;
 
   const copyText = () => {
     void copyWithToast(toText(message.body), t("message.link.textCopied"));
   };
 
-  const togglePin = () => {
-    (isPinned ? unpin : pin).mutate(
-      { channelId: message.channelId, messageId: message.id },
-      {
-        onSuccess: () => {
-          toast(t(isPinned ? "pin.unpinned" : "pin.pinned"));
-        },
-      },
+  const copyLink = () => {
+    const { href } = router.buildLocation(
+      messageLocation({
+        channelId: message.channelId,
+        messageId: message.id,
+        parentId: message.parentId,
+        workspaceId,
+      }),
     );
+    void copyWithToast(toShareUrl(href), t("common.linkCopied"));
   };
 
-  // スレッドのルートができるまでは、親メッセージを指すチャンネルのリンクで代用する
-  const threadHref =
-    workspaceId === undefined
-      ? undefined
-      : router.buildLocation({
-          params: { channelId: message.channelId, workspaceId },
-          search: { message: message.parentId ?? message.id },
-          to: "/app/$workspaceId/$channelId",
-        }).href;
+  const threadHref = router.buildLocation({
+    params: {
+      channelId: message.channelId,
+      messageId: message.parentId ?? message.id,
+      workspaceId,
+    },
+    search: { message: message.parentId === undefined ? undefined : message.id },
+    to: "/app/$workspaceId/$channelId/thread/$messageId",
+  }).href;
 
   const actions: (MessageMenuAction | false)[] = [
     canModify && {
@@ -127,7 +112,7 @@ export const useMessageMenuActions = ({
       onAction: onReplyInThread,
       tone: "default",
     },
-    (threadMetadata?.replyCount ?? 0) > 0 && {
+    (message.threadMetadata?.replyCount ?? 0) > 0 && {
       icon: isFollowing ? IconBellOff : IconBell,
       id: "followThread",
       label: t(isFollowing ? "thread.follow.unfollow" : "thread.follow.follow"),
@@ -136,7 +121,7 @@ export const useMessageMenuActions = ({
       },
       tone: "default",
     },
-    threadHref !== undefined && {
+    {
       href: threadHref,
       icon: IconExternalLink,
       id: "threadInNewTab",
@@ -168,7 +153,7 @@ export const useMessageMenuActions = ({
       icon: IconLink,
       id: "copyLink",
       label: t("message.actions.copyLink"),
-      onAction: onCopyLink,
+      onAction: copyLink,
       tone: "default",
     },
     !message.isDeleted &&

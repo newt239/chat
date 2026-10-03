@@ -14,27 +14,21 @@ import { Route as AppRouteRouteImport } from "./routes/app/route";
 import { Route as LoginRouteImport } from "./routes/login";
 import { Route as AppIndexRouteImport } from "./routes/app/index";
 import { Route as AppWorkspaceIdRouteRouteImport } from "./routes/app/$workspaceId/route";
-import { Route as DevUiRouteImport } from "./routes/dev/ui";
 import { Route as InviteTokenRouteImport } from "./routes/invite.$token";
 import { Route as JoinWorkspaceIdRouteImport } from "./routes/join.$workspaceId";
 import { Route as AppWorkspaceIdIndexRouteImport } from "./routes/app/$workspaceId/index";
 import { Route as AppWorkspaceIdChannelIdRouteImport } from "./routes/app/$workspaceId/$channelId";
-import { Route as AppWorkspaceIdActivityRouteImport } from "./routes/app/$workspaceId/activity";
 import { Route as AppWorkspaceIdAdminRouteImport } from "./routes/app/$workspaceId/admin";
 import { Route as AppWorkspaceIdBookmarksRouteImport } from "./routes/app/$workspaceId/bookmarks";
 import { Route as AppWorkspaceIdBrowseChannelsRouteImport } from "./routes/app/$workspaceId/browse-channels";
 import { Route as AppWorkspaceIdDmsRouteImport } from "./routes/app/$workspaceId/dms";
 import { Route as AppWorkspaceIdDraftsRouteImport } from "./routes/app/$workspaceId/drafts";
-import { Route as AppWorkspaceIdGroupsRouteImport } from "./routes/app/$workspaceId/groups";
-import { Route as AppWorkspaceIdInsightsRouteImport } from "./routes/app/$workspaceId/insights";
 import { Route as AppWorkspaceIdMeRouteImport } from "./routes/app/$workspaceId/me";
 import { Route as AppWorkspaceIdMentionsRouteImport } from "./routes/app/$workspaceId/mentions";
 import { Route as AppWorkspaceIdSearchRouteImport } from "./routes/app/$workspaceId/search";
 import { Route as AppWorkspaceIdThreadsRouteImport } from "./routes/app/$workspaceId/threads";
-import { Route as AppWorkspaceIdSettingsIndexRouteImport } from "./routes/app/$workspaceId/settings/index";
-import { Route as AppWorkspaceIdSettingsSectionRouteImport } from "./routes/app/$workspaceId/settings/$section";
-import { Route as AppWorkspaceIdWorkspaceSettingsIndexRouteImport } from "./routes/app/$workspaceId/workspace-settings/index";
-import { Route as AppWorkspaceIdWorkspaceSettingsSectionRouteImport } from "./routes/app/$workspaceId/workspace-settings/$section";
+import { Route as AppWorkspaceIdSettingsChar123SectionChar125RouteImport } from "./routes/app/$workspaceId/settings/{-$section}";
+import { Route as AppWorkspaceIdWorkspaceSettingsChar123SectionChar125RouteImport } from "./routes/app/$workspaceId/workspace-settings/{-$section}";
 import { Route as AppWorkspaceIdChannelIdThreadMessageIdRouteImport } from "./routes/app/$workspaceId/$channelId/thread/$messageId";
 
 const IndexRoute = IndexRouteImport.update({
@@ -62,11 +56,6 @@ const AppWorkspaceIdRouteRoute = AppWorkspaceIdRouteRouteImport.update({
   path: "/$workspaceId",
   getParentRoute: () => AppRouteRoute,
 } as any);
-const DevUiRoute = DevUiRouteImport.update({
-  id: "/dev/ui",
-  path: "/dev/ui",
-  getParentRoute: () => rootRouteImport,
-} as any);
 const InviteTokenRoute = InviteTokenRouteImport.update({
   id: "/invite/$token",
   path: "/invite/$token",
@@ -85,11 +74,6 @@ const AppWorkspaceIdIndexRoute = AppWorkspaceIdIndexRouteImport.update({
 const AppWorkspaceIdChannelIdRoute = AppWorkspaceIdChannelIdRouteImport.update({
   id: "/$channelId",
   path: "/$channelId",
-  getParentRoute: () => AppWorkspaceIdRouteRoute,
-} as any);
-const AppWorkspaceIdActivityRoute = AppWorkspaceIdActivityRouteImport.update({
-  id: "/activity",
-  path: "/activity",
   getParentRoute: () => AppWorkspaceIdRouteRoute,
 } as any);
 const AppWorkspaceIdAdminRoute = AppWorkspaceIdAdminRouteImport.update({
@@ -118,16 +102,6 @@ const AppWorkspaceIdDraftsRoute = AppWorkspaceIdDraftsRouteImport.update({
   path: "/drafts",
   getParentRoute: () => AppWorkspaceIdRouteRoute,
 } as any);
-const AppWorkspaceIdGroupsRoute = AppWorkspaceIdGroupsRouteImport.update({
-  id: "/groups",
-  path: "/groups",
-  getParentRoute: () => AppWorkspaceIdRouteRoute,
-} as any);
-const AppWorkspaceIdInsightsRoute = AppWorkspaceIdInsightsRouteImport.update({
-  id: "/insights",
-  path: "/insights",
-  getParentRoute: () => AppWorkspaceIdRouteRoute,
-} as any);
 const AppWorkspaceIdMeRoute = AppWorkspaceIdMeRouteImport.update({
   id: "/me",
   path: "/me",
@@ -148,28 +122,16 @@ const AppWorkspaceIdThreadsRoute = AppWorkspaceIdThreadsRouteImport.update({
   path: "/threads",
   getParentRoute: () => AppWorkspaceIdRouteRoute,
 } as any);
-const AppWorkspaceIdSettingsIndexRoute =
-  AppWorkspaceIdSettingsIndexRouteImport.update({
-    id: "/settings/",
-    path: "/settings/",
+const AppWorkspaceIdSettingsChar123SectionChar125Route =
+  AppWorkspaceIdSettingsChar123SectionChar125RouteImport.update({
+    id: "/settings/{-$section}",
+    path: "/settings/{-$section}",
     getParentRoute: () => AppWorkspaceIdRouteRoute,
   } as any);
-const AppWorkspaceIdSettingsSectionRoute =
-  AppWorkspaceIdSettingsSectionRouteImport.update({
-    id: "/settings/$section",
-    path: "/settings/$section",
-    getParentRoute: () => AppWorkspaceIdRouteRoute,
-  } as any);
-const AppWorkspaceIdWorkspaceSettingsIndexRoute =
-  AppWorkspaceIdWorkspaceSettingsIndexRouteImport.update({
-    id: "/workspace-settings/",
-    path: "/workspace-settings/",
-    getParentRoute: () => AppWorkspaceIdRouteRoute,
-  } as any);
-const AppWorkspaceIdWorkspaceSettingsSectionRoute =
-  AppWorkspaceIdWorkspaceSettingsSectionRouteImport.update({
-    id: "/workspace-settings/$section",
-    path: "/workspace-settings/$section",
+const AppWorkspaceIdWorkspaceSettingsChar123SectionChar125Route =
+  AppWorkspaceIdWorkspaceSettingsChar123SectionChar125RouteImport.update({
+    id: "/workspace-settings/{-$section}",
+    path: "/workspace-settings/{-$section}",
     getParentRoute: () => AppWorkspaceIdRouteRoute,
   } as any);
 const AppWorkspaceIdChannelIdThreadMessageIdRoute =
@@ -184,55 +146,43 @@ export interface FileRoutesByFullPath {
   "/app": typeof AppRouteRouteWithChildren;
   "/login": typeof LoginRoute;
   "/app/$workspaceId": typeof AppWorkspaceIdRouteRouteWithChildren;
-  "/dev/ui": typeof DevUiRoute;
   "/invite/$token": typeof InviteTokenRoute;
   "/join/$workspaceId": typeof JoinWorkspaceIdRoute;
   "/app/": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
-  "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
   "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
   "/app/$workspaceId/browse-channels": typeof AppWorkspaceIdBrowseChannelsRoute;
   "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
   "/app/$workspaceId/drafts": typeof AppWorkspaceIdDraftsRoute;
-  "/app/$workspaceId/groups": typeof AppWorkspaceIdGroupsRoute;
-  "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
   "/app/$workspaceId/me": typeof AppWorkspaceIdMeRoute;
   "/app/$workspaceId/mentions": typeof AppWorkspaceIdMentionsRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId/": typeof AppWorkspaceIdIndexRoute;
-  "/app/$workspaceId/settings/$section": typeof AppWorkspaceIdSettingsSectionRoute;
-  "/app/$workspaceId/workspace-settings/$section": typeof AppWorkspaceIdWorkspaceSettingsSectionRoute;
-  "/app/$workspaceId/settings/": typeof AppWorkspaceIdSettingsIndexRoute;
-  "/app/$workspaceId/workspace-settings/": typeof AppWorkspaceIdWorkspaceSettingsIndexRoute;
+  "/app/$workspaceId/settings/{-$section}": typeof AppWorkspaceIdSettingsChar123SectionChar125Route;
+  "/app/$workspaceId/workspace-settings/{-$section}": typeof AppWorkspaceIdWorkspaceSettingsChar123SectionChar125Route;
   "/app/$workspaceId/$channelId/thread/$messageId": typeof AppWorkspaceIdChannelIdThreadMessageIdRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/login": typeof LoginRoute;
-  "/dev/ui": typeof DevUiRoute;
   "/invite/$token": typeof InviteTokenRoute;
   "/join/$workspaceId": typeof JoinWorkspaceIdRoute;
   "/app": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
-  "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
   "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
   "/app/$workspaceId/browse-channels": typeof AppWorkspaceIdBrowseChannelsRoute;
   "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
   "/app/$workspaceId/drafts": typeof AppWorkspaceIdDraftsRoute;
-  "/app/$workspaceId/groups": typeof AppWorkspaceIdGroupsRoute;
-  "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
   "/app/$workspaceId/me": typeof AppWorkspaceIdMeRoute;
   "/app/$workspaceId/mentions": typeof AppWorkspaceIdMentionsRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId": typeof AppWorkspaceIdIndexRoute;
-  "/app/$workspaceId/settings/$section": typeof AppWorkspaceIdSettingsSectionRoute;
-  "/app/$workspaceId/workspace-settings/$section": typeof AppWorkspaceIdWorkspaceSettingsSectionRoute;
-  "/app/$workspaceId/settings": typeof AppWorkspaceIdSettingsIndexRoute;
-  "/app/$workspaceId/workspace-settings": typeof AppWorkspaceIdWorkspaceSettingsIndexRoute;
+  "/app/$workspaceId/settings/{-$section}": typeof AppWorkspaceIdSettingsChar123SectionChar125Route;
+  "/app/$workspaceId/workspace-settings/{-$section}": typeof AppWorkspaceIdWorkspaceSettingsChar123SectionChar125Route;
   "/app/$workspaceId/$channelId/thread/$messageId": typeof AppWorkspaceIdChannelIdThreadMessageIdRoute;
 }
 export interface FileRoutesById {
@@ -241,28 +191,22 @@ export interface FileRoutesById {
   "/app": typeof AppRouteRouteWithChildren;
   "/login": typeof LoginRoute;
   "/app/$workspaceId": typeof AppWorkspaceIdRouteRouteWithChildren;
-  "/dev/ui": typeof DevUiRoute;
   "/invite/$token": typeof InviteTokenRoute;
   "/join/$workspaceId": typeof JoinWorkspaceIdRoute;
   "/app/": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
-  "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
   "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
   "/app/$workspaceId/browse-channels": typeof AppWorkspaceIdBrowseChannelsRoute;
   "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
   "/app/$workspaceId/drafts": typeof AppWorkspaceIdDraftsRoute;
-  "/app/$workspaceId/groups": typeof AppWorkspaceIdGroupsRoute;
-  "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
   "/app/$workspaceId/me": typeof AppWorkspaceIdMeRoute;
   "/app/$workspaceId/mentions": typeof AppWorkspaceIdMentionsRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId/": typeof AppWorkspaceIdIndexRoute;
-  "/app/$workspaceId/settings/$section": typeof AppWorkspaceIdSettingsSectionRoute;
-  "/app/$workspaceId/workspace-settings/$section": typeof AppWorkspaceIdWorkspaceSettingsSectionRoute;
-  "/app/$workspaceId/settings/": typeof AppWorkspaceIdSettingsIndexRoute;
-  "/app/$workspaceId/workspace-settings/": typeof AppWorkspaceIdWorkspaceSettingsIndexRoute;
+  "/app/$workspaceId/settings/{-$section}": typeof AppWorkspaceIdSettingsChar123SectionChar125Route;
+  "/app/$workspaceId/workspace-settings/{-$section}": typeof AppWorkspaceIdWorkspaceSettingsChar123SectionChar125Route;
   "/app/$workspaceId/$channelId/thread/$messageId": typeof AppWorkspaceIdChannelIdThreadMessageIdRoute;
 }
 export interface FileRouteTypes {
@@ -272,55 +216,43 @@ export interface FileRouteTypes {
     | "/app"
     | "/login"
     | "/app/$workspaceId"
-    | "/dev/ui"
     | "/invite/$token"
     | "/join/$workspaceId"
     | "/app/"
     | "/app/$workspaceId/$channelId"
-    | "/app/$workspaceId/activity"
     | "/app/$workspaceId/admin"
     | "/app/$workspaceId/bookmarks"
     | "/app/$workspaceId/browse-channels"
     | "/app/$workspaceId/dms"
     | "/app/$workspaceId/drafts"
-    | "/app/$workspaceId/groups"
-    | "/app/$workspaceId/insights"
     | "/app/$workspaceId/me"
     | "/app/$workspaceId/mentions"
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
     | "/app/$workspaceId/"
-    | "/app/$workspaceId/settings/$section"
-    | "/app/$workspaceId/workspace-settings/$section"
-    | "/app/$workspaceId/settings/"
-    | "/app/$workspaceId/workspace-settings/"
+    | "/app/$workspaceId/settings/{-$section}"
+    | "/app/$workspaceId/workspace-settings/{-$section}"
     | "/app/$workspaceId/$channelId/thread/$messageId";
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/"
     | "/login"
-    | "/dev/ui"
     | "/invite/$token"
     | "/join/$workspaceId"
     | "/app"
     | "/app/$workspaceId/$channelId"
-    | "/app/$workspaceId/activity"
     | "/app/$workspaceId/admin"
     | "/app/$workspaceId/bookmarks"
     | "/app/$workspaceId/browse-channels"
     | "/app/$workspaceId/dms"
     | "/app/$workspaceId/drafts"
-    | "/app/$workspaceId/groups"
-    | "/app/$workspaceId/insights"
     | "/app/$workspaceId/me"
     | "/app/$workspaceId/mentions"
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
     | "/app/$workspaceId"
-    | "/app/$workspaceId/settings/$section"
-    | "/app/$workspaceId/workspace-settings/$section"
-    | "/app/$workspaceId/settings"
-    | "/app/$workspaceId/workspace-settings"
+    | "/app/$workspaceId/settings/{-$section}"
+    | "/app/$workspaceId/workspace-settings/{-$section}"
     | "/app/$workspaceId/$channelId/thread/$messageId";
   id:
     | "__root__"
@@ -328,28 +260,22 @@ export interface FileRouteTypes {
     | "/app"
     | "/login"
     | "/app/$workspaceId"
-    | "/dev/ui"
     | "/invite/$token"
     | "/join/$workspaceId"
     | "/app/"
     | "/app/$workspaceId/$channelId"
-    | "/app/$workspaceId/activity"
     | "/app/$workspaceId/admin"
     | "/app/$workspaceId/bookmarks"
     | "/app/$workspaceId/browse-channels"
     | "/app/$workspaceId/dms"
     | "/app/$workspaceId/drafts"
-    | "/app/$workspaceId/groups"
-    | "/app/$workspaceId/insights"
     | "/app/$workspaceId/me"
     | "/app/$workspaceId/mentions"
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
     | "/app/$workspaceId/"
-    | "/app/$workspaceId/settings/$section"
-    | "/app/$workspaceId/workspace-settings/$section"
-    | "/app/$workspaceId/settings/"
-    | "/app/$workspaceId/workspace-settings/"
+    | "/app/$workspaceId/settings/{-$section}"
+    | "/app/$workspaceId/workspace-settings/{-$section}"
     | "/app/$workspaceId/$channelId/thread/$messageId";
   fileRoutesById: FileRoutesById;
 }
@@ -357,7 +283,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   AppRouteRoute: typeof AppRouteRouteWithChildren;
   LoginRoute: typeof LoginRoute;
-  DevUiRoute: typeof DevUiRoute;
   InviteTokenRoute: typeof InviteTokenRoute;
   JoinWorkspaceIdRoute: typeof JoinWorkspaceIdRoute;
 }
@@ -399,13 +324,6 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppWorkspaceIdRouteRouteImport;
       parentRoute: typeof AppRouteRoute;
     };
-    "/dev/ui": {
-      id: "/dev/ui";
-      path: "/dev/ui";
-      fullPath: "/dev/ui";
-      preLoaderRoute: typeof DevUiRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
     "/invite/$token": {
       id: "/invite/$token";
       path: "/invite/$token";
@@ -432,13 +350,6 @@ declare module "@tanstack/react-router" {
       path: "/$channelId";
       fullPath: "/app/$workspaceId/$channelId";
       preLoaderRoute: typeof AppWorkspaceIdChannelIdRouteImport;
-      parentRoute: typeof AppWorkspaceIdRouteRoute;
-    };
-    "/app/$workspaceId/activity": {
-      id: "/app/$workspaceId/activity";
-      path: "/activity";
-      fullPath: "/app/$workspaceId/activity";
-      preLoaderRoute: typeof AppWorkspaceIdActivityRouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
     "/app/$workspaceId/admin": {
@@ -476,20 +387,6 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppWorkspaceIdDraftsRouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
-    "/app/$workspaceId/groups": {
-      id: "/app/$workspaceId/groups";
-      path: "/groups";
-      fullPath: "/app/$workspaceId/groups";
-      preLoaderRoute: typeof AppWorkspaceIdGroupsRouteImport;
-      parentRoute: typeof AppWorkspaceIdRouteRoute;
-    };
-    "/app/$workspaceId/insights": {
-      id: "/app/$workspaceId/insights";
-      path: "/insights";
-      fullPath: "/app/$workspaceId/insights";
-      preLoaderRoute: typeof AppWorkspaceIdInsightsRouteImport;
-      parentRoute: typeof AppWorkspaceIdRouteRoute;
-    };
     "/app/$workspaceId/me": {
       id: "/app/$workspaceId/me";
       path: "/me";
@@ -518,32 +415,18 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppWorkspaceIdThreadsRouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
-    "/app/$workspaceId/settings/": {
-      id: "/app/$workspaceId/settings/";
-      path: "/settings";
-      fullPath: "/app/$workspaceId/settings/";
-      preLoaderRoute: typeof AppWorkspaceIdSettingsIndexRouteImport;
+    "/app/$workspaceId/settings/{-$section}": {
+      id: "/app/$workspaceId/settings/{-$section}";
+      path: "/settings/{-$section}";
+      fullPath: "/app/$workspaceId/settings/{-$section}";
+      preLoaderRoute: typeof AppWorkspaceIdSettingsChar123SectionChar125RouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
-    "/app/$workspaceId/settings/$section": {
-      id: "/app/$workspaceId/settings/$section";
-      path: "/settings/$section";
-      fullPath: "/app/$workspaceId/settings/$section";
-      preLoaderRoute: typeof AppWorkspaceIdSettingsSectionRouteImport;
-      parentRoute: typeof AppWorkspaceIdRouteRoute;
-    };
-    "/app/$workspaceId/workspace-settings/": {
-      id: "/app/$workspaceId/workspace-settings/";
-      path: "/workspace-settings";
-      fullPath: "/app/$workspaceId/workspace-settings/";
-      preLoaderRoute: typeof AppWorkspaceIdWorkspaceSettingsIndexRouteImport;
-      parentRoute: typeof AppWorkspaceIdRouteRoute;
-    };
-    "/app/$workspaceId/workspace-settings/$section": {
-      id: "/app/$workspaceId/workspace-settings/$section";
-      path: "/workspace-settings/$section";
-      fullPath: "/app/$workspaceId/workspace-settings/$section";
-      preLoaderRoute: typeof AppWorkspaceIdWorkspaceSettingsSectionRouteImport;
+    "/app/$workspaceId/workspace-settings/{-$section}": {
+      id: "/app/$workspaceId/workspace-settings/{-$section}";
+      path: "/workspace-settings/{-$section}";
+      fullPath: "/app/$workspaceId/workspace-settings/{-$section}";
+      preLoaderRoute: typeof AppWorkspaceIdWorkspaceSettingsChar123SectionChar125RouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
     "/app/$workspaceId/$channelId/thread/$messageId": {
@@ -573,46 +456,36 @@ const AppWorkspaceIdChannelIdRouteWithChildren =
 
 interface AppWorkspaceIdRouteRouteChildren {
   AppWorkspaceIdChannelIdRoute: typeof AppWorkspaceIdChannelIdRouteWithChildren;
-  AppWorkspaceIdActivityRoute: typeof AppWorkspaceIdActivityRoute;
   AppWorkspaceIdAdminRoute: typeof AppWorkspaceIdAdminRoute;
   AppWorkspaceIdBookmarksRoute: typeof AppWorkspaceIdBookmarksRoute;
   AppWorkspaceIdBrowseChannelsRoute: typeof AppWorkspaceIdBrowseChannelsRoute;
   AppWorkspaceIdDmsRoute: typeof AppWorkspaceIdDmsRoute;
   AppWorkspaceIdDraftsRoute: typeof AppWorkspaceIdDraftsRoute;
-  AppWorkspaceIdGroupsRoute: typeof AppWorkspaceIdGroupsRoute;
-  AppWorkspaceIdInsightsRoute: typeof AppWorkspaceIdInsightsRoute;
   AppWorkspaceIdMeRoute: typeof AppWorkspaceIdMeRoute;
   AppWorkspaceIdMentionsRoute: typeof AppWorkspaceIdMentionsRoute;
   AppWorkspaceIdSearchRoute: typeof AppWorkspaceIdSearchRoute;
   AppWorkspaceIdThreadsRoute: typeof AppWorkspaceIdThreadsRoute;
   AppWorkspaceIdIndexRoute: typeof AppWorkspaceIdIndexRoute;
-  AppWorkspaceIdSettingsSectionRoute: typeof AppWorkspaceIdSettingsSectionRoute;
-  AppWorkspaceIdWorkspaceSettingsSectionRoute: typeof AppWorkspaceIdWorkspaceSettingsSectionRoute;
-  AppWorkspaceIdSettingsIndexRoute: typeof AppWorkspaceIdSettingsIndexRoute;
-  AppWorkspaceIdWorkspaceSettingsIndexRoute: typeof AppWorkspaceIdWorkspaceSettingsIndexRoute;
+  AppWorkspaceIdSettingsChar123SectionChar125Route: typeof AppWorkspaceIdSettingsChar123SectionChar125Route;
+  AppWorkspaceIdWorkspaceSettingsChar123SectionChar125Route: typeof AppWorkspaceIdWorkspaceSettingsChar123SectionChar125Route;
 }
 
 const AppWorkspaceIdRouteRouteChildren: AppWorkspaceIdRouteRouteChildren = {
   AppWorkspaceIdChannelIdRoute: AppWorkspaceIdChannelIdRouteWithChildren,
-  AppWorkspaceIdActivityRoute: AppWorkspaceIdActivityRoute,
   AppWorkspaceIdAdminRoute: AppWorkspaceIdAdminRoute,
   AppWorkspaceIdBookmarksRoute: AppWorkspaceIdBookmarksRoute,
   AppWorkspaceIdBrowseChannelsRoute: AppWorkspaceIdBrowseChannelsRoute,
   AppWorkspaceIdDmsRoute: AppWorkspaceIdDmsRoute,
   AppWorkspaceIdDraftsRoute: AppWorkspaceIdDraftsRoute,
-  AppWorkspaceIdGroupsRoute: AppWorkspaceIdGroupsRoute,
-  AppWorkspaceIdInsightsRoute: AppWorkspaceIdInsightsRoute,
   AppWorkspaceIdMeRoute: AppWorkspaceIdMeRoute,
   AppWorkspaceIdMentionsRoute: AppWorkspaceIdMentionsRoute,
   AppWorkspaceIdSearchRoute: AppWorkspaceIdSearchRoute,
   AppWorkspaceIdThreadsRoute: AppWorkspaceIdThreadsRoute,
   AppWorkspaceIdIndexRoute: AppWorkspaceIdIndexRoute,
-  AppWorkspaceIdSettingsSectionRoute: AppWorkspaceIdSettingsSectionRoute,
-  AppWorkspaceIdWorkspaceSettingsSectionRoute:
-    AppWorkspaceIdWorkspaceSettingsSectionRoute,
-  AppWorkspaceIdSettingsIndexRoute: AppWorkspaceIdSettingsIndexRoute,
-  AppWorkspaceIdWorkspaceSettingsIndexRoute:
-    AppWorkspaceIdWorkspaceSettingsIndexRoute,
+  AppWorkspaceIdSettingsChar123SectionChar125Route:
+    AppWorkspaceIdSettingsChar123SectionChar125Route,
+  AppWorkspaceIdWorkspaceSettingsChar123SectionChar125Route:
+    AppWorkspaceIdWorkspaceSettingsChar123SectionChar125Route,
 };
 
 const AppWorkspaceIdRouteRouteWithChildren =
@@ -636,7 +509,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
   LoginRoute: LoginRoute,
-  DevUiRoute: DevUiRoute,
   InviteTokenRoute: InviteTokenRoute,
   JoinWorkspaceIdRoute: JoinWorkspaceIdRoute,
 };

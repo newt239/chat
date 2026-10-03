@@ -4,17 +4,20 @@ import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
 import { useChannels } from "./useChannel";
 
-// 一覧にあればそれを使い、未参加の公開チャンネルなど一覧にないものは個別に取得する
-// channelId が null なら取得しない
+// 一覧になければ個別に取得する。channelId が null なら取得しない
 export const useChannelById = (workspaceId: string, channelId: string | null) => {
-  const { data: channels } = useChannels(workspaceId);
-  const listed = channels?.find((channel) => channel.id === channelId);
-  const { data: fetched } = useQuery(
+  const list = useChannels(workspaceId);
+  const listed = list.data?.find((channel) => channel.id === channelId);
+  const fetched = useQuery(
     ChannelService.method.getChannel,
-    channels !== undefined && listed === undefined && channelId !== null
+    list.data !== undefined && listed === undefined && channelId !== null
       ? { channelId }
       : skipToken,
     { select: (res) => res.channel },
   );
-  return listed ?? fetched;
+  return {
+    channel: listed ?? fetched.data,
+    isError: list.isError || fetched.isError,
+    isPending: listed === undefined && fetched.isPending,
+  };
 };

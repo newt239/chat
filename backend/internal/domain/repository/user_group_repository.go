@@ -16,7 +16,6 @@ type UserGroupRepository interface {
 	Delete(ctx context.Context, id string) error
 	AddMember(ctx context.Context, member *entity.UserGroupMember) error
 	RemoveMember(ctx context.Context, groupID string, userID string) error
-	FindMembersByGroupID(ctx context.Context, groupID string) ([]*entity.UserGroupMember, error)
 	FindMembersByGroupIDs(ctx context.Context, groupIDs []string) ([]*entity.UserGroupMember, error)
 	IsMember(ctx context.Context, groupID string, userID string) (bool, error)
 }

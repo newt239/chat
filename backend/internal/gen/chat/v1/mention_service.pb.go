@@ -79,9 +79,8 @@ type ListMentionsRequest struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	WorkspaceId string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	// 前ページの next_cursor をそのまま渡す
-	Cursor *MentionCursor `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
-	// 0 の場合はサーバーの既定値を使う
-	Limit         int32 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	Cursor        *MentionCursor `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	Limit         int32          `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -203,7 +202,7 @@ const file_chat_v1_mention_service_proto_rawDesc = "" +
 	"\x13ListMentionsRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12.\n" +
 	"\x06cursor\x18\x02 \x01(\v2\x16.chat.v1.MentionCursorR\x06cursor\x12\x1f\n" +
-	"\x05limit\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\"}\n" +
+	"\x05limit\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x01R\x05limit\"}\n" +
 	"\x14ListMentionsResponse\x12,\n" +
 	"\bmessages\x18\x01 \x03(\v2\x10.chat.v1.MessageR\bmessages\x127\n" +
 	"\vnext_cursor\x18\x02 \x01(\v2\x16.chat.v1.MentionCursorR\n" +

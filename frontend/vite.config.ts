@@ -15,8 +15,10 @@ export default defineConfig(({ mode }) => {
   const isTauri = mode === "tauri";
 
   return {
+    // モバイルアプリかどうかを TAURI_ENV_PLATFORM で判定するため
+    envPrefix: ["VITE_", "TAURI_ENV_PLATFORM"],
     fmt: {
-      ignorePatterns: ["dist/", "dev-dist/", "src-tauri/", ...generatedFiles],
+      ignorePatterns: ["dist/", "src-tauri/", ...generatedFiles],
       jsdoc: true,
       sortImports: {
         customGroups: [
@@ -57,7 +59,7 @@ export default defineConfig(({ mode }) => {
         browser: true,
         node: true,
       },
-      ignorePatterns: ["dist/", "dev-dist/", "src-tauri/", ...generatedFiles],
+      ignorePatterns: ["dist/", "src-tauri/", ...generatedFiles],
       jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
       options: {
         typeAware: true,
@@ -65,16 +67,10 @@ export default defineConfig(({ mode }) => {
       },
       overrides: [
         {
-          files: ["tests/**", "*.config.ts"],
+          files: ["*.config.ts"],
           rules: {
             "import/no-nodejs-modules": "off",
             "new-cap": "off",
-          },
-        },
-        {
-          files: ["src/lib/logger.ts"],
-          rules: {
-            "no-console": "off",
           },
         },
         {
@@ -115,7 +111,6 @@ export default defineConfig(({ mode }) => {
       rules: {
         // 先頭が大文字化されるとファイルパスの意味が変わるため
         "capitalized-comments": "off",
-        // logger のようなインスタンス API を static 化すると設計が歪むため
         "class-methods-use-this": "off",
         complexity: "off",
         "func-style": ["error", "expression"],
@@ -177,8 +172,6 @@ export default defineConfig(({ mode }) => {
         "react/jsx-props-no-spreading": "off",
         "react/no-object-type-as-default-prop": "off",
         "react/react-in-jsx-scope": "off",
-        // 外部値とフォーム状態を同期する用途で使っているため
-        "react/set-state-in-effect": "off",
         "require-unicode-regexp": "off",
         "sort-imports": "off",
         "typescript/consistent-type-definitions": ["error", "type"],
@@ -269,29 +262,16 @@ export default defineConfig(({ mode }) => {
     server: {
       // 実機やエミュレータから開発サーバーに届くよう、Tauri が渡すホストで待ち受ける
       host: process.env.TAURI_DEV_HOST || true,
-      proxy: {
-        "/api": {
-          changeOrigin: true,
-          target: "http://localhost:8080",
-        },
-        "/ws": {
-          target: "ws://localhost:8080",
-          ws: true,
-        },
-        "^/chat\\.v1\\.": {
-          changeOrigin: true,
-          target: "http://localhost:8080",
-        },
-      },
       strictPort: isTauri,
     },
     test: {
       // theme.spec.ts が @theme の定義漏れを検査するため globals.css だけは中身を読み込む
       css: { include: [/globals\.css/] },
+      env: { VITE_API_BASE_URL: "http://localhost:8080", VITE_WS_URL: "ws://localhost:8080" },
       environment: "jsdom",
       globals: false,
       include: ["src/**/*.{spec,test}.{ts,tsx}"],
-      setupFiles: ["./tests/vitest.setup.ts"],
+      setupFiles: ["./src/test/setup.ts"],
     },
   };
 });

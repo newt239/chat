@@ -8,8 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/newt239/chat/internal/usecase/systemmessage"
-
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/internal/domain/entity"
@@ -17,6 +15,7 @@ import (
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/audit/audittest"
+	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
 const (
@@ -97,17 +96,13 @@ func (r *fakeChannelRepo) FindDescendants(_ context.Context, parent *entity.Chan
 }
 
 func (r *fakeChannelRepo) Create(_ context.Context, ch *entity.Channel) error {
+	ch.ID = uuid.NewString()
 	r.channels[ch.ID] = ch
 	return nil
 }
 
 func (r *fakeChannelRepo) Update(_ context.Context, ch *entity.Channel) error {
 	r.channels[ch.ID] = ch
-	return nil
-}
-
-func (r *fakeChannelRepo) Delete(_ context.Context, id string) error {
-	delete(r.channels, id)
 	return nil
 }
 
@@ -204,6 +199,16 @@ func (stubWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) 
 	return &entity.WorkspaceMember{UserID: userID, Role: role}, nil
 }
 
+func (r stubWorkspaceRepo) FindActiveMemberIDs(ctx context.Context, workspaceID string, userIDs []string) (map[string]bool, error) {
+	active := map[string]bool{}
+	for _, id := range userIDs {
+		if m, _ := r.FindMember(ctx, workspaceID, id); m != nil {
+			active[id] = true
+		}
+	}
+	return active, nil
+}
+
 type stubReadStateRepo struct {
 	domainrepository.ReadStateRepository
 }
@@ -232,7 +237,7 @@ func (stubTxManager) Do(ctx context.Context, fn func(ctx context.Context) error)
 }
 
 type fixture struct {
-	uc          ChannelUseCase
+	uc          *Interactor
 	channels    *fakeChannelRepo
 	members     *fakeMemberRepo
 	stars       *fakeStarRepo
@@ -242,11 +247,19 @@ type fixture struct {
 	revoker     *stubRevoker
 }
 
-type stubSystemMessages struct{}
-
-func (stubSystemMessages) Create(context.Context, systemmessage.CreateInput) (*entity.SystemMessage, error) {
-	return &entity.SystemMessage{}, nil
+type stubSystemMessageRepo struct {
+	domainrepository.SystemMessageRepository
 }
+
+func (stubSystemMessageRepo) Create(context.Context, *entity.SystemMessage) error {
+	return nil
+}
+
+type nopNotifier struct {
+	messageuc.Notifier
+}
+
+func (nopNotifier) NotifySystemMessageCreated(string, string, *entity.SystemMessage) {}
 
 type stubRevoker struct{ revoked []string }
 
@@ -254,24 +267,18 @@ func (r *stubRevoker) RevokeChannel(_, channelID, userID string) {
 	r.revoked = append(r.revoked, channelID+"/"+userID)
 }
 
-type nopLogger struct {
-	domainservice.Logger
-}
-
-func (nopLogger) Warn(string, ...domainservice.LogField) {}
-
 func newFixture() *fixture {
 	members := &fakeMemberRepo{joined: map[string]map[string]bool{}}
 	channels := &fakeChannelRepo{channels: map[string]*entity.Channel{}, members: members, lastMessageAt: map[string]time.Time{}}
 	stars := &fakeStarRepo{starred: map[string]bool{}}
 	mutes := &fakeMuteRepo{muted: map[string]bool{}}
 	workspaces := stubWorkspaceRepo{}
-	access := domainservice.NewChannelAccessService(channels, members, workspaces)
+	access := domainservice.NewChannelAccessService(nil, channels, members, workspaces)
 	permissions := &stubPermissionRepo{}
 	recorder := &audittest.Recorder{}
 	permissionSvc := domainservice.NewPermissionService(workspaces, permissions)
 	revoker := &stubRevoker{}
-	uc := NewChannelInteractor(channels, members, stars, mutes, workspaces, stubReadStateRepo{}, stubTxManager{}, stubSystemMessages{}, access, permissionSvc, recorder, revoker, nopLogger{})
+	uc := New(channels, members, stars, mutes, workspaces, stubReadStateRepo{}, stubTxManager{}, messageuc.NewSystemMessages(stubSystemMessageRepo{}, nopNotifier{}), access, permissionSvc, recorder, revoker)
 	return &fixture{uc: uc, channels: channels, members: members, stars: stars, mutes: mutes, permissions: permissions, recorder: recorder, revoker: revoker}
 }
 
@@ -375,49 +382,6 @@ func TestCreateChannelPermission(t *testing.T) {
 	}
 }
 
-func TestSetArchived(t *testing.T) {
-	tests := []struct {
-		name    string
-		userID  string
-		dm      bool
-		wantErr error
-	}{
-		{name: "作成者はアーカイブできる", userID: memberID},
-		{name: "管理者はアーカイブできる", userID: adminID},
-		{name: "作成者以外のメンバーはアーカイブできない", userID: guestID, wantErr: domerr.ErrUnauthorized},
-		{name: "DM はアーカイブできない", userID: memberID, dm: true, wantErr: ErrCannotModifyDM},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			f := newFixture()
-			ch := f.create(t, memberID, "room", false)
-			if tt.dm {
-				f.channels.channels[ch.ID].Type = entity.ChannelTypeDM
-			}
-			f.recorder.Logs = nil
-
-			out, err := f.uc.SetArchived(context.Background(), SetArchivedInput{ChannelID: ch.ID, UserID: tt.userID, Archived: true})
-			if !errors.Is(err, tt.wantErr) {
-				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
-			}
-			if tt.wantErr != nil {
-				if len(f.recorder.Logs) != 0 {
-					t.Errorf("失敗時に監査ログが記録されました")
-				}
-				return
-			}
-			if out.ArchivedAt == nil || !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionChannelArchived}) {
-				t.Errorf("アーカイブされていないか記録がありません: %+v %v", out, f.recorder.Actions())
-			}
-
-			// 同じ状態への変更は記録しない
-			if _, err := f.uc.SetArchived(context.Background(), SetArchivedInput{ChannelID: ch.ID, UserID: tt.userID, Archived: true}); err != nil || len(f.recorder.Logs) != 1 {
-				t.Errorf("二重にアーカイブした場合は何もしないはず: %v %v", err, f.recorder.Actions())
-			}
-		})
-	}
-}
-
 func TestCreatePrivateChannelWithMembers(t *testing.T) {
 	f := newFixture()
 
@@ -448,7 +412,7 @@ func TestListChannelsIncludesAncestorsAndStars(t *testing.T) {
 	f.stars.starred[dev.ID] = true
 	f.channels.lastMessageAt[web.ID] = time.Unix(100, 0)
 
-	out, err := f.uc.ListChannels(context.Background(), ListChannelsInput{WorkspaceID: workspaceID, UserID: memberID})
+	out, err := f.uc.ListChannels(context.Background(), workspaceID, memberID)
 	if err != nil {
 		t.Fatalf("一覧を取得できません: %v", err)
 	}
@@ -473,7 +437,7 @@ func TestListBrowsableChannels(t *testing.T) {
 	public := f.create(t, adminID, "public", false)
 	f.create(t, adminID, "secret", true)
 
-	out, err := f.uc.ListBrowsableChannels(context.Background(), ListChannelsInput{WorkspaceID: workspaceID, UserID: memberID})
+	out, err := f.uc.ListBrowsableChannels(context.Background(), workspaceID, memberID)
 	if err != nil {
 		t.Fatalf("一覧を取得できません: %v", err)
 	}
@@ -520,27 +484,15 @@ func TestUpdateChannelRenamesDescendants(t *testing.T) {
 	}
 }
 
-func TestDeleteChannelWithChildren(t *testing.T) {
-	f := newFixture()
-	f.create(t, adminID, "dev/frontend", false)
-	dev := f.channels.byName("dev")
-
-	err := f.uc.DeleteChannel(context.Background(), DeleteChannelInput{ChannelID: dev.ID, UserID: adminID})
-
-	if !errors.Is(err, ErrChannelHasChildren) {
-		t.Fatalf("子を持つチャンネルを削除できています: %v", err)
-	}
-}
-
 func TestSetChannelStarredRequiresAccess(t *testing.T) {
 	f := newFixture()
 	secret := f.create(t, adminID, "secret", true)
 	ctx := context.Background()
 
-	if err := f.uc.SetChannelStarred(ctx, SetChannelStarredInput{ChannelID: secret.ID, UserID: memberID, Starred: true}); !errors.Is(err, domerr.ErrUnauthorized) {
+	if err := f.uc.SetChannelStarred(ctx, SetFlagInput{ChannelID: secret.ID, UserID: memberID, Value: true}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("閲覧できないチャンネルにスターを付けられています: %v", err)
 	}
-	if err := f.uc.SetChannelStarred(ctx, SetChannelStarredInput{ChannelID: secret.ID, UserID: adminID, Starred: true}); err != nil || !f.stars.starred[secret.ID] {
+	if err := f.uc.SetChannelStarred(ctx, SetFlagInput{ChannelID: secret.ID, UserID: adminID, Value: true}); err != nil || !f.stars.starred[secret.ID] {
 		t.Fatalf("スターを付けられません: %v", err)
 	}
 }
@@ -550,10 +502,10 @@ func TestSetChannelMutedRequiresAccess(t *testing.T) {
 	secret := f.create(t, adminID, "secret", true)
 	ctx := context.Background()
 
-	if err := f.uc.SetChannelMuted(ctx, SetChannelMutedInput{ChannelID: secret.ID, UserID: memberID, Muted: true}); !errors.Is(err, domerr.ErrUnauthorized) {
+	if err := f.uc.SetChannelMuted(ctx, SetFlagInput{ChannelID: secret.ID, UserID: memberID, Value: true}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("閲覧できないチャンネルをミュートできています: %v", err)
 	}
-	if err := f.uc.SetChannelMuted(ctx, SetChannelMutedInput{ChannelID: secret.ID, UserID: adminID, Muted: true}); err != nil || !f.mutes.muted[secret.ID] {
+	if err := f.uc.SetChannelMuted(ctx, SetFlagInput{ChannelID: secret.ID, UserID: adminID, Value: true}); err != nil || !f.mutes.muted[secret.ID] {
 		t.Fatalf("ミュートできません: %v", err)
 	}
 }
@@ -563,11 +515,11 @@ func TestListAndGetChannelIncludeMuted(t *testing.T) {
 	general := f.create(t, adminID, "general", false)
 	random := f.create(t, adminID, "random", false)
 	ctx := context.Background()
-	if err := f.uc.SetChannelMuted(ctx, SetChannelMutedInput{ChannelID: random.ID, UserID: adminID, Muted: true}); err != nil {
+	if err := f.uc.SetChannelMuted(ctx, SetFlagInput{ChannelID: random.ID, UserID: adminID, Value: true}); err != nil {
 		t.Fatalf("ミュートできません: %v", err)
 	}
 
-	out, err := f.uc.ListChannels(ctx, ListChannelsInput{WorkspaceID: workspaceID, UserID: adminID})
+	out, err := f.uc.ListChannels(ctx, workspaceID, adminID)
 	if err != nil {
 		t.Fatalf("一覧を取得できません: %v", err)
 	}
@@ -579,7 +531,7 @@ func TestListAndGetChannelIncludeMuted(t *testing.T) {
 		t.Fatalf("ミュート状態が正しくありません: %+v", out)
 	}
 
-	got, err := f.uc.GetChannel(ctx, GetChannelInput{ChannelID: random.ID, UserID: adminID})
+	got, err := f.uc.GetChannel(ctx, random.ID, adminID)
 	if err != nil || !got.IsMuted {
 		t.Fatalf("GetChannel がミュート状態を返していません: %+v %v", got, err)
 	}
@@ -617,17 +569,5 @@ func TestUpdateChannelPermissionAndPrivacy(t *testing.T) {
 				t.Errorf("非公開になっていません: %s", f.channels.channels[ch.ID].Type)
 			}
 		})
-	}
-}
-
-func TestDeleteChannelRevokesSubscriptions(t *testing.T) {
-	f := newFixture()
-	ch := f.create(t, adminID, "room", false)
-
-	if err := f.uc.DeleteChannel(context.Background(), DeleteChannelInput{ChannelID: ch.ID, UserID: adminID}); err != nil {
-		t.Fatalf("削除できません: %v", err)
-	}
-	if !slices.Equal(f.revoker.revoked, []string{ch.ID + "/"}) {
-		t.Errorf("削除したチャンネルの配信を止めていません: %v", f.revoker.revoked)
 	}
 }

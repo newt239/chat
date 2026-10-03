@@ -20,7 +20,7 @@ export const CopyableUrl = ({ url }: CopyableUrlProps) => {
         size="sm"
         variant="secondary"
         onPress={() => {
-          void copyWithToast(url, t("ui.copyableUrl.copied"));
+          void copyWithToast(url, t("common.linkCopied"));
         }}
       >
         <IconCopy aria-hidden />

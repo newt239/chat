@@ -1,15 +1,10 @@
 package auth
 
-import "time"
+import (
+	"time"
 
-// Settings は設定ファイルから渡す認証の挙動です
-type Settings struct {
-	AccessTokenTTL      time.Duration
-	RefreshTokenTTL     time.Duration
-	PasswordAuthEnabled bool
-}
-
-// Input DTOs
+	"github.com/newt239/chat/internal/domain/entity"
+)
 
 type LoginInput struct {
 	Email    string
@@ -63,18 +58,9 @@ type GoogleIdentity struct {
 	Nonce string
 }
 
-// Output DTOs
-
 type AuthOutput struct {
-	AccessToken  string    `json:"accessToken"`
-	RefreshToken string    `json:"refreshToken"`
-	ExpiresAt    time.Time `json:"expiresAt"`
-	User         UserInfo  `json:"user"`
-}
-
-type UserInfo struct {
-	ID          string  `json:"id"`
-	Email       string  `json:"email"`
-	DisplayName string  `json:"displayName"`
-	AvatarURL   *string `json:"avatarUrl,omitempty"`
+	AccessToken  string
+	RefreshToken string
+	ExpiresAt    time.Time
+	User         *entity.User
 }

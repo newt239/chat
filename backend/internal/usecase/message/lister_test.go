@@ -23,6 +23,18 @@ func (stubAccess) AccessibleDescendants(_ context.Context, _ *entity.Channel, _ 
 	return []*entity.Channel{{ID: "child"}}, nil
 }
 
+type emptyThreadRepo struct {
+	domainrepository.ThreadRepository
+}
+
+func (emptyThreadRepo) CalculateMetadataByMessageIDs(context.Context, []string) (map[string]*domainrepository.ThreadMetadata, error) {
+	return map[string]*domainrepository.ThreadMetadata{}, nil
+}
+
+func (emptyThreadRepo) FindFollowedThreadIDs(context.Context, string, []string) (map[string]bool, error) {
+	return map[string]bool{}, nil
+}
+
 type recordingMessageRepo struct {
 	domainrepository.MessageRepository
 	channelIDs []string
@@ -56,11 +68,13 @@ func TestListMessagesIncludeDescendants(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			messages := &recordingMessageRepo{}
 			systemMessages := &recordingSystemMessageRepo{}
-			lister := &MessageLister{
+			lister := &Interactor{
 				messageRepo:      messages,
 				systemMsgRepo:    systemMessages,
 				channelAccessSvc: stubAccess{},
 				outputBuilder:    &MessageOutputBuilder{},
+				threadRepo:       emptyThreadRepo{},
+				userRepo:         &builderUserRepo{},
 			}
 
 			if _, err := lister.ListMessages(context.Background(), ListMessagesInput{ChannelID: "parent", UserID: "u", IncludeDescendants: tt.includeDescendants}); err != nil {
@@ -101,11 +115,13 @@ func TestListMessagesAround(t *testing.T) {
 	for i := -5; i < 5; i++ {
 		systemMessages.messages = append(systemMessages.messages, &entity.SystemMessage{ID: base.Add(time.Duration(i) * time.Hour).Format("15"), CreatedAt: base.Add(time.Duration(i) * time.Hour)})
 	}
-	lister := &MessageLister{
+	lister := &Interactor{
 		messageRepo:      &recordingMessageRepo{},
 		systemMsgRepo:    systemMessages,
 		channelAccessSvc: stubAccess{},
 		outputBuilder:    &MessageOutputBuilder{},
+		threadRepo:       emptyThreadRepo{},
+		userRepo:         &builderUserRepo{},
 	}
 	ids := func(out *ListMessagesOutput) []string {
 		got := make([]string, 0, len(out.Messages))

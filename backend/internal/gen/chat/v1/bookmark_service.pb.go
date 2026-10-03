@@ -25,9 +25,8 @@ const (
 
 type Bookmark struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Message       *Message               `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Message       *Message               `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -62,13 +61,6 @@ func (*Bookmark) Descriptor() ([]byte, []int) {
 	return file_chat_v1_bookmark_service_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Bookmark) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
 func (x *Bookmark) GetMessage() *Message {
 	if x != nil {
 		return x.Message
@@ -85,6 +77,7 @@ func (x *Bookmark) GetCreatedAt() *timestamppb.Timestamp {
 
 type ListBookmarksRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkspaceId   string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -117,6 +110,13 @@ func (x *ListBookmarksRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListBookmarksRequest.ProtoReflect.Descriptor instead.
 func (*ListBookmarksRequest) Descriptor() ([]byte, []int) {
 	return file_chat_v1_bookmark_service_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ListBookmarksRequest) GetWorkspaceId() string {
+	if x != nil {
+		return x.WorkspaceId
+	}
+	return ""
 }
 
 type ListBookmarksResponse struct {
@@ -327,13 +327,13 @@ var File_chat_v1_bookmark_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_bookmark_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1echat/v1/bookmark_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8a\x01\n" +
-	"\bBookmark\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12*\n" +
-	"\amessage\x18\x02 \x01(\v2\x10.chat.v1.MessageR\amessage\x129\n" +
+	"\x1echat/v1/bookmark_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"q\n" +
+	"\bBookmark\x12*\n" +
+	"\amessage\x18\x01 \x01(\v2\x10.chat.v1.MessageR\amessage\x129\n" +
 	"\n" +
-	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x16\n" +
-	"\x14ListBookmarksRequest\"H\n" +
+	"created_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"B\n" +
+	"\x14ListBookmarksRequest\x12*\n" +
+	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"H\n" +
 	"\x15ListBookmarksResponse\x12/\n" +
 	"\tbookmarks\x18\x01 \x03(\v2\x11.chat.v1.BookmarkR\tbookmarks\"=\n" +
 	"\x12AddBookmarkRequest\x12'\n" +

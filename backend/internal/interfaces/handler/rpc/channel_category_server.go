@@ -9,11 +9,11 @@ import (
 )
 
 type ChannelCategoryServer struct {
-	UC channelcategoryuc.UseCase
+	UC *channelcategoryuc.Interactor
 }
 
 func (s *ChannelCategoryServer) ListChannelCategories(ctx context.Context, req *chatv1.ListChannelCategoriesRequest) (*chatv1.ListChannelCategoriesResponse, error) {
-	out, err := s.UC.List(ctx, channelcategoryuc.ListInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx)})
+	out, err := s.UC.List(ctx, req.WorkspaceId, userIDFrom(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -21,39 +21,29 @@ func (s *ChannelCategoryServer) ListChannelCategories(ctx context.Context, req *
 }
 
 func (s *ChannelCategoryServer) CreateChannelCategory(ctx context.Context, req *chatv1.CreateChannelCategoryRequest) (*chatv1.CreateChannelCategoryResponse, error) {
-	out, err := s.UC.Create(ctx, channelcategoryuc.CreateInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), Name: req.Name})
+	out, err := s.UC.Create(ctx, req.WorkspaceId, userIDFrom(ctx), req.Name)
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.CreateChannelCategoryResponse{Category: presenter.ChannelCategory(*out)}, nil
+	return &chatv1.CreateChannelCategoryResponse{Category: presenter.ChannelCategory(out)}, nil
 }
 
 func (s *ChannelCategoryServer) UpdateChannelCategory(ctx context.Context, req *chatv1.UpdateChannelCategoryRequest) (*chatv1.UpdateChannelCategoryResponse, error) {
-	out, err := s.UC.Update(ctx, channelcategoryuc.UpdateInput{CategoryID: req.CategoryId, UserID: userIDFrom(ctx), Name: req.Name})
+	out, err := s.UC.Update(ctx, req.CategoryId, userIDFrom(ctx), req.Name)
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.UpdateChannelCategoryResponse{Category: presenter.ChannelCategory(*out)}, nil
+	return &chatv1.UpdateChannelCategoryResponse{Category: presenter.ChannelCategory(out)}, nil
 }
 
 func (s *ChannelCategoryServer) DeleteChannelCategory(ctx context.Context, req *chatv1.DeleteChannelCategoryRequest) (*chatv1.DeleteChannelCategoryResponse, error) {
-	if err := s.UC.Delete(ctx, channelcategoryuc.DeleteInput{CategoryID: req.CategoryId, UserID: userIDFrom(ctx)}); err != nil {
-		return nil, err
-	}
-	return &chatv1.DeleteChannelCategoryResponse{}, nil
+	return &chatv1.DeleteChannelCategoryResponse{}, s.UC.Delete(ctx, req.CategoryId, userIDFrom(ctx))
 }
 
 func (s *ChannelCategoryServer) ReorderChannelCategories(ctx context.Context, req *chatv1.ReorderChannelCategoriesRequest) (*chatv1.ReorderChannelCategoriesResponse, error) {
-	out, err := s.UC.Reorder(ctx, channelcategoryuc.ReorderInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), CategoryIDs: req.CategoryIds})
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.ReorderChannelCategoriesResponse{Categories: presenter.ConvertAll(out, presenter.ChannelCategory)}, nil
+	return &chatv1.ReorderChannelCategoriesResponse{}, s.UC.Reorder(ctx, req.WorkspaceId, userIDFrom(ctx), req.CategoryIds)
 }
 
 func (s *ChannelCategoryServer) SetChannelCategory(ctx context.Context, req *chatv1.SetChannelCategoryRequest) (*chatv1.SetChannelCategoryResponse, error) {
-	if err := s.UC.SetChannel(ctx, channelcategoryuc.SetChannelInput{ChannelID: req.ChannelId, UserID: userIDFrom(ctx), CategoryID: req.CategoryId}); err != nil {
-		return nil, err
-	}
-	return &chatv1.SetChannelCategoryResponse{}, nil
+	return &chatv1.SetChannelCategoryResponse{}, s.UC.SetChannel(ctx, req.ChannelId, userIDFrom(ctx), req.CategoryId)
 }

@@ -16,6 +16,11 @@ export const message = {
     unbookmark: "ブックマークを外す",
     unpin: "ピン留めを外す",
   },
+  card: {
+    inThread: "スレッド内",
+    showInChannel: "チャンネルで表示",
+    showInThread: "スレッドで表示",
+  },
   composer: {
     attach: "ファイルを添付",
     bold: "太字",
@@ -32,6 +37,7 @@ export const message = {
     previewEmpty: "プレビューするテキストを入力してください",
     quote: "引用",
     send: "送信",
+    sendFailed: "送信できませんでした",
     strikethrough: "取り消し線",
     uploading: "アップロードが終わるまでお待ちください",
   },
@@ -47,7 +53,6 @@ export const message = {
   },
   delete: {
     body: "元に戻せません。",
-    confirm: "削除する",
     done: "メッセージを削除しました",
     failed: "メッセージを削除できませんでした",
     title: "メッセージを削除しますか？",
@@ -80,7 +85,6 @@ export const message = {
     mention: "メンション",
   },
   link: {
-    copied: "リンクをコピーしました",
     textCopied: "テキストをコピーしました",
   },
   mention: {
@@ -107,8 +111,6 @@ export const message = {
     descriptionChanged: "チャンネルの説明が更新されました",
     memberAdded: "{{user}} が {{by}} によって追加されました",
     memberJoined: "{{user}} が参加しました",
-    memberLeft: "{{user}} が退出しました",
-    memberRemoved: "{{user}} がチャンネルから外されました",
     messagePinned: "{{user}} が<target>メッセージ</target>をピン留めしました",
     nameChanged: "チャンネル名が「{{from}}」から「{{to}}」に変わりました",
     privacyChanged: "チャンネルの公開設定が {{from}} から {{to}} に変わりました",
@@ -119,7 +121,6 @@ export const message = {
     noReplies: "まだ返信がありません",
     replies: "{{count}} 件の返信",
     replyPlaceholder: "スレッドに返信",
-    sendFailed: "返信を送信できませんでした",
   },
   typing: {
     many: "複数人が入力中",

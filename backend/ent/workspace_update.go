@@ -12,10 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/user"
-	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 )
@@ -169,36 +167,6 @@ func (_u *WorkspaceUpdate) AddMembers(v ...*WorkspaceMember) *WorkspaceUpdate {
 	return _u.AddMemberIDs(ids...)
 }
 
-// AddChannelIDs adds the "channels" edge to the Channel entity by IDs.
-func (_u *WorkspaceUpdate) AddChannelIDs(ids ...uuid.UUID) *WorkspaceUpdate {
-	_u.mutation.AddChannelIDs(ids...)
-	return _u
-}
-
-// AddChannels adds the "channels" edges to the Channel entity.
-func (_u *WorkspaceUpdate) AddChannels(v ...*Channel) *WorkspaceUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddChannelIDs(ids...)
-}
-
-// AddUserGroupIDs adds the "user_groups" edge to the UserGroup entity by IDs.
-func (_u *WorkspaceUpdate) AddUserGroupIDs(ids ...uuid.UUID) *WorkspaceUpdate {
-	_u.mutation.AddUserGroupIDs(ids...)
-	return _u
-}
-
-// AddUserGroups adds the "user_groups" edges to the UserGroup entity.
-func (_u *WorkspaceUpdate) AddUserGroups(v ...*UserGroup) *WorkspaceUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddUserGroupIDs(ids...)
-}
-
 // Mutation returns the WorkspaceMutation object of the builder.
 func (_u *WorkspaceUpdate) Mutation() *WorkspaceMutation {
 	return _u.mutation
@@ -229,48 +197,6 @@ func (_u *WorkspaceUpdate) RemoveMembers(v ...*WorkspaceMember) *WorkspaceUpdate
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMemberIDs(ids...)
-}
-
-// ClearChannels clears all "channels" edges to the Channel entity.
-func (_u *WorkspaceUpdate) ClearChannels() *WorkspaceUpdate {
-	_u.mutation.ClearChannels()
-	return _u
-}
-
-// RemoveChannelIDs removes the "channels" edge to Channel entities by IDs.
-func (_u *WorkspaceUpdate) RemoveChannelIDs(ids ...uuid.UUID) *WorkspaceUpdate {
-	_u.mutation.RemoveChannelIDs(ids...)
-	return _u
-}
-
-// RemoveChannels removes "channels" edges to Channel entities.
-func (_u *WorkspaceUpdate) RemoveChannels(v ...*Channel) *WorkspaceUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveChannelIDs(ids...)
-}
-
-// ClearUserGroups clears all "user_groups" edges to the UserGroup entity.
-func (_u *WorkspaceUpdate) ClearUserGroups() *WorkspaceUpdate {
-	_u.mutation.ClearUserGroups()
-	return _u
-}
-
-// RemoveUserGroupIDs removes the "user_groups" edge to UserGroup entities by IDs.
-func (_u *WorkspaceUpdate) RemoveUserGroupIDs(ids ...uuid.UUID) *WorkspaceUpdate {
-	_u.mutation.RemoveUserGroupIDs(ids...)
-	return _u
-}
-
-// RemoveUserGroups removes "user_groups" edges to UserGroup entities.
-func (_u *WorkspaceUpdate) RemoveUserGroups(v ...*UserGroup) *WorkspaceUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveUserGroupIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -435,96 +361,6 @@ func (_u *WorkspaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ChannelsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.ChannelsTable,
-			Columns: []string{workspace.ChannelsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedChannelsIDs(); len(nodes) > 0 && !_u.mutation.ChannelsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.ChannelsTable,
-			Columns: []string{workspace.ChannelsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ChannelsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.ChannelsTable,
-			Columns: []string{workspace.ChannelsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.UserGroupsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.UserGroupsTable,
-			Columns: []string{workspace.UserGroupsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroup.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedUserGroupsIDs(); len(nodes) > 0 && !_u.mutation.UserGroupsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.UserGroupsTable,
-			Columns: []string{workspace.UserGroupsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroup.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.UserGroupsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.UserGroupsTable,
-			Columns: []string{workspace.UserGroupsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroup.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{workspace.Label}
@@ -681,36 +517,6 @@ func (_u *WorkspaceUpdateOne) AddMembers(v ...*WorkspaceMember) *WorkspaceUpdate
 	return _u.AddMemberIDs(ids...)
 }
 
-// AddChannelIDs adds the "channels" edge to the Channel entity by IDs.
-func (_u *WorkspaceUpdateOne) AddChannelIDs(ids ...uuid.UUID) *WorkspaceUpdateOne {
-	_u.mutation.AddChannelIDs(ids...)
-	return _u
-}
-
-// AddChannels adds the "channels" edges to the Channel entity.
-func (_u *WorkspaceUpdateOne) AddChannels(v ...*Channel) *WorkspaceUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddChannelIDs(ids...)
-}
-
-// AddUserGroupIDs adds the "user_groups" edge to the UserGroup entity by IDs.
-func (_u *WorkspaceUpdateOne) AddUserGroupIDs(ids ...uuid.UUID) *WorkspaceUpdateOne {
-	_u.mutation.AddUserGroupIDs(ids...)
-	return _u
-}
-
-// AddUserGroups adds the "user_groups" edges to the UserGroup entity.
-func (_u *WorkspaceUpdateOne) AddUserGroups(v ...*UserGroup) *WorkspaceUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddUserGroupIDs(ids...)
-}
-
 // Mutation returns the WorkspaceMutation object of the builder.
 func (_u *WorkspaceUpdateOne) Mutation() *WorkspaceMutation {
 	return _u.mutation
@@ -741,48 +547,6 @@ func (_u *WorkspaceUpdateOne) RemoveMembers(v ...*WorkspaceMember) *WorkspaceUpd
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMemberIDs(ids...)
-}
-
-// ClearChannels clears all "channels" edges to the Channel entity.
-func (_u *WorkspaceUpdateOne) ClearChannels() *WorkspaceUpdateOne {
-	_u.mutation.ClearChannels()
-	return _u
-}
-
-// RemoveChannelIDs removes the "channels" edge to Channel entities by IDs.
-func (_u *WorkspaceUpdateOne) RemoveChannelIDs(ids ...uuid.UUID) *WorkspaceUpdateOne {
-	_u.mutation.RemoveChannelIDs(ids...)
-	return _u
-}
-
-// RemoveChannels removes "channels" edges to Channel entities.
-func (_u *WorkspaceUpdateOne) RemoveChannels(v ...*Channel) *WorkspaceUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveChannelIDs(ids...)
-}
-
-// ClearUserGroups clears all "user_groups" edges to the UserGroup entity.
-func (_u *WorkspaceUpdateOne) ClearUserGroups() *WorkspaceUpdateOne {
-	_u.mutation.ClearUserGroups()
-	return _u
-}
-
-// RemoveUserGroupIDs removes the "user_groups" edge to UserGroup entities by IDs.
-func (_u *WorkspaceUpdateOne) RemoveUserGroupIDs(ids ...uuid.UUID) *WorkspaceUpdateOne {
-	_u.mutation.RemoveUserGroupIDs(ids...)
-	return _u
-}
-
-// RemoveUserGroups removes "user_groups" edges to UserGroup entities.
-func (_u *WorkspaceUpdateOne) RemoveUserGroups(v ...*UserGroup) *WorkspaceUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveUserGroupIDs(ids...)
 }
 
 // Where appends a list predicates to the WorkspaceUpdate builder.
@@ -970,96 +734,6 @@ func (_u *WorkspaceUpdateOne) sqlSave(ctx context.Context) (_node *Workspace, er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(workspacemember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ChannelsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.ChannelsTable,
-			Columns: []string{workspace.ChannelsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedChannelsIDs(); len(nodes) > 0 && !_u.mutation.ChannelsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.ChannelsTable,
-			Columns: []string{workspace.ChannelsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ChannelsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.ChannelsTable,
-			Columns: []string{workspace.ChannelsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.UserGroupsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.UserGroupsTable,
-			Columns: []string{workspace.UserGroupsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroup.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedUserGroupsIDs(); len(nodes) > 0 && !_u.mutation.UserGroupsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.UserGroupsTable,
-			Columns: []string{workspace.UserGroupsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroup.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.UserGroupsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   workspace.UserGroupsTable,
-			Columns: []string{workspace.UserGroupsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroup.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -38,8 +38,7 @@ type bulkMessage struct {
 	mentionsChannel bool
 }
 
-// BulkMessages は channelCount 個のチャンネルを足したうえで、全チャンネルに perChannel 件ずつ
-// 返信・削除済み・メンションを混ぜたメッセージと既読位置を投入します
+// BulkMessages は channelCount 個のチャンネルを足し、全チャンネルに返信・削除済み・メンションを混ぜたメッセージを perChannel 件ずつ投入します
 func BulkMessages(ctx context.Context, client *ent.Client, channelCount int, perChannel int) error {
 	if err := createBulkChannels(ctx, client, channelCount); err != nil {
 		return err

@@ -5,8 +5,7 @@ package chat.v1;
 import "buf/validate/validate.proto";
 import "chat/v1/message.proto";
 
-// メッセージに付けた投票。チャンネルの参加者が投票でき、締め切りは作成者と管理者だけができる。
-// 集計の変化は投票を付けたメッセージの message_updated として配信する
+// メッセージに付けた投票。集計の変化は投票を付けたメッセージの message_updated として配信する
 service PollService {
   // 自分の票を option_ids に置き換える。空なら取り消す
   rpc Vote(VoteRequest) returns (VoteResponse);

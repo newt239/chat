@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 
-import { formatCoordinates } from "../utils/externalMapUrl";
+import { formatCoordinates } from "../utils/location";
 
 import type { MessageLocation } from "#/gen/chat/v1/message_pb";
 
@@ -23,7 +23,7 @@ export const PendingLocation = ({ location, onRemove }: PendingLocationProps) =>
           {location.label ?? t("location.card.title")}
         </span>
         <span className="truncate font-mono text-caption text-muted tabular-nums">
-          {formatCoordinates(location)}
+          {formatCoordinates(location, t)}
         </span>
       </span>
       <IconButton

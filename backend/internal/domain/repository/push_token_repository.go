@@ -7,7 +7,7 @@ import (
 )
 
 type PushTokenRepository interface {
-	// Upsert はトークンを登録します。別のユーザーに登録済みなら付け替え、最終利用日時を更新します
+	// Upsert はトークンを登録します。別のユーザーに登録済みなら付け替えます
 	Upsert(ctx context.Context, token *entity.PushToken) error
 	Delete(ctx context.Context, userID string, token string) error
 	// DeleteTokens は無効になったトークンを持ち主によらず削除します

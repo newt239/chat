@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { cn } from "#/components/ui/styles/styles";
-import { commandNames } from "#/features/command/utils/commands";
+import { commandNames } from "#/features/message/utils/commands";
 
 import type { SuggestionItem } from "../utils/suggestion";
 

@@ -9,7 +9,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type channelCategoryRepository struct {
@@ -20,56 +19,43 @@ func NewChannelCategoryRepository(client *ent.Client) domainrepository.ChannelCa
 	return &channelCategoryRepository{client: client}
 }
 
-func withCategoryEdges(q *ent.ChannelCategoryQuery) *ent.ChannelCategoryQuery {
-	return q.WithItems()
-}
-
 func (r *channelCategoryRepository) FindByID(ctx context.Context, id string) (*entity.ChannelCategory, error) {
-	categoryID, err := utils.ParseUUID(id, "category ID")
+	categoryID, err := parseUUID(id, "category ID")
 	if err != nil {
 		return nil, err
 	}
-	client := transaction.ResolveClient(ctx, r.client)
-	category, err := withCategoryEdges(client.ChannelCategory.Query().Where(channelcategory.ID(categoryID))).Only(ctx)
-	if ent.IsNotFound(err) {
-		return nil, nil
-	}
-	if err != nil {
+	category, err := orNil(transaction.ResolveClient(ctx, r.client).ChannelCategory.Query().
+		Where(channelcategory.ID(categoryID)).
+		WithItems().
+		Only(ctx))
+	if category == nil {
 		return nil, err
 	}
 	return channelCategoryToEntity(category), nil
 }
 
 func (r *channelCategoryRepository) FindByUser(ctx context.Context, userID string, workspaceID string) ([]*entity.ChannelCategory, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
-	client := transaction.ResolveClient(ctx, r.client)
-	categories, err := withCategoryEdges(client.ChannelCategory.Query().
-		Where(
-			channelcategory.UserID(uid),
-			channelcategory.WorkspaceID(workspaceID),
-		)).
+	categories, err := transaction.ResolveClient(ctx, r.client).ChannelCategory.Query().
+		Where(channelcategory.UserID(uid), channelcategory.WorkspaceID(workspaceID)).
+		WithItems().
 		Order(ent.Asc(channelcategory.FieldPosition), ent.Asc(channelcategory.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]*entity.ChannelCategory, 0, len(categories))
-	for _, category := range categories {
-		result = append(result, channelCategoryToEntity(category))
-	}
-	return result, nil
+	return convertAll(categories, channelCategoryToEntity), nil
 }
 
 func (r *channelCategoryRepository) Create(ctx context.Context, category *entity.ChannelCategory) error {
-	uid, err := utils.ParseUUID(category.UserID, "user ID")
+	uid, err := parseUUID(category.UserID, "user ID")
 	if err != nil {
 		return err
 	}
-	client := transaction.ResolveClient(ctx, r.client)
-	created, err := client.ChannelCategory.Create().
+	created, err := transaction.ResolveClient(ctx, r.client).ChannelCategory.Create().
 		SetUserID(uid).
 		SetWorkspaceID(category.WorkspaceID).
 		SetName(category.Name).
@@ -83,7 +69,7 @@ func (r *channelCategoryRepository) Create(ctx context.Context, category *entity
 }
 
 func (r *channelCategoryRepository) UpdateName(ctx context.Context, id string, name string) error {
-	categoryID, err := utils.ParseUUID(id, "category ID")
+	categoryID, err := parseUUID(id, "category ID")
 	if err != nil {
 		return err
 	}
@@ -91,23 +77,18 @@ func (r *channelCategoryRepository) UpdateName(ctx context.Context, id string, n
 }
 
 func (r *channelCategoryRepository) Delete(ctx context.Context, id string) error {
-	categoryID, err := utils.ParseUUID(id, "category ID")
+	categoryID, err := parseUUID(id, "category ID")
 	if err != nil {
 		return err
 	}
-	client := transaction.ResolveClient(ctx, r.client)
-	if _, err := client.ChannelCategoryItem.Delete().
-		Where(channelcategoryitem.CategoryID(categoryID)).
-		Exec(ctx); err != nil {
-		return err
-	}
-	return client.ChannelCategory.DeleteOneID(categoryID).Exec(ctx)
+	// 中のチャンネルの割り当ては ON DELETE CASCADE で消える
+	return transaction.ResolveClient(ctx, r.client).ChannelCategory.DeleteOneID(categoryID).Exec(ctx)
 }
 
 func (r *channelCategoryRepository) UpdatePositions(ctx context.Context, categoryIDs []string) error {
 	client := transaction.ResolveClient(ctx, r.client)
 	for position, id := range categoryIDs {
-		categoryID, err := utils.ParseUUID(id, "category ID")
+		categoryID, err := parseUUID(id, "category ID")
 		if err != nil {
 			return err
 		}
@@ -119,48 +100,38 @@ func (r *channelCategoryRepository) UpdatePositions(ctx context.Context, categor
 }
 
 func (r *channelCategoryRepository) SetChannel(ctx context.Context, userID string, channelID string, categoryID *string) error {
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return err
 	}
-	cid, err := utils.ParseUUID(channelID, "channel ID")
+	cid, err := parseUUID(channelID, "channel ID")
 	if err != nil {
 		return err
 	}
-	client := transaction.ResolveClient(ctx, r.client)
-	if _, err := client.ChannelCategoryItem.Delete().
-		Where(
-			channelcategoryitem.UserID(uid),
-			channelcategoryitem.ChannelID(cid),
-		).
-		Exec(ctx); err != nil {
-		return err
-	}
-	if categoryID == nil {
-		return nil
-	}
-	catID, err := utils.ParseUUID(*categoryID, "category ID")
-	if err != nil {
-		return err
-	}
-	return client.ChannelCategoryItem.Create().
-		SetCategoryID(catID).
-		SetUserID(uid).
-		SetChannelID(cid).
-		Exec(ctx)
+	return transaction.WithTx(ctx, r.client, func(client *ent.Client) error {
+		if _, err := client.ChannelCategoryItem.Delete().
+			Where(channelcategoryitem.UserID(uid), channelcategoryitem.ChannelID(cid)).
+			Exec(ctx); err != nil {
+			return err
+		}
+		if categoryID == nil {
+			return nil
+		}
+		catID, err := parseUUID(*categoryID, "category ID")
+		if err != nil {
+			return err
+		}
+		return client.ChannelCategoryItem.Create().SetCategoryID(catID).SetUserID(uid).SetChannelID(cid).Exec(ctx)
+	})
 }
 
 func channelCategoryToEntity(category *ent.ChannelCategory) *entity.ChannelCategory {
-	result := &entity.ChannelCategory{
+	return &entity.ChannelCategory{
 		ID:          category.ID.String(),
 		Name:        category.Name,
 		Position:    category.Position,
 		UserID:      category.UserID.String(),
 		WorkspaceID: category.WorkspaceID,
-		ChannelIDs:  make([]string, 0, len(category.Edges.Items)),
+		ChannelIDs:  convertAll(category.Edges.Items, func(item *ent.ChannelCategoryItem) string { return item.ChannelID.String() }),
 	}
-	for _, item := range category.Edges.Items {
-		result.ChannelIDs = append(result.ChannelIDs, item.ChannelID.String())
-	}
-	return result
 }

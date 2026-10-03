@@ -1,22 +1,20 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Outlet, useLocation, useMatches, useNavigate, useRouter } from "@tanstack/react-router";
-import { useAtom } from "jotai";
 
-import { DMsPage } from "#/features/dm/components/DMsPage";
+import { BackButton } from "#/components/block/BackButton/BackButton";
+import { DMsPage } from "#/features/channel/components/DMsPage";
+import { MentionsPage } from "#/features/inbox/components/MentionsPage";
 import { useVisualViewport } from "#/features/layout/hooks/useVisualViewport";
-import { MiniPlayer } from "#/features/player/components/MiniPlayer";
-import { mobileTabAtom } from "#/providers/store/ui";
 
 import { useRightPanel } from "../hooks/useRightPanel";
-import { ActivityPage } from "./ActivityPage";
-import { BackButton } from "./BackButton";
+import { mobileTabs } from "../utils/mobileTabs";
 import { MePage } from "./MePage";
 import { MobileHome } from "./MobileHome";
 import { MobileStackLayer } from "./MobileStackLayer";
 import { MobileTabBar } from "./MobileTabBar";
 
-import type { MobileTab } from "#/providers/store/ui";
+import type { MobileTab } from "../utils/mobileTabs";
 
 type MobileShellProps = {
   workspaceId: string;
@@ -24,33 +22,26 @@ type MobileShellProps = {
 
 const THREAD_ROUTE_ID = "/app/$workspaceId/$channelId/thread/$messageId";
 
-const tabPaths = {
-  activity: "/app/$workspaceId/activity",
-  dms: "/app/$workspaceId/dms",
-  home: "/app/$workspaceId",
-  me: "/app/$workspaceId/me",
-} as const satisfies Record<MobileTab, string>;
-
-const tabRoutes: Partial<Record<string, MobileTab>> = {
-  "/app/$workspaceId/": "home",
-  "/app/$workspaceId/activity": "activity",
-  "/app/$workspaceId/dms": "dms",
-  "/app/$workspaceId/me": "me",
-};
-
-/** モバイルの画面構成。下にボトムタブの画面を置き、チャンネルなどは右から重ねる。 右パネルの内容（スレッド・プロフィールなど）はさらにその上に重ねる */
+// 下にボトムタブの画面を置き、チャンネルなどは右から、右パネルの内容はさらにその上に重ねる
 export const MobileShell = ({ workspaceId }: MobileShellProps) => {
   const router = useRouter();
   const navigate = useNavigate();
   // oxlint-disable-next-line no-underscore-dangle -- TanStack Router が履歴に持たせる位置
   const historyIndex = useLocation({ select: (location) => location.state.__TSR_index });
-  const [lastTab, setLastTab] = useAtom(mobileTabAtom);
-  const leafRouteId = useMatches({ select: (matches) => matches.at(-1)?.routeId ?? "" });
+  // ホームはインデックスのルートなので、末尾の / を落としてタブのパスと比べる
+  const leafPath = useMatches({
+    select: (matches) => matches.at(-1)?.routeId.replace(/\/$/u, "") ?? "",
+  });
   // スレッドは右パネルとして重ねるため、その下の画面はチャンネルのまま動かさない
   const stackKey = useMatches({
     select: (matches) => matches.findLast((match) => match.routeId !== THREAD_ROUTE_ID)?.pathname,
   });
-  const routeTab = tabRoutes[leafRouteId];
+  const routeTab = mobileTabs.find((candidate) => candidate.to === leafPath);
+  // チャンネルなどを重ねている間は、最後に開いたタブを下に残す
+  const [lastTab, setLastTab] = useState<MobileTab>(mobileTabs[0]);
+  if (routeTab !== undefined && routeTab !== lastTab) {
+    setLastTab(routeTab);
+  }
   const tab = routeTab ?? lastTab;
   const { close, content } = useRightPanel(workspaceId);
   const viewport = useVisualViewport();
@@ -63,12 +54,6 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
   );
 
   useEffect(() => {
-    if (routeTab !== undefined) {
-      setLastTab(routeTab);
-    }
-  }, [routeTab, setLastTab]);
-
-  useEffect(() => {
     visitedRef.current.set(historyIndex, { isTab: routeTab !== undefined, panelKey, stackKey });
   }, [historyIndex, routeTab, panelKey, stackKey]);
 
@@ -78,7 +63,7 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
       router.history.back();
       return;
     }
-    void navigate({ params: { workspaceId }, replace: true, to: tabPaths[tab] });
+    void navigate({ params: { workspaceId }, replace: true, to: tab.to });
   };
   const backFromPanel = () => {
     const previous = visitedRef.current.get(historyIndex - 1);
@@ -99,14 +84,12 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
       <div className="relative flex min-h-0 flex-1 flex-col overflow-clip">
         <div inert={!isTabScreen} className="flex min-h-0 flex-1 flex-col">
           <div className="flex min-h-0 flex-1 flex-col">
-            {tab === "home" && <MobileHome workspaceId={workspaceId} />}
-            {tab === "dms" && <DMsPage />}
-            {tab === "activity" && <ActivityPage />}
-            {tab === "me" && <MePage />}
+            {tab.name === "home" && <MobileHome workspaceId={workspaceId} />}
+            {tab.name === "dms" && <DMsPage />}
+            {tab.name === "activity" && <MentionsPage />}
+            {tab.name === "me" && <MePage />}
           </div>
-          {/* タブの画面ではボトムタブの上に出す。チャンネルの画面では入力欄の上（ChannelPage） */}
-          {isTabScreen && !viewport?.keyboardOpen && <MiniPlayer variant="mobile" />}
-          {!viewport?.keyboardOpen && <MobileTabBar workspaceId={workspaceId} />}
+          {!viewport?.keyboardOpen && <MobileTabBar workspaceId={workspaceId} tab={tab} />}
         </div>
         {routeTab === undefined && (
           <MobileStackLayer key={stackKey} onBack={backToTab}>

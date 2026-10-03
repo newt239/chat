@@ -9,7 +9,7 @@ type OgpCardProps = {
   url: string;
   ogp: OgpData;
   // 投稿前のプレビューだけが外せる
-  onRemove?: () => void;
+  onRemove: (() => void) | null;
 };
 
 export const OgpCard = ({ url, ogp, onRemove }: OgpCardProps) => {

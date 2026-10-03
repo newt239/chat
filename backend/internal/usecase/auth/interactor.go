@@ -13,6 +13,11 @@ import (
 	"github.com/newt239/chat/internal/usecase/audit"
 )
 
+const (
+	accessTokenTTL  = 15 * time.Minute
+	refreshTokenTTL = 30 * 24 * time.Hour
+)
+
 // TokenClaims はアクセストークンに載せる本人とセッションです
 type TokenClaims struct {
 	UserID    string
@@ -44,33 +49,22 @@ type GoogleCodeExchanger interface {
 	Exchange(ctx context.Context, code, codeVerifier string) (idToken string, err error)
 }
 
-type AuthUseCase interface {
-	PasswordAuthEnabled() bool
-	Login(ctx context.Context, input LoginInput) (*AuthOutput, error)
-	LoginWithGoogle(ctx context.Context, input LoginWithGoogleInput) (*AuthOutput, error)
-	LoginWithGoogleCode(ctx context.Context, input LoginWithGoogleCodeInput) (*AuthOutput, error)
-	SignUp(ctx context.Context, input SignUpInput) (*AuthOutput, error)
-	SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error)
-	RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error)
-	Logout(ctx context.Context, input LogoutInput) error
+type Interactor struct {
+	userRepo            domainrepository.UserRepository
+	sessionRepo         domainrepository.SessionRepository
+	workspaceRepo       domainrepository.WorkspaceRepository
+	invitationRepo      domainrepository.InvitationRepository
+	jwtService          JWTService
+	passwordSvc         PasswordService
+	googleVerifier      GoogleVerifier
+	googleCode          GoogleCodeExchanger
+	txManager           domaintransaction.Manager
+	recorder            audit.Recorder
+	sessionCloser       SessionCloser
+	passwordAuthEnabled bool
 }
 
-type authInteractor struct {
-	userRepo       domainrepository.UserRepository
-	sessionRepo    domainrepository.SessionRepository
-	workspaceRepo  domainrepository.WorkspaceRepository
-	invitationRepo domainrepository.InvitationRepository
-	jwtService     JWTService
-	passwordSvc    PasswordService
-	googleVerifier GoogleVerifier
-	googleCode     GoogleCodeExchanger
-	txManager      domaintransaction.Manager
-	recorder       audit.Recorder
-	sessionCloser  SessionCloser
-	settings       Settings
-}
-
-func NewAuthInteractor(
+func New(
 	userRepo domainrepository.UserRepository,
 	sessionRepo domainrepository.SessionRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
@@ -82,30 +76,30 @@ func NewAuthInteractor(
 	txManager domaintransaction.Manager,
 	recorder audit.Recorder,
 	sessionCloser SessionCloser,
-	settings Settings,
-) AuthUseCase {
-	return &authInteractor{
-		userRepo:       userRepo,
-		sessionRepo:    sessionRepo,
-		workspaceRepo:  workspaceRepo,
-		invitationRepo: invitationRepo,
-		jwtService:     jwtService,
-		passwordSvc:    passwordSvc,
-		googleVerifier: googleVerifier,
-		googleCode:     googleCode,
-		txManager:      txManager,
-		recorder:       recorder,
-		sessionCloser:  sessionCloser,
-		settings:       settings,
+	passwordAuthEnabled bool,
+) *Interactor {
+	return &Interactor{
+		userRepo:            userRepo,
+		sessionRepo:         sessionRepo,
+		workspaceRepo:       workspaceRepo,
+		invitationRepo:      invitationRepo,
+		jwtService:          jwtService,
+		passwordSvc:         passwordSvc,
+		googleVerifier:      googleVerifier,
+		googleCode:          googleCode,
+		txManager:           txManager,
+		recorder:            recorder,
+		sessionCloser:       sessionCloser,
+		passwordAuthEnabled: passwordAuthEnabled,
 	}
 }
 
-func (i *authInteractor) PasswordAuthEnabled() bool {
-	return i.settings.PasswordAuthEnabled
+func (i *Interactor) PasswordAuthEnabled() bool {
+	return i.passwordAuthEnabled
 }
 
-func (i *authInteractor) Login(ctx context.Context, input LoginInput) (*AuthOutput, error) {
-	if !i.settings.PasswordAuthEnabled {
+func (i *Interactor) Login(ctx context.Context, input LoginInput) (*AuthOutput, error) {
+	if !i.passwordAuthEnabled {
 		return nil, domerr.ErrPasswordAuthDisabled
 	}
 	user, err := i.userRepo.FindByEmail(ctx, entity.NormalizeEmail(input.Email))
@@ -124,7 +118,7 @@ func (i *authInteractor) Login(ctx context.Context, input LoginInput) (*AuthOutp
 }
 
 // LoginWithGoogle は sub で照合し、未紐付けならメールアドレスで既存ユーザーに紐付け、どちらもなければ招待か登録を許可したワークスペースがある場合だけユーザーを作ります
-func (i *authInteractor) LoginWithGoogle(ctx context.Context, input LoginWithGoogleInput) (*AuthOutput, error) {
+func (i *Interactor) LoginWithGoogle(ctx context.Context, input LoginWithGoogleInput) (*AuthOutput, error) {
 	identity, err := i.googleVerifier.Verify(ctx, input.IDToken)
 	if err != nil {
 		return nil, err
@@ -133,7 +127,7 @@ func (i *authInteractor) LoginWithGoogle(ctx context.Context, input LoginWithGoo
 }
 
 // LoginWithGoogleCode はネイティブアプリがブラウザで受け取った認可コードを交換し、LoginWithGoogle と同じ扱いでログインさせます
-func (i *authInteractor) LoginWithGoogleCode(ctx context.Context, input LoginWithGoogleCodeInput) (*AuthOutput, error) {
+func (i *Interactor) LoginWithGoogleCode(ctx context.Context, input LoginWithGoogleCodeInput) (*AuthOutput, error) {
 	idToken, err := i.googleCode.Exchange(ctx, input.Code, input.CodeVerifier)
 	if err != nil {
 		return nil, err
@@ -149,7 +143,7 @@ func (i *authInteractor) LoginWithGoogleCode(ctx context.Context, input LoginWit
 	return i.loginWithGoogleIdentity(ctx, identity, input.WorkspaceID)
 }
 
-func (i *authInteractor) loginWithGoogleIdentity(ctx context.Context, identity *GoogleIdentity, workspaceID *string) (*AuthOutput, error) {
+func (i *Interactor) loginWithGoogleIdentity(ctx context.Context, identity *GoogleIdentity, workspaceID *string) (*AuthOutput, error) {
 	if !identity.EmailVerified {
 		return nil, domerr.ErrEmailNotVerified
 	}
@@ -175,7 +169,7 @@ func (i *authInteractor) loginWithGoogleIdentity(ctx context.Context, identity *
 	return i.login(ctx, user)
 }
 
-func (i *authInteractor) linkGoogleAccount(ctx context.Context, identity *GoogleIdentity) (*entity.User, error) {
+func (i *Interactor) linkGoogleAccount(ctx context.Context, identity *GoogleIdentity) (*entity.User, error) {
 	user, err := i.userRepo.FindByEmail(ctx, entity.NormalizeEmail(identity.Email))
 	if err != nil || user == nil {
 		return nil, err
@@ -191,7 +185,7 @@ func (i *authInteractor) linkGoogleAccount(ctx context.Context, identity *Google
 	return user, nil
 }
 
-func (i *authInteractor) createGoogleUser(ctx context.Context, identity *GoogleIdentity, workspaceID *string) (*entity.User, error) {
+func (i *Interactor) createGoogleUser(ctx context.Context, identity *GoogleIdentity, workspaceID *string) (*entity.User, error) {
 	email := entity.NormalizeEmail(identity.Email)
 	invitations, err := i.invitationRepo.FindPendingByEmail(ctx, email, time.Now())
 	if err != nil {
@@ -224,8 +218,8 @@ func (i *authInteractor) createGoogleUser(ctx context.Context, identity *GoogleI
 	return user, nil
 }
 
-func (i *authInteractor) SignUp(ctx context.Context, input SignUpInput) (*AuthOutput, error) {
-	if !i.settings.PasswordAuthEnabled {
+func (i *Interactor) SignUp(ctx context.Context, input SignUpInput) (*AuthOutput, error) {
+	if !i.passwordAuthEnabled {
 		return nil, domerr.ErrPasswordAuthDisabled
 	}
 	email := entity.NormalizeEmail(input.Email)
@@ -248,7 +242,7 @@ func (i *authInteractor) SignUp(ctx context.Context, input SignUpInput) (*AuthOu
 }
 
 // createSignupUser は登録を許可したワークスペースにメンバーとして参加させる形でユーザーを作ります
-func (i *authInteractor) createSignupUser(ctx context.Context, user *entity.User, workspaceID string, byEmail bool) error {
+func (i *Interactor) createSignupUser(ctx context.Context, user *entity.User, workspaceID string, byEmail bool) error {
 	if err := i.checkSignupEnabled(ctx, workspaceID, byEmail); err != nil {
 		return err
 	}
@@ -261,7 +255,7 @@ func (i *authInteractor) createSignupUser(ctx context.Context, user *entity.User
 }
 
 // joinSignupWorkspace は参加リンクから既存のアカウントでログインしたとき、未参加ならメンバーとして参加させます
-func (i *authInteractor) joinSignupWorkspace(ctx context.Context, userID, workspaceID string) error {
+func (i *Interactor) joinSignupWorkspace(ctx context.Context, userID, workspaceID string) error {
 	if err := i.checkSignupEnabled(ctx, workspaceID, false); err != nil {
 		return err
 	}
@@ -273,7 +267,7 @@ func (i *authInteractor) joinSignupWorkspace(ctx context.Context, userID, worksp
 	return i.addSignupMember(ctx, workspaceID, userID)
 }
 
-func (i *authInteractor) checkSignupEnabled(ctx context.Context, workspaceID string, byEmail bool) error {
+func (i *Interactor) checkSignupEnabled(ctx context.Context, workspaceID string, byEmail bool) error {
 	ws, err := i.workspaceRepo.FindByID(ctx, workspaceID)
 	if err != nil {
 		return err
@@ -284,12 +278,12 @@ func (i *authInteractor) checkSignupEnabled(ctx context.Context, workspaceID str
 	return nil
 }
 
-func (i *authInteractor) addSignupMember(ctx context.Context, workspaceID, userID string) error {
-	return i.workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{WorkspaceID: workspaceID, UserID: userID, Role: entity.WorkspaceRoleMember, JoinedAt: time.Now()})
+func (i *Interactor) addSignupMember(ctx context.Context, workspaceID, userID string) error {
+	return i.workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{WorkspaceID: workspaceID, UserID: userID, Role: entity.WorkspaceRoleMember})
 }
 
-func (i *authInteractor) SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error) {
-	if !i.settings.PasswordAuthEnabled {
+func (i *Interactor) SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error) {
+	if !i.passwordAuthEnabled {
 		return nil, domerr.ErrPasswordAuthDisabled
 	}
 	now := time.Now()
@@ -325,7 +319,7 @@ func (i *authInteractor) SignUpWithInvitation(ctx context.Context, input SignUpW
 }
 
 // createInvitedUser はユーザーを作り、招待されたワークスペースに参加させます
-func (i *authInteractor) createInvitedUser(ctx context.Context, user *entity.User, invitations []*entity.Invitation) error {
+func (i *Interactor) createInvitedUser(ctx context.Context, user *entity.User, invitations []*entity.Invitation) error {
 	return i.txManager.Do(ctx, func(ctx context.Context) error {
 		if err := i.userRepo.Create(ctx, user); err != nil {
 			return err
@@ -335,7 +329,7 @@ func (i *authInteractor) createInvitedUser(ctx context.Context, user *entity.Use
 		// 同じワークスペースへの招待が複数あれば、新しい順に並んでいるため最新のロールで参加する
 		for _, inv := range invitations {
 			if !joined[inv.WorkspaceID] {
-				member := &entity.WorkspaceMember{WorkspaceID: inv.WorkspaceID, UserID: user.ID, Role: inv.Role, JoinedAt: now}
+				member := &entity.WorkspaceMember{WorkspaceID: inv.WorkspaceID, UserID: user.ID, Role: inv.Role}
 				if err := i.workspaceRepo.AddMember(ctx, member); err != nil {
 					return err
 				}
@@ -349,7 +343,7 @@ func (i *authInteractor) createInvitedUser(ctx context.Context, user *entity.Use
 	})
 }
 
-func (i *authInteractor) login(ctx context.Context, user *entity.User) (*AuthOutput, error) {
+func (i *Interactor) login(ctx context.Context, user *entity.User) (*AuthOutput, error) {
 	out, err := i.createSession(ctx, user)
 	if err != nil {
 		return nil, err
@@ -359,8 +353,8 @@ func (i *authInteractor) login(ctx context.Context, user *entity.User) (*AuthOut
 }
 
 // recordLogin はログインがワークスペースに属さないため、ユーザーが参加している全ワークスペースの監査ログに記録します
-func (i *authInteractor) recordLogin(ctx context.Context, user *entity.User, action entity.AuditAction) {
-	workspaces, err := i.workspaceRepo.FindByUserID(ctx, user.ID)
+func (i *Interactor) recordLogin(ctx context.Context, user *entity.User, action entity.AuditAction) {
+	memberships, err := i.workspaceRepo.FindMembershipsByUserID(ctx, user.ID)
 	if err != nil {
 		return
 	}
@@ -369,9 +363,9 @@ func (i *authInteractor) recordLogin(ctx context.Context, user *entity.User, act
 	if action == entity.AuditActionLogin {
 		actorID = &user.ID
 	}
-	for _, ws := range workspaces {
+	for _, m := range memberships {
 		i.recorder.Record(ctx, entity.AuditLog{
-			WorkspaceID: ws.ID,
+			WorkspaceID: m.WorkspaceID,
 			ActorID:     actorID,
 			Action:      action,
 			TargetType:  entity.AuditTargetUser,
@@ -381,7 +375,7 @@ func (i *authInteractor) recordLogin(ctx context.Context, user *entity.User, act
 	}
 }
 
-func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error) {
+func (i *Interactor) RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error) {
 	if input.RefreshToken == "" {
 		return nil, domerr.ErrInvalidToken
 	}
@@ -396,7 +390,7 @@ func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInp
 	if err != nil {
 		return nil, err
 	}
-	if user == nil {
+	if user == nil || user.DeletedAt != nil {
 		return nil, domerr.ErrInvalidToken
 	}
 
@@ -412,7 +406,7 @@ func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInp
 }
 
 // Logout はリフレッシュトークンかアクセストークンが指すセッションだけを失効させ、その接続を切ります
-func (i *authInteractor) Logout(ctx context.Context, input LogoutInput) error {
+func (i *Interactor) Logout(ctx context.Context, input LogoutInput) error {
 	sessionID := input.SessionID
 	if input.RefreshToken != "" {
 		session, err := i.sessionRepo.FindActiveByTokenHash(ctx, entity.HashSecretToken(input.RefreshToken))
@@ -438,8 +432,8 @@ type issuedTokens struct {
 	refreshTokenHash string
 }
 
-func (i *authInteractor) issueTokens(user *entity.User, sessionID string) (*issuedTokens, error) {
-	accessToken, err := i.jwtService.GenerateToken(TokenClaims{UserID: user.ID, SessionID: sessionID}, i.settings.AccessTokenTTL)
+func (i *Interactor) issueTokens(user *entity.User, sessionID string) (*issuedTokens, error) {
+	accessToken, err := i.jwtService.GenerateToken(TokenClaims{UserID: user.ID, SessionID: sessionID}, accessTokenTTL)
 	if err != nil {
 		return nil, err
 	}
@@ -454,20 +448,15 @@ func (i *authInteractor) issueTokens(user *entity.User, sessionID string) (*issu
 		output: &AuthOutput{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
-			ExpiresAt:    time.Now().Add(i.settings.RefreshTokenTTL),
-			User: UserInfo{
-				ID:          user.ID,
-				Email:       user.Email,
-				DisplayName: user.DisplayName,
-				AvatarURL:   user.AvatarURL,
-			},
+			ExpiresAt:    time.Now().Add(refreshTokenTTL),
+			User:         user,
 		},
 		refreshTokenHash: refreshTokenHash,
 	}, nil
 }
 
 // createSession はアクセストークンに載せるためセッション ID を先に採番し、ログイン元の端末情報とともに保存します
-func (i *authInteractor) createSession(ctx context.Context, user *entity.User) (*AuthOutput, error) {
+func (i *Interactor) createSession(ctx context.Context, user *entity.User) (*AuthOutput, error) {
 	sessionID := uuid.NewString()
 	tokens, err := i.issueTokens(user, sessionID)
 	if err != nil {

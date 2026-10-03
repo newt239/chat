@@ -4,7 +4,7 @@ package chat.v1;
 
 import "buf/validate/validate.proto";
 
-// プッシュ通知の宛先となる端末のトークンを登録する。ウェブ（FCM）と将来のネイティブアプリで共通
+// プッシュ通知の宛先となる端末のトークンを登録する。ウェブ・iOS・Android で共通（いずれも FCM 経由）
 service NotificationService {
   rpc RegisterPushToken(RegisterPushTokenRequest) returns (RegisterPushTokenResponse);
   rpc UnregisterPushToken(UnregisterPushTokenRequest) returns (UnregisterPushTokenResponse);

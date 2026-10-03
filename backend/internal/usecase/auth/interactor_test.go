@@ -87,8 +87,8 @@ type stubWorkspaceRepo struct {
 	added []*entity.WorkspaceMember
 }
 
-func (stubWorkspaceRepo) FindByUserID(context.Context, string) ([]*entity.Workspace, error) {
-	return []*entity.Workspace{{ID: "ws1"}, {ID: "ws2"}}, nil
+func (stubWorkspaceRepo) FindMembershipsByUserID(context.Context, string) ([]*entity.WorkspaceMember, error) {
+	return []*entity.WorkspaceMember{{WorkspaceID: "ws1"}, {WorkspaceID: "ws2"}}, nil
 }
 
 func (stubWorkspaceRepo) FindByID(_ context.Context, id string) (*entity.Workspace, error) {
@@ -193,7 +193,7 @@ type stubTx struct{}
 func (stubTx) Do(ctx context.Context, fn func(ctx context.Context) error) error { return fn(ctx) }
 
 type fixture struct {
-	uc          AuthUseCase
+	uc          *Interactor
 	users       *stubUserRepo
 	sessions    *stubSessionRepo
 	workspaces  *stubWorkspaceRepo
@@ -212,6 +212,7 @@ var google = stubGoogle{
 	"invited":  {Sub: "sub-new", Email: "New@Example.com", EmailVerified: true, Name: "New User"},
 	"stranger": {Sub: "sub-stranger", Email: "stranger@example.com", EmailVerified: true},
 	"bob":      {Sub: "sub-bob", Email: "bob@example.com", EmailVerified: false},
+	"gone":     {Sub: "sub-gone", Email: "gone@example.com", EmailVerified: true},
 	// 認可コードフローで発行された ID トークンには nonce が入る
 	"alice-nonce": {Sub: "sub-alice", Email: "alice@example.com", EmailVerified: true, Nonce: "nonce-1"},
 }
@@ -233,8 +234,7 @@ func newFixture(passwordAuthEnabled bool) fixture {
 		recorder: &audittest.Recorder{},
 		closer:   &stubCloser{},
 	}
-	settings := Settings{AccessTokenTTL: time.Minute, RefreshTokenTTL: time.Hour, PasswordAuthEnabled: passwordAuthEnabled}
-	f.uc = NewAuthInteractor(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, googleCode, stubTx{}, f.recorder, f.closer, settings)
+	f.uc = New(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, googleCode, stubTx{}, f.recorder, f.closer, passwordAuthEnabled)
 	return f
 }
 
@@ -284,6 +284,21 @@ func TestPasswordAuthCanBeDisabled(t *testing.T) {
 	}
 	if len(f.sessions.created) != 0 || len(f.users.created) != 0 {
 		t.Errorf("セッションやユーザーが作られました")
+	}
+}
+
+// 退会でセッションは消えるが、念のためリフレッシュでも退会済みを弾く
+func TestDeletedUserCannotRefresh(t *testing.T) {
+	f := newFixture(true)
+	deletedAt := time.Now()
+	f.users.users = append(f.users.users, &entity.User{ID: "gone", DeletedAt: &deletedAt})
+	f.sessions.active = []*entity.Session{{ID: "s1", UserID: "gone", RefreshTokenHash: entity.HashSecretToken("refresh")}}
+
+	if _, err := f.uc.RefreshToken(context.Background(), RefreshTokenInput{RefreshToken: "refresh"}); !errors.Is(err, domerr.ErrInvalidToken) {
+		t.Errorf("退会済みのユーザーのトークンを更新できました: %v", err)
+	}
+	if len(f.sessions.rotated) != 0 {
+		t.Errorf("退会済みのユーザーのセッションが更新されました")
 	}
 }
 

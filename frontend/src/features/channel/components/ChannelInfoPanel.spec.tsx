@@ -77,6 +77,23 @@ describe("ChannelInfoPanel", () => {
     expect(screen.getByRole("button", { name: "退出する" })).toBeInTheDocument();
   });
 
+  test("参加していないチャンネルも個別に取得して表示する", async () => {
+    await renderWithProviders(
+      <ChannelInfoPanel workspaceId="ws1" channelId="c2" />,
+      "/app/ws1",
+      (routes) => {
+        routes.rpc(ChannelService.method.listChannels, () => ({ channels: [] }));
+        routes.rpc(ChannelService.method.getChannel, () => ({
+          channel: create(ChannelSchema, { description: "雑談", id: "c2", name: "random" }),
+        }));
+        routes.rpc(ChannelMemberService.method.listChannelMembers, () => ({ members: [] }));
+        routes.rpc(WorkspaceService.method.listMembers, () => ({ members: [] }));
+      },
+    );
+    expect(await screen.findByRole("heading", { name: "random" })).toBeInTheDocument();
+    expect(screen.getByText("雑談", { selector: "p" })).toBeInTheDocument();
+  });
+
   test("メンバーのメニューからロールを変更する", async () => {
     const { updateRole } = await setup();
     await userEvent.click(await screen.findByRole("button", { name: "Bob の操作" }));

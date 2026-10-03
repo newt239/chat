@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
-/* ThemeProvider が @chat/design-tokens から計算した値を :root の --c-* などに書き込む。
-   inline にすることでユーティリティが変数を直接参照し、テーマ切り替えが即座に反映される */
+/* inline にしてユーティリティが ThemeProvider の書き込む :root の変数を直接参照し、テーマ切り替えを即座に反映する */
 @theme inline {
   --color-*: initial;
 
@@ -90,7 +89,6 @@
   --leading-normal: var(--lh-normal);
   --leading-relaxed: var(--lh-relaxed);
 
-  --tracking-tight: var(--ls-tight);
   --tracking-wide: var(--ls-wide);
 
   --font-sans: var(--ff-sans);
@@ -132,8 +130,6 @@
 @utility z-toast {
   z-index: 400;
 }
-
-@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
 
 :root {
   color-scheme: light dark;

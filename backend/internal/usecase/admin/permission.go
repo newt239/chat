@@ -6,17 +6,14 @@ import (
 	"strconv"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domerr "github.com/newt239/chat/internal/domain/errors"
+	domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
 // GetPermissions は権限の設定を返します。ボタンの出し分けに使うためメンバー全員が参照できます
 func (i *Interactor) GetPermissions(ctx context.Context, input WorkspaceInput) (*PermissionsOutput, error) {
-	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.RequesterID)
+	member, err := domainservice.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.RequesterID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return nil, domerr.ErrUnauthorized
+		return nil, err
 	}
 
 	matrix, err := i.permissionSvc.Matrix(ctx, input.WorkspaceID)
@@ -27,7 +24,7 @@ func (i *Interactor) GetPermissions(ctx context.Context, input WorkspaceInput) (
 }
 
 func (i *Interactor) UpdatePermission(ctx context.Context, input UpdatePermissionInput) error {
-	operator, err := i.ensureAdmin(ctx, input.WorkspaceID, input.OperatorID)
+	operator, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.OperatorID)
 	if err != nil {
 		return err
 	}

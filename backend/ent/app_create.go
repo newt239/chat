@@ -183,20 +183,6 @@ func (_c *AppCreate) SetNillableCreatedAt(v *time.Time) *AppCreate {
 	return _c
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (_c *AppCreate) SetUpdatedAt(v time.Time) *AppCreate {
-	_c.mutation.SetUpdatedAt(v)
-	return _c
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (_c *AppCreate) SetNillableUpdatedAt(v *time.Time) *AppCreate {
-	if v != nil {
-		_c.SetUpdatedAt(*v)
-	}
-	return _c
-}
-
 // SetID sets the "id" field.
 func (_c *AppCreate) SetID(v uuid.UUID) *AppCreate {
 	_c.mutation.SetID(v)
@@ -278,10 +264,6 @@ func (_c *AppCreate) defaults() {
 		v := app.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		v := app.DefaultUpdatedAt()
-		_c.mutation.SetUpdatedAt(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := app.DefaultID()
 		_c.mutation.SetID(v)
@@ -315,9 +297,6 @@ func (_c *AppCreate) check() error {
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "App.created_at"`)}
-	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "App.updated_at"`)}
 	}
 	if len(_c.mutation.WorkspaceIDs()) == 0 {
 		return &ValidationError{Name: "workspace", err: errors.New(`ent: missing required edge "App.workspace"`)}
@@ -403,10 +382,6 @@ func (_c *AppCreate) createSpec() (*App, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(app.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
-	}
-	if value, ok := _c.mutation.UpdatedAt(); ok {
-		_spec.SetField(app.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
 	}
 	if nodes := _c.mutation.WorkspaceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -714,18 +689,6 @@ func (u *AppUpsert) ClearLastUsedAt() *AppUpsert {
 	return u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (u *AppUpsert) SetUpdatedAt(v time.Time) *AppUpsert {
-	u.Set(app.FieldUpdatedAt, v)
-	return u
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *AppUpsert) UpdateUpdatedAt() *AppUpsert {
-	u.SetExcluded(app.FieldUpdatedAt)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -994,20 +957,6 @@ func (u *AppUpsertOne) UpdateLastUsedAt() *AppUpsertOne {
 func (u *AppUpsertOne) ClearLastUsedAt() *AppUpsertOne {
 	return u.Update(func(s *AppUpsert) {
 		s.ClearLastUsedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *AppUpsertOne) SetUpdatedAt(v time.Time) *AppUpsertOne {
-	return u.Update(func(s *AppUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *AppUpsertOne) UpdateUpdatedAt() *AppUpsertOne {
-	return u.Update(func(s *AppUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 
@@ -1446,20 +1395,6 @@ func (u *AppUpsertBulk) UpdateLastUsedAt() *AppUpsertBulk {
 func (u *AppUpsertBulk) ClearLastUsedAt() *AppUpsertBulk {
 	return u.Update(func(s *AppUpsert) {
 		s.ClearLastUsedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *AppUpsertBulk) SetUpdatedAt(v time.Time) *AppUpsertBulk {
-	return u.Update(func(s *AppUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *AppUpsertBulk) UpdateUpdatedAt() *AppUpsertBulk {
-	return u.Update(func(s *AppUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 

@@ -9,7 +9,7 @@ import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { focusRing } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { openDialog } from "#/lib/overlaySearch";
 
 import { useChannelLinkActions, useChannelLinks } from "../hooks/useChannelLinks";
 

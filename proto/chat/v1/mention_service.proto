@@ -20,9 +20,8 @@ message ListMentionsRequest {
   string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
   // 前ページの next_cursor をそのまま渡す
   MentionCursor cursor = 2;
-  // 0 の場合はサーバーの既定値を使う
   int32 limit = 3 [(buf.validate.field).int32 = {
-    gte: 0
+    gte: 1
     lte: 100
   }];
 }

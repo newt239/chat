@@ -284,29 +284,6 @@ func HasPollWith(preds ...predicate.Poll) predicate.PollOption {
 	})
 }
 
-// HasVotes applies the HasEdge predicate on the "votes" edge.
-func HasVotes() predicate.PollOption {
-	return predicate.PollOption(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, VotesTable, VotesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasVotesWith applies the HasEdge predicate on the "votes" edge with a given conditions (other predicates).
-func HasVotesWith(preds ...predicate.PollVote) predicate.PollOption {
-	return predicate.PollOption(func(s *sql.Selector) {
-		step := newVotesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.PollOption) predicate.PollOption {
 	return predicate.PollOption(sql.AndPredicates(predicates...))

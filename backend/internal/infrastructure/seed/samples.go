@@ -12,7 +12,6 @@ import (
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/newt239/chat/internal/infrastructure/repository"
-	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
 const scrollTestMessages = 2000
@@ -37,18 +36,17 @@ var sampleUserNames = []string{
 	"Eve Tanaka", "Frank Suzuki", "Grace Sato", "Hiro Yamada", "Ivy Kobayashi", "Jun Ito", "Ken Watanabe", "山田 花子",
 }
 
-// createRichSamples はメッセージの種類・システムメッセージ・スレッド・大量のメッセージなど、
-// 画面の確認に使うデータを追加します。alice の視点で並び順・ミュート・スターも確認できるようにします
+// createRichSamples はメッセージの種類・スレッド・大量のメッセージ・ミュート・スターなど画面の確認に使うデータを追加します
 func createRichSamples(
 	ctx context.Context,
 	client *ent.Client,
-	passwordService authuc.PasswordService,
+	passwordHash string,
 	users []*entity.User,
 	channels []*entity.Channel,
 	messages []*entity.Message,
 ) error {
 	alice := users[0]
-	members, err := createSampleUsers(ctx, passwordService, client, users)
+	members, err := createSampleUsers(ctx, passwordHash, client, users)
 	if err != nil {
 		return err
 	}
@@ -69,11 +67,11 @@ func createRichSamples(
 		}
 	}
 	for _, def := range sampleChannels {
-		params := entity.ChannelParams{
+		params := entity.Channel{
 			ID:          uuid.NewString(),
 			WorkspaceID: "general",
 			Name:        def.name,
-			Description: stringPtr(def.description),
+			Description: new(def.description),
 			CreatedBy:   users[1].ID,
 		}
 		if parent, ok := byName[def.parentName]; ok {
@@ -124,7 +122,7 @@ func createRichSamples(
 }
 
 // createSampleUsers は既存のユーザーに確認用のユーザーを足して返します。日本語だけの名前はメンションできない例です
-func createSampleUsers(ctx context.Context, passwordService authuc.PasswordService, client *ent.Client, users []*entity.User) ([]*entity.User, error) {
+func createSampleUsers(ctx context.Context, passwordHash string, client *ent.Client, users []*entity.User) ([]*entity.User, error) {
 	workspaceRepo := repository.NewWorkspaceRepository(client)
 	userRepo := repository.NewUserRepository(client)
 	members := append([]*entity.User{}, users...)
@@ -136,9 +134,9 @@ func createSampleUsers(ctx context.Context, passwordService authuc.PasswordServi
 		user := &entity.User{
 			ID:           uuid.NewString(),
 			Email:        seed + "@example.com",
-			PasswordHash: mustHashPassword(passwordService, "password123"),
+			PasswordHash: passwordHash,
 			DisplayName:  name,
-			AvatarURL:    stringPtr("https://api.dicebear.com/7.x/avataaars/svg?seed=" + seed),
+			AvatarURL:    new("https://api.dicebear.com/7.x/avataaars/svg?seed=" + seed),
 		}
 		if err := userRepo.Create(ctx, user); err != nil {
 			return nil, fmt.Errorf("failed to create user %s: %w", name, err)
@@ -147,7 +145,6 @@ func createSampleUsers(ctx context.Context, passwordService authuc.PasswordServi
 			WorkspaceID: "general",
 			UserID:      user.ID,
 			Role:        entity.WorkspaceRoleMember,
-			JoinedAt:    time.Now(),
 		}); err != nil {
 			return nil, fmt.Errorf("failed to add %s to workspace: %w", name, err)
 		}
@@ -161,7 +158,7 @@ func addSampleMember(ctx context.Context, client *ent.Client, ch *entity.Channel
 	if err := repository.NewChannelMemberRepository(client).AddMember(ctx, &entity.ChannelMember{ChannelID: ch.ID, UserID: user.ID}); err != nil {
 		return fmt.Errorf("failed to add %s to %s: %w", user.DisplayName, ch.Name, err)
 	}
-	return createSystemMessage(ctx, client, ch, entity.SystemMessageKindMemberJoined, user.ID, map[string]any{"actorId": user.ID, "userId": user.ID}, at)
+	return createSystemMessage(ctx, client, ch, entity.SystemMessageKindMemberJoined, user.ID, map[string]any{"userId": user.ID}, at)
 }
 
 func createSystemMessage(ctx context.Context, client *ent.Client, ch *entity.Channel, kind entity.SystemMessageKind, actorID string, payload map[string]any, at time.Time) error {
@@ -187,27 +184,53 @@ type sampleMessage struct {
 	reactions map[string]int
 	replies   []string
 	link      *entity.MessageLink
+	pinned    bool
+	// 本文のメンション。グループへのメンションは投稿時点のメンバーに展開して保存する
+	userMentions  []*entity.MessageUserMention
+	groupMentions []*entity.MessageGroupMention
 }
 
 // createShowcaseMessages は Markdown・コード・メンション・リンク・位置情報・編集・削除・スレッド・ピンなどを 1 つのチャンネルに並べます
 func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*entity.User, channelsByName map[string]*entity.Channel, messages []*entity.Message) error {
 	ch := channelsByName["showcase"]
-	general := messages[0]
+	general, private := messages[0], messages[9]
 	permalink := samplePermalink(general.ChannelID, general.ID)
+	privateLink := samplePermalink(private.ChannelID, private.ID)
+	youtubeURL := "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+	developers := new(developersGroupID)
+	sampleUser := users[len(users)-len(sampleUserNames)]
 	longText := strings.Repeat("長いメッセージの折り返しと高さの確認用の文章です。仮想スクロールでは行ごとに高さが変わるため、長文が混ざっても位置がずれないことを確かめます。", 6)
 	samples := []sampleMessage{
 		{userIndex: 1, body: "# 見出し 1\n## 見出し 2\n\n**太字**・*斜体*・~~取り消し~~・`インラインコード`\n\n- 箇条書き\n  - 入れ子\n- [ ] タスク\n- [x] 完了したタスク\n\n1. 番号付き\n2. リスト"},
 		{userIndex: 2, body: "> 引用です。\n> 複数行の引用も表示できます。\n\n| 項目 | 状態 | 担当 |\n| --- | --- | --- |\n| ログイン | 完了 | Alice |\n| 検索 | 進行中 | Bob |\n| 通知 | 未着手 | Diana |"},
 		{userIndex: 3, body: "Go と TypeScript の例です。\n\n```go\nfunc Hello(name string) string {\n\treturn fmt.Sprintf(\"Hello, %s\", name)\n}\n```\n\n```ts\nexport const hello = (name: string) => `Hello, ${name}`;\n```\n\n```sql\nSELECT id, name FROM channel WHERE is_private = false ORDER BY name;\n```"},
 		{userIndex: 4, body: longText, reactions: map[string]int{"👀": 3}},
-		{userIndex: 5, body: "🎉🎉🎉"},
-		{userIndex: 0, body: "<@" + users[1].ID + "> <@" + users[len(users)-len(sampleUserNames)].ID + "> レビューをお願いします。<@&" + developersGroupID + "> にも共有します。詳細は <#" + channelsByName["dev/frontend"].ID + "> と <#" + channelsByName["general"].ID + "> を見てください", reactions: map[string]int{"👍": 6, "🙏": 2, "✅": 1}},
-		{userIndex: 6, body: "参考資料です https://github.com/example/repo", link: &entity.MessageLink{URL: "https://github.com/example/repo", OGP: entity.OGPData{Title: stringPtr("Example Repository"), Description: stringPtr("A sample repository for demonstration"), SiteName: stringPtr("GitHub")}}},
+		// ツールチップや「+N」の確認用に多くのリアクションを付ける
+		{userIndex: 5, body: "🎉🎉🎉", reactions: map[string]int{"👍": 12, "🎉": 11, "❤️": 10, "😂": 9, "👀": 8, "🚀": 7, "✅": 6, "🙏": 5}},
+		{
+			userIndex: 0,
+			body:      "<@" + users[1].ID + "> <@" + sampleUser.ID + "> レビューをお願いします。<@&" + developersGroupID + "> にも共有します。詳細は <#" + channelsByName["dev/frontend"].ID + "> と <#" + channelsByName["general"].ID + "> を見てください",
+			reactions: map[string]int{"👍": 6, "🙏": 2, "✅": 1},
+			userMentions: []*entity.MessageUserMention{
+				{UserID: users[1].ID}, {UserID: sampleUser.ID},
+				{UserID: users[0].ID, ViaGroupID: developers}, {UserID: users[3].ID, ViaGroupID: developers},
+			},
+			groupMentions: []*entity.MessageGroupMention{{GroupID: developersGroupID}},
+		},
+		{userIndex: 6, body: "参考資料です https://github.com/example/repo", link: &entity.MessageLink{URL: "https://github.com/example/repo", OGP: entity.OGPData{Title: new("Example Repository"), Description: new("A sample repository for demonstration"), SiteName: new("GitHub")}}},
+		{userIndex: 2, body: "この動画がおすすめです " + youtubeURL, pinned: true, link: &entity.MessageLink{URL: youtubeURL, OGP: entity.OGPData{
+			Title:    new("Rick Astley - Never Gonna Give You Up (Official Video)"),
+			SiteName: new("YouTube"),
+			ImageURL: new("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"),
+			YouTube:  &entity.YouTubeVideo{VideoID: "dQw4w9WgXcQ", ChannelName: new("Rick Astley"), DurationSeconds: new(int32(213))},
+		}}},
 		{userIndex: 1, body: "最初の挨拶はここです " + permalink, link: &entity.MessageLink{URL: permalink, LinkedMessageID: &general.ID}},
-		{userIndex: 7, body: "今ここにいます", location: &entity.MessageLocation{Latitude: 35.681236, Longitude: 139.767125, Label: stringPtr("東京駅")}},
+		// private-team のメンバーでない Charlie などには引用カードが出ない
+		{userIndex: 0, body: "ロードマップの議論はここを見てください " + privateLink, link: &entity.MessageLink{URL: privateLink, LinkedMessageID: &private.ID}},
+		{userIndex: 7, body: "今ここにいます", location: &entity.MessageLocation{Latitude: 35.681236, Longitude: 139.767125, Label: new("東京駅")}},
 		{userIndex: 2, body: "この文章はあとから編集しました（編集済みの表示）", edited: true},
 		{userIndex: 3, body: "このメッセージは削除されました", deleted: true},
-		{userIndex: 0, body: "リリース日の相談をスレッドでしましょう", replies: []string{"金曜はどうでしょう？", "金曜は QA が間に合わないかもしれません", "では来週の火曜で", "了解です 👍", "カレンダーに入れておきます"}},
+		{userIndex: 0, body: "リリース日の相談をスレッドでしましょう", pinned: true, replies: []string{"金曜はどうでしょう？", "金曜は QA が間に合わないかもしれません", "では来週の火曜で", "了解です 👍", "カレンダーに入れておきます"}},
 		{userIndex: len(sampleUserNames) + 3, body: "山田です。表示名が日本語だけでも @ の候補から選べます"},
 		{userIndex: 9, body: "短いメッセージ"},
 	}
@@ -224,12 +247,12 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 	if err := createSystemMessage(ctx, client, ch, entity.SystemMessageKindChannelDescriptionChanged, users[1].ID, map[string]any{}, next()); err != nil {
 		return err
 	}
-	if err := createSystemMessage(ctx, client, ch, entity.SystemMessageKindMemberAdded, users[1].ID, map[string]any{"addedBy": users[1].ID, "userId": users[3].ID}, next()); err != nil {
+	if err := createSystemMessage(ctx, client, ch, entity.SystemMessageKindMemberAdded, users[1].ID, map[string]any{"userId": users[3].ID}, next()); err != nil {
 		return err
 	}
 
-	messageRepo := repository.NewMessageRepository(client)
 	linkRepo := repository.NewLinkRepository(client)
+	mentionRepo := repository.NewMessageMentionRepository(client)
 	channelID := uuid.MustParse(ch.ID)
 	for _, sample := range samples {
 		author := users[sample.userIndex]
@@ -255,8 +278,7 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		i := 0
 		for emoji, count := range sample.reactions {
 			for _, user := range users[:count] {
-				reaction := &entity.MessageReaction{MessageID: msg.ID.String(), UserID: user.ID, Emoji: emoji, CreatedAt: createdAt.Add(time.Duration(i) * time.Second)}
-				if err := messageRepo.AddReaction(ctx, reaction); err != nil {
+				if err := createReaction(ctx, client, msg.ID.String(), user.ID, emoji, createdAt.Add(time.Duration(i)*time.Second)); err != nil {
 					return fmt.Errorf("failed to create reaction: %w", err)
 				}
 				i++
@@ -264,10 +286,18 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		}
 		if sample.link != nil {
 			sample.link.MessageID = msg.ID.String()
-			sample.link.CreatedAt = createdAt
 			if err := createLink(ctx, linkRepo, sample.link); err != nil {
 				return fmt.Errorf("failed to create link: %w", err)
 			}
+		}
+		for _, m := range sample.userMentions {
+			m.MessageID = msg.ID.String()
+		}
+		for _, m := range sample.groupMentions {
+			m.MessageID = msg.ID.String()
+		}
+		if err := mentionRepo.Create(ctx, sample.userMentions, sample.groupMentions); err != nil {
+			return fmt.Errorf("failed to create mentions: %w", err)
 		}
 		for j, reply := range sample.replies {
 			if err := client.Message.Create().
@@ -280,11 +310,11 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 				return fmt.Errorf("failed to create reply: %w", err)
 			}
 		}
-		if len(sample.replies) > 0 {
+		if sample.pinned {
 			if err := client.MessagePin.Create().SetChannelID(channelID).SetMessageID(msg.ID).SetPinnedByID(uuid.MustParse(users[1].ID)).Exec(ctx); err != nil {
 				return fmt.Errorf("failed to pin message: %w", err)
 			}
-			if err := createSystemMessage(ctx, client, ch, entity.SystemMessageKindMessagePinned, users[1].ID, map[string]any{"messageId": msg.ID.String(), "pinnedBy": users[1].ID}, next()); err != nil {
+			if err := createSystemMessage(ctx, client, ch, entity.SystemMessageKindMessagePinned, users[1].ID, map[string]any{"messageId": msg.ID.String()}, next()); err != nil {
 				return err
 			}
 		}
@@ -293,7 +323,7 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 	// アプリの投稿名義のボット
 	bot, err := client.User.Create().
 		SetEmail("deploy-bot@example.com").
-		SetPasswordHash("!").
+		SetPasswordHash(entity.UnusablePasswordHash).
 		SetDisplayName("Deploy Bot").
 		SetIsApp(true).
 		Save(ctx)

@@ -22,6 +22,7 @@ const render = (images: ReturnType<typeof image>[], url = "/app/ws1/ch1") =>
     <ImageGallery
       images={images}
       message={create(MessageSchema, { id: "m1", user: { displayName: "Alice", id: "u1" } })}
+      ownsOverlay
     />,
     url,
     (routes) => {

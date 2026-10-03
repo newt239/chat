@@ -1,7 +1,4 @@
 export const shell = {
-  admin: {
-    forbidden: "管理者だけが開けます",
-  },
   back: "戻る",
   channel: {
     links: "関連リンク",
@@ -13,7 +10,6 @@ export const shell = {
     createChild: "子チャンネルを作成",
     copyLink: "リンクをコピー",
     label: "チャンネルの操作",
-    linkCopied: "リンクをコピーしました",
     markAsRead: "すべて既読にする",
     more: "その他",
     mute: "ミュート",
@@ -21,7 +17,6 @@ export const shell = {
     unmute: "ミュートを解除",
     unstar: "スターを外す",
   },
-  comingSoon: "この画面は準備中です",
   error: {
     backToTop: "トップへ戻る",
     description: "ページの読み込み中にエラーが発生しました",
@@ -34,10 +29,8 @@ export const shell = {
     settings: "設定",
   },
   nav: {
-    activity: "通知",
     admin: "管理画面",
     bookmarks: "ブックマーク",
-    insights: "インサイト",
     mentions: "メンション",
     search: "検索",
     threads: "スレッド",
@@ -71,12 +64,6 @@ export const shell = {
     dms: "DM",
     home: "ホーム",
     me: "自分",
-  },
-  thread: {
-    emptyDescription: "投稿や返信をしたスレッドがここに並びます",
-    emptyTitle: "参加中のスレッドはありません",
-    notFound: "スレッドが見つかりません",
-    replyCount: "{{count}} 件の返信",
   },
   workspace: {
     create: "ワークスペースを作成",

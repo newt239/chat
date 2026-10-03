@@ -126,16 +126,6 @@ func Status(v string) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldStatus, v))
 }
 
-// UploadedAt applies equality check predicate on the "uploaded_at" field. It's identical to UploadedAtEQ.
-func UploadedAt(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldEQ(FieldUploadedAt, v))
-}
-
-// ExpiresAt applies equality check predicate on the "expires_at" field. It's identical to ExpiresAtEQ.
-func ExpiresAt(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldEQ(FieldExpiresAt, v))
-}
-
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldCreatedAt, v))
@@ -834,106 +824,6 @@ func StatusEqualFold(v string) predicate.Attachment {
 // StatusContainsFold applies the ContainsFold predicate on the "status" field.
 func StatusContainsFold(v string) predicate.Attachment {
 	return predicate.Attachment(sql.FieldContainsFold(FieldStatus, v))
-}
-
-// UploadedAtEQ applies the EQ predicate on the "uploaded_at" field.
-func UploadedAtEQ(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldEQ(FieldUploadedAt, v))
-}
-
-// UploadedAtNEQ applies the NEQ predicate on the "uploaded_at" field.
-func UploadedAtNEQ(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldNEQ(FieldUploadedAt, v))
-}
-
-// UploadedAtIn applies the In predicate on the "uploaded_at" field.
-func UploadedAtIn(vs ...time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldIn(FieldUploadedAt, vs...))
-}
-
-// UploadedAtNotIn applies the NotIn predicate on the "uploaded_at" field.
-func UploadedAtNotIn(vs ...time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldNotIn(FieldUploadedAt, vs...))
-}
-
-// UploadedAtGT applies the GT predicate on the "uploaded_at" field.
-func UploadedAtGT(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldGT(FieldUploadedAt, v))
-}
-
-// UploadedAtGTE applies the GTE predicate on the "uploaded_at" field.
-func UploadedAtGTE(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldGTE(FieldUploadedAt, v))
-}
-
-// UploadedAtLT applies the LT predicate on the "uploaded_at" field.
-func UploadedAtLT(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldLT(FieldUploadedAt, v))
-}
-
-// UploadedAtLTE applies the LTE predicate on the "uploaded_at" field.
-func UploadedAtLTE(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldLTE(FieldUploadedAt, v))
-}
-
-// UploadedAtIsNil applies the IsNil predicate on the "uploaded_at" field.
-func UploadedAtIsNil() predicate.Attachment {
-	return predicate.Attachment(sql.FieldIsNull(FieldUploadedAt))
-}
-
-// UploadedAtNotNil applies the NotNil predicate on the "uploaded_at" field.
-func UploadedAtNotNil() predicate.Attachment {
-	return predicate.Attachment(sql.FieldNotNull(FieldUploadedAt))
-}
-
-// ExpiresAtEQ applies the EQ predicate on the "expires_at" field.
-func ExpiresAtEQ(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldEQ(FieldExpiresAt, v))
-}
-
-// ExpiresAtNEQ applies the NEQ predicate on the "expires_at" field.
-func ExpiresAtNEQ(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldNEQ(FieldExpiresAt, v))
-}
-
-// ExpiresAtIn applies the In predicate on the "expires_at" field.
-func ExpiresAtIn(vs ...time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldIn(FieldExpiresAt, vs...))
-}
-
-// ExpiresAtNotIn applies the NotIn predicate on the "expires_at" field.
-func ExpiresAtNotIn(vs ...time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldNotIn(FieldExpiresAt, vs...))
-}
-
-// ExpiresAtGT applies the GT predicate on the "expires_at" field.
-func ExpiresAtGT(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldGT(FieldExpiresAt, v))
-}
-
-// ExpiresAtGTE applies the GTE predicate on the "expires_at" field.
-func ExpiresAtGTE(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldGTE(FieldExpiresAt, v))
-}
-
-// ExpiresAtLT applies the LT predicate on the "expires_at" field.
-func ExpiresAtLT(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldLT(FieldExpiresAt, v))
-}
-
-// ExpiresAtLTE applies the LTE predicate on the "expires_at" field.
-func ExpiresAtLTE(v time.Time) predicate.Attachment {
-	return predicate.Attachment(sql.FieldLTE(FieldExpiresAt, v))
-}
-
-// ExpiresAtIsNil applies the IsNil predicate on the "expires_at" field.
-func ExpiresAtIsNil() predicate.Attachment {
-	return predicate.Attachment(sql.FieldIsNull(FieldExpiresAt))
-}
-
-// ExpiresAtNotNil applies the NotNil predicate on the "expires_at" field.
-func ExpiresAtNotNil() predicate.Attachment {
-	return predicate.Attachment(sql.FieldNotNull(FieldExpiresAt))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

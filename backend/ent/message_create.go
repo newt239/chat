@@ -13,16 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/message"
-	"github.com/newt239/chat/ent/messagebookmark"
-	"github.com/newt239/chat/ent/messagegroupmention"
-	"github.com/newt239/chat/ent/messagelink"
-	"github.com/newt239/chat/ent/messagepin"
-	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
-	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/userthreadfollow"
 )
@@ -251,36 +244,6 @@ func (_c *MessageCreate) AddReplies(v ...*Message) *MessageCreate {
 	return _c.AddReplyIDs(ids...)
 }
 
-// AddReactionIDs adds the "reactions" edge to the MessageReaction entity by IDs.
-func (_c *MessageCreate) AddReactionIDs(ids ...uuid.UUID) *MessageCreate {
-	_c.mutation.AddReactionIDs(ids...)
-	return _c
-}
-
-// AddReactions adds the "reactions" edges to the MessageReaction entity.
-func (_c *MessageCreate) AddReactions(v ...*MessageReaction) *MessageCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddReactionIDs(ids...)
-}
-
-// AddBookmarkIDs adds the "bookmarks" edge to the MessageBookmark entity by IDs.
-func (_c *MessageCreate) AddBookmarkIDs(ids ...uuid.UUID) *MessageCreate {
-	_c.mutation.AddBookmarkIDs(ids...)
-	return _c
-}
-
-// AddBookmarks adds the "bookmarks" edges to the MessageBookmark entity.
-func (_c *MessageCreate) AddBookmarks(v ...*MessageBookmark) *MessageCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddBookmarkIDs(ids...)
-}
-
 // AddUserMentionIDs adds the "user_mentions" edge to the MessageUserMention entity by IDs.
 func (_c *MessageCreate) AddUserMentionIDs(ids ...uuid.UUID) *MessageCreate {
 	_c.mutation.AddUserMentionIDs(ids...)
@@ -296,66 +259,6 @@ func (_c *MessageCreate) AddUserMentions(v ...*MessageUserMention) *MessageCreat
 	return _c.AddUserMentionIDs(ids...)
 }
 
-// AddGroupMentionIDs adds the "group_mentions" edge to the MessageGroupMention entity by IDs.
-func (_c *MessageCreate) AddGroupMentionIDs(ids ...uuid.UUID) *MessageCreate {
-	_c.mutation.AddGroupMentionIDs(ids...)
-	return _c
-}
-
-// AddGroupMentions adds the "group_mentions" edges to the MessageGroupMention entity.
-func (_c *MessageCreate) AddGroupMentions(v ...*MessageGroupMention) *MessageCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddGroupMentionIDs(ids...)
-}
-
-// AddLinkIDs adds the "links" edge to the MessageLink entity by IDs.
-func (_c *MessageCreate) AddLinkIDs(ids ...uuid.UUID) *MessageCreate {
-	_c.mutation.AddLinkIDs(ids...)
-	return _c
-}
-
-// AddLinks adds the "links" edges to the MessageLink entity.
-func (_c *MessageCreate) AddLinks(v ...*MessageLink) *MessageCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddLinkIDs(ids...)
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
-func (_c *MessageCreate) AddAttachmentIDs(ids ...uuid.UUID) *MessageCreate {
-	_c.mutation.AddAttachmentIDs(ids...)
-	return _c
-}
-
-// AddAttachments adds the "attachments" edges to the Attachment entity.
-func (_c *MessageCreate) AddAttachments(v ...*Attachment) *MessageCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAttachmentIDs(ids...)
-}
-
-// AddPinIDs adds the "pins" edge to the MessagePin entity by IDs.
-func (_c *MessageCreate) AddPinIDs(ids ...uuid.UUID) *MessageCreate {
-	_c.mutation.AddPinIDs(ids...)
-	return _c
-}
-
-// AddPins adds the "pins" edges to the MessagePin entity.
-func (_c *MessageCreate) AddPins(v ...*MessagePin) *MessageCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddPinIDs(ids...)
-}
-
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by IDs.
 func (_c *MessageCreate) AddUserThreadFollowIDs(ids ...uuid.UUID) *MessageCreate {
 	_c.mutation.AddUserThreadFollowIDs(ids...)
@@ -369,21 +272,6 @@ func (_c *MessageCreate) AddUserThreadFollows(v ...*UserThreadFollow) *MessageCr
 		ids[i] = v[i].ID
 	}
 	return _c.AddUserThreadFollowIDs(ids...)
-}
-
-// AddThreadReadStateIDs adds the "thread_read_states" edge to the ThreadReadState entity by IDs.
-func (_c *MessageCreate) AddThreadReadStateIDs(ids ...uuid.UUID) *MessageCreate {
-	_c.mutation.AddThreadReadStateIDs(ids...)
-	return _c
-}
-
-// AddThreadReadStates adds the "thread_read_states" edges to the ThreadReadState entity.
-func (_c *MessageCreate) AddThreadReadStates(v ...*ThreadReadState) *MessageCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddThreadReadStateIDs(ids...)
 }
 
 // Mutation returns the MessageMutation object of the builder.
@@ -511,15 +399,15 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := _c.mutation.EditedAt(); ok {
 		_spec.SetField(message.FieldEditedAt, field.TypeTime, value)
-		_node.EditedAt = value
+		_node.EditedAt = &value
 	}
 	if value, ok := _c.mutation.DeletedAt(); ok {
 		_spec.SetField(message.FieldDeletedAt, field.TypeTime, value)
-		_node.DeletedAt = value
+		_node.DeletedAt = &value
 	}
 	if value, ok := _c.mutation.DeletedBy(); ok {
 		_spec.SetField(message.FieldDeletedBy, field.TypeUUID, value)
-		_node.DeletedBy = value
+		_node.DeletedBy = &value
 	}
 	if value, ok := _c.mutation.LocationLatitude(); ok {
 		_spec.SetField(message.FieldLocationLatitude, field.TypeFloat64, value)
@@ -612,38 +500,6 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ReactionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ReactionsTable,
-			Columns: []string{message.ReactionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagereaction.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.BookmarksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.BookmarksTable,
-			Columns: []string{message.BookmarksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagebookmark.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.UserMentionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -660,70 +516,6 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.GroupMentionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.GroupMentionsTable,
-			Columns: []string{message.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.LinksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.LinksTable,
-			Columns: []string{message.LinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AttachmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.AttachmentsTable,
-			Columns: []string{message.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.PinsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.PinsTable,
-			Columns: []string{message.PinsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.UserThreadFollowsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -733,22 +525,6 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userthreadfollow.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.ThreadReadStatesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadReadStatesTable,
-			Columns: []string{message.ThreadReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadreadstate.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

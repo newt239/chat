@@ -17,7 +17,6 @@ service ThreadService {
 
 message ParticipatingThread {
   string thread_id = 1;
-  optional string channel_id = 2;
   Message first_message = 3;
   int32 reply_count = 4;
   google.protobuf.Timestamp last_activity_at = 5;
@@ -35,9 +34,8 @@ message ThreadCursor {
 
 message GetThreadRepliesRequest {
   string message_id = 1 [(buf.validate.field).string.uuid = true];
-  // 0 の場合はサーバーの既定値を使う
   int32 limit = 2 [(buf.validate.field).int32 = {
-    gte: 0
+    gte: 1
     lte: 100
   }];
   // since だけなら直後から、until だけなら直前までを返す。どちらもなければ最新の返信を返す
@@ -70,9 +68,8 @@ message ListParticipatingThreadsRequest {
   string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
   // 前ページの next_cursor をそのまま渡す
   ThreadCursor cursor = 2;
-  // 0 の場合はサーバーの既定値を使う
   int32 limit = 3 [(buf.validate.field).int32 = {
-    gte: 0
+    gte: 1
     lte: 100
   }];
 }

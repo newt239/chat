@@ -21,10 +21,9 @@ message Message {
   repeated MessageAttachment attachments = 11;
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp edited_at = 13;
-  google.protobuf.Timestamp deleted_at = 14;
   bool is_deleted = 15;
   UserSummary deleted_by = 16;
-  // スレッド付きの一覧取得でのみ設定される
+  // ListMessages で返信のあるメッセージにのみ設定される
   ThreadMetadata thread_metadata = 17;
   // ピン留めされている場合のみ設定される
   MessagePin pin = 18;
@@ -124,11 +123,7 @@ message MessagePin {
 
 // 投稿時点でメンションの宛先になったユーザー。グループへのメンションは投稿時点のメンバーに展開する
 message UserMention {
-  reserved 2;
-  reserved "display_name";
   string user_id = 1;
-  // グループ経由のときの展開元
-  optional string via_group_id = 3;
 }
 
 message GroupMention {
@@ -153,8 +148,6 @@ message OgpData {
   optional string image_url = 3;
   optional string site_name = 4;
   optional string card_type = 5;
-  optional int32 image_width = 6;
-  optional int32 image_height = 7;
   // YouTube の動画 URL のときのみ設定される
   YouTubeVideo youtube = 8;
   // X(Twitter) の投稿 URL のときのみ設定される
@@ -185,7 +178,6 @@ message MessagePreview {
 }
 
 message Reaction {
-  string message_id = 1;
   UserSummary user = 2;
   string emoji = 3;
   google.protobuf.Timestamp created_at = 4;
@@ -214,7 +206,6 @@ message MediaThumbnail {
 }
 
 message ThreadMetadata {
-  string message_id = 1;
   int32 reply_count = 2;
   google.protobuf.Timestamp last_reply_at = 3;
   UserSummary last_reply_user = 4;
@@ -226,8 +217,6 @@ enum SystemMessageKind {
   SYSTEM_MESSAGE_KIND_UNSPECIFIED = 0;
   SYSTEM_MESSAGE_KIND_MEMBER_JOINED = 1;
   SYSTEM_MESSAGE_KIND_MEMBER_ADDED = 2;
-  SYSTEM_MESSAGE_KIND_MEMBER_REMOVED = 3;
-  SYSTEM_MESSAGE_KIND_MEMBER_LEFT = 4;
   SYSTEM_MESSAGE_KIND_CHANNEL_PRIVACY_CHANGED = 5;
   SYSTEM_MESSAGE_KIND_CHANNEL_NAME_CHANGED = 6;
   SYSTEM_MESSAGE_KIND_CHANNEL_DESCRIPTION_CHANGED = 7;

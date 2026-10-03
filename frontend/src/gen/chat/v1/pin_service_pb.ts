@@ -7,42 +7,13 @@ import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { Message as Message$1 } from "./message_pb";
 import { file_chat_v1_message } from "./message_pb";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file chat/v1/pin_service.proto.
  */
 export const file_chat_v1_pin_service: GenFile = /*@__PURE__*/
-  fileDesc("ChljaGF0L3YxL3Bpbl9zZXJ2aWNlLnByb3RvEgdjaGF0LnYxInQKDVBpbm5lZE1lc3NhZ2USIQoHbWVzc2FnZRgBIAEoCzIQLmNoYXQudjEuTWVzc2FnZRIRCglwaW5uZWRfYnkYAiABKAkSLQoJcGlubmVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJpCg9MaXN0UGluc1JlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQESGAoFbGltaXQYAiABKAVCCbpIBhoEGGQoABITCgZjdXJzb3IYAyABKAlIAIgBAUIJCgdfY3Vyc29yImIKEExpc3RQaW5zUmVzcG9uc2USJAoEcGlucxgBIAMoCzIWLmNoYXQudjEuUGlubmVkTWVzc2FnZRIYCgtuZXh0X2N1cnNvchgCIAEoCUgAiAEBQg4KDF9uZXh0X2N1cnNvciJOChBDcmVhdGVQaW5SZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBEhwKCm1lc3NhZ2VfaWQYAiABKAlCCLpIBXIDsAEBIhMKEUNyZWF0ZVBpblJlc3BvbnNlIk4KEERlbGV0ZVBpblJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQESHAoKbWVzc2FnZV9pZBgCIAEoCUIIukgFcgOwAQEiEwoRRGVsZXRlUGluUmVzcG9uc2Uy1QEKClBpblNlcnZpY2USPwoITGlzdFBpbnMSGC5jaGF0LnYxLkxpc3RQaW5zUmVxdWVzdBoZLmNoYXQudjEuTGlzdFBpbnNSZXNwb25zZRJCCglDcmVhdGVQaW4SGS5jaGF0LnYxLkNyZWF0ZVBpblJlcXVlc3QaGi5jaGF0LnYxLkNyZWF0ZVBpblJlc3BvbnNlEkIKCURlbGV0ZVBpbhIZLmNoYXQudjEuRGVsZXRlUGluUmVxdWVzdBoaLmNoYXQudjEuRGVsZXRlUGluUmVzcG9uc2VCkAEKC2NvbS5jaGF0LnYxQg9QaW5TZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_chat_v1_message, file_google_protobuf_timestamp]);
-
-/**
- * @generated from message chat.v1.PinnedMessage
- */
-export type PinnedMessage = Message<"chat.v1.PinnedMessage"> & {
-  /**
-   * @generated from field: chat.v1.Message message = 1;
-   */
-  message?: Message$1 | undefined;
-
-  /**
-   * @generated from field: string pinned_by = 2;
-   */
-  pinnedBy: string;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp pinned_at = 3;
-   */
-  pinnedAt?: Timestamp | undefined;
-};
-
-/**
- * Describes the message chat.v1.PinnedMessage.
- * Use `create(PinnedMessageSchema)` to create a new message.
- */
-export const PinnedMessageSchema: GenMessage<PinnedMessage> = /*@__PURE__*/
-  messageDesc(file_chat_v1_pin_service, 0);
+  fileDesc("ChljaGF0L3YxL3Bpbl9zZXJ2aWNlLnByb3RvEgdjaGF0LnYxIi8KD0xpc3RQaW5zUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABASI2ChBMaXN0UGluc1Jlc3BvbnNlEiIKCG1lc3NhZ2VzGAEgAygLMhAuY2hhdC52MS5NZXNzYWdlIk4KEENyZWF0ZVBpblJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQESHAoKbWVzc2FnZV9pZBgCIAEoCUIIukgFcgOwAQEiEwoRQ3JlYXRlUGluUmVzcG9uc2UiTgoQRGVsZXRlUGluUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIcCgptZXNzYWdlX2lkGAIgASgJQgi6SAVyA7ABASITChFEZWxldGVQaW5SZXNwb25zZTLVAQoKUGluU2VydmljZRI/CghMaXN0UGlucxIYLmNoYXQudjEuTGlzdFBpbnNSZXF1ZXN0GhkuY2hhdC52MS5MaXN0UGluc1Jlc3BvbnNlEkIKCUNyZWF0ZVBpbhIZLmNoYXQudjEuQ3JlYXRlUGluUmVxdWVzdBoaLmNoYXQudjEuQ3JlYXRlUGluUmVzcG9uc2USQgoJRGVsZXRlUGluEhkuY2hhdC52MS5EZWxldGVQaW5SZXF1ZXN0GhouY2hhdC52MS5EZWxldGVQaW5SZXNwb25zZUKQAQoLY29tLmNoYXQudjFCD1BpblNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_chat_v1_message]);
 
 /**
  * @generated from message chat.v1.ListPinsRequest
@@ -52,18 +23,6 @@ export type ListPinsRequest = Message<"chat.v1.ListPinsRequest"> & {
    * @generated from field: string channel_id = 1;
    */
   channelId: string;
-
-  /**
-   * 0 の場合はサーバーの既定値を使う
-   *
-   * @generated from field: int32 limit = 2;
-   */
-  limit: number;
-
-  /**
-   * @generated from field: optional string cursor = 3;
-   */
-  cursor?: string | undefined;
 };
 
 /**
@@ -71,21 +30,18 @@ export type ListPinsRequest = Message<"chat.v1.ListPinsRequest"> & {
  * Use `create(ListPinsRequestSchema)` to create a new message.
  */
 export const ListPinsRequestSchema: GenMessage<ListPinsRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_pin_service, 1);
+  messageDesc(file_chat_v1_pin_service, 0);
 
 /**
+ * ピン留めした新しい順。ピン留めの情報は Message.pin に入る
+ *
  * @generated from message chat.v1.ListPinsResponse
  */
 export type ListPinsResponse = Message<"chat.v1.ListPinsResponse"> & {
   /**
-   * @generated from field: repeated chat.v1.PinnedMessage pins = 1;
+   * @generated from field: repeated chat.v1.Message messages = 1;
    */
-  pins: PinnedMessage[];
-
-  /**
-   * @generated from field: optional string next_cursor = 2;
-   */
-  nextCursor?: string | undefined;
+  messages: Message$1[];
 };
 
 /**
@@ -93,7 +49,7 @@ export type ListPinsResponse = Message<"chat.v1.ListPinsResponse"> & {
  * Use `create(ListPinsResponseSchema)` to create a new message.
  */
 export const ListPinsResponseSchema: GenMessage<ListPinsResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_pin_service, 2);
+  messageDesc(file_chat_v1_pin_service, 1);
 
 /**
  * @generated from message chat.v1.CreatePinRequest
@@ -115,7 +71,7 @@ export type CreatePinRequest = Message<"chat.v1.CreatePinRequest"> & {
  * Use `create(CreatePinRequestSchema)` to create a new message.
  */
 export const CreatePinRequestSchema: GenMessage<CreatePinRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_pin_service, 3);
+  messageDesc(file_chat_v1_pin_service, 2);
 
 /**
  * @generated from message chat.v1.CreatePinResponse
@@ -128,7 +84,7 @@ export type CreatePinResponse = Message<"chat.v1.CreatePinResponse"> & {
  * Use `create(CreatePinResponseSchema)` to create a new message.
  */
 export const CreatePinResponseSchema: GenMessage<CreatePinResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_pin_service, 4);
+  messageDesc(file_chat_v1_pin_service, 3);
 
 /**
  * @generated from message chat.v1.DeletePinRequest
@@ -150,7 +106,7 @@ export type DeletePinRequest = Message<"chat.v1.DeletePinRequest"> & {
  * Use `create(DeletePinRequestSchema)` to create a new message.
  */
 export const DeletePinRequestSchema: GenMessage<DeletePinRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_pin_service, 5);
+  messageDesc(file_chat_v1_pin_service, 4);
 
 /**
  * @generated from message chat.v1.DeletePinResponse
@@ -163,7 +119,7 @@ export type DeletePinResponse = Message<"chat.v1.DeletePinResponse"> & {
  * Use `create(DeletePinResponseSchema)` to create a new message.
  */
 export const DeletePinResponseSchema: GenMessage<DeletePinResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_pin_service, 6);
+  messageDesc(file_chat_v1_pin_service, 5);
 
 /**
  * @generated from service chat.v1.PinService

@@ -3,7 +3,6 @@ syntax = "proto3";
 package chat.v1;
 
 import "buf/validate/validate.proto";
-import "google/protobuf/timestamp.proto";
 
 // チャンネルの関連リンク
 service ChannelLinkService {
@@ -16,13 +15,8 @@ service ChannelLinkService {
 
 message ChannelLink {
   string id = 1;
-  string channel_id = 2;
   string title = 3;
   string url = 4;
-  int32 position = 5;
-  string created_by = 6;
-  google.protobuf.Timestamp created_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
 }
 
 message ListChannelLinksRequest {
@@ -84,6 +78,4 @@ message ReorderChannelLinksRequest {
   }];
 }
 
-message ReorderChannelLinksResponse {
-  repeated ChannelLink links = 1;
-}
+message ReorderChannelLinksResponse {}

@@ -3,10 +3,10 @@ package audit
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/domain/service"
 )
 
 // ClientInfo は操作元の端末の情報です。インターフェース層がリクエストから取り出して context に載せます
@@ -32,12 +32,11 @@ type Recorder interface {
 }
 
 type recorder struct {
-	repo   domainrepository.AuditLogRepository
-	logger service.Logger
+	repo domainrepository.AuditLogRepository
 }
 
-func NewRecorder(repo domainrepository.AuditLogRepository, logger service.Logger) Recorder {
-	return &recorder{repo: repo, logger: logger}
+func NewRecorder(repo domainrepository.AuditLogRepository) Recorder {
+	return &recorder{repo: repo}
 }
 
 func (r *recorder) Record(ctx context.Context, log entity.AuditLog) {
@@ -45,10 +44,6 @@ func (r *recorder) Record(ctx context.Context, log entity.AuditLog) {
 	log.IPAddress = info.IPAddress
 	log.UserAgent = info.UserAgent
 	if err := r.repo.Create(ctx, &log); err != nil {
-		r.logger.Error("監査ログの記録に失敗しました",
-			service.LogField{Key: "workspaceId", Value: log.WorkspaceID},
-			service.LogField{Key: "action", Value: log.Action},
-			service.LogField{Key: "error", Value: err.Error()},
-		)
+		slog.ErrorContext(ctx, "監査ログの記録に失敗しました", "workspaceId", log.WorkspaceID, "action", log.Action, "error", err)
 	}
 }

@@ -18,7 +18,6 @@ service ChannelCategoryService {
 message ChannelCategory {
   string id = 1;
   string name = 2;
-  int32 position = 3;
   repeated string channel_ids = 4;
 }
 
@@ -72,9 +71,7 @@ message ReorderChannelCategoriesRequest {
   }];
 }
 
-message ReorderChannelCategoriesResponse {
-  repeated ChannelCategory categories = 1;
-}
+message ReorderChannelCategoriesResponse {}
 
 message SetChannelCategoryRequest {
   string channel_id = 1 [(buf.validate.field).string.uuid = true];

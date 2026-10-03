@@ -74,7 +74,7 @@ func (r *fakeEmojiRepo) FindByWorkspaceID(_ context.Context, wsID string) ([]*en
 func (r *fakeEmojiRepo) Create(_ context.Context, e *entity.CustomEmoji) error {
 	for _, existing := range r.emojis {
 		if existing.WorkspaceID == e.WorkspaceID && existing.Name == e.Name {
-			return domerr.ErrConflict
+			return domerr.ErrCustomEmojiNameExists
 		}
 	}
 	r.emojis[e.ID] = e
@@ -90,22 +90,24 @@ type fakeUserRepo struct {
 	domainrepository.UserRepository
 }
 
-func (fakeUserRepo) FindByIDs(_ context.Context, ids []string) ([]*entity.User, error) {
-	users := make([]*entity.User, 0, len(ids))
+func (fakeUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*entity.User, error) {
+	users := make(map[string]*entity.User, len(ids))
 	for _, id := range ids {
-		users = append(users, &entity.User{ID: id, DisplayName: id})
+		users[id] = &entity.User{ID: id, DisplayName: id}
 	}
 	return users, nil
 }
 
 type fakeStorage struct {
 	domainservice.StorageService
-	uploadKeys []string
-	deleted    []string
+	uploadKeys  []string
+	uploadSizes []int64
+	deleted     []string
 }
 
-func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, _ int64, _ time.Duration) (string, error) {
+func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, sizeBytes int64, _ time.Duration) (string, error) {
 	s.uploadKeys = append(s.uploadKeys, key)
+	s.uploadSizes = append(s.uploadSizes, sizeBytes)
 	return "https://storage/put/" + key, nil
 }
 
@@ -119,22 +121,12 @@ func (s *fakeStorage) DeleteObject(_ context.Context, key string) error {
 }
 
 type fakeNotifier struct {
-	created, deleted []string
+	workspaceIDs []string
 }
 
-func (n *fakeNotifier) NotifyCustomEmojiCreated(_ string, e Notification) {
-	n.created = append(n.created, e.Name)
+func (n *fakeNotifier) NotifyCustomEmojisChanged(workspaceID string) {
+	n.workspaceIDs = append(n.workspaceIDs, workspaceID)
 }
-
-func (n *fakeNotifier) NotifyCustomEmojiDeleted(_ string, e Notification) {
-	n.deleted = append(n.deleted, e.Name)
-}
-
-type nopLogger struct {
-	domainservice.Logger
-}
-
-func (nopLogger) Warn(string, ...domainservice.LogField) {}
 
 type fixture struct {
 	uc       *Interactor
@@ -152,7 +144,7 @@ func newFixture() fixture {
 	storage := &fakeStorage{}
 	notifier := &fakeNotifier{}
 	recorder := &audittest.Recorder{}
-	uc := NewInteractor(repo, fakeUserRepo{}, stubWorkspaceRepo{}, stubPermission{}, storage, notifier, recorder, nopLogger{})
+	uc := New(repo, fakeUserRepo{}, stubWorkspaceRepo{}, stubPermission{}, storage, notifier, recorder)
 	return fixture{uc: uc, repo: repo, storage: storage, notifier: notifier, recorder: recorder}
 }
 
@@ -163,11 +155,11 @@ func TestList(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(out.Emojis) != 1 || out.Emojis[0].Name != "party" || out.Emojis[0].CanDelete {
-			t.Fatalf("unexpected emojis: %+v", out.Emojis)
+		if len(out) != 1 || out[0].Name != "party" || out[0].CanDelete {
+			t.Fatalf("unexpected emojis: %+v", out)
 		}
-		if out.Emojis[0].ImageURL != "https://storage/get/custom-emojis/ws/e1" {
-			t.Fatalf("unexpected url: %s", out.Emojis[0].ImageURL)
+		if out[0].ImageURL != "https://storage/get/custom-emojis/ws/e1" {
+			t.Fatalf("unexpected url: %s", out[0].ImageURL)
 		}
 	})
 
@@ -183,18 +175,18 @@ func TestList(t *testing.T) {
 func TestPresign(t *testing.T) {
 	t.Run("アップロード先はワークスペースごとの場所にする", func(t *testing.T) {
 		f := newFixture()
-		out, err := f.uc.Presign(context.Background(), PresignInput{WorkspaceID: workspaceID, UserID: otherID, ContentType: "image/png", SizeBytes: 100})
+		out, err := f.uc.Presign(context.Background(), PresignInput{WorkspaceID: workspaceID, UserID: otherID, ContentType: "image/png", SizeBytes: 512})
 		if err != nil {
 			t.Fatal(err)
 		}
-		if f.storage.uploadKeys[0] != "custom-emojis/ws/"+out.UploadID {
-			t.Fatalf("unexpected key: %s", f.storage.uploadKeys[0])
+		if f.storage.uploadKeys[0] != "custom-emojis/ws/"+out.UploadID || f.storage.uploadSizes[0] != 512 {
+			t.Fatalf("unexpected key or size: %s %v", f.storage.uploadKeys[0], f.storage.uploadSizes)
 		}
 	})
 
 	t.Run("登録の権限がなければ発行しない", func(t *testing.T) {
 		f := newFixture()
-		_, err := f.uc.Presign(context.Background(), PresignInput{WorkspaceID: workspaceID, UserID: guestID, ContentType: "image/png", SizeBytes: 100})
+		_, err := f.uc.Presign(context.Background(), PresignInput{WorkspaceID: workspaceID, UserID: guestID, ContentType: "image/png"})
 		if !errors.Is(err, domerr.ErrUnauthorized) {
 			t.Fatalf("got %v", err)
 		}
@@ -214,8 +206,8 @@ func TestCreate(t *testing.T) {
 		if !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionCustomEmojiCreated}) {
 			t.Fatalf("unexpected audit: %v", f.recorder.Actions())
 		}
-		if !slices.Equal(f.notifier.created, []string{"tada"}) {
-			t.Fatalf("unexpected notification: %v", f.notifier.created)
+		if !slices.Equal(f.notifier.workspaceIDs, []string{workspaceID}) {
+			t.Fatalf("unexpected notification: %v", f.notifier.workspaceIDs)
 		}
 	})
 
@@ -224,8 +216,7 @@ func TestCreate(t *testing.T) {
 		input CreateInput
 		want  error
 	}{
-		{name: "同じ名前は登録できない", input: CreateInput{WorkspaceID: workspaceID, UserID: otherID, Name: "party", UploadID: uploadID}, want: ErrNameExists},
-		{name: "名前の形式が不正", input: CreateInput{WorkspaceID: workspaceID, UserID: otherID, Name: "Party!", UploadID: uploadID}, want: domerr.ErrValidation},
+		{name: "同じ名前は登録できない", input: CreateInput{WorkspaceID: workspaceID, UserID: otherID, Name: "party", UploadID: uploadID}, want: domerr.ErrCustomEmojiNameExists},
 		{name: "ゲストは既定で登録できない", input: CreateInput{WorkspaceID: workspaceID, UserID: guestID, Name: "tada", UploadID: uploadID}, want: domerr.ErrUnauthorized},
 	}
 	for _, tt := range tests {
@@ -235,7 +226,7 @@ func TestCreate(t *testing.T) {
 			if !errors.Is(err, tt.want) {
 				t.Fatalf("got %v, want %v", err, tt.want)
 			}
-			if len(f.recorder.Logs) != 0 || len(f.notifier.created) != 0 {
+			if len(f.recorder.Logs) != 0 || len(f.notifier.workspaceIDs) != 0 {
 				t.Fatal("失敗したのに記録・通知された")
 			}
 		})
@@ -280,8 +271,8 @@ func TestDelete(t *testing.T) {
 			if !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionCustomEmojiDeleted}) {
 				t.Fatalf("unexpected audit: %v", f.recorder.Actions())
 			}
-			if !slices.Equal(f.notifier.deleted, []string{"party"}) {
-				t.Fatalf("unexpected notification: %v", f.notifier.deleted)
+			if !slices.Equal(f.notifier.workspaceIDs, []string{workspaceID}) {
+				t.Fatalf("unexpected notification: %v", f.notifier.workspaceIDs)
 			}
 		})
 	}

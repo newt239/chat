@@ -10,7 +10,7 @@ import (
 )
 
 type SearchServer struct {
-	UC searchuc.SearchUseCase
+	UC *searchuc.Interactor
 }
 
 var searchTargets = map[chatv1.SearchTarget]searchuc.SearchTarget{

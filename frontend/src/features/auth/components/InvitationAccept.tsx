@@ -1,27 +1,29 @@
 import { useState } from "react";
 
-import { useQuery } from "@connectrpc/connect-query";
-import { Form } from "react-aria-components";
+import { useMutation, useQuery } from "@connectrpc/connect-query";
+import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button/Button";
 import { Link } from "#/components/ui/Link/Link";
 import { TextField } from "#/components/ui/TextField/TextField";
-import { useSignUpWithInvitation } from "#/features/auth/hooks/useSignUpWithInvitation";
+import { useCompleteLogin } from "#/features/auth/hooks/useCompleteLogin";
+import { AuthService } from "#/gen/chat/v1/auth_service_pb";
 import { InvitationService } from "#/gen/chat/v1/invitation_service_pb";
 
 import { AuthCard } from "./AuthCard";
 import { AuthMethods } from "./AuthMethods";
+import { PasswordAuthForm } from "./PasswordAuthForm";
 
-type InvitationAcceptProps = {
-  token: string;
-};
+const inviteRoute = getRouteApi("/invite/$token");
 
 // 招待リンクの受け口。Google でログインするか、パスワードを設定してアカウントを作る
-export const InvitationAccept = ({ token }: InvitationAcceptProps) => {
+export const InvitationAccept = () => {
   const { t } = useTranslation();
+  const { token } = inviteRoute.useParams();
   const invitation = useQuery(InvitationService.method.getInvitation, { token });
-  const signUp = useSignUpWithInvitation();
+  const signUp = useMutation(AuthService.method.signUpWithInvitation, {
+    onSuccess: useCompleteLogin(null),
+  });
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
 
@@ -51,12 +53,13 @@ export const InvitationAccept = ({ token }: InvitationAcceptProps) => {
       <AuthMethods
         workspaceId={null}
         passwordForm={
-          <Form
-            className="flex flex-col gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
+          <PasswordAuthForm
+            onSubmit={() => {
               signUp.mutate({ displayName, password, token });
             }}
+            error={signUp.error}
+            isPending={signUp.isPending}
+            submitLabel={t("auth.invite.submit")}
           >
             <p className="m-0 text-caption text-muted">{t("auth.invite.passwordLead")}</p>
             <TextField
@@ -76,13 +79,7 @@ export const InvitationAccept = ({ token }: InvitationAcceptProps) => {
               minLength={8}
               isRequired
             />
-            {signUp.isError && (
-              <p className="m-0 text-caption text-danger">{signUp.error.message}</p>
-            )}
-            <Button type="submit" isPending={signUp.isPending}>
-              {t("auth.invite.submit")}
-            </Button>
-          </Form>
+          </PasswordAuthForm>
         }
       />
     </AuthCard>

@@ -23,7 +23,7 @@ const (
 	PurposeAppIcon
 )
 
-var ErrWorkspaceRequired = fmt.Errorf("%w: workspace_id を指定してください", domerr.ErrValidation)
+var ErrWorkspaceRequired = domerr.New(domerr.ErrValidation, "workspace_id を指定してください")
 
 type PresignInput struct {
 	UserID      string
@@ -45,7 +45,7 @@ type Interactor struct {
 	publicBaseURL string
 }
 
-func NewInteractor(
+func New(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	storage domainservice.StorageService,
 	publicBaseURL string,
@@ -64,7 +64,7 @@ func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignO
 		return nil, err
 	}
 	key := KeyPrefix + dir + "/" + uuid.NewString()
-	url, err := i.storage.GenerateUploadURL(ctx, key, input.ContentType, input.SizeBytes, 0)
+	url, err := i.storage.GenerateUploadURL(ctx, key, input.ContentType, input.SizeBytes, domainservice.UploadURLExpires)
 	if err != nil {
 		return nil, fmt.Errorf("failed to presign upload: %w", err)
 	}
@@ -79,12 +79,8 @@ func (i *Interactor) directory(ctx context.Context, input PresignInput) (string,
 	if input.WorkspaceID == "" {
 		return "", ErrWorkspaceRequired
 	}
-	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
-	if err != nil {
-		return "", fmt.Errorf("failed to verify membership: %w", err)
-	}
-	if member == nil {
-		return "", domerr.ErrUnauthorized
+	if _, err := domainservice.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID); err != nil {
+		return "", err
 	}
 	if input.Purpose == PurposeWorkspaceIcon {
 		return "workspaces/" + input.WorkspaceID, nil

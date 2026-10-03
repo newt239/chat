@@ -15,24 +15,19 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/bookmark_service.proto.
  */
 export const file_chat_v1_bookmark_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch5jaGF0L3YxL2Jvb2ttYXJrX3NlcnZpY2UucHJvdG8SB2NoYXQudjEibgoIQm9va21hcmsSDwoHdXNlcl9pZBgBIAEoCRIhCgdtZXNzYWdlGAIgASgLMhAuY2hhdC52MS5NZXNzYWdlEi4KCmNyZWF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIhYKFExpc3RCb29rbWFya3NSZXF1ZXN0Ij0KFUxpc3RCb29rbWFya3NSZXNwb25zZRIkCglib29rbWFya3MYASADKAsyES5jaGF0LnYxLkJvb2ttYXJrIjIKEkFkZEJvb2ttYXJrUmVxdWVzdBIcCgptZXNzYWdlX2lkGAEgASgJQgi6SAVyA7ABASIVChNBZGRCb29rbWFya1Jlc3BvbnNlIjUKFVJlbW92ZUJvb2ttYXJrUmVxdWVzdBIcCgptZXNzYWdlX2lkGAEgASgJQgi6SAVyA7ABASIYChZSZW1vdmVCb29rbWFya1Jlc3BvbnNlMv4BCg9Cb29rbWFya1NlcnZpY2USTgoNTGlzdEJvb2ttYXJrcxIdLmNoYXQudjEuTGlzdEJvb2ttYXJrc1JlcXVlc3QaHi5jaGF0LnYxLkxpc3RCb29rbWFya3NSZXNwb25zZRJICgtBZGRCb29rbWFyaxIbLmNoYXQudjEuQWRkQm9va21hcmtSZXF1ZXN0GhwuY2hhdC52MS5BZGRCb29rbWFya1Jlc3BvbnNlElEKDlJlbW92ZUJvb2ttYXJrEh4uY2hhdC52MS5SZW1vdmVCb29rbWFya1JlcXVlc3QaHy5jaGF0LnYxLlJlbW92ZUJvb2ttYXJrUmVzcG9uc2VClQEKC2NvbS5jaGF0LnYxQhRCb29rbWFya1NlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_chat_v1_message, file_google_protobuf_timestamp]);
+  fileDesc("Ch5jaGF0L3YxL2Jvb2ttYXJrX3NlcnZpY2UucHJvdG8SB2NoYXQudjEiXQoIQm9va21hcmsSIQoHbWVzc2FnZRgBIAEoCzIQLmNoYXQudjEuTWVzc2FnZRIuCgpjcmVhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCI1ChRMaXN0Qm9va21hcmtzUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAEiPQoVTGlzdEJvb2ttYXJrc1Jlc3BvbnNlEiQKCWJvb2ttYXJrcxgBIAMoCzIRLmNoYXQudjEuQm9va21hcmsiMgoSQWRkQm9va21hcmtSZXF1ZXN0EhwKCm1lc3NhZ2VfaWQYASABKAlCCLpIBXIDsAEBIhUKE0FkZEJvb2ttYXJrUmVzcG9uc2UiNQoVUmVtb3ZlQm9va21hcmtSZXF1ZXN0EhwKCm1lc3NhZ2VfaWQYASABKAlCCLpIBXIDsAEBIhgKFlJlbW92ZUJvb2ttYXJrUmVzcG9uc2Uy/gEKD0Jvb2ttYXJrU2VydmljZRJOCg1MaXN0Qm9va21hcmtzEh0uY2hhdC52MS5MaXN0Qm9va21hcmtzUmVxdWVzdBoeLmNoYXQudjEuTGlzdEJvb2ttYXJrc1Jlc3BvbnNlEkgKC0FkZEJvb2ttYXJrEhsuY2hhdC52MS5BZGRCb29rbWFya1JlcXVlc3QaHC5jaGF0LnYxLkFkZEJvb2ttYXJrUmVzcG9uc2USUQoOUmVtb3ZlQm9va21hcmsSHi5jaGF0LnYxLlJlbW92ZUJvb2ttYXJrUmVxdWVzdBofLmNoYXQudjEuUmVtb3ZlQm9va21hcmtSZXNwb25zZUKVAQoLY29tLmNoYXQudjFCFEJvb2ttYXJrU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_chat_v1_message, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.Bookmark
  */
 export type Bookmark = Message<"chat.v1.Bookmark"> & {
   /**
-   * @generated from field: string user_id = 1;
-   */
-  userId: string;
-
-  /**
-   * @generated from field: chat.v1.Message message = 2;
+   * @generated from field: chat.v1.Message message = 1;
    */
   message?: Message$1 | undefined;
 
   /**
-   * @generated from field: google.protobuf.Timestamp created_at = 3;
+   * @generated from field: google.protobuf.Timestamp created_at = 2;
    */
   createdAt?: Timestamp | undefined;
 };
@@ -48,6 +43,10 @@ export const BookmarkSchema: GenMessage<Bookmark> = /*@__PURE__*/
  * @generated from message chat.v1.ListBookmarksRequest
  */
 export type ListBookmarksRequest = Message<"chat.v1.ListBookmarksRequest"> & {
+  /**
+   * @generated from field: string workspace_id = 1;
+   */
+  workspaceId: string;
 };
 
 /**

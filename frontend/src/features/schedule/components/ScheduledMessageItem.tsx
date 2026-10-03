@@ -17,10 +17,11 @@ import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { TextArea } from "#/components/ui/TextArea/TextArea";
-import { useMentionCodec } from "#/features/message/hooks/useMentionCodec";
-import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
+import { useMentionCodec } from "#/features/mention/hooks/useMentionCodec";
+import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { ScheduledMessageStatus } from "#/gen/chat/v1/scheduled_message_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
+import { messageLocation } from "#/lib/messageLocation";
 import { toDate } from "#/lib/timestamp";
 
 import { useScheduledMessageActions } from "../hooks/useScheduledMessages";
@@ -95,29 +96,15 @@ export const ScheduledMessageItem = ({
           <p className="m-0 text-caption text-danger">{message.failureReason}</p>
         )}
       </div>
-      {isSent &&
-        sentMessageId !== undefined &&
-        (parentId === undefined ? (
-          <LinkButton
-            variant="secondary"
-            size="sm"
-            to="/app/$workspaceId/$channelId"
-            params={{ channelId, workspaceId }}
-            search={{ message: sentMessageId }}
-          >
-            {t("schedule.list.showMessage")}
-          </LinkButton>
-        ) : (
-          <LinkButton
-            variant="secondary"
-            size="sm"
-            to="/app/$workspaceId/$channelId/thread/$messageId"
-            params={{ channelId, messageId: parentId, workspaceId }}
-            search={{ message: sentMessageId }}
-          >
-            {t("schedule.list.showMessage")}
-          </LinkButton>
-        ))}
+      {isSent && sentMessageId !== undefined && (
+        <LinkButton
+          variant="secondary"
+          size="sm"
+          {...messageLocation({ channelId, messageId: sentMessageId, parentId, workspaceId })}
+        >
+          {t("schedule.list.showMessage")}
+        </LinkButton>
+      )}
       {status !== ScheduledMessageStatus.SENDING && (
         <Menu
           trigger={
@@ -154,14 +141,15 @@ export const ScheduledMessageItem = ({
               remove.mutate({ id: message.id });
             }}
           >
-            {t("schedule.list.delete")}
+            {t("common.delete")}
           </MenuItem>
         </Menu>
       )}
       {isEditing && (
         <ScheduleDialog
-          isOpen
-          onOpenChange={setIsEditing}
+          onClose={() => {
+            setIsEditing(false);
+          }}
           title={t("schedule.list.editTitle")}
           initialDate={toDate(message.scheduledAt)}
           isPending={update.isPending}

@@ -17,7 +17,13 @@ import (
 
 type stubWorkspaceRepo struct {
 	domainrepository.WorkspaceRepository
-	members map[string]*entity.WorkspaceMember
+	members   map[string]*entity.WorkspaceMember
+	updatedTo []entity.WorkspaceRole
+}
+
+func (r *stubWorkspaceRepo) UpdateMemberRole(_ context.Context, _ string, _ string, role entity.WorkspaceRole) error {
+	r.updatedTo = append(r.updatedTo, role)
+	return nil
 }
 
 func (r *stubWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
@@ -30,6 +36,11 @@ func (r *stubWorkspaceRepo) FindMember(_ context.Context, _ string, userID strin
 
 func (r *stubWorkspaceRepo) FindMemberIncludingSuspended(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
 	return r.members[userID], nil
+}
+
+func (r *stubWorkspaceRepo) RemoveMember(_ context.Context, _ string, userID string) error {
+	delete(r.members, userID)
+	return nil
 }
 
 func (r *stubWorkspaceRepo) SetMemberSuspended(_ context.Context, _ string, userID string, at *time.Time) error {
@@ -45,10 +56,10 @@ func (stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error)
 	return &entity.User{ID: id, DisplayName: "name-" + id}, nil
 }
 
-func (stubUserRepo) FindByIDs(_ context.Context, ids []string) ([]*entity.User, error) {
-	users := make([]*entity.User, 0, len(ids))
+func (stubUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*entity.User, error) {
+	users := make(map[string]*entity.User, len(ids))
 	for _, id := range ids {
-		users = append(users, &entity.User{ID: id, DisplayName: "name-" + id})
+		users[id] = &entity.User{ID: id, DisplayName: "name-" + id}
 	}
 	return users, nil
 }
@@ -68,8 +79,8 @@ type stubAuditLogRepo struct {
 	logs []*entity.AuditLog
 }
 
-func (r *stubAuditLogRepo) List(_ context.Context, _ entity.AuditLogFilter) (*entity.AuditLogPage, error) {
-	return &entity.AuditLogPage{Logs: r.logs}, nil
+func (r *stubAuditLogRepo) List(_ context.Context, _ entity.AuditLogFilter, _, offset int) ([]*entity.AuditLog, error) {
+	return r.logs[min(offset, len(r.logs)):], nil
 }
 
 type stubPermissionRepo struct {
@@ -89,6 +100,7 @@ func (r *stubPermissionRepo) Upsert(_ context.Context, _ string, o entity.Permis
 type fixture struct {
 	uc          *Interactor
 	members     map[string]*entity.WorkspaceMember
+	workspace   *stubWorkspaceRepo
 	sessions    *stubSessionRepo
 	auditLogs   *stubAuditLogRepo
 	permissions *stubPermissionRepo
@@ -115,15 +127,14 @@ func newFixture() *fixture {
 		recorder:    &audittest.Recorder{},
 		closer:      &stubCloser{},
 	}
-	workspaceRepo := &stubWorkspaceRepo{members: f.members}
-	f.uc = NewInteractor(
-		workspaceRepo,
+	f.workspace = &stubWorkspaceRepo{members: f.members}
+	f.uc = New(
+		f.workspace,
 		stubUserRepo{},
 		f.sessions,
 		f.auditLogs,
 		f.permissions,
-		nil,
-		domainservice.NewPermissionService(workspaceRepo, f.permissions),
+		domainservice.NewPermissionService(f.workspace, f.permissions),
 		f.recorder,
 		f.closer,
 	)
@@ -169,6 +180,19 @@ func TestSuspendMember(t *testing.T) {
 				t.Errorf("監査ログが期待と異なります: %v", f.recorder.Actions())
 			}
 		})
+	}
+}
+
+func TestRemoveMemberRecordsAuditLog(t *testing.T) {
+	f := newFixture()
+	if err := f.uc.RemoveMember(context.Background(), MemberActionInput{WorkspaceID: "ws", TargetUserID: "member", OperatorID: "admin"}); err != nil {
+		t.Fatalf("除外に失敗しました: %v", err)
+	}
+	if _, ok := f.members["member"]; ok || !slices.Equal(f.closer.closed, []string{"ws/member"}) {
+		t.Errorf("除外と接続の切断が行われていません: %v", f.closer.closed)
+	}
+	if !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionMemberRemoved}) || f.recorder.Logs[0].TargetID != "member" {
+		t.Errorf("監査ログが期待と異なります: %+v", f.recorder.Logs)
 	}
 }
 
@@ -280,5 +304,56 @@ func TestGetPermissionsForMember(t *testing.T) {
 	}
 	if out.RequesterRole != entity.WorkspaceRoleMember || out.Matrix.Allows(out.RequesterRole, entity.PermissionDeleteOthersMessages) {
 		t.Errorf("既定の権限が期待と異なります: %+v", out)
+	}
+}
+
+func TestUpdateMemberRole(t *testing.T) {
+	tests := []struct {
+		name     string
+		operator string
+		target   string
+		role     entity.WorkspaceRole
+		wantErr  error
+	}{
+		{name: "admin は owner を降格できない", operator: "admin", target: "owner", role: entity.WorkspaceRoleMember, wantErr: ErrCannotChangeOwnerRole},
+		{name: "自分自身のロールは変更できない", operator: "admin", target: "admin", role: entity.WorkspaceRoleMember, wantErr: ErrCannotChangeOwnerRole},
+		{name: "member はロールを変更できない", operator: "member", target: "admin", role: entity.WorkspaceRoleMember, wantErr: domerr.ErrUnauthorized},
+		{name: "admin は member を admin に昇格できる", operator: "admin", target: "member", role: entity.WorkspaceRoleAdmin},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture()
+			err := f.uc.UpdateMemberRole(context.Background(), UpdateMemberRoleInput{
+				MemberActionInput: MemberActionInput{WorkspaceID: "ws", OperatorID: tt.operator, TargetUserID: tt.target},
+				Role:              tt.role,
+			})
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
+			}
+			if updated := len(f.workspace.updatedTo) == 1; updated != (tt.wantErr == nil) {
+				t.Errorf("更新の有無が期待と異なります: %v", f.workspace.updatedTo)
+			}
+		})
+	}
+}
+
+func TestUpdateMemberRoleRecordsAuditLog(t *testing.T) {
+	f := newFixture()
+	err := f.uc.UpdateMemberRole(context.Background(), UpdateMemberRoleInput{
+		MemberActionInput: MemberActionInput{WorkspaceID: "ws", OperatorID: "admin", TargetUserID: "member"},
+		Role:              entity.WorkspaceRoleAdmin,
+	})
+	if err != nil {
+		t.Fatalf("予期しないエラー: %v", err)
+	}
+	if len(f.recorder.Logs) != 1 {
+		t.Fatalf("監査ログが 1 件記録されるはず: got=%d", len(f.recorder.Logs))
+	}
+	log := f.recorder.Logs[0]
+	if log.Action != entity.AuditActionMemberRoleChanged || *log.ActorID != "admin" || log.TargetID != "member" {
+		t.Errorf("監査ログの内容が期待と異なります: %+v", log)
+	}
+	if log.Metadata["from"] != "member" || log.Metadata["to"] != "admin" {
+		t.Errorf("変更前後のロールが記録されていません: %+v", log.Metadata)
 	}
 }

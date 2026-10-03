@@ -9,8 +9,9 @@ import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
+import { navIconButtonClassName } from "#/components/ui/styles/navTone";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { openDialog } from "#/lib/overlaySearch";
 
 import { useChannelCategoryActions } from "../hooks/useChannelCategories";
 
@@ -42,7 +43,7 @@ export const ChannelCategoryMenu = ({
         trigger={
           <IconButton
             label={t("channel.category.menu", { name: category.name })}
-            className="size-6 text-(--nav-muted) data-hovered:bg-(--nav-hover) data-hovered:text-(--nav-strong) [&_svg]:size-3.5"
+            className={navIconButtonClassName}
           >
             <IconDots />
           </IconButton>

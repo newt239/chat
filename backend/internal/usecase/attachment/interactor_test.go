@@ -37,12 +37,17 @@ func (stubChannelAccess) EnsureChannelAccess(_ context.Context, channelID string
 
 type stubStorage struct {
 	uploadedMimeType string
+	sizes            map[string]int64
 }
 
-func (s *stubStorage) GenerateUploadURL(_ context.Context, key string, mimeType string, _ int64, _ time.Duration) (string, error) {
+func (s *stubStorage) GenerateUploadURL(_ context.Context, key string, mimeType string, sizeBytes int64, _ time.Duration) (string, error) {
 	if !strings.HasSuffix(key, "-thumbnail") {
 		s.uploadedMimeType = mimeType
 	}
+	if s.sizes == nil {
+		s.sizes = map[string]int64{}
+	}
+	s.sizes[key] = sizeBytes
 	return "https://storage.example.com/" + key, nil
 }
 
@@ -54,19 +59,13 @@ func (s *stubStorage) DeleteObject(context.Context, string) error {
 	return nil
 }
 
-type stubStorageConfig struct{}
-
-func (stubStorageConfig) GetMaxFileSize() int64             { return 1 << 30 }
-func (stubStorageConfig) GetUploadExpires() time.Duration   { return time.Minute }
-func (stubStorageConfig) GetDownloadExpires() time.Duration { return time.Minute }
-
 func TestPresignStoresMediaMetadata(t *testing.T) {
 	repo := &stubAttachmentRepo{}
 	storage := &stubStorage{}
-	interactor := NewInteractor(repo, nil, stubChannelAccess{}, storage, stubStorageConfig{})
+	interactor := New(repo, nil, stubChannelAccess{}, storage)
 	width, height, duration := int32(1920), int32(1080), 84.5
 
-	_, err := interactor.Presign(context.Background(), &PresignInput{
+	_, err := interactor.Presign(context.Background(), PresignInput{
 		UserID:    "u1",
 		ChannelID: "ch1",
 		FileName:  "demo.mp4",
@@ -106,10 +105,11 @@ func TestNormalizeMimeType(t *testing.T) {
 
 func TestPresignThumbnail(t *testing.T) {
 	repo := &stubAttachmentRepo{}
-	interactor := NewInteractor(repo, nil, stubChannelAccess{}, &stubStorage{}, stubStorageConfig{})
-	thumbnail := &ThumbnailInput{MimeType: "image/jpeg", SizeBytes: 2048, Width: 640, Height: 360}
+	storage := &stubStorage{}
+	interactor := New(repo, nil, stubChannelAccess{}, storage)
+	thumbnail := &ThumbnailInput{MimeType: "image/jpeg", SizeBytes: 300, Width: 640, Height: 360}
 
-	out, err := interactor.Presign(context.Background(), &PresignInput{
+	out, err := interactor.Presign(context.Background(), PresignInput{
 		UserID: "u1", ChannelID: "ch1", FileName: "demo.mp4", MimeType: "video/mp4", SizeBytes: 1024, Thumbnail: thumbnail,
 	})
 	if err != nil {
@@ -122,8 +122,11 @@ func TestPresignThumbnail(t *testing.T) {
 	if out.ThumbnailUploadURL == nil || !strings.HasSuffix(*out.ThumbnailUploadURL, saved.StorageKey) {
 		t.Errorf("サムネイルのアップロード URL がありません: %v", out.ThumbnailUploadURL)
 	}
+	if storage.sizes[repo.created.StorageKey] != 1024 || storage.sizes[saved.StorageKey] != 300 {
+		t.Errorf("申告したサイズでアップロード URL を発行していません: %v", storage.sizes)
+	}
 
-	_, err = interactor.Presign(context.Background(), &PresignInput{
+	_, err = interactor.Presign(context.Background(), PresignInput{
 		UserID: "u1", ChannelID: "ch1", FileName: "a.png", MimeType: "image/png", SizeBytes: 1024, Thumbnail: thumbnail,
 	})
 	if !errors.Is(err, ErrThumbnailNotAllowed) {
@@ -133,19 +136,19 @@ func TestPresignThumbnail(t *testing.T) {
 
 func TestGetDownloadURLThumbnail(t *testing.T) {
 	repo := &stubAttachmentRepo{found: &entity.Attachment{ID: "a1", ChannelID: "ch1", StorageKey: "attachments/ch1/a1"}}
-	interactor := NewInteractor(repo, nil, stubChannelAccess{}, &stubStorage{}, stubStorageConfig{})
+	interactor := New(repo, nil, stubChannelAccess{}, &stubStorage{})
 
 	if _, err := interactor.GetDownloadURL(context.Background(), "u1", "a1", true); !errors.Is(err, ErrThumbnailNotFound) {
 		t.Errorf("サムネイルがないときのエラー = %v", err)
 	}
 
 	repo.found.Media.Thumbnail = &entity.Thumbnail{StorageKey: "attachments/ch1/a1-thumbnail", Width: 1, Height: 1}
-	out, err := interactor.GetDownloadURL(context.Background(), "u1", "a1", true)
-	if err != nil || !strings.HasSuffix(out.URL, "a1-thumbnail") {
-		t.Errorf("サムネイルの URL = %v, %v", out, err)
+	url, err := interactor.GetDownloadURL(context.Background(), "u1", "a1", true)
+	if err != nil || !strings.HasSuffix(url, "a1-thumbnail") {
+		t.Errorf("サムネイルの URL = %v, %v", url, err)
 	}
-	out, err = interactor.GetDownloadURL(context.Background(), "u1", "a1", false)
-	if err != nil || !strings.HasSuffix(out.URL, "attachments/ch1/a1") {
-		t.Errorf("本体の URL = %v, %v", out, err)
+	url, err = interactor.GetDownloadURL(context.Background(), "u1", "a1", false)
+	if err != nil || !strings.HasSuffix(url, "attachments/ch1/a1") {
+		t.Errorf("本体の URL = %v, %v", url, err)
 	}
 }

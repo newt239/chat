@@ -15,10 +15,8 @@ import (
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/userthreadfollow"
-	"github.com/newt239/chat/ent/workspacemember"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type threadRepository struct {
@@ -29,11 +27,10 @@ func NewThreadRepository(client *ent.Client) domainrepository.ThreadRepository {
 	return &threadRepository{client: client}
 }
 
-// 親ごとの返信数（削除済みを含む）と最新の返信を 1 本の SQL で求める
-// $1: 親メッセージ ID の配列
+// 親ごとの削除されていない返信の数と最新の返信を 1 本の SQL で求める ($1: 親メッセージ ID の配列)
 const threadReplySummarySQL = `
 	SELECT DISTINCT ON (parent_id) parent_id, COUNT(*) OVER (PARTITION BY parent_id), created_at, user_id
-	FROM message WHERE parent_id = ANY($1::uuid[])
+	FROM message WHERE parent_id = ANY($1::uuid[]) AND deleted_at IS NULL
 	ORDER BY parent_id, created_at DESC`
 
 // CalculateMetadataByMessageIDs は複数のメッセージIDのスレッドメタデータを一括計算します
@@ -42,13 +39,13 @@ func (r *threadRepository) CalculateMetadataByMessageIDs(ctx context.Context, me
 	if len(messageIDs) == 0 {
 		return result, nil
 	}
-	parsedIDs, err := utils.ParseUUIDs(messageIDs, "message ID")
+	parsedIDs, err := parseUUIDs(messageIDs, "message ID")
 	if err != nil {
 		return nil, err
 	}
 	byID := make(map[uuid.UUID]*domainrepository.ThreadMetadata, len(messageIDs))
 	for i, id := range messageIDs {
-		result[id] = &domainrepository.ThreadMetadata{MessageID: id}
+		result[id] = &domainrepository.ThreadMetadata{}
 		byID[parsedIDs[i]] = result[id]
 	}
 
@@ -81,26 +78,13 @@ func (r *threadRepository) CalculateMetadataByMessageIDs(ctx context.Context, me
 const latestReplyCount = 2
 
 func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input domainrepository.FindParticipatingThreadsInput) (*domainrepository.FindParticipatingThreadsOutput, error) {
-	userID, err := utils.ParseUUID(input.UserID, "user ID")
+	userID, err := parseUUID(input.UserID, "user ID")
 	if err != nil {
 		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
 	empty := &domainrepository.FindParticipatingThreadsOutput{Items: []domainrepository.ParticipatingThread{}}
-
-	isMember, err := client.WorkspaceMember.Query().
-		Where(
-			workspacemember.UserID(userID),
-			workspacemember.WorkspaceID(input.WorkspaceID),
-		).
-		Exist(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if !isMember {
-		return empty, nil
-	}
 
 	query := client.Message.Query().
 		Where(
@@ -113,15 +97,15 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 			),
 		)
 
-	if input.CursorLastActivityAt != nil && input.CursorThreadID != nil {
-		cursorThreadID, err := utils.ParseUUID(*input.CursorThreadID, "cursor thread ID")
+	if cursor := input.Cursor; cursor != nil {
+		cursorThreadID, err := parseUUID(cursor.ThreadID, "cursor thread ID")
 		if err != nil {
 			return nil, err
 		}
 		query = query.Where(predicate.Message(func(s *sql.Selector) {
 			s.Where(sql.P(func(b *sql.Builder) {
 				b.WriteString("(" + lastActivityExpr(s) + ", " + s.C(message.FieldID) + ") < (").
-					Arg(*input.CursorLastActivityAt).Comma().Arg(cursorThreadID).WriteString(")")
+					Arg(cursor.LastActivityAt).Comma().Arg(cursorThreadID).WriteString(")")
 			}))
 		}))
 	}
@@ -158,12 +142,10 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 		if summary.lastReplyAt != nil {
 			lastActivityAt = *summary.lastReplyAt
 		}
-		channelID := thread.ChannelID.String()
 		items = append(items, domainrepository.ParticipatingThread{
 			ThreadID:       thread.ID.String(),
-			ChannelID:      &channelID,
-			FirstMessage:   utils.MessageToEntity(thread),
-			LatestReplies:  toMessageEntities(summary.latestReplies),
+			FirstMessage:   messageToEntity(thread),
+			LatestReplies:  convertAll(summary.latestReplies, messageToEntity),
 			ReplyCount:     summary.replyCount,
 			LastActivityAt: lastActivityAt,
 			UnreadCount:    summary.unreadCount,
@@ -186,8 +168,7 @@ type threadSummary struct {
 	latestReplies []*ent.Message
 }
 
-// 削除されていない返信の件数・自分以外の未読の件数・最新の返信日時をスレッドごとに集計する
-// $1: スレッド ID の配列, $2: 閲覧者
+// 削除されていない返信の件数・自分以外の未読の件数・最新の返信日時をスレッドごとに集計する ($1: スレッド ID の配列, $2: 閲覧者)
 const threadSummarySQL = `
 	SELECT r.parent_id, COUNT(*),
 		COUNT(*) FILTER (WHERE r.user_id <> $2 AND (s.last_read_at IS NULL OR r.created_at > s.last_read_at)),
@@ -230,20 +211,8 @@ func (r *threadRepository) summarizeThreads(ctx context.Context, threadIDs []uui
 		return nil, err
 	}
 
-	idRows, err := client.QueryContext(ctx, latestRepliesSQL, pq.Array(threadIDs), latestReplyCount)
+	replyIDs, err := queryUUIDs(ctx, r.client, latestRepliesSQL, pq.Array(threadIDs), latestReplyCount)
 	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = idRows.Close() }()
-	var replyIDs []uuid.UUID
-	for idRows.Next() {
-		var id uuid.UUID
-		if err := idRows.Scan(&id); err != nil {
-			return nil, err
-		}
-		replyIDs = append(replyIDs, id)
-	}
-	if err := idRows.Err(); err != nil {
 		return nil, err
 	}
 	replies, err := client.Message.Query().
@@ -269,11 +238,11 @@ func lastActivityExpr(s *sql.Selector) string {
 }
 
 func (r *threadRepository) UpsertReadState(ctx context.Context, userID, threadID string, lastReadAt time.Time) error {
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return err
 	}
-	tid, err := utils.ParseUUID(threadID, "thread ID")
+	tid, err := parseUUID(threadID, "thread ID")
 	if err != nil {
 		return err
 	}
@@ -286,57 +255,35 @@ func (r *threadRepository) UpsertReadState(ctx context.Context, userID, threadID
 		Exec(ctx)
 }
 
-// FollowThread は既にフォローしていても成功します
-func (r *threadRepository) FollowThread(ctx context.Context, userID, threadID string) error {
-	uid, err := utils.ParseUUID(userID, "user ID")
+// SetFollowing は既にその状態でも成功します
+func (r *threadRepository) SetFollowing(ctx context.Context, userID, threadID string, following bool) error {
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return err
 	}
-	tid, err := utils.ParseUUID(threadID, "thread ID")
+	tid, err := parseUUID(threadID, "thread ID")
 	if err != nil {
 		return err
 	}
-	err = transaction.ResolveClient(ctx, r.client).UserThreadFollow.Create().
+	client := transaction.ResolveClient(ctx, r.client)
+	if !following {
+		_, err = client.UserThreadFollow.Delete().Where(userthreadfollow.UserID(uid), userthreadfollow.ThreadID(tid)).Exec(ctx)
+		return err
+	}
+	return ignoreConflict(client.UserThreadFollow.Create().
 		SetUserID(uid).
 		SetThreadID(tid).
 		OnConflictColumns(userthreadfollow.FieldUserID, userthreadfollow.FieldThreadID).
 		DoNothing().
-		Exec(ctx)
-	return ignoreConflict(err)
-}
-
-func (r *threadRepository) UnfollowThread(ctx context.Context, userID, threadID string) error {
-	uid, err := utils.ParseUUID(userID, "user ID")
-	if err != nil {
-		return err
-	}
-	tid, err := utils.ParseUUID(threadID, "thread ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	_, err = client.UserThreadFollow.Delete().
-		Where(
-			userthreadfollow.UserID(uid),
-			userthreadfollow.ThreadID(tid),
-		).
-		Exec(ctx)
-
-	return err
+		Exec(ctx))
 }
 
 func (r *threadRepository) FindFollowedThreadIDs(ctx context.Context, userID string, threadIDs []string) (map[string]bool, error) {
-	followed := make(map[string]bool, len(threadIDs))
-	if len(threadIDs) == 0 {
-		return followed, nil
-	}
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
-	tids, err := utils.ParseUUIDs(threadIDs, "thread ID")
+	tids, err := parseUUIDs(threadIDs, "thread ID")
 	if err != nil {
 		return nil, err
 	}
@@ -346,30 +293,20 @@ func (r *threadRepository) FindFollowedThreadIDs(ctx context.Context, userID str
 	if err != nil {
 		return nil, err
 	}
-	for _, f := range follows {
-		followed[f.ThreadID.String()] = true
-	}
-	return followed, nil
+	return idSet(follows, func(f *ent.UserThreadFollow) uuid.UUID { return f.ThreadID }), nil
 }
 
 func (r *threadRepository) FindFollowerIDs(ctx context.Context, threadID string) ([]string, error) {
-	tid, err := utils.ParseUUID(threadID, "thread ID")
+	tid, err := parseUUID(threadID, "thread ID")
 	if err != nil {
 		return nil, err
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	ids, err := client.UserThreadFollow.Query().
+	ids, err := transaction.ResolveClient(ctx, r.client).UserThreadFollow.Query().
 		Where(userthreadfollow.ThreadID(tid)).
 		QueryUser().
 		IDs(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]string, 0, len(ids))
-	for _, id := range ids {
-		result = append(result, id.String())
-	}
-	return result, nil
+	return uuidStrings(ids), nil
 }

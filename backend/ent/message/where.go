@@ -788,52 +788,6 @@ func HasRepliesWith(preds ...predicate.Message) predicate.Message {
 	})
 }
 
-// HasReactions applies the HasEdge predicate on the "reactions" edge.
-func HasReactions() predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ReactionsTable, ReactionsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasReactionsWith applies the HasEdge predicate on the "reactions" edge with a given conditions (other predicates).
-func HasReactionsWith(preds ...predicate.MessageReaction) predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := newReactionsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasBookmarks applies the HasEdge predicate on the "bookmarks" edge.
-func HasBookmarks() predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, BookmarksTable, BookmarksColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasBookmarksWith applies the HasEdge predicate on the "bookmarks" edge with a given conditions (other predicates).
-func HasBookmarksWith(preds ...predicate.MessageBookmark) predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := newBookmarksStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasUserMentions applies the HasEdge predicate on the "user_mentions" edge.
 func HasUserMentions() predicate.Message {
 	return predicate.Message(func(s *sql.Selector) {
@@ -857,98 +811,6 @@ func HasUserMentionsWith(preds ...predicate.MessageUserMention) predicate.Messag
 	})
 }
 
-// HasGroupMentions applies the HasEdge predicate on the "group_mentions" edge.
-func HasGroupMentions() predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, GroupMentionsTable, GroupMentionsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasGroupMentionsWith applies the HasEdge predicate on the "group_mentions" edge with a given conditions (other predicates).
-func HasGroupMentionsWith(preds ...predicate.MessageGroupMention) predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := newGroupMentionsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasLinks applies the HasEdge predicate on the "links" edge.
-func HasLinks() predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, LinksTable, LinksColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasLinksWith applies the HasEdge predicate on the "links" edge with a given conditions (other predicates).
-func HasLinksWith(preds ...predicate.MessageLink) predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := newLinksStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasAttachments applies the HasEdge predicate on the "attachments" edge.
-func HasAttachments() predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, AttachmentsTable, AttachmentsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAttachmentsWith applies the HasEdge predicate on the "attachments" edge with a given conditions (other predicates).
-func HasAttachmentsWith(preds ...predicate.Attachment) predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := newAttachmentsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasPins applies the HasEdge predicate on the "pins" edge.
-func HasPins() predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, PinsTable, PinsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasPinsWith applies the HasEdge predicate on the "pins" edge with a given conditions (other predicates).
-func HasPinsWith(preds ...predicate.MessagePin) predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := newPinsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasUserThreadFollows applies the HasEdge predicate on the "user_thread_follows" edge.
 func HasUserThreadFollows() predicate.Message {
 	return predicate.Message(func(s *sql.Selector) {
@@ -964,29 +826,6 @@ func HasUserThreadFollows() predicate.Message {
 func HasUserThreadFollowsWith(preds ...predicate.UserThreadFollow) predicate.Message {
 	return predicate.Message(func(s *sql.Selector) {
 		step := newUserThreadFollowsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasThreadReadStates applies the HasEdge predicate on the "thread_read_states" edge.
-func HasThreadReadStates() predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ThreadReadStatesTable, ThreadReadStatesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasThreadReadStatesWith applies the HasEdge predicate on the "thread_read_states" edge with a given conditions (other predicates).
-func HasThreadReadStatesWith(preds ...predicate.ThreadReadState) predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := newThreadReadStatesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

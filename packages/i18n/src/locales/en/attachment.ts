@@ -24,16 +24,5 @@ export const attachment: Messages["attachment"] = {
     tallHint: "Scroll to see the whole image",
   },
   loadFailed: "Couldn't load",
-  player: {
-    close: "Stop playback",
-    jump: "Go to the message",
-    label: "Now playing",
-    pause: "Pause",
-    play: "Play",
-    playFailed: "Couldn't play the media",
-    playFile: "Play {{name}}",
-    seek: "Playback position",
-    speed: "Playback speed",
-  },
   remove: "Remove attachment",
 };

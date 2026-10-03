@@ -14,6 +14,9 @@ const setup = (myPermissions: Permission[]) =>
     <EmojiPickerPopover
       trigger={<Button>絵文字</Button>}
       onSelect={vi.fn<(emoji: string) => void>()}
+      onOpenChange={null}
+      label="絵文字を選ぶ"
+      placement="bottom end"
     />,
     "/app/ws1",
     (routes) => {

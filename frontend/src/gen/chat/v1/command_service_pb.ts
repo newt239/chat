@@ -64,8 +64,7 @@ export const ExecuteCommandResponseSchema: GenMessage<ExecuteCommandResponse> = 
   messageDesc(file_chat_v1_command_service, 1);
 
 /**
- * 入力欄の「/」から始まるコマンド。応答は公式アプリがチャンネル全員に見える形で投稿し、誰も削除できない。
- * /remind [me|<@ユーザーID>|<#チャンネルID>] 内容 日時 … 指定した日時に公式アプリが届ける
+ * 入力欄の「/」から始まるコマンド (/remind [me|<@ユーザーID>|<#チャンネルID>] 内容 日時)。応答は公式アプリが投稿する
  *
  * @generated from service chat.v1.CommandService
  */

@@ -4,7 +4,7 @@
 
 ## Web 版との違い
 
-`vp build --mode tauri` でビルドし、コードでは `#/lib/platform/platform` の `isTauri`（`import.meta.env.MODE === "tauri"`）で分ける。Tauri のプラグインは `src/lib/platform/tauri/` の中だけで使い、動的 import するため Web 版のバンドルには入らない。
+`vp build --mode tauri` でビルドし、コードでは `#/lib/platform/platform` の `isTauri`（`import.meta.env.MODE === "tauri"`）で分ける。Tauri のプラグインは各 feature から動的 import するため、Web 版のバンドルには入らない。
 
 | 機能 | Web 版 | アプリ |
 | --- | --- | --- |
@@ -61,8 +61,8 @@ npm の `@tauri-apps/*` と Rust の crate は同じ minor に揃える（`tauri
 | `GOOGLE_OAUTH_REDIRECT_URL` | 1 で登録した URI |
 | `NATIVE_APP_REDIRECT_URL` | 省略時 `dev.newt239.chat://auth/callback` |
 
-本番では `GOOGLE_OAUTH_CLIENT_SECRET` を Secret Manager に登録し、`infra/k8s/base/identity.yaml` の `backend-secrets` と Terraform の `manual_secrets` に足す。
+本番では `GOOGLE_OAUTH_CLIENT_SECRET` を Secret Manager に登録し、`infra/k8s/components/gke/external-secrets.yaml` の `backend-secrets` と Terraform の `manual_secrets` に足す。
 
 ## origin
 
-アプリの origin は macOS・iOS が `tauri://localhost`、Windows・Android が `https://tauri.localhost`。backend の `CORS_ALLOWED_ORIGINS` と添付ファイルのバケットの CORS に両方を入れてある。
+アプリの origin は macOS・iOS が `tauri://localhost`、Windows・Android が `https://tauri.localhost`。dev・prod では backend の `CORS_ALLOWED_ORIGINS` と添付ファイルのバケットの CORS に両方を入れてある。mini 構成（`infra/k8s/overlays/mini`・`infra/terraform/envs/mini`）には入れていないので、アプリからは mini につなげない。

@@ -9,8 +9,7 @@ import { ScheduleDialog } from "./ScheduleDialog";
 const renderDialog = (initialDate: Date, onConfirm: (scheduledAt: Date) => void) =>
   render(
     <ScheduleDialog
-      isOpen
-      onOpenChange={vi.fn<(isOpen: boolean) => void>()}
+      onClose={vi.fn<() => void>()}
       title="送信日時を指定"
       initialDate={initialDate}
       onConfirm={onConfirm}

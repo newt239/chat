@@ -9,8 +9,8 @@ const extensions = new Map([
 ]);
 
 // どれにも対応していなければ空文字（ブラウザの既定）にする
-export const pickRecordingMimeType = (isSupported: (mimeType: string) => boolean) =>
-  candidates.find((type) => isSupported(type)) ?? "";
+export const pickRecordingMimeType = () =>
+  candidates.find((type) => MediaRecorder.isTypeSupported(type)) ?? "";
 
 const pad = (value: number) => String(value).padStart(2, "0");
 

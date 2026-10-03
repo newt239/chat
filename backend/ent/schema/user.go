@@ -37,15 +37,21 @@ func (User) Fields() []ent.Field {
 		field.String("display_name").
 			NotEmpty(),
 		field.String("bio").
-			Optional(),
+			Optional().
+			Nillable(),
 		field.String("avatar_url").
-			Optional(),
+			Optional().
+			Nillable(),
 		// アプリの投稿名義。ログインできず、ワークスペースのメンバーにもならない
 		field.Bool("is_app").
 			Default(false),
 		// 公式アプリの投稿名義。この名義の投稿は誰も削除・編集できない
 		field.Bool("is_official").
 			Default(false),
+		// 退会済み。投稿の名義として行だけ残し、個人情報は匿名化する
+		field.Time("deleted_at").
+			Optional().
+			Nillable(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -57,31 +63,7 @@ func (User) Fields() []ent.Field {
 
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("sessions", Session.Type).
-			Ref("user"),
-		edge.From("created_workspaces", Workspace.Type).
-			Ref("created_by"),
-		edge.From("workspace_members", WorkspaceMember.Type).
-			Ref("user"),
-		edge.From("created_channels", Channel.Type).
-			Ref("created_by"),
 		edge.From("channel_members", ChannelMember.Type).
-			Ref("user"),
-		edge.From("messages", Message.Type).
-			Ref("user"),
-		edge.From("message_reactions", MessageReaction.Type).
-			Ref("user"),
-		edge.From("message_bookmarks", MessageBookmark.Type).
-			Ref("user"),
-		edge.From("user_mentions", MessageUserMention.Type).
-			Ref("user"),
-		edge.From("user_group_members", UserGroupMember.Type).
-			Ref("user"),
-		edge.From("created_user_groups", UserGroup.Type).
-			Ref("created_by"),
-		edge.From("attachments", Attachment.Type).
-			Ref("uploader"),
-		edge.From("channel_read_states", ChannelReadState.Type).
 			Ref("user"),
 		edge.To("preference", UserPreference.Type).
 			Unique().

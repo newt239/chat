@@ -73,12 +73,6 @@ func (_u *ThreadReadStateUpdate) SetNillableLastReadAt(v *time.Time) *ThreadRead
 	return _u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *ThreadReadStateUpdate) SetUpdatedAt(v time.Time) *ThreadReadStateUpdate {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *ThreadReadStateUpdate) SetUser(v *User) *ThreadReadStateUpdate {
 	return _u.SetUserID(v.ID)
@@ -108,7 +102,6 @@ func (_u *ThreadReadStateUpdate) ClearThread() *ThreadReadStateUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *ThreadReadStateUpdate) Save(ctx context.Context) (int, error) {
-	_u.defaults()
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -131,14 +124,6 @@ func (_u *ThreadReadStateUpdate) Exec(ctx context.Context) error {
 func (_u *ThreadReadStateUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (_u *ThreadReadStateUpdate) defaults() {
-	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		v := threadreadstate.UpdateDefaultUpdatedAt()
-		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -167,9 +152,6 @@ func (_u *ThreadReadStateUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if value, ok := _u.mutation.LastReadAt(); ok {
 		_spec.SetField(threadreadstate.FieldLastReadAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(threadreadstate.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -291,12 +273,6 @@ func (_u *ThreadReadStateUpdateOne) SetNillableLastReadAt(v *time.Time) *ThreadR
 	return _u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *ThreadReadStateUpdateOne) SetUpdatedAt(v time.Time) *ThreadReadStateUpdateOne {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *ThreadReadStateUpdateOne) SetUser(v *User) *ThreadReadStateUpdateOne {
 	return _u.SetUserID(v.ID)
@@ -339,7 +315,6 @@ func (_u *ThreadReadStateUpdateOne) Select(field string, fields ...string) *Thre
 
 // Save executes the query and returns the updated ThreadReadState entity.
 func (_u *ThreadReadStateUpdateOne) Save(ctx context.Context) (*ThreadReadState, error) {
-	_u.defaults()
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -362,14 +337,6 @@ func (_u *ThreadReadStateUpdateOne) Exec(ctx context.Context) error {
 func (_u *ThreadReadStateUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (_u *ThreadReadStateUpdateOne) defaults() {
-	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		v := threadreadstate.UpdateDefaultUpdatedAt()
-		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -415,9 +382,6 @@ func (_u *ThreadReadStateUpdateOne) sqlSave(ctx context.Context) (_node *ThreadR
 	}
 	if value, ok := _u.mutation.LastReadAt(); ok {
 		_spec.SetField(threadreadstate.FieldLastReadAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(threadreadstate.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

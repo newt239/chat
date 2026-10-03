@@ -6,7 +6,7 @@ import (
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
-var pollModes = map[entity.PollMode]chatv1.PollMode{
+var PollModes = map[entity.PollMode]chatv1.PollMode{
 	entity.PollModeText: chatv1.PollMode_POLL_MODE_TEXT,
 	entity.PollModeDate: chatv1.PollMode_POLL_MODE_DATE,
 }
@@ -18,7 +18,7 @@ func Poll(p *messageuc.PollOutput) *chatv1.Poll {
 	return &chatv1.Poll{
 		Id:            p.ID,
 		Question:      p.Question,
-		Mode:          pollModes[p.Mode],
+		Mode:          PollModes[p.Mode],
 		AllowMultiple: p.AllowMultiple,
 		Anonymous:     p.Anonymous,
 		ClosesAt:      optionalTimestamp(p.ClosesAt),
@@ -36,34 +36,4 @@ func Poll(p *messageuc.PollOutput) *chatv1.Poll {
 		MyOptionIds: p.MyOptionIDs,
 		VoterCount:  int32(p.VoterCount),
 	}
-}
-
-// PollInput はリクエストの投票を読み替えます。値の範囲は protovalidate で検証済み
-func PollInput(p *chatv1.PollInput) *messageuc.PollInput {
-	if p == nil {
-		return nil
-	}
-	input := &messageuc.PollInput{
-		Question:      p.Question,
-		AllowMultiple: p.AllowMultiple,
-		Anonymous:     p.Anonymous,
-	}
-	for mode, v := range pollModes {
-		if v == p.Mode {
-			input.Mode = mode
-		}
-	}
-	if p.ClosesAt != nil {
-		closesAt := p.ClosesAt.AsTime()
-		input.ClosesAt = &closesAt
-	}
-	for _, o := range p.Options {
-		option := messageuc.PollOptionInput{Label: o.Label, AllDay: o.AllDay}
-		if o.StartsAt != nil {
-			startsAt := o.StartsAt.AsTime()
-			option.StartsAt = &startsAt
-		}
-		input.Options = append(input.Options, option)
-	}
-	return input
 }

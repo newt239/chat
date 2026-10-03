@@ -26,9 +26,9 @@ import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { IconToggleButton } from "#/components/ui/IconToggleButton/IconToggleButton";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
 import { EmojiPickerPopover } from "#/features/reaction/components/EmojiPickerPopover";
 import { ScheduleSendMenu } from "#/features/schedule/components/ScheduleSendMenu";
+import { openDialog } from "#/lib/overlaySearch";
 
 import type { FormatKey } from "../utils/format";
 
@@ -109,6 +109,7 @@ export const MessageInputToolbar = ({
         <EmojiPickerPopover
           label={t("message.composer.emoji")}
           placement="top start"
+          onOpenChange={null}
           onSelect={(emoji) => {
             hasPickedEmojiRef.current = true;
             onInsertEmoji(emoji);

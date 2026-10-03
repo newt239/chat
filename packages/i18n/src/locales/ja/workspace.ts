@@ -13,19 +13,8 @@ export const workspace = {
     join: "参加する",
     loadFailed: "ワークスペースを読み込めませんでした",
     memberCount: "{{count}} 人",
-    open: "開く",
     public: "参加できる公開ワークスペース",
     title: "ワークスペース",
-  },
-  invite: {
-    addedDirectly: "{{email}} をワークスペースに追加しました",
-    email: "メールアドレスで招待",
-    failed: "招待できませんでした",
-    link: "{{email}} への招待リンク",
-    linkOnce:
-      "このリンクは今だけ表示されます。コピーして招待する人に共有してください（7 日間有効）。",
-    role: "招待するロール",
-    submit: "招待",
   },
   emoji: {
     add: "絵文字を登録",
@@ -53,15 +42,6 @@ export const workspace = {
     selectImage: "画像を選ぶ",
     submit: "登録",
   },
-  members: {
-    actionFailed: "メンバーを変更できませんでした",
-    remove: "{{name}} をワークスペースから外す",
-    removeConfirm: "{{name}} をワークスペースから外しますか？",
-    removeConfirmBody: "参加しているチャンネルからも外れます。もう一度参加するには招待が必要です。",
-    removeSubmit: "外す",
-    role: "ロール",
-    title: "メンバー（{{count}} 人）",
-  },
   settings: {
     adminOnly: "変更できるのは管理者とオーナーだけです",
     delete: "ワークスペースを削除",
@@ -74,7 +54,6 @@ export const workspace = {
     sections: {
       emoji: "絵文字",
       general: "一般",
-      members: "メンバー",
     },
     title: "ワークスペースの設定",
   },

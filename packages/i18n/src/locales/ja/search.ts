@@ -1,5 +1,5 @@
 export const search = {
-  count: "{{count}} 件",
+  count_other: "{{count}} 件",
   empty: "条件に一致する結果はありません",
   emptyHint: "キーワードを減らすか、絞り込みを外してみてください",
   failed: "検索結果を読み込めませんでした",
@@ -40,13 +40,9 @@ export const search = {
     thread: "スレッドの返信と、返信のある投稿",
   },
   invalidDate: "日付は YYYY-MM-DD の形式で指定してください: {{tokens}}",
-  inThread: "スレッド内",
   input: "検索キーワード",
-  next: "次のページ",
   noDescription: "説明なし",
-  page: "{{page}} / {{total}} ページ",
   placeholder: "キーワード、from:@名前 in:#チャンネル has:image",
-  prev: "前のページ",
   prompt: "キーワードか条件を入力して検索してください",
   sections: {
     all: "すべて",
@@ -55,8 +51,6 @@ export const search = {
     messages: "メッセージ",
     users: "ユーザー",
   },
-  showInChannel: "チャンネルで表示",
-  showInThread: "スレッドで表示",
   sort: {
     label: "並び順",
     newest: "新しい順",

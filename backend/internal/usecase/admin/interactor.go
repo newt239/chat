@@ -3,7 +3,6 @@ package admin
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -15,14 +14,19 @@ import (
 )
 
 var (
-	ErrMemberNotFound       = errors.New("メンバーが見つかりません")
-	ErrCannotSuspendOwner   = errors.New("オーナーは停止できません")
-	ErrCannotSuspendSelf    = errors.New("自分自身は停止できません")
-	ErrInvalidPermission    = fmt.Errorf("%w: 無効な権限の指定です", domerr.ErrValidation)
-	ErrOwnerOnlyPermissions = errors.New("管理者の権限はオーナーだけが変更できます")
+	ErrMemberNotFound        = domerr.New(domerr.ErrNotFound, "メンバーが見つかりません")
+	ErrCannotSuspendOwner    = domerr.New(domerr.ErrFailedPrecondition, "オーナーは停止できません")
+	ErrCannotSuspendSelf     = domerr.New(domerr.ErrFailedPrecondition, "自分自身は停止できません")
+	ErrInvalidPermission     = domerr.New(domerr.ErrValidation, "無効な権限の指定です")
+	ErrOwnerOnlyPermissions  = domerr.New(domerr.ErrUnauthorized, "管理者の権限はオーナーだけが変更できます")
+	ErrCannotRemoveOwner     = domerr.New(domerr.ErrFailedPrecondition, "ワークスペースのオーナーは削除できません")
+	ErrCannotChangeOwnerRole = domerr.New(domerr.ErrFailedPrecondition, "オーナーのロールは変更できません")
 )
 
-// MemberCloser は停止したメンバーのリアルタイム接続を切ります
+// activityPeriod は管理画面に出すメンバーの投稿数を数える期間です
+const activityPeriod = 30 * 24 * time.Hour
+
+// MemberCloser は停止したり外したりしたメンバーのリアルタイム接続を切ります
 type MemberCloser interface {
 	CloseWorkspaceUser(workspaceID, userID string)
 }
@@ -33,20 +37,17 @@ type Interactor struct {
 	sessionRepo    domainrepository.SessionRepository
 	auditLogRepo   domainrepository.AuditLogRepository
 	permissionRepo domainrepository.PermissionRepository
-	insightRepo    domainrepository.InsightRepository
 	permissionSvc  domainservice.PermissionService
 	recorder       audit.Recorder
 	memberCloser   MemberCloser
-	now            func() time.Time
 }
 
-func NewInteractor(
+func New(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	sessionRepo domainrepository.SessionRepository,
 	auditLogRepo domainrepository.AuditLogRepository,
 	permissionRepo domainrepository.PermissionRepository,
-	insightRepo domainrepository.InsightRepository,
 	permissionSvc domainservice.PermissionService,
 	recorder audit.Recorder,
 	memberCloser MemberCloser,
@@ -57,31 +58,16 @@ func NewInteractor(
 		sessionRepo:    sessionRepo,
 		auditLogRepo:   auditLogRepo,
 		permissionRepo: permissionRepo,
-		insightRepo:    insightRepo,
 		permissionSvc:  permissionSvc,
 		recorder:       recorder,
 		memberCloser:   memberCloser,
-		now:            time.Now,
 	}
-}
-
-// ensureAdmin は管理画面を操作できる owner / admin であることを確認します
-func (i *Interactor) ensureAdmin(ctx context.Context, workspaceID, userID string) (*entity.WorkspaceMember, error) {
-	member, err := i.workspaceRepo.FindMember(ctx, workspaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if !member.IsAdmin() {
-		return nil, domerr.ErrUnauthorized
-	}
-	return member, nil
 }
 
 func (i *Interactor) ListMembers(ctx context.Context, input WorkspaceInput) ([]MemberOutput, error) {
-	if _, err := i.ensureAdmin(ctx, input.WorkspaceID, input.RequesterID); err != nil {
+	if _, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.RequesterID); err != nil {
 		return nil, err
 	}
-
 	members, err := i.workspaceRepo.FindMembersByWorkspaceID(ctx, input.WorkspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list members: %w", err)
@@ -95,42 +81,22 @@ func (i *Interactor) ListMembers(ctx context.Context, input WorkspaceInput) ([]M
 	if err != nil {
 		return nil, fmt.Errorf("failed to load users: %w", err)
 	}
-	userMap := make(map[string]*entity.User, len(users))
-	for _, u := range users {
-		userMap[u.ID] = u
-	}
 
 	sessions, err := i.sessionRepo.FindLatestByUserIDs(ctx, userIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load sessions: %w", err)
 	}
 
-	now := i.now()
-	activities, err := i.insightRepo.MemberActivities(ctx, input.WorkspaceID, now.Add(-entity.InsightPeriod), now)
+	activities, err := i.workspaceRepo.FindMemberActivities(ctx, input.WorkspaceID, time.Now().Add(-activityPeriod))
 	if err != nil {
 		return nil, fmt.Errorf("failed to aggregate member activities: %w", err)
-	}
-	activityMap := make(map[string]entity.MemberActivity, len(activities))
-	for _, a := range activities {
-		activityMap[a.UserID] = a
 	}
 
 	output := make([]MemberOutput, 0, len(members))
 	for _, m := range members {
-		out := MemberOutput{
-			UserID:      m.UserID,
-			Role:        m.Role,
-			JoinedAt:    m.JoinedAt,
-			SuspendedAt: m.SuspendedAt,
-			LastLogin:   sessions[m.UserID],
-			Activity:    activityMap[m.UserID],
+		if u := users[m.UserID]; u != nil {
+			output = append(output, MemberOutput{WorkspaceMember: m, User: u, LastLogin: sessions[m.UserID], Activity: activities[m.UserID]})
 		}
-		if u := userMap[m.UserID]; u != nil {
-			out.Email = u.Email
-			out.DisplayName = u.DisplayName
-			out.AvatarURL = u.AvatarURL
-		}
-		output = append(output, out)
 	}
 	return output, nil
 }
@@ -147,14 +113,13 @@ func (i *Interactor) SuspendMember(ctx context.Context, input MemberActionInput)
 		return ErrCannotSuspendOwner
 	}
 
-	now := i.now()
-	if err := i.workspaceRepo.SetMemberSuspended(ctx, input.WorkspaceID, input.TargetUserID, &now); err != nil {
+	if err := i.workspaceRepo.SetMemberSuspended(ctx, input.WorkspaceID, input.TargetUserID, new(time.Now())); err != nil {
 		return fmt.Errorf("failed to suspend member: %w", err)
 	}
 	// 他のワークスペースでは使い続けられるようセッションは失効させず、このワークスペースの接続だけを切る
 	i.memberCloser.CloseWorkspaceUser(input.WorkspaceID, input.TargetUserID)
 
-	i.recordMemberAction(ctx, input, target.label, entity.AuditActionMemberSuspended)
+	i.recordMemberAction(ctx, input, target.label, entity.AuditActionMemberSuspended, nil)
 	return nil
 }
 
@@ -167,7 +132,38 @@ func (i *Interactor) ResumeMember(ctx context.Context, input MemberActionInput) 
 		return fmt.Errorf("failed to resume member: %w", err)
 	}
 
-	i.recordMemberAction(ctx, input, target.label, entity.AuditActionMemberResumed)
+	i.recordMemberAction(ctx, input, target.label, entity.AuditActionMemberResumed, nil)
+	return nil
+}
+
+func (i *Interactor) UpdateMemberRole(ctx context.Context, input UpdateMemberRoleInput) error {
+	target, err := i.findTarget(ctx, input.MemberActionInput)
+	if err != nil {
+		return err
+	}
+	if target.member.Role == entity.WorkspaceRoleOwner || input.TargetUserID == input.OperatorID {
+		return ErrCannotChangeOwnerRole
+	}
+	if err := i.workspaceRepo.UpdateMemberRole(ctx, input.WorkspaceID, input.TargetUserID, input.Role); err != nil {
+		return fmt.Errorf("failed to update member role: %w", err)
+	}
+	i.recordMemberAction(ctx, input.MemberActionInput, target.label, entity.AuditActionMemberRoleChanged, map[string]string{"from": string(target.member.Role), "to": string(input.Role)})
+	return nil
+}
+
+func (i *Interactor) RemoveMember(ctx context.Context, input MemberActionInput) error {
+	target, err := i.findTarget(ctx, input)
+	if err != nil {
+		return err
+	}
+	if target.member.Role == entity.WorkspaceRoleOwner {
+		return ErrCannotRemoveOwner
+	}
+	if err := i.workspaceRepo.RemoveMember(ctx, input.WorkspaceID, input.TargetUserID); err != nil {
+		return fmt.Errorf("failed to remove member: %w", err)
+	}
+	i.memberCloser.CloseWorkspaceUser(input.WorkspaceID, input.TargetUserID)
+	i.recordMemberAction(ctx, input, target.label, entity.AuditActionMemberRemoved, nil)
 	return nil
 }
 
@@ -177,7 +173,7 @@ type memberTarget struct {
 }
 
 func (i *Interactor) findTarget(ctx context.Context, input MemberActionInput) (*memberTarget, error) {
-	if _, err := i.ensureAdmin(ctx, input.WorkspaceID, input.OperatorID); err != nil {
+	if _, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.OperatorID); err != nil {
 		return nil, err
 	}
 	member, err := i.workspaceRepo.FindMemberIncludingSuspended(ctx, input.WorkspaceID, input.TargetUserID)
@@ -198,7 +194,7 @@ func (i *Interactor) findTarget(ctx context.Context, input MemberActionInput) (*
 	return &memberTarget{member: member, label: label}, nil
 }
 
-func (i *Interactor) recordMemberAction(ctx context.Context, input MemberActionInput, label string, action entity.AuditAction) {
+func (i *Interactor) recordMemberAction(ctx context.Context, input MemberActionInput, label string, action entity.AuditAction, metadata map[string]string) {
 	i.recorder.Record(ctx, entity.AuditLog{
 		WorkspaceID: input.WorkspaceID,
 		ActorID:     &input.OperatorID,
@@ -206,5 +202,6 @@ func (i *Interactor) recordMemberAction(ctx context.Context, input MemberActionI
 		TargetType:  entity.AuditTargetUser,
 		TargetID:    input.TargetUserID,
 		TargetLabel: label,
+		Metadata:    metadata,
 	})
 }

@@ -1,6 +1,5 @@
 packages:
   - frontend
-  - backend
   - packages/*
 
 saveExact: true
@@ -16,10 +15,7 @@ overrides:
 
 allowBuilds:
   "@bufbuild/buf": false
-  core-js: true
-  esbuild: true
   protobufjs: true
-  unrs-resolver: true
   lefthook: true
   sharp: true
   "@firebase/util": false

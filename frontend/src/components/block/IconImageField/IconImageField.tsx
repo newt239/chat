@@ -4,11 +4,12 @@ import { IconPhoto } from "@tabler/icons-react";
 import { FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { ImageCropDialog } from "#/components/block/ImageCropDialog/ImageCropDialog";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Button } from "#/components/ui/Button/Button";
 import { fieldStyles } from "#/components/ui/styles/styles";
-import { useImageUpload } from "#/hooks/useImageUpload";
+
+import { ImageCropDialog } from "./ImageCropDialog";
+import { useImageUpload } from "./useImageUpload";
 
 import type { ImagePurpose } from "#/gen/chat/v1/image_service_pb";
 
@@ -86,6 +87,7 @@ export const IconImageField = ({
         </p>
       )}
       <ImageCropDialog
+        key={cropSrc}
         src={cropSrc}
         isPending={upload.isPending}
         onCancel={closeCrop}

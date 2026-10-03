@@ -8,32 +8,20 @@ import (
 func SearchResult(out *searchuc.WorkspaceSearchOutput) *chatv1.SearchWorkspaceResponse {
 	return &chatv1.SearchWorkspaceResponse{
 		Messages: &chatv1.MessageSearchResult{
-			Items:   ConvertAll(out.Messages.Items, messageSearchHit),
-			Total:   int32(out.Messages.Total),
-			Page:    int32(out.Messages.Page),
-			PerPage: int32(out.Messages.PerPage),
-			HasMore: out.Messages.HasMore,
+			Items: ConvertAll(out.Messages.Items, messageSearchHit),
+			Total: int32(out.Messages.Total),
 		},
 		Channels: &chatv1.ChannelSearchResult{
-			Items:   ConvertAll(out.Channels.Items, Channel),
-			Total:   int32(out.Channels.Total),
-			Page:    int32(out.Channels.Page),
-			PerPage: int32(out.Channels.PerPage),
-			HasMore: out.Channels.HasMore,
+			Items: ConvertAll(out.Channels.Items, Channel),
+			Total: int32(out.Channels.Total),
 		},
 		Users: &chatv1.UserSearchResult{
-			Items:   ConvertAll(out.Users.Items, WorkspaceMember),
-			Total:   int32(out.Users.Total),
-			Page:    int32(out.Users.Page),
-			PerPage: int32(out.Users.PerPage),
-			HasMore: out.Users.HasMore,
+			Items: ConvertAll(out.Users.Items, WorkspaceMember),
+			Total: int32(out.Users.Total),
 		},
 		Groups: &chatv1.UserGroupSearchResult{
-			Items:   ConvertAll(out.Groups.Items, UserGroup),
-			Total:   int32(out.Groups.Total),
-			Page:    int32(out.Groups.Page),
-			PerPage: int32(out.Groups.PerPage),
-			HasMore: out.Groups.HasMore,
+			Items: ConvertAll(out.Groups.Items, UserGroup),
+			Total: int32(out.Groups.Total),
 		},
 	}
 }

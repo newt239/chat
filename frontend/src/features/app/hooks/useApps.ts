@@ -2,6 +2,7 @@ import { createConnectQueryKey, skipToken, useMutation, useQuery } from "@connec
 import { useQueryClient } from "@tanstack/react-query";
 
 import { AppService } from "#/gen/chat/v1/app_service_pb";
+import { toastError } from "#/lib/toastError";
 
 export const useApps = (workspaceId: string | null) =>
   useQuery(AppService.method.listApps, workspaceId === null ? skipToken : { workspaceId });
@@ -18,11 +19,17 @@ export const useAppActions = () => {
     });
   };
   return {
-    addToChannel: useMutation(AppService.method.addAppToChannel, { onSuccess }),
+    addToChannel: useMutation(AppService.method.addAppToChannel, {
+      onError: toastError,
+      onSuccess,
+    }),
     create: useMutation(AppService.method.createApp, { onSuccess }),
     regenerate: useMutation(AppService.method.regenerateAppToken),
     remove: useMutation(AppService.method.deleteApp, { onSuccess }),
-    removeFromChannel: useMutation(AppService.method.removeAppFromChannel, { onSuccess }),
+    removeFromChannel: useMutation(AppService.method.removeAppFromChannel, {
+      onError: toastError,
+      onSuccess,
+    }),
     update: useMutation(AppService.method.updateApp, { onSuccess }),
   };
 };

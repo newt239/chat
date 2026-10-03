@@ -14,66 +14,46 @@ import (
 )
 
 var (
-	ErrLinkNotFound = errors.New("関連リンクが見つかりません")
-	ErrInvalidOrder = fmt.Errorf("%w: 並び替えにはチャンネルのすべてのリンクを指定してください", domerr.ErrValidation)
+	ErrLinkNotFound = domerr.New(domerr.ErrNotFound, "関連リンクが見つかりません")
+	ErrInvalidOrder = domerr.New(domerr.ErrValidation, "並び替えにはチャンネルのすべてのリンクを指定してください")
 )
 
-type UseCase interface {
-	List(ctx context.Context, input ListInput) (*ListOutput, error)
-	Create(ctx context.Context, input CreateInput) (*LinkOutput, error)
-	Update(ctx context.Context, input UpdateInput) (*LinkOutput, error)
-	Delete(ctx context.Context, input DeleteInput) error
-	Reorder(ctx context.Context, input ReorderInput) ([]LinkOutput, error)
+// LinkInput は作成ではチャンネル、編集ではリンクを ID で指します
+type LinkInput struct {
+	ID     string
+	UserID string
+	Title  string
+	URL    string
 }
 
-type interactor struct {
+type Interactor struct {
 	linkRepo         domainrepository.ChannelLinkRepository
 	channelAccessSvc domainservice.ChannelAccessService
 	permissionSvc    domainservice.PermissionService
 	txManager        domaintransaction.Manager
 }
 
-func NewInteractor(
+func New(
 	linkRepo domainrepository.ChannelLinkRepository,
 	channelAccessSvc domainservice.ChannelAccessService,
 	permissionSvc domainservice.PermissionService,
 	txManager domaintransaction.Manager,
-) UseCase {
-	return &interactor{
-		linkRepo:         linkRepo,
-		channelAccessSvc: channelAccessSvc,
-		permissionSvc:    permissionSvc,
-		txManager:        txManager,
-	}
+) *Interactor {
+	return &Interactor{linkRepo: linkRepo, channelAccessSvc: channelAccessSvc, permissionSvc: permissionSvc, txManager: txManager}
 }
 
-// canEdit は権限設定の「関連リンクの編集」が許可されているかを返します
-func (i *interactor) canEdit(ctx context.Context, ch *entity.Channel, userID string) (bool, error) {
-	_, err := i.permissionSvc.Ensure(ctx, ch.WorkspaceID, userID, entity.PermissionEditChannelLinks)
-	if errors.Is(err, domerr.ErrUnauthorized) {
-		return false, nil
-	}
-	return err == nil, err
-}
-
-// ensureEditable はチャンネルの閲覧権限と関連リンクの編集権限を確認します
-func (i *interactor) ensureEditable(ctx context.Context, channelID, userID string) error {
+// ensureEditable はチャンネルの閲覧権限と、権限設定の「関連リンクの編集」を確認します
+func (i *Interactor) ensureEditable(ctx context.Context, channelID, userID string) error {
 	ch, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID)
 	if err != nil {
 		return err
 	}
-	editable, err := i.canEdit(ctx, ch, userID)
-	if err != nil {
-		return err
-	}
-	if !editable {
-		return domerr.ErrUnauthorized
-	}
-	return nil
+	_, err = i.permissionSvc.Ensure(ctx, ch.WorkspaceID, userID, entity.PermissionEditChannelLinks)
+	return err
 }
 
 // findEditableLink はリンクを取得し、そのチャンネルの編集権限を確認します
-func (i *interactor) findEditableLink(ctx context.Context, linkID, userID string) (*entity.ChannelLink, error) {
+func (i *Interactor) findEditableLink(ctx context.Context, linkID, userID string) (*entity.ChannelLink, error) {
 	link, err := i.linkRepo.FindByID(ctx, linkID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load link: %w", err)
@@ -87,33 +67,33 @@ func (i *interactor) findEditableLink(ctx context.Context, linkID, userID string
 	return link, nil
 }
 
-func (i *interactor) List(ctx context.Context, input ListInput) (*ListOutput, error) {
-	ch, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
+// List はリンクと、閲覧者が編集できるかを返します
+func (i *Interactor) List(ctx context.Context, channelID, userID string) ([]*entity.ChannelLink, bool, error) {
+	ch, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	links, err := i.linkRepo.FindByChannelID(ctx, ch.ID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load links: %w", err)
+		return nil, false, fmt.Errorf("failed to load links: %w", err)
 	}
-	editable, err := i.canEdit(ctx, ch, input.UserID)
-	if err != nil {
-		return nil, err
+	_, err = i.permissionSvc.Ensure(ctx, ch.WorkspaceID, userID, entity.PermissionEditChannelLinks)
+	if errors.Is(err, domerr.ErrUnauthorized) {
+		return links, false, nil
 	}
-	return &ListOutput{Links: toOutputs(links), CanEdit: editable}, nil
+	return links, err == nil, err
 }
 
-func (i *interactor) Create(ctx context.Context, input CreateInput) (*LinkOutput, error) {
-	if err := i.ensureEditable(ctx, input.ChannelID, input.UserID); err != nil {
+func (i *Interactor) Create(ctx context.Context, input LinkInput) (*entity.ChannelLink, error) {
+	if err := i.ensureEditable(ctx, input.ID, input.UserID); err != nil {
 		return nil, err
 	}
-	existing, err := i.linkRepo.FindByChannelID(ctx, input.ChannelID)
+	existing, err := i.linkRepo.FindByChannelID(ctx, input.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load links: %w", err)
 	}
-
 	link := &entity.ChannelLink{
-		ChannelID: input.ChannelID,
+		ChannelID: input.ID,
 		Title:     strings.TrimSpace(input.Title),
 		URL:       strings.TrimSpace(input.URL),
 		Position:  len(existing),
@@ -122,12 +102,11 @@ func (i *interactor) Create(ctx context.Context, input CreateInput) (*LinkOutput
 	if err := i.linkRepo.Create(ctx, link); err != nil {
 		return nil, fmt.Errorf("failed to create link: %w", err)
 	}
-	out := toOutput(link)
-	return &out, nil
+	return link, nil
 }
 
-func (i *interactor) Update(ctx context.Context, input UpdateInput) (*LinkOutput, error) {
-	link, err := i.findEditableLink(ctx, input.LinkID, input.UserID)
+func (i *Interactor) Update(ctx context.Context, input LinkInput) (*entity.ChannelLink, error) {
+	link, err := i.findEditableLink(ctx, input.ID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -136,71 +115,40 @@ func (i *interactor) Update(ctx context.Context, input UpdateInput) (*LinkOutput
 	if err := i.linkRepo.Update(ctx, link); err != nil {
 		return nil, fmt.Errorf("failed to update link: %w", err)
 	}
-	out := toOutput(link)
-	return &out, nil
+	return link, nil
 }
 
-func (i *interactor) Delete(ctx context.Context, input DeleteInput) error {
-	if _, err := i.findEditableLink(ctx, input.LinkID, input.UserID); err != nil {
+func (i *Interactor) Delete(ctx context.Context, linkID, userID string) error {
+	if _, err := i.findEditableLink(ctx, linkID, userID); err != nil {
 		return err
 	}
-	if err := i.linkRepo.Delete(ctx, input.LinkID); err != nil {
+	if err := i.linkRepo.Delete(ctx, linkID); err != nil {
 		return fmt.Errorf("failed to delete link: %w", err)
 	}
 	return nil
 }
 
-func (i *interactor) Reorder(ctx context.Context, input ReorderInput) ([]LinkOutput, error) {
-	if err := i.ensureEditable(ctx, input.ChannelID, input.UserID); err != nil {
-		return nil, err
+func (i *Interactor) Reorder(ctx context.Context, channelID, userID string, linkIDs []string) error {
+	if err := i.ensureEditable(ctx, channelID, userID); err != nil {
+		return err
 	}
-
-	var reordered []*entity.ChannelLink
-	err := i.txManager.Do(ctx, func(txCtx context.Context) error {
-		links, err := i.linkRepo.FindByChannelID(txCtx, input.ChannelID)
+	return i.txManager.Do(ctx, func(txCtx context.Context) error {
+		links, err := i.linkRepo.FindByChannelID(txCtx, channelID)
 		if err != nil {
 			return fmt.Errorf("failed to load links: %w", err)
 		}
-		if len(links) != len(input.LinkIDs) {
+		if len(links) != len(linkIDs) {
 			return ErrInvalidOrder
 		}
-		byID := make(map[string]*entity.ChannelLink, len(links))
+		byID := make(map[string]bool, len(links))
 		for _, link := range links {
-			byID[link.ID] = link
+			byID[link.ID] = true
 		}
-		for position, id := range input.LinkIDs {
-			link, ok := byID[id]
-			if !ok {
+		for _, id := range linkIDs {
+			if !byID[id] {
 				return ErrInvalidOrder
 			}
-			link.Position = position
-			reordered = append(reordered, link)
 		}
-		return i.linkRepo.UpdatePositions(txCtx, input.LinkIDs)
+		return i.linkRepo.UpdatePositions(txCtx, linkIDs)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return toOutputs(reordered), nil
-}
-
-func toOutput(link *entity.ChannelLink) LinkOutput {
-	return LinkOutput{
-		ID:        link.ID,
-		ChannelID: link.ChannelID,
-		Title:     link.Title,
-		URL:       link.URL,
-		Position:  link.Position,
-		CreatedBy: link.CreatedBy,
-		CreatedAt: link.CreatedAt,
-		UpdatedAt: link.UpdatedAt,
-	}
-}
-
-func toOutputs(links []*entity.ChannelLink) []LinkOutput {
-	outputs := make([]LinkOutput, 0, len(links))
-	for _, link := range links {
-		outputs = append(outputs, toOutput(link))
-	}
-	return outputs
 }

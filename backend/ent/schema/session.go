@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Session holds the schema definition for the Session entity.
 type Session struct {
 	ent.Schema
 }
@@ -21,7 +20,6 @@ func (Session) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "session"}}
 }
 
-// Fields of the Session.
 func (Session) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -32,7 +30,8 @@ func (Session) Fields() []ent.Field {
 			NotEmpty(),
 		field.Time("expires_at"),
 		field.Time("revoked_at").
-			Optional(),
+			Optional().
+			Nillable(),
 		field.String("ip_address").
 			Default(""),
 		field.String("user_agent").
@@ -43,7 +42,6 @@ func (Session) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Session.
 func (Session) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).
@@ -53,7 +51,6 @@ func (Session) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the Session.
 func (Session) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("expires_at"),

@@ -1,5 +1,6 @@
 import { toDate } from "#/lib/timestamp";
 
+import type { ChannelCategory } from "#/gen/chat/v1/channel_category_service_pb";
 import type { Channel } from "#/gen/chat/v1/channel_service_pb";
 import type { Preferences } from "#/providers/store/preferences";
 
@@ -38,14 +39,15 @@ export const sortChannelsByActivity = (channels: readonly Channel[]) =>
 export const categoryOfChannel = (
   channel: Channel,
   channels: readonly Channel[],
-  categoryByChannel: ReadonlyMap<string, string>,
+  categories: readonly ChannelCategory[],
 ) => {
   const byId = new Map(channels.map((candidate) => [candidate.id, candidate]));
   let current: Channel | undefined = channel;
   while (current !== undefined) {
-    const categoryId = categoryByChannel.get(current.id);
-    if (categoryId !== undefined) {
-      return categoryId;
+    const { id } = current;
+    const category = categories.find((candidate) => candidate.channelIds.includes(id));
+    if (category !== undefined) {
+      return category.id;
     }
     current = current.parentId === undefined ? undefined : byId.get(current.parentId);
   }

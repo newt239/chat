@@ -14,7 +14,7 @@ describe("PostTargetPicker", () => {
   test("親と子孫から投稿先を選ぶ", async () => {
     const onChange = vi.fn<(channelId: string) => void>();
     render(
-      <PostTargetPicker parent={parent} descendants={[child]} value="dev" onChange={onChange} />,
+      <PostTargetPicker parent={parent} descendants={[child]} value={parent} onChange={onChange} />,
     );
 
     await userEvent.click(screen.getByRole("button", { name: "投稿先: #dev" }));

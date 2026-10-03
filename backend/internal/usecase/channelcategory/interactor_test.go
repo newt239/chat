@@ -92,29 +92,29 @@ func (stubTxManager) Do(ctx context.Context, fn func(ctx context.Context) error)
 	return fn(ctx)
 }
 
-func newInteractor() (UseCase, *fakeCategoryRepo) {
+func newInteractor() (*Interactor, *fakeCategoryRepo) {
 	repo := &fakeCategoryRepo{}
-	return NewInteractor(repo, stubWorkspaceRepo{}, stubAccess{}, stubTxManager{}), repo
+	return New(repo, stubWorkspaceRepo{}, stubAccess{}, stubTxManager{}), repo
 }
 
 func TestCreateAndReorder(t *testing.T) {
-	uc, _ := newInteractor()
+	uc, repo := newInteractor()
 	ctx := context.Background()
 	for _, name := range []string{"a", "b", "c"} {
-		if _, err := uc.Create(ctx, CreateInput{WorkspaceID: workspaceID, UserID: aliceID, Name: " " + name + " "}); err != nil {
+		if _, err := uc.Create(ctx, workspaceID, aliceID, " "+name+" "); err != nil {
 			t.Fatal(err)
 		}
 	}
 
-	out, err := uc.Reorder(ctx, ReorderInput{WorkspaceID: workspaceID, UserID: aliceID, CategoryIDs: []string{"c", "a", "b"}})
-	if err != nil {
+	if err := uc.Reorder(ctx, workspaceID, aliceID, []string{"c", "a", "b"}); err != nil {
 		t.Fatalf("並び替えできません: %v", err)
 	}
+	out, _ := repo.FindByUser(ctx, aliceID, workspaceID)
 	if out[0].ID != "c" || out[0].Position != 0 || out[2].ID != "b" {
 		t.Fatalf("並び順が反映されていません: %+v", out)
 	}
 
-	_, err = uc.Reorder(ctx, ReorderInput{WorkspaceID: workspaceID, UserID: aliceID, CategoryIDs: []string{"c"}})
+	err := uc.Reorder(ctx, workspaceID, aliceID, []string{"c"})
 	if !errors.Is(err, domerr.ErrValidation) {
 		t.Fatalf("一部のカテゴリだけの並び替えが拒否されていません: %v", err)
 	}
@@ -124,21 +124,21 @@ func TestSetChannelMovesBetweenCategories(t *testing.T) {
 	uc, repo := newInteractor()
 	ctx := context.Background()
 	for _, name := range []string{"a", "b"} {
-		if _, err := uc.Create(ctx, CreateInput{WorkspaceID: workspaceID, UserID: aliceID, Name: name}); err != nil {
+		if _, err := uc.Create(ctx, workspaceID, aliceID, name); err != nil {
 			t.Fatal(err)
 		}
 	}
 	a, b := "a", "b"
-	if err := uc.SetChannel(ctx, SetChannelInput{ChannelID: "ch", UserID: aliceID, CategoryID: &a}); err != nil {
+	if err := uc.SetChannel(ctx, "ch", aliceID, &a); err != nil {
 		t.Fatal(err)
 	}
-	if err := uc.SetChannel(ctx, SetChannelInput{ChannelID: "ch", UserID: aliceID, CategoryID: &b}); err != nil {
+	if err := uc.SetChannel(ctx, "ch", aliceID, &b); err != nil {
 		t.Fatal(err)
 	}
 	if len(repo.categories[0].ChannelIDs) != 0 || len(repo.categories[1].ChannelIDs) != 1 {
 		t.Fatalf("チャンネルが移動していません: %+v", repo.categories)
 	}
-	if err := uc.SetChannel(ctx, SetChannelInput{ChannelID: "ch", UserID: aliceID}); err != nil {
+	if err := uc.SetChannel(ctx, "ch", aliceID, nil); err != nil {
 		t.Fatal(err)
 	}
 	if len(repo.categories[1].ChannelIDs) != 0 {
@@ -149,14 +149,14 @@ func TestSetChannelMovesBetweenCategories(t *testing.T) {
 func TestOtherUsersCategoryIsHidden(t *testing.T) {
 	uc, _ := newInteractor()
 	ctx := context.Background()
-	if _, err := uc.Create(ctx, CreateInput{WorkspaceID: workspaceID, UserID: aliceID, Name: "a"}); err != nil {
+	if _, err := uc.Create(ctx, workspaceID, aliceID, "a"); err != nil {
 		t.Fatal(err)
 	}
 	a := "a"
-	if err := uc.SetChannel(ctx, SetChannelInput{ChannelID: "ch", UserID: bobID, CategoryID: &a}); !errors.Is(err, ErrCategoryNotFound) {
+	if err := uc.SetChannel(ctx, "ch", bobID, &a); !errors.Is(err, ErrCategoryNotFound) {
 		t.Fatalf("他人のカテゴリに割り当てられています: %v", err)
 	}
-	if err := uc.Delete(ctx, DeleteInput{CategoryID: "a", UserID: bobID}); !errors.Is(err, ErrCategoryNotFound) {
+	if err := uc.Delete(ctx, "a", bobID); !errors.Is(err, ErrCategoryNotFound) {
 		t.Fatalf("他人のカテゴリを削除できています: %v", err)
 	}
 }

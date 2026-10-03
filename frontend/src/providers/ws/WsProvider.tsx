@@ -5,11 +5,11 @@ import { useAtomValue } from "jotai";
 
 import { RealtimeService } from "#/gen/chat/v1/realtime_service_pb";
 import { transport } from "#/lib/api/transport";
-import { getIsMobileApp, isTauri } from "#/lib/platform/platform";
+import { isMobileApp, isTauri } from "#/lib/platform/platform";
 import { WsClient } from "#/lib/ws";
 import { sessionAtom } from "#/providers/store/auth";
 
-import { WsClientContext } from "./wsClientContext";
+import { WsClientContext } from "./useWsClient";
 
 const realtimeClient = createClient(RealtimeService, transport);
 
@@ -25,18 +25,18 @@ export const WsProvider = ({ workspaceId, children }: WsProviderProps) => {
 
   useEffect(() => {
     if (!hasSession) {
-      setWsClient(null);
       return undefined;
     }
     const instance = new WsClient(
       () => realtimeClient.issueWebSocketTicket({ workspaceId }).then(({ ticket }) => ticket),
-      isTauri && !getIsMobileApp(),
+      isTauri && !isMobileApp,
     );
+    // oxlint-disable-next-line react/set-state-in-effect -- 接続は effect の中で作って閉じる
     setWsClient(instance);
     return () => {
       instance.close();
     };
   }, [hasSession, workspaceId]);
 
-  return <WsClientContext.Provider value={{ wsClient }}>{children}</WsClientContext.Provider>;
+  return <WsClientContext value={hasSession ? wsClient : null}>{children}</WsClientContext>;
 };

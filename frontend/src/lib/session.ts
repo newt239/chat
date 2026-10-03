@@ -5,7 +5,6 @@ import { createTransport } from "#/lib/api/createTransport";
 import { navigateTo } from "#/lib/navigation";
 import { queryClient } from "#/providers/query/query";
 import { sessionAtom } from "#/providers/store/auth";
-import { storage } from "#/providers/store/storage";
 import { store } from "#/providers/store/store";
 
 import type { User } from "#/gen/chat/v1/user_pb";
@@ -30,7 +29,7 @@ export const startSession = ({ accessToken, refreshToken, user }: AuthResponse) 
     throw new ConnectError("ユーザー情報のない認証応答です", Code.Internal);
   }
   if (refreshToken !== undefined) {
-    storage.setItem(refreshTokenKey, refreshToken);
+    localStorage.setItem(refreshTokenKey, refreshToken);
   }
   store.set(sessionAtom, { accessToken, userId: user.id });
 };
@@ -38,11 +37,11 @@ export const startSession = ({ accessToken, refreshToken, user }: AuthResponse) 
 let refreshing: Promise<string> | null = null;
 
 /** アクセストークンを取り直す。ローテーションが競合しないよう、タブをまたいで直列にする */
-export const refreshSession = () => {
+const refreshSession = () => {
   refreshing ??= navigator.locks
     .request("chat-refresh", async () => {
       const response = await authClient.refresh({
-        refreshToken: storage.getItem(refreshTokenKey) ?? undefined,
+        refreshToken: localStorage.getItem(refreshTokenKey) ?? undefined,
       });
       startSession(response);
       return response.accessToken;
@@ -54,7 +53,7 @@ export const refreshSession = () => {
 };
 
 const clearSession = () => {
-  storage.removeItem(refreshTokenKey);
+  localStorage.removeItem(refreshTokenKey);
   store.set(sessionAtom, null);
   queryClient.clear();
   navigateTo({ to: "/login" });

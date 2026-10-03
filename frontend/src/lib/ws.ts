@@ -1,7 +1,6 @@
 import { create, fromJsonString, toJsonString } from "@bufbuild/protobuf";
 
 import { ClientEventSchema, ServerEventSchema } from "#/gen/chat/v1/event_pb";
-import { logger } from "#/lib/logger";
 import { navigateTo } from "#/lib/navigation";
 import { refreshOrSignOut } from "#/lib/session";
 
@@ -15,7 +14,6 @@ type WsEventPayload<K extends WsEventType> = Extract<ServerEventOneof, { case: K
 
 const WS_BC_NAME = "ws-control";
 const WS_RECONNECT_DELAY = 2_000;
-const WS_MAX_RECONNECT_DELAY = 30_000;
 const WS_MAX_RECONNECT_ATTEMPTS = 5;
 // サーバーの停止（1001 Going Away）では他のレプリカへすぐつなぎ直す。一斉に来ないよう散らす
 const WS_GOING_AWAY_DELAY_MAX = 1_000;
@@ -23,16 +21,14 @@ const WS_GOING_AWAY_DELAY_MAX = 1_000;
 const WS_CLOSE_UNAUTHENTICATED = 4401;
 const WS_CLOSE_FORBIDDEN = 4403;
 
-const getWsUrl = (ticket: string) => {
-  const base = import.meta.env.VITE_WS_URL ?? "ws://localhost:8080";
-  return `${base}/ws?ticket=${encodeURIComponent(ticket)}`;
-};
+const getWsUrl = (ticket: string) =>
+  `${import.meta.env.VITE_WS_URL}/ws?ticket=${encodeURIComponent(ticket)}`;
 
 const parseServerEvent = (data: string) => {
   try {
     return fromJsonString(ServerEventSchema, data, { ignoreUnknownFields: true });
   } catch (error) {
-    logger.warn("WebSocketイベントの形式が想定と異なります:", error);
+    console.warn("WebSocketイベントの形式が想定と異なります:", error);
     return null;
   }
 };
@@ -53,14 +49,10 @@ export class WsClient {
   private hasOpened = false;
   private readonly reconnectHandlers = new Set<() => void>();
 
-  private readonly handlers: {
-    [K in WsEventType]: Set<(payload: WsEventPayload<K>) => void>;
-  } = {
-    ack: new Set(),
+  // 型を case ごとに対応づけるため、Map ではなく全 case を持つオブジェクトにする
+  private readonly handlers: { [K in WsEventType]: Set<(payload: WsEventPayload<K>) => void> } = {
     channelViewers: new Set(),
-    customEmojiCreated: new Set(),
-    customEmojiDeleted: new Set(),
-    error: new Set(),
+    customEmojisChanged: new Set(),
     messageDeleted: new Set(),
     messageUpdated: new Set(),
     newMessage: new Set(),
@@ -102,90 +94,22 @@ export class WsClient {
       return;
     }
 
-    // payload の型をイベントの種類ごとに絞り込むため、case ごとに emit する
-    switch (oneof.case) {
-      case "newMessage": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "messageUpdated": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "messageDeleted": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "unreadCount": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "pinCreated": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "pinDeleted": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "systemMessageCreated": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "reactionAdded": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "reactionRemoved": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "typing": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "stopTyping": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "channelViewers": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "customEmojiCreated": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "customEmojiDeleted": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "ack": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      case "error": {
-        this.emit(oneof.case, oneof.value);
-        break;
-      }
-      default: {
-        break;
-      }
-    }
+    this.emit(oneof);
   };
 
-  private emit<T extends WsEventType>(type: T, payload: WsEventPayload<T>) {
-    for (const handler of this.handlers[type]) {
-      handler(payload);
+  private emit<T extends WsEventType>(
+    event: { [K in T]: { case: K; value: WsEventPayload<K> } }[T],
+  ) {
+    for (const handler of this.handlers[event.case]) {
+      handler(event.value);
     }
   }
 
   /** サーバーイベントの購読を開始する。戻り値を呼ぶと購読を解除する */
   public on<T extends WsEventType>(type: T, cb: (payload: WsEventPayload<T>) => void) {
     this.handlers[type].add(cb);
-
     return () => {
-      this.off(type, cb);
+      this.handlers[type].delete(cb);
     };
   }
 
@@ -195,11 +119,6 @@ export class WsClient {
     return () => {
       this.reconnectHandlers.delete(cb);
     };
-  }
-
-  /** サーバーイベントの購読を解除する */
-  public off<T extends WsEventType>(type: T, cb: (payload: WsEventPayload<T>) => void) {
-    this.handlers[type].delete(cb);
   }
 
   private async connect() {
@@ -215,7 +134,7 @@ export class WsClient {
       this.ws.addEventListener("message", this.eventDispatcher);
     } catch (error) {
       if (id === this.connectionId) {
-        logger.warn("WebSocketに接続できませんでした", error);
+        console.warn("WebSocketに接続できませんでした", error);
         this.scheduleReconnect(false);
       }
     }
@@ -239,7 +158,6 @@ export class WsClient {
 
   // error のあとには必ず close が来るため、失敗はここでだけ数える
   private readonly onClose = (event: CloseEvent) => {
-    logger.info("WebSocket接続が閉じました", { code: event.code, reason: event.reason });
     this.ws = null;
     if (!this.isActiveLeader || event.code === 1000) {
       return;
@@ -263,14 +181,14 @@ export class WsClient {
     this.scheduleReconnect(event.code === 1001);
   };
 
-  /** 指数バックオフ（2, 4, 8, 16 秒、最大 30 秒）でつなぎ直す。上限に達したらリーダーを降り、focus か online で再開する */
+  /** 指数バックオフ（2, 4, 8, 16 秒）でつなぎ直す。上限に達したらリーダーを降り、focus か online で再開する */
   private scheduleReconnect(isGoingAway: boolean) {
     if (!this.isActiveLeader || this.reconnectTimeoutId !== null) {
       return;
     }
     this.reconnectAttempts += 1;
     if (this.reconnectAttempts >= WS_MAX_RECONNECT_ATTEMPTS) {
-      logger.error("WebSocketの再接続を諦めました", { attempts: this.reconnectAttempts });
+      console.error("WebSocketの再接続を諦めました", { attempts: this.reconnectAttempts });
       this.disconnect();
       return;
     }
@@ -281,7 +199,7 @@ export class WsClient {
       },
       isGoingAway
         ? Math.random() * WS_GOING_AWAY_DELAY_MAX
-        : Math.min(WS_RECONNECT_DELAY * 2 ** (this.reconnectAttempts - 1), WS_MAX_RECONNECT_DELAY),
+        : WS_RECONNECT_DELAY * 2 ** (this.reconnectAttempts - 1),
     );
   }
 

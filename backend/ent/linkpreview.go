@@ -32,10 +32,6 @@ type LinkPreview struct {
 	SiteName *string `json:"site_name,omitempty"`
 	// CardType holds the value of the "card_type" field.
 	CardType *string `json:"card_type,omitempty"`
-	// ImageWidth holds the value of the "image_width" field.
-	ImageWidth *int32 `json:"image_width,omitempty"`
-	// ImageHeight holds the value of the "image_height" field.
-	ImageHeight *int32 `json:"image_height,omitempty"`
 	// FetchedAt holds the value of the "fetched_at" field.
 	FetchedAt time.Time `json:"fetched_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -50,11 +46,9 @@ type LinkPreviewEdges struct {
 	Youtube *LinkPreviewYoutube `json:"youtube,omitempty"`
 	// XPost holds the value of the x_post edge.
 	XPost *LinkPreviewXPost `json:"x_post,omitempty"`
-	// MessageLinks holds the value of the message_links edge.
-	MessageLinks []*MessageLink `json:"message_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 }
 
 // YoutubeOrErr returns the Youtube value or an error if the edge
@@ -79,22 +73,11 @@ func (e LinkPreviewEdges) XPostOrErr() (*LinkPreviewXPost, error) {
 	return nil, &NotLoadedError{edge: "x_post"}
 }
 
-// MessageLinksOrErr returns the MessageLinks value or an error if the edge
-// was not loaded in eager-loading.
-func (e LinkPreviewEdges) MessageLinksOrErr() ([]*MessageLink, error) {
-	if e.loadedTypes[2] {
-		return e.MessageLinks, nil
-	}
-	return nil, &NotLoadedError{edge: "message_links"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*LinkPreview) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case linkpreview.FieldImageWidth, linkpreview.FieldImageHeight:
-			values[i] = new(sql.NullInt64)
 		case linkpreview.FieldURL, linkpreview.FieldTitle, linkpreview.FieldDescription, linkpreview.FieldImageURL, linkpreview.FieldSiteName, linkpreview.FieldCardType:
 			values[i] = new(sql.NullString)
 		case linkpreview.FieldFetchedAt:
@@ -163,20 +146,6 @@ func (_m *LinkPreview) assignValues(columns []string, values []any) error {
 				_m.CardType = new(string)
 				*_m.CardType = value.String
 			}
-		case linkpreview.FieldImageWidth:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field image_width", values[i])
-			} else if value.Valid {
-				_m.ImageWidth = new(int32)
-				*_m.ImageWidth = int32(value.Int64)
-			}
-		case linkpreview.FieldImageHeight:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field image_height", values[i])
-			} else if value.Valid {
-				_m.ImageHeight = new(int32)
-				*_m.ImageHeight = int32(value.Int64)
-			}
 		case linkpreview.FieldFetchedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field fetched_at", values[i])
@@ -204,11 +173,6 @@ func (_m *LinkPreview) QueryYoutube() *LinkPreviewYoutubeQuery {
 // QueryXPost queries the "x_post" edge of the LinkPreview entity.
 func (_m *LinkPreview) QueryXPost() *LinkPreviewXPostQuery {
 	return NewLinkPreviewClient(_m.config).QueryXPost(_m)
-}
-
-// QueryMessageLinks queries the "message_links" edge of the LinkPreview entity.
-func (_m *LinkPreview) QueryMessageLinks() *MessageLinkQuery {
-	return NewLinkPreviewClient(_m.config).QueryMessageLinks(_m)
 }
 
 // Update returns a builder for updating this LinkPreview.
@@ -260,16 +224,6 @@ func (_m *LinkPreview) String() string {
 	if v := _m.CardType; v != nil {
 		builder.WriteString("card_type=")
 		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := _m.ImageWidth; v != nil {
-		builder.WriteString("image_width=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := _m.ImageHeight; v != nil {
-		builder.WriteString("image_height=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("fetched_at=")

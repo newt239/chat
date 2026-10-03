@@ -8,8 +8,8 @@ import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 
 import { Button } from "#/components/ui/Button/Button";
 import { cn } from "#/components/ui/styles/styles";
-import { toast } from "#/components/ui/ToastRegion/toast";
 import { highlightCode } from "#/features/message/utils/highlight";
+import { copyWithToast } from "#/lib/clipboard";
 
 // これより長いコードは折りたたみ、「すべて表示」で広げる
 const COLLAPSE_LINES = 12;
@@ -55,15 +55,6 @@ export const CodeBlock = ({ children }: CodeBlockProps) => {
     staleTime: Number.POSITIVE_INFINITY,
   });
 
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      toast(t("codeBlock.copied"), { tone: "success" });
-    } catch {
-      toast(t("codeBlock.copyFailed"), { tone: "danger" });
-    }
-  };
-
   return (
     <div className="my-1 max-w-165 overflow-hidden rounded-md border border-border bg-sunken">
       <div className="flex items-center gap-2 border-b border-border py-0.75 pr-1 pl-2.5 font-mono text-caption text-muted">
@@ -74,7 +65,7 @@ export const CodeBlock = ({ children }: CodeBlockProps) => {
           size="sm"
           className="h-6 px-2 font-sans text-caption"
           onPress={() => {
-            void copy();
+            void copyWithToast(code, t("codeBlock.copied"));
           }}
         >
           {t("codeBlock.copy")}

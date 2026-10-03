@@ -3,12 +3,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
+import {
+  updateMessagePages,
+  updateTimelineMessage,
+} from "#/features/message/utils/updateTimelineMessage";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
+import { toastError } from "#/lib/toastError";
 
 import { useUpdateListedThread } from "./useParticipatingThreads";
 
-import type { ListMessagesWithThreadResponse } from "#/gen/chat/v1/message_service_pb";
 import type { GetThreadMetadataResponse } from "#/gen/chat/v1/thread_service_pb";
 
 /** スレッドのフォローを切り替え、メタデータ・タイムライン・参加中の一覧のキャッシュに反映する */
@@ -16,8 +20,8 @@ export const useToggleThreadFollow = (threadId: string) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const updateListedThread = useUpdateListedThread();
-  const follow = useMutation(ThreadService.method.followThread);
-  const unfollow = useMutation(ThreadService.method.unfollowThread);
+  const follow = useMutation(ThreadService.method.followThread, { onError: toastError });
+  const unfollow = useMutation(ThreadService.method.unfollowThread, { onError: toastError });
 
   const setFollowing = (isFollowing: boolean) => {
     (isFollowing ? follow : unfollow).mutate(
@@ -34,22 +38,18 @@ export const useToggleThreadFollow = (threadId: string) => {
             },
             (res) => res?.metadata && { ...res, metadata: { ...res.metadata, isFollowing } },
           );
-          queryClient.setQueriesData<ListMessagesWithThreadResponse>(
-            {
-              queryKey: createConnectQueryKey({
-                cardinality: "finite",
-                schema: MessageService.method.listMessagesWithThread,
-              }),
-            },
-            (res) =>
-              res && {
-                ...res,
-                messages: res.messages.map((message) =>
-                  message.id === threadId && message.threadMetadata
-                    ? { ...message, threadMetadata: { ...message.threadMetadata, isFollowing } }
-                    : message,
-                ),
-              },
+          updateMessagePages(
+            queryClient,
+            createConnectQueryKey({
+              cardinality: "infinite",
+              schema: MessageService.method.listMessages,
+            }),
+            (items) =>
+              updateTimelineMessage(items, threadId, (message) =>
+                message.threadMetadata
+                  ? { ...message, threadMetadata: { ...message.threadMetadata, isFollowing } }
+                  : message,
+              ),
           );
           updateListedThread(threadId, (thread) => ({ ...thread, isFollowing }));
           toast(t(isFollowing ? "thread.follow.followed" : "thread.follow.unfollowed"));

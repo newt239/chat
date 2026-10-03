@@ -7,15 +7,13 @@ import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { UserSummary } from "./user_pb";
 import { file_chat_v1_user } from "./user_pb";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file chat/v1/custom_emoji_service.proto.
  */
 export const file_chat_v1_custom_emoji_service: GenFile = /*@__PURE__*/
-  fileDesc("CiJjaGF0L3YxL2N1c3RvbV9lbW9qaV9zZXJ2aWNlLnByb3RvEgdjaGF0LnYxIqgBCgtDdXN0b21FbW9qaRIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEhEKCWltYWdlX3VybBgDIAEoCRIoCgpjcmVhdGVkX2J5GAQgASgLMhQuY2hhdC52MS5Vc2VyU3VtbWFyeRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBISCgpjYW5fZGVsZXRlGAYgASgIIjgKF0xpc3RDdXN0b21FbW9qaXNSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQASJwChhMaXN0Q3VzdG9tRW1vamlzUmVzcG9uc2USJAoGZW1vamlzGAEgAygLMhQuY2hhdC52MS5DdXN0b21FbW9qaRIuCgpleHBpcmVzX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKsAQofUHJlc2lnbkN1c3RvbUVtb2ppVXBsb2FkUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAESSQoMY29udGVudF90eXBlGAIgASgJQjO6SDByLlIJaW1hZ2UvcG5nUglpbWFnZS9naWZSCmltYWdlL2pwZWdSCmltYWdlL3dlYnASHwoKc2l6ZV9ieXRlcxgDIAEoA0ILukgIIgYYgIAQIAAiSQogUHJlc2lnbkN1c3RvbUVtb2ppVXBsb2FkUmVzcG9uc2USEQoJdXBsb2FkX2lkGAEgASgJEhIKCnVwbG9hZF91cmwYAiABKAkifwoYQ3JlYXRlQ3VzdG9tRW1vamlSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARInCgRuYW1lGAIgASgJQhm6SBZyFDISXlthLXowLTlfLV17MSwzMn0kEhsKCXVwbG9hZF9pZBgDIAEoCUIIukgFcgOwAQEiQAoZQ3JlYXRlQ3VzdG9tRW1vamlSZXNwb25zZRIjCgVlbW9qaRgBIAEoCzIULmNoYXQudjEuQ3VzdG9tRW1vamkiVQoYRGVsZXRlQ3VzdG9tRW1vamlSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARIaCghlbW9qaV9pZBgCIAEoCUIIukgFcgOwAQEiGwoZRGVsZXRlQ3VzdG9tRW1vamlSZXNwb25zZTKWAwoSQ3VzdG9tRW1vamlTZXJ2aWNlElcKEExpc3RDdXN0b21FbW9qaXMSIC5jaGF0LnYxLkxpc3RDdXN0b21FbW9qaXNSZXF1ZXN0GiEuY2hhdC52MS5MaXN0Q3VzdG9tRW1vamlzUmVzcG9uc2USbwoYUHJlc2lnbkN1c3RvbUVtb2ppVXBsb2FkEiguY2hhdC52MS5QcmVzaWduQ3VzdG9tRW1vamlVcGxvYWRSZXF1ZXN0GikuY2hhdC52MS5QcmVzaWduQ3VzdG9tRW1vamlVcGxvYWRSZXNwb25zZRJaChFDcmVhdGVDdXN0b21FbW9qaRIhLmNoYXQudjEuQ3JlYXRlQ3VzdG9tRW1vamlSZXF1ZXN0GiIuY2hhdC52MS5DcmVhdGVDdXN0b21FbW9qaVJlc3BvbnNlEloKEURlbGV0ZUN1c3RvbUVtb2ppEiEuY2hhdC52MS5EZWxldGVDdXN0b21FbW9qaVJlcXVlc3QaIi5jaGF0LnYxLkRlbGV0ZUN1c3RvbUVtb2ppUmVzcG9uc2VCmAEKC2NvbS5jaGF0LnYxQhdDdXN0b21FbW9qaVNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_chat_v1_user, file_google_protobuf_timestamp]);
+  fileDesc("CiJjaGF0L3YxL2N1c3RvbV9lbW9qaV9zZXJ2aWNlLnByb3RvEgdjaGF0LnYxIngKC0N1c3RvbUVtb2ppEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJEigKCmNyZWF0ZWRfYnkYBCABKAsyFC5jaGF0LnYxLlVzZXJTdW1tYXJ5EhIKCmNhbl9kZWxldGUYBiABKAgiOAoXTGlzdEN1c3RvbUVtb2ppc1JlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABIkAKGExpc3RDdXN0b21FbW9qaXNSZXNwb25zZRIkCgZlbW9qaXMYASADKAsyFC5jaGF0LnYxLkN1c3RvbUVtb2ppIqwBCh9QcmVzaWduQ3VzdG9tRW1vamlVcGxvYWRSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARJJCgxjb250ZW50X3R5cGUYAiABKAlCM7pIMHIuUglpbWFnZS9wbmdSCWltYWdlL2dpZlIKaW1hZ2UvanBlZ1IKaW1hZ2Uvd2VicBIfCgpzaXplX2J5dGVzGAMgASgDQgu6SAgiBhiAgBAgACJJCiBQcmVzaWduQ3VzdG9tRW1vamlVcGxvYWRSZXNwb25zZRIRCgl1cGxvYWRfaWQYASABKAkSEgoKdXBsb2FkX3VybBgCIAEoCSJ/ChhDcmVhdGVDdXN0b21FbW9qaVJlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABEicKBG5hbWUYAiABKAlCGbpIFnIUMhJeW2EtejAtOV8tXXsxLDMyfSQSGwoJdXBsb2FkX2lkGAMgASgJQgi6SAVyA7ABASJAChlDcmVhdGVDdXN0b21FbW9qaVJlc3BvbnNlEiMKBWVtb2ppGAEgASgLMhQuY2hhdC52MS5DdXN0b21FbW9qaSJVChhEZWxldGVDdXN0b21FbW9qaVJlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABEhoKCGVtb2ppX2lkGAIgASgJQgi6SAVyA7ABASIbChlEZWxldGVDdXN0b21FbW9qaVJlc3BvbnNlMpYDChJDdXN0b21FbW9qaVNlcnZpY2USVwoQTGlzdEN1c3RvbUVtb2ppcxIgLmNoYXQudjEuTGlzdEN1c3RvbUVtb2ppc1JlcXVlc3QaIS5jaGF0LnYxLkxpc3RDdXN0b21FbW9qaXNSZXNwb25zZRJvChhQcmVzaWduQ3VzdG9tRW1vamlVcGxvYWQSKC5jaGF0LnYxLlByZXNpZ25DdXN0b21FbW9qaVVwbG9hZFJlcXVlc3QaKS5jaGF0LnYxLlByZXNpZ25DdXN0b21FbW9qaVVwbG9hZFJlc3BvbnNlEloKEUNyZWF0ZUN1c3RvbUVtb2ppEiEuY2hhdC52MS5DcmVhdGVDdXN0b21FbW9qaVJlcXVlc3QaIi5jaGF0LnYxLkNyZWF0ZUN1c3RvbUVtb2ppUmVzcG9uc2USWgoRRGVsZXRlQ3VzdG9tRW1vamkSIS5jaGF0LnYxLkRlbGV0ZUN1c3RvbUVtb2ppUmVxdWVzdBoiLmNoYXQudjEuRGVsZXRlQ3VzdG9tRW1vamlSZXNwb25zZUKYAQoLY29tLmNoYXQudjFCF0N1c3RvbUVtb2ppU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_chat_v1_user]);
 
 /**
  * @generated from message chat.v1.CustomEmoji
@@ -34,7 +32,7 @@ export type CustomEmoji = Message<"chat.v1.CustomEmoji"> & {
   name: string;
 
   /**
-   * 有効期限付きの URL。期限は ListCustomEmojisResponse.expires_at
+   * 有効期限付きの URL
    *
    * @generated from field: string image_url = 3;
    */
@@ -44,11 +42,6 @@ export type CustomEmoji = Message<"chat.v1.CustomEmoji"> & {
    * @generated from field: chat.v1.UserSummary created_by = 4;
    */
   createdBy?: UserSummary | undefined;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 5;
-   */
-  createdAt?: Timestamp | undefined;
 
   /**
    * 閲覧者が削除できるか
@@ -92,11 +85,6 @@ export type ListCustomEmojisResponse = Message<"chat.v1.ListCustomEmojisResponse
    * @generated from field: repeated chat.v1.CustomEmoji emojis = 1;
    */
   emojis: CustomEmoji[];
-
-  /**
-   * @generated from field: google.protobuf.Timestamp expires_at = 2;
-   */
-  expiresAt?: Timestamp | undefined;
 };
 
 /**
@@ -235,8 +223,7 @@ export const DeleteCustomEmojiResponseSchema: GenMessage<DeleteCustomEmojiRespon
   messageDesc(file_chat_v1_custom_emoji_service, 8);
 
 /**
- * ワークスペースのカスタム絵文字。メンバー全員が参照でき、登録は権限の設定に従う。削除は登録者と管理者だけができる。
- * 登録は PresignCustomEmojiUpload で得た URL に画像を PUT してから CreateCustomEmoji を呼ぶ
+ * カスタム絵文字。PresignCustomEmojiUpload の URL に画像を PUT してから CreateCustomEmoji で登録する
  *
  * @generated from service chat.v1.CustomEmojiService
  */

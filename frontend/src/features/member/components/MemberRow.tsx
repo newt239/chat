@@ -3,7 +3,7 @@ import { Button } from "react-aria-components";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { focusRing } from "#/components/ui/styles/styles";
-import { openPanel } from "#/features/layout/utils/overlaySearch";
+import { openPanel } from "#/lib/overlaySearch";
 
 type MemberRowProps = {
   userId: string;

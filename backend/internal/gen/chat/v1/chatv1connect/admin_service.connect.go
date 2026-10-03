@@ -56,7 +56,7 @@ type AdminServiceClient interface {
 	// 絞り込んだ監査ログを CSV で返す。書き出したこと自体も監査ログに残る
 	ExportAuditLogs(context.Context, *v1.ExportAuditLogsRequest) (*v1.ExportAuditLogsResponse, error)
 	ListAdminMembers(context.Context, *v1.ListAdminMembersRequest) (*v1.ListAdminMembersResponse, error)
-	// 停止するとリフレッシュトークンを失効させ、以降そのワークスペースの API を拒否する。投稿は残る
+	// 停止するとそのワークスペースの接続を切り、以降の API を拒否する。他のワークスペースで使えるようセッションは失効させない。投稿は残る
 	SuspendMember(context.Context, *v1.SuspendMemberRequest) (*v1.SuspendMemberResponse, error)
 	ResumeMember(context.Context, *v1.ResumeMemberRequest) (*v1.ResumeMemberResponse, error)
 }
@@ -165,7 +165,7 @@ type AdminServiceHandler interface {
 	// 絞り込んだ監査ログを CSV で返す。書き出したこと自体も監査ログに残る
 	ExportAuditLogs(context.Context, *v1.ExportAuditLogsRequest) (*v1.ExportAuditLogsResponse, error)
 	ListAdminMembers(context.Context, *v1.ListAdminMembersRequest) (*v1.ListAdminMembersResponse, error)
-	// 停止するとリフレッシュトークンを失効させ、以降そのワークスペースの API を拒否する。投稿は残る
+	// 停止するとそのワークスペースの接続を切り、以降の API を拒否する。他のワークスペースで使えるようセッションは失効させない。投稿は残る
 	SuspendMember(context.Context, *v1.SuspendMemberRequest) (*v1.SuspendMemberResponse, error)
 	ResumeMember(context.Context, *v1.ResumeMemberRequest) (*v1.ResumeMemberResponse, error)
 }

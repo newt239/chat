@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { contrastRatio } from "./color";
 import {
   buildTokens,
   colorTokenNames,
@@ -10,6 +9,20 @@ import {
 } from "./theme";
 
 import type { ColorMode, ThemeInput } from "./theme";
+
+// WCAG のコントラスト比
+const relativeLuminance = (hex: string) => {
+  const [r = 0, g = 0, b = 0] = [1, 3, 5].map((i) => {
+    const c = Number.parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+const contrastRatio = (a: string, b: string) => {
+  const [high, low] = [relativeLuminance(a), relativeLuminance(b)].toSorted((x, y) => y - x);
+  return ((high ?? 0) + 0.05) / ((low ?? 0) + 0.05);
+};
 
 const modes: ColorMode[] = ["light", "dark"];
 const presets = themePresetNames.map((name) => [name, themePresets[name]] as const);

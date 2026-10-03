@@ -1,14 +1,6 @@
-import type { AnyRouter, NavigateOptions } from "@tanstack/react-router";
+import type { NavigateOptions } from "@tanstack/react-router";
 
-let registeredRouter: Pick<AnyRouter, "navigate"> | null = null;
-
-export const registerRouter = (router: Pick<AnyRouter, "navigate">) => {
-  registeredRouter = router;
-};
-
+// router はルートを通じて session などを読み込み、静的に import すると循環するため遅延させる
 export const navigateTo = (options: NavigateOptions) => {
-  if (registeredRouter === null) {
-    return;
-  }
-  void registeredRouter.navigate(options);
+  void import("#/lib/router").then(({ router }) => router.navigate(options));
 };

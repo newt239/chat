@@ -13,10 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/user"
-	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 )
@@ -24,14 +22,12 @@ import (
 // WorkspaceQuery is the builder for querying Workspace entities.
 type WorkspaceQuery struct {
 	config
-	ctx            *QueryContext
-	order          []workspace.OrderOption
-	inters         []Interceptor
-	predicates     []predicate.Workspace
-	withCreatedBy  *UserQuery
-	withMembers    *WorkspaceMemberQuery
-	withChannels   *ChannelQuery
-	withUserGroups *UserGroupQuery
+	ctx           *QueryContext
+	order         []workspace.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Workspace
+	withCreatedBy *UserQuery
+	withMembers   *WorkspaceMemberQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -105,50 +101,6 @@ func (_q *WorkspaceQuery) QueryMembers() *WorkspaceMemberQuery {
 			sqlgraph.From(workspace.Table, workspace.FieldID, selector),
 			sqlgraph.To(workspacemember.Table, workspacemember.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, workspace.MembersTable, workspace.MembersColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryChannels chains the current query on the "channels" edge.
-func (_q *WorkspaceQuery) QueryChannels() *ChannelQuery {
-	query := (&ChannelClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, selector),
-			sqlgraph.To(channel.Table, channel.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, workspace.ChannelsTable, workspace.ChannelsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryUserGroups chains the current query on the "user_groups" edge.
-func (_q *WorkspaceQuery) QueryUserGroups() *UserGroupQuery {
-	query := (&UserGroupClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, selector),
-			sqlgraph.To(usergroup.Table, usergroup.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, workspace.UserGroupsTable, workspace.UserGroupsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -343,15 +295,13 @@ func (_q *WorkspaceQuery) Clone() *WorkspaceQuery {
 		return nil
 	}
 	return &WorkspaceQuery{
-		config:         _q.config,
-		ctx:            _q.ctx.Clone(),
-		order:          append([]workspace.OrderOption{}, _q.order...),
-		inters:         append([]Interceptor{}, _q.inters...),
-		predicates:     append([]predicate.Workspace{}, _q.predicates...),
-		withCreatedBy:  _q.withCreatedBy.Clone(),
-		withMembers:    _q.withMembers.Clone(),
-		withChannels:   _q.withChannels.Clone(),
-		withUserGroups: _q.withUserGroups.Clone(),
+		config:        _q.config,
+		ctx:           _q.ctx.Clone(),
+		order:         append([]workspace.OrderOption{}, _q.order...),
+		inters:        append([]Interceptor{}, _q.inters...),
+		predicates:    append([]predicate.Workspace{}, _q.predicates...),
+		withCreatedBy: _q.withCreatedBy.Clone(),
+		withMembers:   _q.withMembers.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -377,28 +327,6 @@ func (_q *WorkspaceQuery) WithMembers(opts ...func(*WorkspaceMemberQuery)) *Work
 		opt(query)
 	}
 	_q.withMembers = query
-	return _q
-}
-
-// WithChannels tells the query-builder to eager-load the nodes that are connected to
-// the "channels" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *WorkspaceQuery) WithChannels(opts ...func(*ChannelQuery)) *WorkspaceQuery {
-	query := (&ChannelClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withChannels = query
-	return _q
-}
-
-// WithUserGroups tells the query-builder to eager-load the nodes that are connected to
-// the "user_groups" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *WorkspaceQuery) WithUserGroups(opts ...func(*UserGroupQuery)) *WorkspaceQuery {
-	query := (&UserGroupClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withUserGroups = query
 	return _q
 }
 
@@ -480,11 +408,9 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 	var (
 		nodes       = []*Workspace{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [2]bool{
 			_q.withCreatedBy != nil,
 			_q.withMembers != nil,
-			_q.withChannels != nil,
-			_q.withUserGroups != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -515,20 +441,6 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 		if err := _q.loadMembers(ctx, query, nodes,
 			func(n *Workspace) { n.Edges.Members = []*WorkspaceMember{} },
 			func(n *Workspace, e *WorkspaceMember) { n.Edges.Members = append(n.Edges.Members, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withChannels; query != nil {
-		if err := _q.loadChannels(ctx, query, nodes,
-			func(n *Workspace) { n.Edges.Channels = []*Channel{} },
-			func(n *Workspace, e *Channel) { n.Edges.Channels = append(n.Edges.Channels, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withUserGroups; query != nil {
-		if err := _q.loadUserGroups(ctx, query, nodes,
-			func(n *Workspace) { n.Edges.UserGroups = []*UserGroup{} },
-			func(n *Workspace, e *UserGroup) { n.Edges.UserGroups = append(n.Edges.UserGroups, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -579,66 +491,6 @@ func (_q *WorkspaceQuery) loadMembers(ctx context.Context, query *WorkspaceMembe
 	}
 	query.Where(predicate.WorkspaceMember(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(workspace.MembersColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.WorkspaceID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "workspace_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *WorkspaceQuery) loadChannels(ctx context.Context, query *ChannelQuery, nodes []*Workspace, init func(*Workspace), assign func(*Workspace, *Channel)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[string]*Workspace)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(channel.FieldWorkspaceID)
-	}
-	query.Where(predicate.Channel(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(workspace.ChannelsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.WorkspaceID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "workspace_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *WorkspaceQuery) loadUserGroups(ctx context.Context, query *UserGroupQuery, nodes []*Workspace, init func(*Workspace), assign func(*Workspace, *UserGroup)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[string]*Workspace)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(usergroup.FieldWorkspaceID)
-	}
-	query.Where(predicate.UserGroup(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(workspace.UserGroupsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

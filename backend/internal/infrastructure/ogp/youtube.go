@@ -58,18 +58,15 @@ func (s *OGPService) fetchYouTube(ctx context.Context, videoID string) *entity.O
 	}
 	if data.ImageURL == nil {
 		data.ImageURL = nonEmpty("https://i.ytimg.com/vi/" + videoID + "/hqdefault.jpg")
-		data.ImageWidth, data.ImageHeight = parseInt32("480"), parseInt32("360")
 	}
 	data.SiteName = nonEmpty("YouTube")
 	return data
 }
 
 type oEmbedResponse struct {
-	Title           string `json:"title"`
-	AuthorName      string `json:"author_name"`
-	ThumbnailURL    string `json:"thumbnail_url"`
-	ThumbnailWidth  int32  `json:"thumbnail_width"`
-	ThumbnailHeight int32  `json:"thumbnail_height"`
+	Title        string `json:"title"`
+	AuthorName   string `json:"author_name"`
+	ThumbnailURL string `json:"thumbnail_url"`
 }
 
 func (s *OGPService) applyOEmbed(ctx context.Context, watchURL *url.URL, data *entity.OGPData) {
@@ -86,9 +83,7 @@ func (s *OGPService) applyOEmbed(ctx context.Context, watchURL *url.URL, data *e
 	}
 	data.Title = nonEmpty(oembed.Title)
 	data.YouTube.ChannelName = nonEmpty(oembed.AuthorName)
-	if data.ImageURL = nonEmpty(oembed.ThumbnailURL); data.ImageURL != nil {
-		data.ImageWidth, data.ImageHeight = &oembed.ThumbnailWidth, &oembed.ThumbnailHeight
-	}
+	data.ImageURL = nonEmpty(oembed.ThumbnailURL)
 }
 
 // parseISODuration は PT1H2M3S 形式の再生時間を秒にします。ライブ配信の P0D などは nil を返します

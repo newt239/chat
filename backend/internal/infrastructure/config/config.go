@@ -2,13 +2,10 @@ package config
 
 import (
 	"fmt"
-	"net"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -22,15 +19,11 @@ type Config struct {
 	Search   SearchConfig
 	Firebase FirebaseConfig
 	Redis    RedisConfig
-	// ScheduledMessage は予約投稿の送信処理。間隔を空けると DB にアクセスしない時間ができ、Neon などが停止できる
-	ScheduledMessage ScheduledMessageConfig
-}
-
-type ScheduledMessageConfig struct {
+	// DispatchInterval は予約投稿とリマインダーを確かめる間隔。間を空けると DB にアクセスしない時間ができ、Neon などが停止できる
 	DispatchInterval time.Duration
 }
 
-// RedisConfig はレプリカ間で WebSocket の配信・閲覧者一覧・レート制限を共有する Redis。未設定ならプロセス内で完結する
+// RedisConfig はレプリカ間で WebSocket の配信・閲覧者一覧・レート制限を共有する Redis
 type RedisConfig struct {
 	URL string
 }
@@ -49,30 +42,24 @@ type SearchConfig struct {
 // StorageConfig は添付ファイルの保存先。Driver は wasabi（S3 互換）か local（開発用）
 type StorageConfig struct {
 	Driver string
-	// local のときの保存先ディレクトリと、署名付き URL に使うバックエンドの公開 URL
-	LocalDir      string
+	// 画像の配信 URL と local の署名付き URL に使うバックエンドの公開 URL
 	PublicBaseURL string
 }
 
 type ServerConfig struct {
 	Port string
 	Env  string
-	// X-Forwarded-For を信頼するプロキシの CIDR。空ならループバックとプライベートネットワークを信頼する
-	TrustedProxies []string
 }
 
 type DatabaseConfig struct {
 	URL             string
 	MaxOpenConns    int
 	MaxIdleConns    int
-	ConnMaxLifetime time.Duration
 	ConnMaxIdleTime time.Duration
 }
 
 type JWTConfig struct {
-	Secret          string
-	AccessTokenTTL  int // minutes
-	RefreshTokenTTL int // days
+	Secret string
 }
 
 // AuthConfig は Google ログインとパスワード認証の設定。パスワード認証は production では既定で無効
@@ -97,27 +84,21 @@ type CORSConfig struct {
 	AllowedOrigins []string
 }
 
-func Load() (*Config, error) {
-	_ = godotenv.Load()
-
+func Load() *Config {
 	env := getEnv("ENV", "development")
-	cfg := &Config{
+	return &Config{
 		Server: ServerConfig{
-			Port:           getEnv("PORT", "8080"),
-			Env:            env,
-			TrustedProxies: getEnvList("TRUSTED_PROXIES", ""),
+			Port: getEnv("PORT", "8080"),
+			Env:  env,
 		},
 		Database: DatabaseConfig{
-			URL:             getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/chat?sslmode=disable"),
+			URL:             getEnv("DATABASE_URL", ""),
 			MaxOpenConns:    getEnvInt("DB_MAX_OPEN_CONNS", 10),
 			MaxIdleConns:    getEnvInt("DB_MAX_IDLE_CONNS", 5),
-			ConnMaxLifetime: getEnvDuration("DB_CONN_MAX_LIFETIME", 30*time.Minute),
 			ConnMaxIdleTime: getEnvDuration("DB_CONN_MAX_IDLE_TIME", 5*time.Minute),
 		},
 		JWT: JWTConfig{
-			Secret:          getEnv("JWT_SECRET", "change-me-in-production"),
-			AccessTokenTTL:  getEnvInt("JWT_ACCESS_TOKEN_TTL", 15),
-			RefreshTokenTTL: getEnvInt("JWT_REFRESH_TOKEN_TTL", 30),
+			Secret: getEnv("JWT_SECRET", "change-me-in-production"),
 		},
 		Auth: AuthConfig{
 			GoogleOAuthClientID: getEnv("GOOGLE_OAUTH_CLIENT_ID", ""),
@@ -129,8 +110,7 @@ func Load() (*Config, error) {
 		},
 		Storage: StorageConfig{
 			Driver:        getEnv("STORAGE_DRIVER", "wasabi"),
-			LocalDir:      getEnv("LOCAL_STORAGE_DIR", "tmp/storage"),
-			PublicBaseURL: getEnv("PUBLIC_BASE_URL", "http://localhost:"+getEnv("PORT", "8080")),
+			PublicBaseURL: getEnv("PUBLIC_BASE_URL", ""),
 		},
 		Wasabi: WasabiConfig{
 			Endpoint:        getEnv("WASABI_ENDPOINT", "https://s3.wasabisys.com"),
@@ -140,10 +120,10 @@ func Load() (*Config, error) {
 			SecretAccessKey: getEnv("WASABI_SECRET_ACCESS_KEY", ""),
 		},
 		CORS: CORSConfig{
-			AllowedOrigins: getEnvList("CORS_ALLOWED_ORIGINS", "http://localhost:5173"),
+			AllowedOrigins: getEnvList("CORS_ALLOWED_ORIGINS"),
 		},
 		Search: SearchConfig{
-			MeilisearchURL:    getEnv("MEILISEARCH_URL", "http://localhost:7700"),
+			MeilisearchURL:    getEnv("MEILISEARCH_URL", ""),
 			MeilisearchAPIKey: getEnv("MEILISEARCH_API_KEY", ""),
 		},
 		Firebase: FirebaseConfig{
@@ -152,12 +132,8 @@ func Load() (*Config, error) {
 		Redis: RedisConfig{
 			URL: getEnv("REDIS_URL", ""),
 		},
-		ScheduledMessage: ScheduledMessageConfig{
-			DispatchInterval: getEnvDuration("SCHEDULED_MESSAGE_DISPATCH_INTERVAL", 10*time.Second),
-		},
+		DispatchInterval: getEnvDuration("DISPATCH_INTERVAL", 10*time.Second),
 	}
-
-	return cfg, nil
 }
 
 func getEnv(key, defaultVal string) string {
@@ -168,8 +144,8 @@ func getEnv(key, defaultVal string) string {
 }
 
 // getEnvList はカンマ区切りの環境変数をリストとして読み込みます
-func getEnvList(key, defaultVal string) []string {
-	values := strings.Split(getEnv(key, defaultVal), ",")
+func getEnvList(key string) []string {
+	values := strings.Split(os.Getenv(key), ",")
 	result := make([]string, 0, len(values))
 	for _, value := range values {
 		if trimmed := strings.TrimSpace(value); trimmed != "" {
@@ -203,11 +179,6 @@ func getEnvBool(key string, defaultVal bool) bool {
 }
 
 func (c *Config) Validate() error {
-	for _, cidr := range c.Server.TrustedProxies {
-		if _, _, err := net.ParseCIDR(cidr); err != nil {
-			return fmt.Errorf("TRUSTED_PROXIES must be a list of CIDRs: %q", cidr)
-		}
-	}
 	if c.JWT.Secret == "change-me-in-production" && c.Server.Env == "production" {
 		return fmt.Errorf("JWT_SECRET must be set in production")
 	}
@@ -220,12 +191,10 @@ func (c *Config) Validate() error {
 	if c.Auth.GoogleOAuthClientID == "" && !c.Auth.PasswordAuthEnabled {
 		return fmt.Errorf("GOOGLE_OAUTH_CLIENT_ID or PASSWORD_AUTH_ENABLED must be set to allow login")
 	}
-	if c.Server.Env == "production" && os.Getenv("DATABASE_URL") == "" {
-		return fmt.Errorf("DATABASE_URL must be set in production")
-	}
-	// 本番は複数レプリカで動かすため、配信などを Redis で共有しないと他のレプリカの接続に届かない
-	if c.Server.Env == "production" && c.Redis.URL == "" {
-		return fmt.Errorf("REDIS_URL must be set in production")
+	for name, value := range map[string]string{"DATABASE_URL": c.Database.URL, "MEILISEARCH_URL": c.Search.MeilisearchURL, "REDIS_URL": c.Redis.URL, "PUBLIC_BASE_URL": c.Storage.PublicBaseURL} {
+		if value == "" {
+			return fmt.Errorf("%s must be set", name)
+		}
 	}
 	return nil
 }

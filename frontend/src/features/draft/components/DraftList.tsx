@@ -5,6 +5,7 @@ import { EmptyState } from "#/components/ui/EmptyState/EmptyState";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useConversationLabel } from "#/features/channel/hooks/useConversationLabel";
+import { toastError } from "#/lib/toastError";
 
 import { useDeleteDraft, useDrafts } from "../hooks/useDrafts";
 import { DraftListItem } from "./DraftListItem";
@@ -49,6 +50,7 @@ export const DraftList = ({ workspaceId }: DraftListProps) => {
             deleteDraft.mutate(
               { channelId: draft.channelId, parentId: draft.parentId },
               {
+                onError: toastError,
                 onSuccess: () => {
                   toast(t("draft.list.deleted"), { tone: "success" });
                 },

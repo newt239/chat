@@ -12,5 +12,4 @@ type AttachmentRepository interface {
 	FindPendingByIDsForUser(ctx context.Context, userID string, attachmentIDs []string) ([]*entity.Attachment, error)
 	CreatePending(ctx context.Context, attachment *entity.Attachment) error
 	AttachToMessage(ctx context.Context, attachmentIDs []string, messageID string) error
-	Delete(ctx context.Context, id string) error
 }

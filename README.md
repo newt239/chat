@@ -6,7 +6,7 @@
 # 1. Docker Desktopを起動
 # 2. 依存関係をインストール
 pnpm install
-# 3. アプリケーションを起動（スキーマのリセットとシードデータは自動実行されます）
+# 3. アプリケーションを起動（スキーマの適用と、DB が空なら初期データの作成は自動で行われます）
 pnpm start
 ```
 
@@ -41,11 +41,14 @@ pnpm start
 # アプリケーションを停止
 pnpm stop
 
-# データベーススキーマをリセット
+# データベースも含めて完全に削除
+docker compose down -v
+
+# データベースと検索インデックスをリセットしてシードし直す（起動中のコンテナで実行）
 pnpm db:reset
 
-# シードデータを投入（通常は自動実行されます）
-pnpm db:seed
+# 性能検証用に大量のメッセージを投入（初期データは起動時に自動で作られます）
+pnpm db:seed:bulk
 
 # バックエンドコードのリント
 docker compose exec backend golangci-lint run
@@ -82,19 +85,19 @@ pnpm run proto:format && pnpm run proto:lint && pnpm run generate:proto
 - **メールアドレス**: alice@example.com
 - **パスワード**: password123
 
-詳細なセットアップ手順は [ローカル環境のセットアップ](#ローカル環境のセットアップ) を参照してください。
-
 ## 技術スタック
 
 ### バックエンド
 
-- Go 1.27
+- Go 1.26
 - Echo
 - Connect RPC (connect-go) + Protocol Buffers
 - WebSocket (gorilla/websocket)
 - ent (ORM)
 - PostgreSQL 18
 - Redis（WebSocket の配信などをレプリカ間で共有）
+- Meilisearch（メッセージの全文検索）
+- FCM（プッシュ通知）
 - Wasabi
 
 ### フロントエンド
@@ -102,15 +105,18 @@ pnpm run proto:format && pnpm run proto:lint && pnpm run generate:proto
 - React 19
 - TypeScript 7
 - Vite+ (`vite-plus`) — Vite 8 / Vitest / Oxlint / Oxfmt を統合したツールチェーン
-- Mantine 8
-- Tailwind CSS 4
+- React Aria Components + Tailwind CSS 4
 - TanStack Router (ファイルベースルーティング / SPA)
 - TanStack Query + connect-query
+- Jotai（クライアント状態）
+- motion（アニメーション）
+- i18next（日本語・英語）
+- Tauri 2（デスクトップ・モバイルアプリ）
 - PWA (vite-plugin-pwa)
 
 ### 開発ツール
 
-- pnpm 11 (workspace) + Turborepo
+- pnpm 12 (workspace)
 - lefthook (pre-commit フック)
 - knip (未使用コード検出)
 - buf (`proto/` から Go と TypeScript のコードを生成)
@@ -126,102 +132,58 @@ pnpm run proto:format && pnpm run proto:lint && pnpm run generate:proto
 chat/
 ├── backend/          # Go backend
 │   ├── cmd/
-│   │   ├── server/  # Main application entry point
-│   │   ├── reset/   # Database schema reset tool
-│   │   └── seed/    # Seed data tool
+│   │   ├── server/   # API サーバー
+│   │   ├── reset/    # DB と検索インデックスのリセットとシード
+│   │   ├── reindex/  # 検索インデックスの作り直し
+│   │   └── seed/     # 大量データの投入
 │   ├── internal/
-│   │   ├── domain/         # Domain entities & repository interfaces
-│   │   ├── usecase/        # Business logic
-│   │   ├── interfaces/handler/
-│   │   │   ├── http/       # HTTP handlers & routes
-│   │   │   └── websocket/ # WebSocket hub & connections
+│   │   ├── domain/         # エンティティ・リポジトリのインターフェース・ドメインサービス
+│   │   ├── usecase/        # ユースケース
+│   │   ├── interfaces/
+│   │   │   ├── handler/
+│   │   │   │   ├── rpc/       # Connect RPC のサービス
+│   │   │   │   ├── httpapi/   # Webhook・OAuth コールバックなど RPC 以外の HTTP
+│   │   │   │   └── websocket/ # WebSocket の Hub と接続
+│   │   │   └── presenter/  # ユースケースの出力から proto への変換
+│   │   ├── registry/       # 依存関係の組み立て
 │   │   └── infrastructure/
-│   │       ├── auth/       # JWT & password hashing
-│   │       ├── config/     # Configuration management
-│   │       ├── database/   # ent client connection
-│   │       ├── logger/     # Zap logger setup
-│   │       ├── redis/      # Redis Pub/Sub・閲覧者・レート制限
-│   │       ├── repository/ # Repository implementation
-│   │       ├── storage/    # Wasabi S3 client
-│   │       └── utils/      # Utility functions
-│   └── ent/              # ent schema definitions & generated code
+│   │       ├── appwebhook/  # アプリの Webhook 送信
+│   │       ├── auth/        # JWT・パスワード・Google ログイン
+│   │       ├── config/      # 環境変数の読み込み
+│   │       ├── database/    # ent クライアントとマイグレーション
+│   │       ├── fcm/         # プッシュ通知の送信
+│   │       ├── meilisearch/ # メッセージの全文検索
+│   │       ├── ogp/         # リンクのプレビュー取得
+│   │       ├── redis/       # Pub/Sub・閲覧者・レート制限
+│   │       ├── repository/  # リポジトリの実装
+│   │       ├── safehttp/    # 内部アドレスに繋がない HTTP クライアント
+│   │       ├── seed/        # 開発用の初期データ
+│   │       ├── storage/     # Wasabi / ローカルのファイル保存
+│   │       └── transaction/ # トランザクション
+│   └── ent/              # ent のスキーマと生成コード
 ├── frontend/         # React frontend
 │   ├── src/
 │   │   ├── routes/   # TanStack Router のファイルベースルート定義
 │   │   ├── components/ # 汎用コンポーネント（ui/・block/）
-│   │   ├── features/ # Feature-based modules
+│   │   ├── features/ # 機能別モジュール
 │   │   ├── hooks/    # 複数の機能で使う hooks
 │   │   ├── providers/ # Jotai ストア・TanStack Query・WebSocket の Provider
-│   │   └── lib/      # API client, WS client, router など
-│   ├── tests/        # Vitest のセットアップ
+│   │   ├── lib/      # API client, WS client, router など
+│   │   └── test/     # Vitest のセットアップ
+│   ├── src-tauri/    # Tauri のネイティブ側
 │   └── public/       # Static assets（PWA アイコンの元になる logo.svg）
+├── packages/         # DOM に依存しない共有パッケージ（デザイントークン・i18n 辞書）
+├── infra/            # Terraform と Kubernetes のマニフェスト
+├── docs/             # インフラと Tauri の手順書
 ├── proto/            # Protocol Buffers の API 定義（buf で Go / TypeScript を生成）
 └── scripts/          # 開発用スクリプト
-
-```
-
-## ローカル環境のセットアップ
-
-### 起動方法
-
-#### 必要な環境
-
-- **Docker Desktop**
-
-#### 手順
-
-```bash
-# 1. リポジトリのクローン
-git clone <repository-url>
-cd chat
-
-# 2. アプリケーションを起動（スキーマのリセットとシードデータは自動実行されます）
-pnpm install
-pnpm start
-
-# 3. 起動完了後、https://chat.localhost にアクセス
-```
-
-#### 停止方法
-
-```bash
-# アプリケーションを停止
-pnpm stop
-
-# データベースも含めて完全削除
-docker compose down -v
-```
-
-### アプリケーションへアクセス
-
-ブラウザで https://chat.localhost にアクセスしてください。
-
-1. 初回は「新規登録」からアカウントを作成
-2. ログイン後、ワークスペースを作成して利用開始
-
-## 環境変数の設定
-
-### 環境変数ファイル
-
-バックエンドディレクトリの`.env.example`ファイルをコピーして`.env`ファイルを作成し、必要に応じて設定を変更してください。
-
-```bash
-cp backend/.env.example backend/.env
 ```
 
 ## データベース管理
 
 ### スキーマ管理
 
-このプロジェクトでは [ent](https://entgo.io/) を使用してデータベーススキーマを管理しています。
-
-```bash
-# データベーススキーマをリセット（全テーブルを再作成）
-docker compose exec backend go run cmd/reset/main.go
-
-# シードデータを投入（通常は自動実行されます）
-docker compose exec backend go run cmd/seed/main.go
-```
+このプロジェクトでは [ent](https://entgo.io/) を使用してデータベーススキーマを管理しています。リセットは `pnpm db:reset`、大量データの投入は `pnpm db:seed:bulk` で行います。
 
 ### スキーマの変更
 
@@ -236,45 +198,24 @@ docker compose exec backend go run cmd/seed/main.go
 
 **注意:** ent はコードファーストのアプローチを採用しており、SQL マイグレーションファイルを使用しません。スキーマの変更は全て Go コードで管理されます。
 
-### ER 図の生成と確認
-
-このプロジェクトでは [entviz](https://github.com/hedwigz/entviz) を使用して ER 図を自動生成できます。
-
-#### ER 図の更新手順
-
-スキーマを変更した際は、以下のコマンドで ER 図を更新します：
-
-```bash
-# ER図を生成（entのコード生成と同時に実行されます）
-docker compose exec backend go generate ./ent
-```
-
-#### ER 図の確認手順
-
-生成された ER 図を確認するには、`backend/ent/schema-viz.html` をブラウザで開いてください：
-
-```bash
-# Macの場合
-open backend/ent/schema-viz.html
-
-# Windowsの場合
-start backend/ent/schema-viz.html
-
-# Linuxの場合
-xdg-open backend/ent/schema-viz.html
-```
-
 ## CI
 
 プルリクエストに対して `.github/workflows/codecheck.yml` が以下を実行します。
 
 | ジョブ | 内容 |
 | --- | --- |
-| frontend | typecheck / Oxlint / Oxfmt / knip / Vitest / ビルド |
-| backend | `go build` と golangci-lint |
+| frontend | packages の codecheck / typecheck / Oxlint / Oxfmt / knip / Vitest / ビルド |
+| backend | `go build` / `go test` / golangci-lint |
 | proto | buf lint と format の検査、生成物が最新かを再生成して差分検証 |
 
-依存関係の更新は Dependabot が週次でまとめて PR を作成し、`dependabot-auto-merge.yml` が自動マージします。
+`.github/workflows/` のほかのワークフローも、関係するファイルを変えた PR で動きます。
+
+| ワークフロー | 内容 |
+| --- | --- |
+| `tauri.yml` | Tauri アプリの 4 プラットフォームの署名なしデバッグビルド |
+| `terraform.yml` | Terraform の fmt / validate / TFLint / plan と kustomize build |
+
+依存関係の更新は Dependabot が月次でまとめて PR を作成し、`dependabot-auto-merge.yml` が自動マージします。
 
 ## デプロイ
 

@@ -81,11 +81,6 @@ func ChannelType(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldChannelType, v))
 }
 
-// ArchivedAt applies equality check predicate on the "archived_at" field. It's identical to ArchivedAtEQ.
-func ArchivedAt(v time.Time) predicate.Channel {
-	return predicate.Channel(sql.FieldEQ(FieldArchivedAt, v))
-}
-
 // ParentID applies equality check predicate on the "parent_id" field. It's identical to ParentIDEQ.
 func ParentID(v uuid.UUID) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldParentID, v))
@@ -396,56 +391,6 @@ func ChannelTypeContainsFold(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldContainsFold(FieldChannelType, v))
 }
 
-// ArchivedAtEQ applies the EQ predicate on the "archived_at" field.
-func ArchivedAtEQ(v time.Time) predicate.Channel {
-	return predicate.Channel(sql.FieldEQ(FieldArchivedAt, v))
-}
-
-// ArchivedAtNEQ applies the NEQ predicate on the "archived_at" field.
-func ArchivedAtNEQ(v time.Time) predicate.Channel {
-	return predicate.Channel(sql.FieldNEQ(FieldArchivedAt, v))
-}
-
-// ArchivedAtIn applies the In predicate on the "archived_at" field.
-func ArchivedAtIn(vs ...time.Time) predicate.Channel {
-	return predicate.Channel(sql.FieldIn(FieldArchivedAt, vs...))
-}
-
-// ArchivedAtNotIn applies the NotIn predicate on the "archived_at" field.
-func ArchivedAtNotIn(vs ...time.Time) predicate.Channel {
-	return predicate.Channel(sql.FieldNotIn(FieldArchivedAt, vs...))
-}
-
-// ArchivedAtGT applies the GT predicate on the "archived_at" field.
-func ArchivedAtGT(v time.Time) predicate.Channel {
-	return predicate.Channel(sql.FieldGT(FieldArchivedAt, v))
-}
-
-// ArchivedAtGTE applies the GTE predicate on the "archived_at" field.
-func ArchivedAtGTE(v time.Time) predicate.Channel {
-	return predicate.Channel(sql.FieldGTE(FieldArchivedAt, v))
-}
-
-// ArchivedAtLT applies the LT predicate on the "archived_at" field.
-func ArchivedAtLT(v time.Time) predicate.Channel {
-	return predicate.Channel(sql.FieldLT(FieldArchivedAt, v))
-}
-
-// ArchivedAtLTE applies the LTE predicate on the "archived_at" field.
-func ArchivedAtLTE(v time.Time) predicate.Channel {
-	return predicate.Channel(sql.FieldLTE(FieldArchivedAt, v))
-}
-
-// ArchivedAtIsNil applies the IsNil predicate on the "archived_at" field.
-func ArchivedAtIsNil() predicate.Channel {
-	return predicate.Channel(sql.FieldIsNull(FieldArchivedAt))
-}
-
-// ArchivedAtNotNil applies the NotNil predicate on the "archived_at" field.
-func ArchivedAtNotNil() predicate.Channel {
-	return predicate.Channel(sql.FieldNotNull(FieldArchivedAt))
-}
-
 // ParentIDEQ applies the EQ predicate on the "parent_id" field.
 func ParentIDEQ(v uuid.UUID) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldParentID, v))
@@ -692,75 +637,6 @@ func HasMembers() predicate.Channel {
 func HasMembersWith(preds ...predicate.ChannelMember) predicate.Channel {
 	return predicate.Channel(func(s *sql.Selector) {
 		step := newMembersStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasMessages applies the HasEdge predicate on the "messages" edge.
-func HasMessages() predicate.Channel {
-	return predicate.Channel(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, MessagesTable, MessagesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasMessagesWith applies the HasEdge predicate on the "messages" edge with a given conditions (other predicates).
-func HasMessagesWith(preds ...predicate.Message) predicate.Channel {
-	return predicate.Channel(func(s *sql.Selector) {
-		step := newMessagesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasAttachments applies the HasEdge predicate on the "attachments" edge.
-func HasAttachments() predicate.Channel {
-	return predicate.Channel(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, AttachmentsTable, AttachmentsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAttachmentsWith applies the HasEdge predicate on the "attachments" edge with a given conditions (other predicates).
-func HasAttachmentsWith(preds ...predicate.Attachment) predicate.Channel {
-	return predicate.Channel(func(s *sql.Selector) {
-		step := newAttachmentsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasReadStates applies the HasEdge predicate on the "read_states" edge.
-func HasReadStates() predicate.Channel {
-	return predicate.Channel(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ReadStatesTable, ReadStatesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasReadStatesWith applies the HasEdge predicate on the "read_states" edge with a given conditions (other predicates).
-func HasReadStatesWith(preds ...predicate.ChannelReadState) predicate.Channel {
-	return predicate.Channel(func(s *sql.Selector) {
-		step := newReadStatesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

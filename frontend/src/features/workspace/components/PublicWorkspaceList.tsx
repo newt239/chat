@@ -1,17 +1,21 @@
+import { useQuery } from "@connectrpc/connect-query";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
-import {
-  useJoinPublicWorkspace,
-  usePublicWorkspaces,
-} from "#/features/workspace/hooks/usePublicWorkspaces";
+import { useWorkspaceMutation } from "#/features/workspace/hooks/useWorkspace";
+import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
+import { toastError } from "#/lib/toastError";
 
 import { WorkspaceLogo } from "./WorkspaceLogo";
 
 export const PublicWorkspaceList = () => {
   const { t } = useTranslation();
-  const { data: workspaces } = usePublicWorkspaces();
-  const join = useJoinPublicWorkspace();
+  const { data: workspaces } = useQuery(
+    WorkspaceService.method.listPublicWorkspaces,
+    {},
+    { select: (res) => res.workspaces },
+  );
+  const join = useWorkspaceMutation(WorkspaceService.method.joinPublicWorkspace);
   const joinable = workspaces?.filter((workspace) => !workspace.isJoined) ?? [];
 
   if (joinable.length === 0) {
@@ -39,7 +43,7 @@ export const PublicWorkspaceList = () => {
               variant="secondary"
               isPending={join.isPending && join.variables.workspaceId === workspace.id}
               onPress={() => {
-                join.mutate({ workspaceId: workspace.id });
+                join.mutate({ workspaceId: workspace.id }, { onError: toastError });
               }}
             >
               {t("workspace.list.join")}

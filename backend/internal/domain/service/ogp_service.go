@@ -8,5 +8,4 @@ import (
 
 type OGPService interface {
 	FetchOGP(ctx context.Context, url string) (*entity.OGPData, error)
-	ExtractURLs(text string) []string
 }

@@ -3,81 +3,35 @@ package message
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domerr "github.com/newt239/chat/internal/domain/errors"
-	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/domain/service"
 )
 
-// MessageDeleter はメッセージ削除を担当するユースケースです
-type MessageDeleter struct {
-	messageRepo      domainrepository.MessageRepository
-	userRepo         domainrepository.UserRepository
-	notificationSvc  Notifier
-	channelAccessSvc service.ChannelAccessService
-	permissionSvc    service.PermissionService
-	searchIndexer    SearchIndexer
-}
-
-func NewMessageDeleter(
-	messageRepo domainrepository.MessageRepository,
-	userRepo domainrepository.UserRepository,
-	notificationSvc Notifier,
-	channelAccessSvc service.ChannelAccessService,
-	permissionSvc service.PermissionService,
-	searchIndexer SearchIndexer,
-) *MessageDeleter {
-	return &MessageDeleter{
-		messageRepo:      messageRepo,
-		userRepo:         userRepo,
-		notificationSvc:  notificationSvc,
-		channelAccessSvc: channelAccessSvc,
-		permissionSvc:    permissionSvc,
-		searchIndexer:    searchIndexer,
-	}
-}
-
-// DeleteMessage はメッセージを削除します。他人のメッセージは権限設定で許可されたロールだけが削除できます
-func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageInput) error {
-	// メッセージ存在確認
-	message, err := d.messageRepo.FindByID(ctx, input.MessageID)
-	if err != nil {
-		return fmt.Errorf("failed to fetch message: %w", err)
-	}
-	if message == nil {
-		return domerr.ErrMessageNotFound
-	}
-
-	// チャンネルアクセス確認
-	channel, err := d.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.ExecutorID)
+// DeleteMessage はメッセージとスレッドの返信を削除します。他人のメッセージは権限設定で許可されたロールだけが削除できます
+func (i *Interactor) DeleteMessage(ctx context.Context, input MessageInput) error {
+	message, channel, err := i.channelAccessSvc.EnsureMessageAccess(ctx, input.MessageID, input.UserID)
 	if err != nil {
 		return err
 	}
-
-	// 既に削除済みの場合はエラー
 	if message.DeletedAt != nil {
 		return ErrMessageAlreadyDeleted
 	}
-
-	if err := ensureNotOfficial(ctx, d.userRepo, message); err != nil {
-		return err
+	author, err := i.userRepo.FindByID(ctx, message.UserID)
+	if err != nil {
+		return fmt.Errorf("failed to load author: %w", err)
 	}
-
-	// 他人のメッセージは権限設定で許可されたロールだけが削除できる
-	if message.UserID != input.ExecutorID {
-		if _, err := d.permissionSvc.Ensure(ctx, channel.WorkspaceID, input.ExecutorID, entity.PermissionDeleteOthersMessages); err != nil {
+	if author != nil && author.IsOfficial {
+		return ErrOfficialMessage
+	}
+	if message.UserID != input.UserID {
+		if _, err := i.permissionSvc.Ensure(ctx, channel.WorkspaceID, input.UserID, entity.PermissionDeleteOthersMessages); err != nil {
 			return err
 		}
 	}
 
-	// 削除対象メッセージIDのリストを作成
 	deleteIDs := []string{message.ID}
-
-	// スレッド親メッセージの場合、子メッセージも削除
 	if message.ParentID == nil {
-		replies, err := d.messageRepo.FindThreadReplies(ctx, message.ID, 0, nil, nil, true)
+		replies, err := i.messageRepo.FindThreadReplies(ctx, message.ID, 0, nil, nil, true)
 		if err != nil {
 			return fmt.Errorf("failed to fetch replies: %w", err)
 		}
@@ -85,9 +39,7 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 			deleteIDs = append(deleteIDs, reply.ID)
 		}
 	}
-
-	// ソフトデリート実行
-	if err := d.messageRepo.SoftDeleteByIDs(ctx, deleteIDs, input.ExecutorID); err != nil {
+	if err := i.messageRepo.SoftDeleteByIDs(ctx, deleteIDs, input.UserID); err != nil {
 		return fmt.Errorf("failed to delete messages: %w", err)
 	}
 
@@ -96,12 +48,8 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 	if message.ParentID != nil {
 		indexIDs = append(indexIDs, *message.ParentID)
 	}
-	d.searchIndexer.Sync(ctx, indexIDs...)
+	i.searchIndexer.Sync(ctx, indexIDs...)
 
-	d.notificationSvc.NotifyDeletedMessage(channel.WorkspaceID, channel.ID, MessageDeletion{
-		MessageID:  message.ID,
-		DeletedIDs: deleteIDs,
-		DeletedAt:  time.Now(),
-	})
+	i.notifier.NotifyDeletedMessage(channel.WorkspaceID, channel.ID, deleteIDs)
 	return nil
 }
