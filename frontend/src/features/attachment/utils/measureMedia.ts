@@ -3,7 +3,7 @@ import { mediaKindOf } from "./mediaKind";
 
 import type { VideoThumbnail } from "./captureVideoFrame";
 
-export type MediaSize = {
+type MediaSize = {
   width?: number;
   height?: number;
   durationSeconds?: number;

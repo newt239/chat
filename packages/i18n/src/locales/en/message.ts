@@ -109,8 +109,6 @@ export const message: Messages["message"] = {
     descriptionChanged: "The channel description was updated",
     memberAdded: "{{user}} was added by {{by}}",
     memberJoined: "{{user}} joined",
-    memberLeft: "{{user}} left",
-    memberRemoved: "{{user}} was removed from the channel",
     messagePinned: "{{user}} pinned <target>a message</target>",
     nameChanged: "The channel was renamed from “{{from}}” to “{{to}}”",
     privacyChanged: "The channel visibility changed from {{from}} to {{to}}",

@@ -2,18 +2,15 @@ import { useEffect } from "react";
 
 import { createConnectQueryKey } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
 
 import { channelListKey } from "#/features/channel/hooks/useChannel";
-import { pinListKey } from "#/features/pin/hooks/usePinActions";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
-import { myUserIdAtom } from "#/providers/store/auth";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
 import type { Channel, ListChannelsResponse } from "#/gen/chat/v1/channel_service_pb";
 
 /**
- * WebSocket イベントからチャンネル一覧の未読バッジ・最新メッセージの日時とピン件数を更新する。 表示中のチャンネルは既読として扱うため未読を加算しない。
+ * WebSocket イベントからチャンネル一覧の未読バッジ・最新メッセージの日時を更新する。 表示中のチャンネルは既読として扱うため未読を加算しない。
  * 再接続したら切断中に届かなかった分を取り直す。
  */
 export const useChannelRealtimeSync = (
@@ -22,7 +19,6 @@ export const useChannelRealtimeSync = (
 ) => {
   const queryClient = useQueryClient();
   const wsClient = useWsClient();
-  const currentUserId = useAtomValue(myUserIdAtom);
 
   useEffect(() => {
     if (!wsClient || workspaceId === null) {
@@ -69,19 +65,6 @@ export const useChannelRealtimeSync = (
           unreadCount,
         }));
       }),
-
-      // 自分の操作は usePinActions で取り直すため二重に取らない
-      wsClient.on("pinCreated", ({ channelId, pinnedBy }) => {
-        if (pinnedBy !== currentUserId) {
-          void queryClient.invalidateQueries({ queryKey: pinListKey(channelId) });
-        }
-      }),
-
-      wsClient.on("pinDeleted", ({ channelId, pinnedBy }) => {
-        if (pinnedBy !== currentUserId) {
-          void queryClient.invalidateQueries({ queryKey: pinListKey(channelId) });
-        }
-      }),
     ];
 
     return () => {
@@ -89,5 +72,5 @@ export const useChannelRealtimeSync = (
         unsubscribe();
       }
     };
-  }, [wsClient, workspaceId, currentChannelId, queryClient, currentUserId]);
+  }, [wsClient, workspaceId, currentChannelId, queryClient]);
 };

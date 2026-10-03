@@ -6,16 +6,13 @@ import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Link } from "#/components/ui/Link/Link";
 import { lastSegment } from "#/features/channel/utils/channelPath";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
-import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
-import { toPlainText } from "#/features/message/utils/markdown/plainText";
+import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
+import { messageLocation } from "#/features/message/utils/messageLocation";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 
 import type { MessageLink } from "#/gen/chat/v1/message_pb";
-
-const showLinkClassName =
-  "rounded-md px-1.5 py-0.5 text-xs font-semibold no-underline data-hovered:bg-hover";
 
 type MessageQuoteCardProps = {
   link: MessageLink;
@@ -24,7 +21,7 @@ type MessageQuoteCardProps = {
 // 同じワークスペースのメッセージへのリンクを引用カードにする。閲覧できないメッセージは何も出さない
 export const MessageQuoteCard = ({ link }: MessageQuoteCardProps) => {
   const { t } = useTranslation();
-  const { toText } = useMentionDirectory();
+  const { toExcerpt } = useMentionDirectory();
   const displayName = useDisplayName();
   const { formatDateTime } = useDateFormat();
   const { workspaceId } = useParams({ strict: false });
@@ -42,7 +39,6 @@ export const MessageQuoteCard = ({ link }: MessageQuoteCardProps) => {
     return null;
   }
   const name = displayName(preview.user?.id ?? "", preview.user?.displayName ?? "");
-  const excerpt = toPlainText(toText(preview.bodyExcerpt));
 
   return (
     <div className="flex w-130 max-w-full flex-col gap-1 rounded-lg border border-border bg-surface px-3 py-2 font-sans">
@@ -54,28 +50,20 @@ export const MessageQuoteCard = ({ link }: MessageQuoteCardProps) => {
         </span>
       </div>
       <p className="m-0 line-clamp-3 text-body-sm leading-normal">
-        {excerpt || <span className="text-muted">{t("link.quote.attachmentOnly")}</span>}
+        {toExcerpt(preview.bodyExcerpt)}
       </p>
       <div className="flex justify-end">
-        {preview.parentId === undefined ? (
-          <Link
-            to="/app/$workspaceId/$channelId"
-            params={{ channelId: preview.channelId, workspaceId }}
-            search={{ message: preview.messageId }}
-            className={showLinkClassName}
-          >
-            {t("link.quote.show")}
-          </Link>
-        ) : (
-          <Link
-            to="/app/$workspaceId/$channelId/thread/$messageId"
-            params={{ channelId: preview.channelId, messageId: preview.parentId, workspaceId }}
-            search={{ message: preview.messageId }}
-            className={showLinkClassName}
-          >
-            {t("link.quote.show")}
-          </Link>
-        )}
+        <Link
+          {...messageLocation({
+            channelId: preview.channelId,
+            messageId: preview.messageId,
+            parentId: preview.parentId,
+            workspaceId,
+          })}
+          className="rounded-md px-1.5 py-0.5 text-xs font-semibold no-underline data-hovered:bg-hover"
+        >
+          {t("link.quote.show")}
+        </Link>
       </div>
     </div>
   );

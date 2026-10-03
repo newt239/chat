@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useEffectEvent } from "react";
 
 import { IconChevronLeft, IconChevronRight, IconDownload, IconX } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -12,7 +12,7 @@ import { useIsMobile } from "#/hooks/useMediaQuery";
 import { transitions } from "#/lib/motion";
 import { toDate } from "#/lib/timestamp";
 
-import { useAttachmentUrl } from "../api/client";
+import { useAttachmentUrl } from "../hooks/useAttachmentUrl";
 import { AttachmentImage } from "./AttachmentImage";
 
 import type { Message, MessageAttachment } from "#/gen/chat/v1/message_pb";
@@ -47,22 +47,24 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
   };
 
   // 左右キーで前後の画像へ移る。Esc で閉じるのは Modal が扱う
+  const moveByKey = useEffectEvent((event: KeyboardEvent) => {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      move(event.key === "ArrowLeft" ? -1 : 1);
+    }
+  });
+  const isLightboxOpen = index !== null;
   useEffect(() => {
-    if (index === null || !hasMany) {
+    if (!isLightboxOpen || !hasMany) {
       return undefined;
     }
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-        onIndexChange(
-          (index + (event.key === "ArrowLeft" ? -1 : 1) + images.length) % images.length,
-        );
-      }
+      moveByKey(event);
     };
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [index, hasMany, images.length, onIndexChange]);
+  }, [isLightboxOpen, hasMany]);
 
   const isTall =
     image?.media?.width !== undefined &&

@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 
 import { IconChevronRight } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
@@ -31,23 +31,16 @@ export const CreateChannelModal = ({ workspaceId, parentId, onClose }: CreateCha
   const { t } = useTranslation();
   const navigate = useNavigate();
   const formId = useId();
-  const [name, setName] = useState("");
+  const [editedName, setEditedName] = useState<string | null>(null);
   const [description, setDescription] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [editedIsPrivate, setEditedIsPrivate] = useState<boolean | null>(null);
   const [isTouched, setIsTouched] = useState(false);
   const { data: channels } = useChannels(workspaceId);
   const createChannel = useCreateChannel();
   const parent = channels?.find((channel) => channel.id === parentId);
-  const parentName = parent?.name;
-  const isParentPrivate = parent?.isPrivate ?? false;
-
-  // 親を指定して開いたら、一覧が読み込まれた時点で親のパスと公開範囲を初期値にする
-  useEffect(() => {
-    if (parentName !== undefined) {
-      setName(`${parentName}/`);
-      setIsPrivate(isParentPrivate);
-    }
-  }, [parentName, isParentPrivate]);
+  // 親を指定して開いたら、親のパスと公開範囲を初期値にする
+  const name = editedName ?? (parent === undefined ? "" : `${parent.name}/`);
+  const isPrivate = editedIsPrivate ?? parent?.isPrivate ?? false;
 
   const existingNames = (channels ?? []).map((channel) => channel.name);
   const error = validateChannelPath(name, existingNames);
@@ -110,7 +103,7 @@ export const CreateChannelModal = ({ workspaceId, parentId, onClose }: CreateCha
           label={t("channel.create.name")}
           prefix="#"
           value={name}
-          onChange={setName}
+          onChange={setEditedName}
           placeholder="dev/frontend"
           description={t("channel.create.nameHint")}
           errorMessage={
@@ -149,7 +142,7 @@ export const CreateChannelModal = ({ workspaceId, parentId, onClose }: CreateCha
           rows={2}
         />
         <div className="flex flex-col gap-0.5">
-          <Switch isSelected={isPrivate} onChange={setIsPrivate}>
+          <Switch isSelected={isPrivate} onChange={setEditedIsPrivate}>
             {t("channel.create.private")}
           </Switch>
           <span className="pl-11 text-caption text-muted">{t("channel.create.privateHint")}</span>

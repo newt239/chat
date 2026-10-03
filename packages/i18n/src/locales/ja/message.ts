@@ -107,8 +107,6 @@ export const message = {
     descriptionChanged: "チャンネルの説明が更新されました",
     memberAdded: "{{user}} が {{by}} によって追加されました",
     memberJoined: "{{user}} が参加しました",
-    memberLeft: "{{user}} が退出しました",
-    memberRemoved: "{{user}} がチャンネルから外されました",
     messagePinned: "{{user}} が<target>メッセージ</target>をピン留めしました",
     nameChanged: "チャンネル名が「{{from}}」から「{{to}}」に変わりました",
     privacyChanged: "チャンネルの公開設定が {{from}} から {{to}} に変わりました",

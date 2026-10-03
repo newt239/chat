@@ -1,19 +1,18 @@
 import { ConnectError } from "@connectrpc/connect";
+import { useMutation } from "@connectrpc/connect-query";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
-import {
-  useDeleteMessage,
-  useInvalidateThreadMetadata,
-  useUpdateMessage,
-} from "#/features/message/hooks/useMessage";
+import { MessageService } from "#/gen/chat/v1/message_service_pb";
+
+import { useInvalidateThreadMetadata } from "./useMessage";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 
 export const useMessageActions = () => {
   const { t } = useTranslation();
-  const updateMessage = useUpdateMessage();
-  const deleteMessage = useDeleteMessage();
+  const updateMessage = useMutation(MessageService.method.updateMessage);
+  const deleteMessage = useMutation(MessageService.method.deleteMessage);
   const invalidateThreadMetadata = useInvalidateThreadMetadata();
 
   const handleEdit = async (messageId: string, nextBody: string) => {

@@ -1,11 +1,12 @@
+import { useMutation } from "@connectrpc/connect-query";
 import { IconDownload, IconLoader2 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { AttachmentService } from "#/gen/chat/v1/attachment_service_pb";
 import { openExternal } from "#/lib/platform/openExternal";
 
-import { useDownloadUrl } from "../api/client";
 import { formatFileSize } from "../utils/validator";
 import { FileIcon } from "./FileIcon";
 
@@ -17,7 +18,7 @@ type FileAttachmentProps = {
 
 export const FileAttachment = ({ attachment }: FileAttachmentProps) => {
   const { t } = useTranslation();
-  const downloadMutation = useDownloadUrl();
+  const downloadMutation = useMutation(AttachmentService.method.getDownloadUrl);
 
   const handleDownload = async () => {
     try {

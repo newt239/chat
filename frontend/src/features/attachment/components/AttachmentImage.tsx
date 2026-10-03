@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { cn } from "#/components/ui/styles/styles";
 
-import { useAttachmentUrl } from "../api/client";
+import { useAttachmentUrl } from "../hooks/useAttachmentUrl";
 
 type AttachmentImageProps = {
   attachmentId: string;

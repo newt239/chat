@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 
 import { CustomEmoji } from "#/features/customEmoji/components/CustomEmoji";
-
-import { ChannelLink } from "./ChannelLink";
-import { Mention } from "./Mention";
+import { ChannelLink } from "#/features/mention/components/ChannelLink";
+import { Mention } from "#/features/mention/components/Mention";
 
 type MarkdownSpanProps = {
   className?: string;

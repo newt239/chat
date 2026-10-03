@@ -6,8 +6,8 @@ import { Link } from "#/components/ui/Link/Link";
 import { MemberRow } from "#/features/member/components/MemberRow";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
+import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { MessageListCard } from "#/features/message/components/MessageListCard";
-import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { excerpt } from "#/features/search/utils/excerpt";
 import { splitHighlights } from "#/features/search/utils/splitHighlights";
 

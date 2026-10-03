@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "#/components/ui/Badge/Badge";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
-import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
+import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
+import { messageLocation } from "#/features/message/utils/messageLocation";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 
@@ -39,25 +40,13 @@ export const DraftListItem = ({ workspaceId, draft, label, onDelete }: DraftList
           {toText(draft.body)}
         </p>
       </div>
-      {parentId === undefined ? (
-        <LinkButton
-          variant="secondary"
-          size="sm"
-          to="/app/$workspaceId/$channelId"
-          params={{ channelId, workspaceId }}
-        >
-          {t("draft.list.open")}
-        </LinkButton>
-      ) : (
-        <LinkButton
-          variant="secondary"
-          size="sm"
-          to="/app/$workspaceId/$channelId/thread/$messageId"
-          params={{ channelId, messageId: parentId, workspaceId }}
-        >
-          {t("draft.list.open")}
-        </LinkButton>
-      )}
+      <LinkButton
+        variant="secondary"
+        size="sm"
+        {...messageLocation({ channelId, messageId: undefined, parentId, workspaceId })}
+      >
+        {t("draft.list.open")}
+      </LinkButton>
       <IconButton
         label={t("draft.list.delete")}
         onPress={onDelete}

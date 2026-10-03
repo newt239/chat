@@ -20,29 +20,22 @@ export const useMessageViewportDetection = ({
   includeDescendants,
 }: UseMessageViewportDetectionArgs) => {
   const [element, setElement] = useState<HTMLElement | null>(null);
-  const updateReadState = useUpdateReadState(workspaceId);
-  const updateReadStateRef = useRef(updateReadState);
-  const hasMarkedAsRead = useRef(false);
-
-  useEffect(() => {
-    updateReadStateRef.current = updateReadState;
-  }, [updateReadState]);
-
-  useEffect(() => {
-    hasMarkedAsRead.current = false;
-  }, [channelId, latestMessageId, includeDescendants]);
+  const { mutate: updateReadState } = useUpdateReadState(workspaceId);
+  // 既読にした対象。チャンネルや最新のメッセージが変わったらまた既読にする
+  const markedKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (element === null || channelId === null || latestMessageId === null) {
       return undefined;
     }
 
+    const key = `${channelId}:${latestMessageId}:${String(includeDescendants)}`;
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        if (entry?.isIntersecting && !hasMarkedAsRead.current) {
-          hasMarkedAsRead.current = true;
-          updateReadStateRef.current.mutate({
+        if (entry?.isIntersecting && markedKeyRef.current !== key) {
+          markedKeyRef.current = key;
+          updateReadState({
             channelId,
             includeDescendants,
             lastReadAt: timestampNow(),
@@ -60,7 +53,7 @@ export const useMessageViewportDetection = ({
     return () => {
       observer.disconnect();
     };
-  }, [element, channelId, latestMessageId, includeDescendants]);
+  }, [element, channelId, latestMessageId, includeDescendants, updateReadState]);
 
   return { latestMessageRef: setElement };
 };

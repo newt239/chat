@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { Form, TextArea, TextField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { AttachmentList } from "#/features/attachment/components/AttachmentList";
+import { AttachmentListItem } from "#/features/attachment/components/AttachmentListItem";
 import { useFileUpload } from "#/features/attachment/hooks/useFileUpload";
 import { useExecuteCommand } from "#/features/command/hooks/useExecuteCommand";
 import { findCommand, unescapeCommand } from "#/features/command/utils/commands";
@@ -13,34 +13,41 @@ import { useDraftAutosave } from "#/features/draft/hooks/useDraftAutosave";
 import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
 import { LocationShareDialog } from "#/features/location/components/LocationShareDialog";
 import { PendingLocation } from "#/features/location/components/PendingLocation";
+import { useMentionCodec } from "#/features/mention/hooks/useMentionCodec";
 import { PollComposerDialog } from "#/features/poll/components/PollComposerDialog";
 import { VoiceRecorder } from "#/features/recorder/components/VoiceRecorder";
 import { useScheduleMessage } from "#/features/schedule/hooks/useScheduledMessages";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 
 import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
-import { useMentionCodec } from "../hooks/useMentionCodec";
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
 import { continueList, detectActiveFormats, insertEmoji, toggleFormat } from "../utils/format";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
 import { SuggestionList } from "./SuggestionList";
 
-import type { ComposerContent } from "../utils/composerContent";
 import type { FormatKey, Selection } from "../utils/format";
 
-import type { MessageLocation } from "#/gen/chat/v1/message_pb";
+import type { MessageLocation, PollInput } from "#/gen/chat/v1/message_pb";
+
+// 入力欄から送る内容。CreateMessage の入力にそのまま広げて使う
+export type ComposerContent = {
+  body: string;
+  attachmentIds: string[];
+  location: MessageLocation | undefined;
+  poll: PollInput | undefined;
+};
 
 type BaseMessageInputProps = {
   onSubmit: (content: ComposerContent) => void;
   placeholder: string;
   isPending: boolean;
-  error?: string;
+  error: string | null;
   channelId: string;
   // スレッドへの返信の欄のときの親メッセージ。下書きの置き場所に使う
   parentId: string | null;
   // 集約表示中の投稿先の切り替え。入力欄の上に出す
-  targetPicker?: ReactNode;
+  targetPicker: ReactNode;
 };
 
 const urlPattern = /https?:\/\/[^\s<>"{}|\\^`[\]]+/g;
@@ -52,11 +59,11 @@ export const BaseMessageInput = ({
   error,
   channelId,
   parentId,
-  targetPicker = null,
+  targetPicker,
 }: BaseMessageInputProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const [body, setBody] = useState("");
+  const [typedBody, setTypedBody] = useState<string | null>(null);
   const [selection, setSelection] = useState({ end: 0, start: 0 });
   const [isPreview, setIsPreview] = useState(false);
   const [location, setLocation] = useState<MessageLocation | undefined>(undefined);
@@ -64,6 +71,16 @@ export const BaseMessageInput = ({
   const [isPollOpen, setIsPollOpen] = useState(false);
   const [isRecorderOpen, setIsRecorderOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { notifyTyping, notifyStopTyping } = useTypingNotifier(channelId);
+  const {
+    discard: discardDraft,
+    initialBody: draftBody,
+    save: saveDraft,
+  } = useDraftAutosave(channelId, parentId);
+  const mentionCodec = useMentionCodec();
+  const { decode, encode, isReady: isCodecReady } = mentionCodec;
+  // 打ち始めるまでは書きかけの下書きを出す。名前に戻せるようメンバーを読んでから戻す
+  const body = typedBody ?? (draftBody !== null && isCodecReady ? decode(draftBody) : "");
   // 本文の URL ごとにプレビューを出す。閉じたものは本文に残っていても出さない
   const [dismissedUrls, setDismissedUrls] = useState<string[]>([]);
   const previewUrls = [...new Set(body.match(urlPattern))].filter(
@@ -77,30 +94,12 @@ export const BaseMessageInput = ({
     getCompletedAttachmentIds,
     isUploading,
   } = useFileUpload();
-  const { notifyTyping, notifyStopTyping } = useTypingNotifier(channelId);
-  const {
-    discard: discardDraft,
-    initialBody: draftBody,
-    save: saveDraft,
-  } = useDraftAutosave(channelId, parentId);
-  const isRestoredRef = useRef(false);
   const scheduleMessage = useScheduleMessage();
-  const mentionCodec = useMentionCodec();
   const executeCommand = useExecuteCommand();
   const isBusy = isPending || executeCommand.isPending;
-  const { decode, encode, isReady: isCodecReady } = mentionCodec;
-
-  // 開き直したときに書きかけを戻す。読み込み前に打ち始めていたら上書きしない。名前に戻せるようメンバーを読んでから戻す
-  useEffect(() => {
-    if (draftBody === null || !isCodecReady || isRestoredRef.current) {
-      return;
-    }
-    isRestoredRef.current = true;
-    setBody((current) => (current === "" ? decode(draftBody) : current));
-  }, [draftBody, isCodecReady, decode]);
 
   const handleBodyChange = (next: string) => {
-    setBody(next);
+    setTypedBody(next);
     notifyTyping();
     saveDraft(encode(next));
   };
@@ -175,7 +174,7 @@ export const BaseMessageInput = ({
   const resetComposer = () => {
     notifyStopTyping();
     discardDraft();
-    setBody("");
+    setTypedBody("");
     setLocation(undefined);
     setIsPreview(false);
     setDismissedUrls([]);
@@ -230,7 +229,17 @@ export const BaseMessageInput = ({
       {targetPicker}
       <div className="relative rounded-lg border border-border-strong bg-surface focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
         {pendingAttachments.length > 0 && (
-          <AttachmentList attachments={pendingAttachments} onRemove={removeAttachment} />
+          <div className="flex flex-wrap gap-1.5 px-2.5 pt-2">
+            {pendingAttachments.map((attachment) => (
+              <AttachmentListItem
+                key={attachment.id}
+                attachment={attachment}
+                onRemove={() => {
+                  removeAttachment(attachment.id);
+                }}
+              />
+            ))}
+          </div>
         )}
         {isRecorderOpen && (
           <VoiceRecorder

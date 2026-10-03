@@ -18,11 +18,11 @@ import { FIRST_MESSAGE, jumpPresets, startOfDateKey } from "../utils/dateJump";
 type DateDividerProps = {
   dateKey: string;
   // 一覧の上端に重ねて、表示中の日付を示す。線は出さない
-  floating?: boolean;
+  floating: boolean;
 };
 
 // その日の投稿の上に置く区切り。押すと別の日へ移動できる
-export const DateDivider = ({ dateKey, floating = false }: DateDividerProps) => {
+export const DateDivider = ({ dateKey, floating }: DateDividerProps) => {
   const { t } = useTranslation();
   const { formatDateWithWeekday, timeZone } = useDateFormat();
   const navigate = useNavigate();

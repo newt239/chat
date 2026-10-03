@@ -1,8 +1,8 @@
 import { visit } from "unist-util-visit";
 
-import { splitMentionTokens } from "../../mentionToken";
+import { splitMentionTokens } from "#/features/mention/utils/mentionToken";
 
-import type { MentionPart } from "../../mentionToken";
+import type { MentionPart } from "#/features/mention/utils/mentionToken";
 
 import type { Root, RootContent, Text } from "mdast";
 

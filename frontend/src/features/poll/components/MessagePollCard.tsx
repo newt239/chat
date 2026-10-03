@@ -10,7 +10,7 @@ import { Badge } from "#/components/ui/Badge/Badge";
 import { Button } from "#/components/ui/Button/Button";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
+import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { PollMode } from "#/gen/chat/v1/message_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";

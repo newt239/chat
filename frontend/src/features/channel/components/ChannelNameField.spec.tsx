@@ -16,6 +16,7 @@ const Field = ({ errorMessage }: { errorMessage: string | null }) => {
       onChange={setValue}
       description="説明文"
       errorMessage={errorMessage}
+      placeholder=""
     />
   );
 };

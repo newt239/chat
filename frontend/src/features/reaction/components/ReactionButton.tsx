@@ -7,10 +7,12 @@ import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { transitions } from "#/lib/motion";
 
 import { useFormatReactors } from "../hooks/useFormatReactors";
-import { reactionPillClassName } from "../styles";
 import { ReactionEmoji } from "./ReactionEmoji";
 
-import type { ReactionGroup } from "#/features/reaction/types/reactionGroup";
+import type { ReactionGroup } from "../utils/groupReactions";
+
+const reactionPillClassName =
+  "inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border border-border bg-sunken px-1.75 font-sans text-xs text-muted tabular-nums data-hovered:border-border-strong";
 
 type ReactionButtonProps = {
   group: ReactionGroup;

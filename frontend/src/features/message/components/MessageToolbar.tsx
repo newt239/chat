@@ -13,7 +13,7 @@ import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { EmojiPickerPopover } from "#/features/reaction/components/EmojiPickerPopover";
 
-import { quickReactions } from "../utils/quickReactions";
+import { quickReactions } from "../hooks/useMessageMenuActions";
 
 import type { MessageMenuAction } from "../hooks/useMessageMenuActions";
 
@@ -65,6 +65,8 @@ export const MessageToolbar = ({
         }
         onSelect={onReact}
         onOpenChange={onOverlayOpenChange}
+        label={t("reaction.add")}
+        placement="bottom end"
       />
       <Separator orientation="vertical" className="mx-0.5 my-1 w-px bg-border" />
       <IconButton

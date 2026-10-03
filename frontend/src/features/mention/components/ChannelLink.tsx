@@ -5,8 +5,10 @@ import { useTranslation } from "react-i18next";
 import { Link } from "#/components/ui/Link/Link";
 import { cn } from "#/components/ui/styles/styles";
 
-import { useMentionDirectory } from "../../hooks/useMentionDirectory";
-import { chipClassName } from "./chipClassName";
+import { useMentionDirectory } from "../hooks/useMentionDirectory";
+
+const chipClassName =
+  "inline cursor-pointer rounded-sm bg-accent-soft px-0.75 font-semibold text-accent-text no-underline";
 
 type ChannelLinkProps = {
   "data-channel": string;

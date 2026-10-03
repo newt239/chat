@@ -20,5 +20,5 @@ export const LinkPreviewEmbed = ({ link }: LinkPreviewEmbedProps) => {
   if (link.ogp?.xPost !== undefined) {
     return <XPostCard url={link.url} ogp={link.ogp} post={link.ogp.xPost} />;
   }
-  return link.ogp?.title ? <OgpCard url={link.url} ogp={link.ogp} /> : null;
+  return link.ogp?.title ? <OgpCard url={link.url} ogp={link.ogp} onRemove={null} /> : null;
 };

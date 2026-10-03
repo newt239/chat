@@ -109,6 +109,7 @@ export const MessageInputToolbar = ({
         <EmojiPickerPopover
           label={t("message.composer.emoji")}
           placement="top start"
+          onOpenChange={null}
           onSelect={(emoji) => {
             hasPickedEmojiRef.current = true;
             onInsertEmoji(emoji);

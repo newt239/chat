@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useMembers } from "#/features/member/hooks/useMembers";
+import { toPlainText } from "#/features/message/utils/markdown/plainText";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
@@ -55,12 +56,17 @@ export const useMentionDirectory = () => {
           : `@${t(token.kind === "group" ? "message.mention.unknownGroup" : "message.mention.unknownUser")}`),
     );
 
+  // 一覧やシートに出す 1 行の抜粋
+  const toExcerpt = (body: string) =>
+    toPlainText(toText(body)) || t("message.sheet.attachmentOnly");
+
   return {
     channel,
     group,
     isReady: members !== undefined && groups !== undefined && channels !== undefined,
     labelOf,
     member,
+    toExcerpt,
     toText,
     workspaceId,
   };

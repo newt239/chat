@@ -11,13 +11,12 @@ export const useHighlightedMessage = (
   targetMessageId: string | null,
   scrollToMessage: (messageId: string) => boolean,
 ) => {
-  const [isHighlightExpired, setIsHighlightExpired] = useState(false);
+  const [expiredMessageId, setExpiredMessageId] = useState<string | null>(null);
   const scrolledMessageIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setIsHighlightExpired(false);
     const timer = setTimeout(() => {
-      setIsHighlightExpired(true);
+      setExpiredMessageId(targetMessageId);
     }, HIGHLIGHT_DURATION_MS);
 
     return () => {
@@ -38,5 +37,5 @@ export const useHighlightedMessage = (
     }
   }, [isReady, targetMessageId, scrollToMessage]);
 
-  return isHighlightExpired ? null : targetMessageId;
+  return expiredMessageId === targetMessageId ? null : targetMessageId;
 };

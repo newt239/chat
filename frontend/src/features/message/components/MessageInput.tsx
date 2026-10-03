@@ -9,7 +9,7 @@ import { useChannelAggregation } from "#/features/channel/hooks/useChannelAggreg
 import { useSendMessage } from "../hooks/useMessage";
 import { BaseMessageInput } from "./BaseMessageInput";
 
-import type { ComposerContent } from "../utils/composerContent";
+import type { ComposerContent } from "./BaseMessageInput";
 
 type MessageInputProps = {
   channelId: string | null;
@@ -50,7 +50,7 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
           : t("message.composer.placeholder")
       }
       isPending={sendMessage.isPending}
-      error={sendMessage.isError ? sendMessage.error.message : undefined}
+      error={sendMessage.isError ? sendMessage.error.message : null}
       channelId={targetId}
       parentId={null}
       targetPicker={
@@ -59,7 +59,7 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
           <PostTargetPicker
             parent={channel}
             descendants={descendants}
-            value={target.id}
+            value={target}
             onChange={setSelectedId}
           />
         )

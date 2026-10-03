@@ -3,8 +3,11 @@ import { useEffect } from "react";
 import { create } from "@bufbuild/protobuf";
 import { timestampNow } from "@bufbuild/protobuf/wkt";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 
+import { pinListKey } from "#/features/pin/hooks/usePinActions";
 import { MessagePinSchema, ReactionSchema, TimelineItemSchema } from "#/gen/chat/v1/message_pb";
+import { myUserIdAtom } from "#/providers/store/auth";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
 import { messagePagesKey } from "./useMessagePages";
@@ -60,6 +63,7 @@ export const useChannelTimeline = ({
 }: UseChannelTimelineArgs) => {
   const queryClient = useQueryClient();
   const wsClient = useWsClient();
+  const myId = useAtomValue(myUserIdAtom);
   const descendantKey = [...new Set(descendantIds)].toSorted().join(",");
 
   useEffect(() => {
@@ -99,6 +103,13 @@ export const useChannelTimeline = ({
           ? [item, ...current]
           : current,
       );
+    };
+
+    // ピンの一覧も取り直す。自分の操作は usePinActions で取り直すため二重に取らない
+    const invalidatePins = (eventChannelId: string, pinnedBy: string) => {
+      if (pinnedBy !== myId) {
+        void queryClient.invalidateQueries({ queryKey: pinListKey(eventChannelId) });
+      }
     };
 
     const unsubscribes = [
@@ -181,7 +192,8 @@ export const useChannelTimeline = ({
 
       wsClient.on(
         "pinCreated",
-        ({ channelId: eventChannelId, messageId, pinnedByUser, pinnedAt }) => {
+        ({ channelId: eventChannelId, messageId, pinnedBy, pinnedByUser, pinnedAt }) => {
+          invalidatePins(eventChannelId, pinnedBy);
           updatePages(eventChannelId, (current) =>
             updateMessage(current, messageId, (message) => ({
               ...message,
@@ -191,7 +203,8 @@ export const useChannelTimeline = ({
         },
       ),
 
-      wsClient.on("pinDeleted", ({ channelId: eventChannelId, messageId }) => {
+      wsClient.on("pinDeleted", ({ channelId: eventChannelId, messageId, pinnedBy }) => {
+        invalidatePins(eventChannelId, pinnedBy);
         updatePages(eventChannelId, (current) =>
           updateMessage(current, messageId, (message) => ({ ...message, pin: undefined })),
         );
@@ -206,7 +219,7 @@ export const useChannelTimeline = ({
         wsClient.leaveChannel(id);
       }
     };
-  }, [wsClient, queryClient, channelId, includeDescendants, descendantKey]);
+  }, [wsClient, queryClient, channelId, includeDescendants, descendantKey, myId]);
 
   // ページの境目で重なった項目を除き、古い順にする
   const seen = new Set<string>();

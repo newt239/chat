@@ -98,7 +98,7 @@ export const useRightPanel = (workspaceId: string) => {
     }
     if (isThreadOpen) {
       return {
-        body: <ThreadPanel workspaceId={workspaceId} channelId={channelId} threadId={messageId} />,
+        body: <ThreadPanel channelId={channelId} threadId={messageId} />,
         extra: (
           <>
             {isFollowingThread !== undefined && (

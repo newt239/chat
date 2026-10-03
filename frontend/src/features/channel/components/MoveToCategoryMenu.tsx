@@ -25,11 +25,7 @@ export const MoveToCategoryMenu = ({ workspaceId, channel, channels }: MoveToCat
   const navigate = useNavigate();
   const { data: categories = [] } = useChannelCategories(workspaceId);
   const { setChannel } = useChannelCategoryActions(workspaceId);
-  const current = categoryOfChannel(
-    channel,
-    channels,
-    new Map(categories.flatMap((category) => category.channelIds.map((id) => [id, category.id]))),
-  );
+  const current = categoryOfChannel(channel, channels, categories);
   const moveTo = (categoryId: string | undefined, name: string) => {
     setChannel.mutate(
       { categoryId, channelId: channel.id },

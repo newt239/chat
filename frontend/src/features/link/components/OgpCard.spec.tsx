@@ -13,6 +13,7 @@ describe("OgpCard", () => {
       <OgpCard
         url="https://example.com/post"
         ogp={create(OgpDataSchema, { description: "説明", siteName: "Example", title: "記事" })}
+        onRemove={null}
       />,
     );
 

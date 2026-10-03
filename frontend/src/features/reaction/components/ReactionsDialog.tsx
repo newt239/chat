@@ -8,15 +8,13 @@ import { Tab } from "#/components/ui/Tab/Tab";
 import { TabList } from "#/components/ui/TabList/TabList";
 import { TabPanel } from "#/components/ui/TabPanel/TabPanel";
 import { Tabs } from "#/components/ui/Tabs/Tabs";
-import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
-import { toPlainText } from "#/features/message/utils/markdown/plainText";
+import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useToggleReaction } from "../hooks/useReactions";
-import { groupReactions } from "../utils/groupReactions";
-import { ALL_REACTIONS_TAB } from "../utils/reactionTabs";
+import { ALL_REACTIONS_TAB, groupReactions } from "../utils/groupReactions";
 import { ReactionEmoji } from "./ReactionEmoji";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
@@ -31,10 +29,10 @@ type ReactionsDialogProps = {
 // 誰がいつどのリアクションを付けたかの一覧。新しい順に並べる
 export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogProps) => {
   const { t } = useTranslation();
-  const { toText } = useMentionDirectory();
+  const { toExcerpt } = useMentionDirectory();
   const { formatDateTime } = useDateFormat();
   const currentUserId = useAtomValue(myUserIdAtom);
-  const toggleReaction = useToggleReaction(message.id);
+  const toggleReaction = useToggleReaction(message);
   const groups = groupReactions(message.reactions, currentUserId);
   const rows = message.reactions.toSorted(
     (a, b) => toDate(b.createdAt).getTime() - toDate(a.createdAt).getTime(),
@@ -57,8 +55,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
       title={t("reaction.list.title")}
     >
       <p className="-mt-1 mb-0 truncate text-label font-normal text-muted">
-        {message.user?.displayName}:{" "}
-        {toPlainText(toText(message.body)) || t("message.sheet.attachmentOnly")}
+        {message.user?.displayName}: {toExcerpt(message.body)}
       </p>
       <Tabs
         selectedKey={selectedTab}
@@ -114,7 +111,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
                           variant="secondary"
                           size="sm"
                           onPress={() => {
-                            toggleReaction(row.emoji, true);
+                            toggleReaction(row.emoji);
                           }}
                         >
                           {t("reaction.list.undo")}

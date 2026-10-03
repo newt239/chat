@@ -1,4 +1,4 @@
-export type SuggestionQuery = {
+type SuggestionQuery = {
   trigger: "@" | "#" | "/";
   query: string;
   // トリガー文字の位置

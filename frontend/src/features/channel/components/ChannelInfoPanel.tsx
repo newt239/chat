@@ -143,10 +143,8 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
       <ChannelAppsSection workspaceId={workspaceId} channelId={activeChannel.id} />
       <ChannelSettingsPanel
         key={activeChannel.id}
-        channelId={activeChannel.id}
-        initialName={activeChannel.name}
-        initialDescription={activeChannel.description ?? null}
-        initialIsPrivate={activeChannel.isPrivate}
+        workspaceId={workspaceId}
+        channel={activeChannel}
       />
     </div>
   );

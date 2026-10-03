@@ -1,6 +1,7 @@
 import { IconPin } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
+import { EmptyState } from "#/components/ui/EmptyState/EmptyState";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { MessageLinkCard } from "#/features/message/components/MessageLinkCard";
 import { usePinnedMessages } from "#/features/pin/hooks/usePinnedMessages";
@@ -29,10 +30,7 @@ export const PinnedPanel = ({ workspaceId, channelId }: PinnedPanelProps) => {
 
   if (pins.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 p-8 font-sans text-body text-muted">
-        <IconPin aria-hidden className="size-10 text-subtle" />
-        {t("pin.empty")}
-      </div>
+      <EmptyState icon={<IconPin />} title={t("pin.empty")} description={t("pin.emptyHint")} />
     );
   }
 

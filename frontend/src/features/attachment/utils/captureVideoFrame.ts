@@ -10,7 +10,7 @@ const JPEG_QUALITY = 0.8;
 // 冒頭は暗転していることが多いため、少し進めた位置を使う
 const SEEK_SECONDS = 1;
 
-export const fitThumbnail = (width: number, height: number) => {
+const fitThumbnail = (width: number, height: number) => {
   const scale = Math.min(1, MAX_EDGE / Math.max(width, height));
   return {
     height: Math.max(1, Math.round(height * scale)),

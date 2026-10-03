@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { IconBookmarkFilled, IconPin } from "@tabler/icons-react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -20,7 +20,7 @@ import { MessagePollCard } from "#/features/poll/components/MessagePollCard";
 import { ReactionList } from "#/features/reaction/components/ReactionList";
 import { ReactionsDialog } from "#/features/reaction/components/ReactionsDialog";
 import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
-import { ALL_REACTIONS_TAB } from "#/features/reaction/utils/reactionTabs";
+import { ALL_REACTIONS_TAB } from "#/features/reaction/utils/groupReactions";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 import { toDate } from "#/lib/timestamp";
 import { myUserIdAtom } from "#/providers/store/auth";
@@ -40,25 +40,23 @@ import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
 type MessageItemProps = {
   message: Message;
-  onCopyLink: (messageId: string) => void;
-  onCreateThread: (messageId: string) => void;
-  threadMetadata?: ThreadMetadata;
-  isHighlighted?: boolean;
+  threadMetadata: ThreadMetadata | undefined;
+  isHighlighted: boolean;
   // 親チャンネルの集約表示で、子孫チャンネルのメッセージに付けるチップ
-  channelChip?: ReactNode;
+  channelChip: ReactNode;
 };
 
 export const MessageItem = ({
   message,
-  onCopyLink,
-  onCreateThread,
   threadMetadata,
-  isHighlighted = false,
-  channelChip = null,
+  isHighlighted,
+  channelChip,
 }: MessageItemProps) => {
   const { t } = useTranslation();
   const myId = useAtomValue(myUserIdAtom);
   const navigate = useNavigate();
+  const { workspaceId } = workspaceRoute.useParams();
+  const routeChannelId = useParams({ select: (params) => params.channelId, strict: false });
   const isMobile = useIsMobile();
   const ownsOverlay = useOwnsMessageOverlay(message.id);
   // リアクション一覧（?reactions=&emoji=）と操作シート（?sheet=）は URL で開く
@@ -92,40 +90,40 @@ export const MessageItem = ({
     void navigate({ search: openDialog({ sheet: message.id }), to: "." });
   }, isMobile && !isEditing);
   const { handleEdit, handleDelete, isDeleting } = useMessageActions();
-  const toggleReaction = useToggleReaction(message.id);
+  const react = useToggleReaction(message);
   // グループ経由は投稿時点のメンバーに展開済み。@channel / @here はチャンネルのメンバー全員宛て
   const isMentioned =
     message.mentionsChannel ||
     message.mentionsHere ||
     message.mentions.some((mention) => mention.userId === myId);
 
+  // 返信からもスレッド全体を開く。集約表示では開いているチャンネルのままスレッドを開く
+  const openThread = () => {
+    void navigate({
+      params: {
+        channelId: routeChannelId ?? message.channelId,
+        messageId: message.parentId ?? message.id,
+        workspaceId,
+      },
+      to: "/app/$workspaceId/$channelId/thread/$messageId",
+    });
+  };
+
   const { actions, isBookmarked, toggleBookmark } = useMessageMenuActions({
     isAuthor: message.userId === myId,
     message,
-    onCopyLink: () => {
-      onCopyLink(message.id);
-    },
     onDelete: () => {
       setIsDeleteOpen(true);
     },
     onEdit: () => {
       setIsEditing(true);
     },
-    onReplyInThread: () => {
-      onCreateThread(message.id);
-    },
+    onReplyInThread: openThread,
     onViewReactions: () => {
       setReactionTab(ALL_REACTIONS_TAB);
     },
     threadMetadata,
   });
-
-  const react = (emoji: string) => {
-    toggleReaction(
-      emoji,
-      message.reactions.some((reaction) => reaction.emoji === emoji && reaction.user?.id === myId),
-    );
-  };
 
   const openProfile = () => {
     void navigate({ search: openPanel({ profile: message.userId }), to: "." });
@@ -253,19 +251,10 @@ export const MessageItem = ({
         )}
         {!message.isDeleted && <MessageAttachments message={message} />}
 
-        <ReactionList
-          messageId={message.id}
-          reactions={message.reactions}
-          onOpenList={setReactionTab}
-        />
+        <ReactionList message={message} onOpenList={setReactionTab} />
 
         {threadMetadata && threadMetadata.replyCount > 0 && (
-          <ThreadMetadataPreview
-            metadata={threadMetadata}
-            onPress={() => {
-              onCreateThread(message.id);
-            }}
-          />
+          <ThreadMetadataPreview metadata={threadMetadata} onPress={openThread} />
         )}
       </div>
 
@@ -274,9 +263,7 @@ export const MessageItem = ({
           actions={actions}
           isBookmarked={isBookmarked}
           onToggleBookmark={toggleBookmark}
-          onReplyInThread={() => {
-            onCreateThread(message.id);
-          }}
+          onReplyInThread={openThread}
           onReact={react}
           onOverlayOpenChange={setIsOverlayOpen}
         />

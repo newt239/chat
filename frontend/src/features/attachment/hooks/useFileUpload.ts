@@ -1,14 +1,23 @@
 import { useState } from "react";
 
+import { useMutation } from "@connectrpc/connect-query";
 import { useTranslation } from "react-i18next";
 
+import { AttachmentService } from "#/gen/chat/v1/attachment_service_pb";
 import { putToStorage } from "#/lib/upload";
 
-import { usePresignUpload } from "../api/client";
 import { measureMedia } from "../utils/measureMedia";
 import { formatFileSize, validateFile } from "../utils/validator";
 
-import type { PendingAttachment } from "../api/types";
+export type PendingAttachment = {
+  id: string;
+  file: File;
+  state:
+    | { status: "presigning" }
+    | { status: "uploading"; progress: number }
+    | { status: "completed"; attachmentId: string }
+    | { status: "error"; error: string };
+};
 
 type UploadOptions = {
   channelId: string;
@@ -18,7 +27,7 @@ type UploadOptions = {
 
 export const useFileUpload = () => {
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
-  const presignMutation = usePresignUpload();
+  const presignMutation = useMutation(AttachmentService.method.presignUpload);
   const { t } = useTranslation();
 
   // 並行して上げても互いの行を上書きしないよう、添付ごとの id で更新する

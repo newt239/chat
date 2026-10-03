@@ -7,7 +7,7 @@ import { toast } from "#/components/ui/ToastRegion/toast";
 import { ScheduledMessageService } from "#/gen/chat/v1/scheduled_message_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 
-import type { ComposerContent } from "#/features/message/utils/composerContent";
+import type { ComposerContent } from "#/features/message/components/BaseMessageInput";
 
 export const useScheduledMessages = (workspaceId: string) =>
   useQuery(

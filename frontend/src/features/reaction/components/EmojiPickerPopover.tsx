@@ -20,9 +20,10 @@ type EmojiPickerPopoverProps = {
   // React Aria の Button（IconButton など）
   trigger: ReactElement;
   onSelect: (emoji: string) => void;
-  onOpenChange?: (isOpen: boolean) => void;
-  label?: string;
-  placement?: "bottom end" | "top start";
+  // 開いている間はメッセージのツールバーを残すなど、呼び出し側で開閉を知りたいとき
+  onOpenChange: ((isOpen: boolean) => void) | null;
+  label: string;
+  placement: "bottom end" | "top start";
 };
 
 export const EmojiPickerPopover = ({
@@ -30,7 +31,7 @@ export const EmojiPickerPopover = ({
   onSelect,
   onOpenChange,
   label,
-  placement = "bottom end",
+  placement,
 }: EmojiPickerPopoverProps) => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ strict: false });
@@ -48,11 +49,7 @@ export const EmojiPickerPopover = ({
     <>
       <DialogTrigger isOpen={isOpen} onOpenChange={changeOpen}>
         {trigger}
-        <Popover
-          aria-label={label ?? t("reaction.add")}
-          placement={placement}
-          className="flex flex-col overflow-hidden"
-        >
+        <Popover aria-label={label} placement={placement} className="flex flex-col overflow-hidden">
           <EmojiPicker
             onEmojiSelect={(emoji) => {
               onSelect(emoji);

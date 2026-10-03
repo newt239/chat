@@ -1,12 +1,10 @@
 import { useMutation } from "@connectrpc/connect-query";
-import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "#/components/ui/Badge/Badge";
 import { Link } from "#/components/ui/Link/Link";
 import { MessageItem } from "#/features/message/components/MessageItem";
 import { MessageListCard } from "#/features/message/components/MessageListCard";
-import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
 import { useUpdateListedThread } from "#/features/thread/hooks/useParticipatingThreads";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
 
@@ -24,23 +22,20 @@ type ThreadCardProps = {
 // 親の投稿・最新の返信・返信の入力欄を並べる。返信は一覧のキャッシュに足してすぐ表示する
 export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const markThreadRead = useMutation(ThreadService.method.markThreadRead);
   const updateThread = useUpdateListedThread();
   const { firstMessage, threadId } = thread;
   const { channelId } = firstMessage;
-  const handleCopyLink = useCopyMessageLink(workspaceId, channelId);
-  const openThread = () => {
-    void navigate({
-      params: { channelId, messageId: threadId, workspaceId },
-      to: "/app/$workspaceId/$channelId/thread/$messageId",
-    });
-  };
   const hiddenCount = thread.replyCount - thread.latestReplies.length;
 
   return (
     <MessageListCard workspaceId={workspaceId} message={firstMessage}>
-      <MessageItem message={firstMessage} onCopyLink={handleCopyLink} onCreateThread={openThread} />
+      <MessageItem
+        message={firstMessage}
+        threadMetadata={undefined}
+        isHighlighted={false}
+        channelChip={null}
+      />
       <div className="flex items-center gap-2 pr-3 pl-15 max-md:pl-3">
         <Link
           to="/app/$workspaceId/$channelId/thread/$messageId"
@@ -65,18 +60,17 @@ export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
           <Badge tone="accent">{t("inbox.thread.unread", { count: thread.unreadCount })}</Badge>
         )}
         {/* 解除しても一覧からはすぐに消さず、押し直せるようにする */}
-        <ThreadFollowButton
-          className="ml-auto"
-          threadId={threadId}
-          isFollowing={thread.isFollowing}
-        />
+        <span className="ml-auto">
+          <ThreadFollowButton threadId={threadId} isFollowing={thread.isFollowing} />
+        </span>
       </div>
       {thread.latestReplies.map((reply) => (
         <MessageItem
           key={reply.id}
           message={reply}
-          onCopyLink={handleCopyLink}
-          onCreateThread={openThread}
+          threadMetadata={undefined}
+          isHighlighted={false}
+          channelChip={null}
         />
       ))}
       <div className="pt-1">

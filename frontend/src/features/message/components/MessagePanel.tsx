@@ -7,7 +7,6 @@ import { ChannelChip } from "#/features/channel/components/ChannelChip";
 import { useChannelAggregation } from "#/features/channel/hooks/useChannelAggregation";
 import { useChannelThreadMetadata } from "#/features/message/hooks/useChannelThreadMetadata";
 import { useChannelTimeline } from "#/features/message/hooks/useChannelTimeline";
-import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
 import { useMessagePages } from "#/features/message/hooks/useMessagePages";
 import { useMessageViewportDetection } from "#/features/message/hooks/useMessageViewportDetection";
 import { startOfDateKey } from "#/features/message/utils/dateJump";
@@ -106,32 +105,23 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     (around && orderedItems.find((item) => toDate(item.createdAt) >= around)?.content.value?.id) ??
     null;
 
-  const handleCopyLink = useCopyMessageLink(workspaceId, channelId);
-
-  const handleOpenThread = (messageId: string) => {
-    void navigate({
-      params: { channelId, messageId, workspaceId },
-      to: "/app/$workspaceId/$channelId/thread/$messageId",
-    });
-  };
-
   const renderMessage = (msg: Message, isHighlighted: boolean) => (
-    <MessageItem
-      message={msg}
-      onCopyLink={handleCopyLink}
-      onCreateThread={handleOpenThread}
-      threadMetadata={threadMetadataById.get(msg.id)}
-      isHighlighted={isHighlighted}
-      channelChip={
-        channel && msg.channelId !== channel.id ? (
-          <ChannelChip
-            workspaceId={workspaceId}
-            parentName={channel.name}
-            channelId={msg.channelId}
-          />
-        ) : null
-      }
-    />
+    <div ref={msg.id === latestUserMessageId ? latestMessageRef : undefined}>
+      <MessageItem
+        message={msg}
+        threadMetadata={threadMetadataById.get(msg.id)}
+        isHighlighted={isHighlighted}
+        channelChip={
+          channel && msg.channelId !== channel.id ? (
+            <ChannelChip
+              workspaceId={workspaceId}
+              parentName={channel.name}
+              channelId={msg.channelId}
+            />
+          ) : null
+        }
+      />
+    </div>
   );
 
   const renderBody = () => {
@@ -176,8 +166,6 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
         onJumpToLatest={() => {
           void navigate({ search: (prev) => ({ ...prev, date: undefined }), to: "." });
         }}
-        latestMessageRef={latestMessageRef}
-        latestUserMessageId={latestUserMessageId}
         renderMessage={renderMessage}
         header={null}
       />

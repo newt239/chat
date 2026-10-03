@@ -14,7 +14,7 @@ import type { Channel } from "#/gen/chat/v1/channel_service_pb";
 type PostTargetPickerProps = {
   parent: Channel;
   descendants: Channel[];
-  value: string;
+  value: Channel;
   onChange: (channelId: string) => void;
 };
 
@@ -30,22 +30,21 @@ export const PostTargetPicker = ({
     channel.id === parent.id
       ? t("channel.aggregate.thisChannel", { name: lastSegment(parent.name) })
       : relativePath(parent.name, channel.name);
-  const selected = [parent, ...descendants].find((channel) => channel.id === value) ?? parent;
 
   return (
     <Menu
       placement="top start"
       trigger={
         <Button
-          aria-label={t("channel.aggregate.target", { name: selected.name })}
+          aria-label={t("channel.aggregate.target", { name: value.name })}
           className={`mb-1.5 inline-flex h-6.5 cursor-pointer items-center gap-1 rounded-md border border-border px-2 text-xs whitespace-nowrap text-muted data-hovered:border-border-strong [&_svg]:size-3 ${focusRing}`}
         >
           {t("channel.aggregate.targetLabel")}
           <b className="font-semibold text-text">
             #{" "}
-            {selected.id === parent.id
+            {value.id === parent.id
               ? lastSegment(parent.name)
-              : relativePath(parent.name, selected.name)}
+              : relativePath(parent.name, value.name)}
           </b>
           <IconChevronDown aria-hidden />
         </Button>
@@ -55,7 +54,13 @@ export const PostTargetPicker = ({
         <MenuItem
           key={channel.id}
           icon={
-            channel.id === value ? <IconCheck /> : channel.isPrivate ? <IconLock /> : <IconHash />
+            channel.id === value.id ? (
+              <IconCheck />
+            ) : channel.isPrivate ? (
+              <IconLock />
+            ) : (
+              <IconHash />
+            )
           }
           onAction={() => {
             onChange(channel.id);

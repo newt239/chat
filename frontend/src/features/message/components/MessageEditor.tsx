@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { TextArea, TextField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
+import { useMentionCodec } from "#/features/mention/hooks/useMentionCodec";
 
 import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
-import { useMentionCodec } from "../hooks/useMentionCodec";
 import { continueList } from "../utils/format";
 import { SuggestionList } from "./SuggestionList";
 
@@ -20,20 +20,15 @@ type MessageEditorProps = {
 export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorProps) => {
   const { t } = useTranslation();
   const mentionCodec = useMentionCodec();
-  // 本文の ID 記法を名前に戻して編集させる。メンバーを読み込む前に開いたら、読み込んだときに戻す
-  const [draft, setDraft] = useState(() => mentionCodec.decode(initialBody));
-  const { decode, isReady } = mentionCodec;
-  useEffect(() => {
-    if (isReady) {
-      setDraft((current) => (current === initialBody ? decode(initialBody) : current));
-    }
-  }, [isReady, decode, initialBody]);
+  const [editedDraft, setEditedDraft] = useState<string | null>(null);
+  // 編集を始めるまでは本文の ID 記法を名前に戻して出す。メンバーを読み込む前に開いたら、読み込んだときに戻る
+  const draft = editedDraft ?? mentionCodec.decode(initialBody);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cursor, setCursor] = useState(draft.length);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const replaceDraft = (text: string, nextCursor: number) => {
-    setDraft(text);
+    setEditedDraft(text);
     setCursor(nextCursor);
     requestAnimationFrame(() => {
       textareaRef.current?.setSelectionRange(nextCursor, nextCursor);
@@ -78,7 +73,7 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
         aria-label={t("message.actions.edit")}
         value={draft}
         onChange={(next) => {
-          setDraft(next);
+          setEditedDraft(next);
           syncCursor();
         }}
         isDisabled={isSaving}

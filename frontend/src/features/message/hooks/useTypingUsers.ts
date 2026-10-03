@@ -7,7 +7,6 @@ export const useTypingUsers = (channelId: string) => {
   const [typingUserIds, setTypingUserIds] = useState<string[]>([]);
 
   useEffect(() => {
-    setTypingUserIds([]);
     if (!wsClient) {
       return undefined;
     }

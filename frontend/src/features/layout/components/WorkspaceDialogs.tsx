@@ -1,8 +1,9 @@
+import { skipToken, useQuery } from "@connectrpc/connect-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 
 import { AppDialogLoader } from "#/features/app/components/AppDialogLoader";
 import { ChannelCategoryDialog } from "#/features/channel/components/ChannelCategoryDialog";
-import { ChannelLinkDialogLoader } from "#/features/channel/components/ChannelLinkDialogLoader";
+import { ChannelLinkDialog } from "#/features/channel/components/ChannelLinkDialog";
 import { CreateChannelModal } from "#/features/channel/components/CreateChannelModal";
 import { useChannelCategories } from "#/features/channel/hooks/useChannelCategories";
 import { CreateDMModal } from "#/features/dm/components/CreateDMModal";
@@ -10,6 +11,7 @@ import { MarkdownHelpModal } from "#/features/message/components/MarkdownHelpMod
 import { UserGroupDialog } from "#/features/userGroup/components/UserGroupDialog";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { CreateWorkspaceModal } from "#/features/workspace/components/CreateWorkspaceModal";
+import { ChannelLinkService } from "#/gen/chat/v1/channel_link_service_pb";
 import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
 import { isAdminRole } from "#/lib/isAdminRole";
 
@@ -30,6 +32,12 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
   const editingGroup = groups?.find((candidate) => candidate.id === group);
   const { data: categories } = useChannelCategories(workspaceId);
   const editingCategory = categories?.find((candidate) => candidate.id === category);
+  const isLinkDialog = dialog === "add-link" || dialog === "edit-link";
+  const { data: channelLinks } = useQuery(
+    ChannelLinkService.method.listChannelLinks,
+    isLinkDialog && channelId !== undefined ? { channelId } : skipToken,
+  );
+  const editingLink = channelLinks?.links.find((candidate) => candidate.id === link);
 
   const close = () => {
     void navigate({ search: closeDialog, to: "." });
@@ -79,10 +87,12 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
           />
         )}
       {channelId !== undefined &&
-        (dialog === "add-link" || (dialog === "edit-link" && link !== undefined)) && (
-          <ChannelLinkDialogLoader
+        channelLinks?.canEdit &&
+        (dialog === "add-link" || (dialog === "edit-link" && editingLink)) && (
+          <ChannelLinkDialog
+            key={dialog}
             channelId={channelId}
-            linkId={dialog === "edit-link" ? (link ?? null) : null}
+            link={dialog === "edit-link" ? (editingLink ?? null) : null}
             onClose={close}
           />
         )}

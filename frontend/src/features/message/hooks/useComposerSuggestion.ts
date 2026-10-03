@@ -1,14 +1,14 @@
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 
 import { skipToken, useQuery } from "@connectrpc/connect-query";
 import { useParams } from "@tanstack/react-router";
 
 import { commandNames } from "#/features/command/utils/commands";
 import { useMembers } from "#/features/member/hooks/useMembers";
+import { toMentionToken } from "#/features/mention/utils/mentionToken";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
-import { toMentionToken } from "../utils/mentionToken";
 import { applySuggestion, findSuggestionQuery, rankByQuery } from "../utils/suggestion";
 
 import type { SuggestionItem } from "../utils/suggestion";
@@ -53,7 +53,9 @@ export const useComposerSuggestion = ({ body, cursor, allowsCommands, onApply }:
   const { workspaceId = null } = useParams({ strict: false });
   const listId = useId();
   const query = findSuggestionQuery(body, cursor, allowsCommands);
-  const [activeIndex, setActiveIndex] = useState(0);
+  // 選択中の位置は検索語ごとに持ち、検索語が変わったら先頭に戻す
+  const queryKey = query === null ? null : `${query.start}:${query.query}`;
+  const [activeState, setActiveState] = useState({ index: 0, queryKey });
   // Esc で閉じた候補は、別の @ / # を打つまで出さない
   const [dismissedStart, setDismissedStart] = useState<number | null>(null);
   const { data: members = [] } = useMembers(query?.trigger === "@" ? workspaceId : null);
@@ -105,11 +107,13 @@ export const useComposerSuggestion = ({ body, cursor, allowsCommands, onApply }:
       ? []
       : rankByQuery(candidates, query.query, (item) => item.label).slice(0, LIMIT);
   const isOpen = query !== null && items.length > 0 && dismissedStart !== query.start;
-  const active = Math.min(activeIndex, items.length - 1);
-
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [query?.start, query?.query]);
+  const active = Math.min(
+    activeState.queryKey === queryKey ? activeState.index : 0,
+    items.length - 1,
+  );
+  const setActiveIndex = (index: number) => {
+    setActiveState({ index, queryKey });
+  };
 
   const select = (item: SuggestionItem) => {
     if (query !== null) {

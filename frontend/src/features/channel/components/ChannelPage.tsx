@@ -9,7 +9,6 @@ import { useDMs } from "#/features/dm/hooks/useDM";
 import { MessageInput } from "#/features/message/components/MessageInput";
 import { MessagePanel } from "#/features/message/components/MessagePanel";
 import { TypingIndicator } from "#/features/message/components/TypingIndicator";
-import { MiniPlayer } from "#/features/player/components/MiniPlayer";
 
 export const ChannelPage = () => {
   const { workspaceId, channelId } = useParams({ from: "/app/$workspaceId/$channelId" });
@@ -31,8 +30,6 @@ export const ChannelPage = () => {
       <div className="min-h-0 flex-1">
         <MessagePanel workspaceId={workspaceId} channelId={channelId} />
       </div>
-      {/* モバイルでは入力欄の上に出す。デスクトップはサイドバーの下部 */}
-      <MiniPlayer variant="mobile" />
       {isPreview ? (
         <JoinChannelBar
           workspaceId={workspaceId}
@@ -41,7 +38,7 @@ export const ChannelPage = () => {
         />
       ) : (
         <div className="relative">
-          <TypingIndicator channelId={channelId} />
+          <TypingIndicator key={channelId} channelId={channelId} />
           <MessageInput key={channelId} channelId={channelId} />
         </div>
       )}

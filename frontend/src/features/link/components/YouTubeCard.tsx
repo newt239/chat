@@ -3,9 +3,16 @@ import { Link } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { focusRing } from "#/components/ui/styles/styles";
-import { formatDuration } from "#/features/player/utils/formatDuration";
 
 import type { OgpData, YouTubeVideo } from "#/gen/chat/v1/message_pb";
+
+// 1:05 / 1:02:03 の形式
+const formatDuration = (seconds: number) => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = String(seconds % 60).padStart(2, "0");
+  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
+};
 
 type YouTubeCardProps = {
   url: string;

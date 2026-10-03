@@ -9,8 +9,10 @@ import { cn, focusRing } from "#/components/ui/styles/styles";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { myUserIdAtom } from "#/providers/store/auth";
 
-import { useMentionDirectory } from "../../hooks/useMentionDirectory";
-import { chipClassName } from "./chipClassName";
+import { useMentionDirectory } from "../hooks/useMentionDirectory";
+
+const chipClassName =
+  "inline cursor-pointer rounded-sm bg-accent-soft px-0.75 font-semibold text-accent-text no-underline";
 
 type MentionProps = {
   // 「user:ID」「group:ID」「broadcast:channel」の形

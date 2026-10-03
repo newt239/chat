@@ -3,13 +3,11 @@ import { useEffect } from "react";
 import { callUnaryMethod, createConnectQueryKey, useTransport } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { toRange, useBidirectionalPages } from "#/features/message/hooks/useBidirectionalPages";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
-import { toRange, useBidirectionalPages } from "./useBidirectionalPages";
-
-import type { PageCursor } from "./useBidirectionalPages";
-
+import type { PageCursor } from "#/features/message/hooks/useBidirectionalPages";
 import type { Message } from "#/gen/chat/v1/message_pb";
 import type { GetThreadRepliesResponse } from "#/gen/chat/v1/thread_service_pb";
 
@@ -112,15 +110,8 @@ export const useThreadReplies = (threadId: string, aroundReplyId: string | null)
 
   const latestPage = pages.pages?.at(-1);
   return {
-    error: pages.error,
-    hasNewer: pages.hasNewer,
-    hasOlder: pages.hasOlder,
-    isError: pages.isError,
-    isLoading: pages.isLoading,
-    load: pages.load,
-    loading: pages.loading,
+    ...pages,
     parentMessage: latestPage?.parentMessage,
-    replies: pages.items,
     replyCount: latestPage?.replyCount ?? 0,
   };
 };

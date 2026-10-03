@@ -7,7 +7,7 @@ import { focusRing } from "#/components/ui/styles/styles";
 import { formatFileSize } from "../utils/validator";
 import { FileIcon } from "./FileIcon";
 
-import type { PendingAttachment } from "../api/types";
+import type { PendingAttachment } from "../hooks/useFileUpload";
 
 type AttachmentListItemProps = {
   attachment: PendingAttachment;

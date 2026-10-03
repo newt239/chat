@@ -10,7 +10,7 @@ type MessageAttachmentsProps = {
   message: Message;
 };
 
-// 画像はまとめてグリッドに、動画・音声はプレイヤー、それ以外はファイルのカードで並べる
+// 画像はまとめてグリッドに、動画・音声はブラウザのプレイヤー、それ以外はファイルのカードで並べる
 export const MessageAttachments = ({ message }: MessageAttachmentsProps) => {
   const attachments = message.attachments.map((attachment) => ({
     attachment,
@@ -25,10 +25,10 @@ export const MessageAttachments = ({ message }: MessageAttachmentsProps) => {
       {images.length > 0 && <ImageGallery images={images} message={message} />}
       {attachments.map(({ attachment, kind }) => {
         if (kind === "video") {
-          return <VideoAttachment key={attachment.id} attachment={attachment} message={message} />;
+          return <VideoAttachment key={attachment.id} attachment={attachment} />;
         }
         if (kind === "audio") {
-          return <AudioAttachment key={attachment.id} attachment={attachment} message={message} />;
+          return <AudioAttachment key={attachment.id} attachment={attachment} />;
         }
         return kind === "file" ? (
           <FileAttachment key={attachment.id} attachment={attachment} />

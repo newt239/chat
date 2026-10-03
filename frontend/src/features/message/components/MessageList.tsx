@@ -14,11 +14,10 @@ import { findRowIndex } from "../utils/timelineRows";
 import { DateDivider } from "./DateDivider";
 import { SystemMessageItem } from "./SystemMessageItem";
 
+import type { Direction } from "../hooks/useBidirectionalPages";
 import type { TimelineRow } from "../utils/timelineRows";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
-
-type Direction = "older" | "newer";
 
 type MessageListProps = {
   rows: TimelineRow[];
@@ -29,9 +28,6 @@ type MessageListProps = {
   loading: Direction | null;
   onLoad: (direction: Direction) => void;
   onJumpToLatest: () => void;
-  // 最新のユーザーメッセージの要素を受け取り、画面に入ったら既読にする
-  latestMessageRef: (element: HTMLElement | null) => void;
-  latestUserMessageId: string | null;
   renderMessage: (message: Message, isHighlighted: boolean) => ReactNode;
   // kind が header の行に描画する内容
   header: ReactNode;
@@ -57,8 +53,6 @@ export const MessageList = ({
   loading,
   onLoad,
   onJumpToLatest,
-  latestMessageRef,
-  latestUserMessageId,
   renderMessage,
   header,
 }: MessageListProps) => {
@@ -214,12 +208,9 @@ export const MessageList = ({
                 style={{ transform: `translateY(${item.start}px)` }}
               >
                 {row.kind === "header" && header}
-                {row.kind === "date" && <DateDivider dateKey={row.dateKey} />}
-                {row.kind === "user" && (
-                  <div ref={row.message.id === latestUserMessageId ? latestMessageRef : undefined}>
-                    {renderMessage(row.message, row.message.id === highlightedId)}
-                  </div>
-                )}
+                {row.kind === "date" && <DateDivider dateKey={row.dateKey} floating={false} />}
+                {row.kind === "user" &&
+                  renderMessage(row.message, row.message.id === highlightedId)}
                 {row.kind === "system" && <SystemMessageItem message={row.message} />}
               </div>
             );

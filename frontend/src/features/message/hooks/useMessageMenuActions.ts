@@ -13,7 +13,7 @@ import {
   IconPinnedOff,
   IconTrash,
 } from "@tabler/icons-react";
-import { useParams, useRouter } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
@@ -22,10 +22,14 @@ import {
   useIsBookmarked,
   useRemoveBookmark,
 } from "#/features/bookmark/hooks/useBookmarks";
-import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
+import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
+import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { usePinActions } from "#/features/pin/hooks/usePinActions";
 import { useToggleThreadFollow } from "#/features/thread/hooks/useToggleThreadFollow";
 import { copyWithToast } from "#/lib/clipboard";
+import { toShareUrl } from "#/lib/shareUrl";
+
+import { messageLocation } from "../utils/messageLocation";
 
 import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
@@ -41,12 +45,14 @@ export type MessageMenuAction = {
   onAction?: () => void;
 };
 
+// ツールバーは先頭の 3 つ、モバイルのシートはすべてを並べる
+export const quickReactions = ["👍", "✅", "👀", "🎉", "🙏"] as const;
+
 type Options = {
   message: Message;
   threadMetadata: ThreadMetadata | undefined;
   isAuthor: boolean;
   onReplyInThread: () => void;
-  onCopyLink: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onViewReactions: () => void;
@@ -58,7 +64,6 @@ export const useMessageMenuActions = ({
   threadMetadata,
   isAuthor,
   onReplyInThread,
-  onCopyLink,
   onEdit,
   onDelete,
   onViewReactions,
@@ -66,7 +71,7 @@ export const useMessageMenuActions = ({
   const { t } = useTranslation();
   const { toText } = useMentionDirectory();
   const router = useRouter();
-  const { workspaceId } = useParams({ strict: false });
+  const { workspaceId } = workspaceRoute.useParams();
   const isBookmarked = useIsBookmarked(message.id);
   const addBookmark = useAddBookmark();
   const removeBookmark = useRemoveBookmark();
@@ -102,15 +107,27 @@ export const useMessageMenuActions = ({
     );
   };
 
-  // スレッドのルートができるまでは、親メッセージを指すチャンネルのリンクで代用する
-  const threadHref =
-    workspaceId === undefined
-      ? undefined
-      : router.buildLocation({
-          params: { channelId: message.channelId, workspaceId },
-          search: { message: message.parentId ?? message.id },
-          to: "/app/$workspaceId/$channelId",
-        }).href;
+  const copyLink = () => {
+    const { href } = router.buildLocation(
+      messageLocation({
+        channelId: message.channelId,
+        messageId: message.id,
+        parentId: message.parentId,
+        workspaceId,
+      }),
+    );
+    void copyWithToast(toShareUrl(href), t("message.link.copied"));
+  };
+
+  const threadHref = router.buildLocation({
+    params: {
+      channelId: message.channelId,
+      messageId: message.parentId ?? message.id,
+      workspaceId,
+    },
+    search: { message: message.parentId === undefined ? undefined : message.id },
+    to: "/app/$workspaceId/$channelId/thread/$messageId",
+  }).href;
 
   const actions: (MessageMenuAction | false)[] = [
     canModify && {
@@ -136,7 +153,7 @@ export const useMessageMenuActions = ({
       },
       tone: "default",
     },
-    threadHref !== undefined && {
+    {
       href: threadHref,
       icon: IconExternalLink,
       id: "threadInNewTab",
@@ -168,7 +185,7 @@ export const useMessageMenuActions = ({
       icon: IconLink,
       id: "copyLink",
       label: t("message.actions.copyLink"),
-      onAction: onCopyLink,
+      onAction: copyLink,
       tone: "default",
     },
     !message.isDeleted &&

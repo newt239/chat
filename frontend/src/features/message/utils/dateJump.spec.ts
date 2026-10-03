@@ -1,12 +1,6 @@
-import { create } from "@bufbuild/protobuf";
-import { timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { describe, expect, test } from "vite-plus/test";
 
-import { TimelineItemSchema } from "#/gen/chat/v1/message_pb";
-
-import { groupByDate, jumpDateSchema, jumpPresets, startOfDateKey, toDateKey } from "./dateJump";
-
-const item = (date: Date) => create(TimelineItemSchema, { createdAt: timestampFromDate(date) });
+import { jumpDateSchema, jumpPresets, startOfDateKey, toDateKey } from "./dateJump";
 
 describe("日付ジャンプ", () => {
   test("指定したタイムゾーンの日付と 0 時を相互に変換する", () => {
@@ -32,21 +26,5 @@ describe("日付ジャンプ", () => {
     expect(jumpDateSchema.safeParse("2026-09-01").success).toBe(true);
     expect(jumpDateSchema.safeParse("first").success).toBe(true);
     expect(jumpDateSchema.safeParse("2026-13-01").success).toBe(false);
-  });
-
-  test("古い順の項目を日付ごとにまとめる", () => {
-    const groups = groupByDate(
-      [
-        item(new Date("2026-09-01T09:00:00+09:00")),
-        item(new Date("2026-09-01T18:00:00+09:00")),
-        item(new Date("2026-09-03T08:00:00+09:00")),
-      ],
-      "Asia/Tokyo",
-    );
-
-    expect(groups.map(({ dateKey, items }) => [dateKey, items.length])).toStrictEqual([
-      ["2026-09-01", 2],
-      ["2026-09-03", 1],
-    ]);
   });
 });
