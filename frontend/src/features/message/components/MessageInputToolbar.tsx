@@ -88,7 +88,7 @@ export const MessageInputToolbar = ({
   const hasPickedEmojiRef = useRef(false);
 
   return (
-    <div className="flex items-center gap-px px-[5px] pb-[5px] max-md:gap-1">
+    <div className="flex items-center gap-px px-1.25 pb-1.25 max-md:gap-1">
       {/* 幅が足りないときは送信まわり以外を横にスクロールさせる */}
       <div className="flex min-w-0 flex-1 items-center gap-px overflow-x-auto [scrollbar-width:none] max-md:gap-1 max-md:mask-r-from-85%">
         {formatButtons.map(({ key, icon: FormatIcon }) => (

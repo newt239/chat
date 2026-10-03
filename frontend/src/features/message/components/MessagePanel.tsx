@@ -137,7 +137,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   const renderBody = () => {
     if (isLoading) {
       return (
-        <div className="flex flex-1 flex-col justify-end gap-4 px-[18px] py-4" aria-busy>
+        <div className="flex flex-1 flex-col justify-end gap-4 px-4.5 py-4" aria-busy>
           {[0, 1, 2].map((index) => (
             <div key={index} className="flex gap-2.5">
               <Skeleton className="size-8 shrink-0 rounded-md" />
@@ -151,12 +151,12 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
       );
     }
     if (isError) {
-      return <p className="m-0 px-[18px] py-4 text-body text-danger">{error?.message}</p>;
+      return <p className="m-0 px-4.5 py-4 text-body text-danger">{error?.message}</p>;
     }
     if (orderedItems.length === 0) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center gap-1.5 p-6 text-center">
-          <span className="mb-1 grid size-11 place-items-center rounded-lg bg-sunken text-muted [&_svg]:size-[22px]">
+          <span className="mb-1 grid size-11 place-items-center rounded-lg bg-sunken text-muted [&_svg]:size-5.5">
             <IconHash aria-hidden />
           </span>
           <b className="text-body-strong">{t("message.panel.empty")}</b>

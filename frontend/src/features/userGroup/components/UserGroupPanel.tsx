@@ -39,9 +39,9 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
   return (
     <div className="flex min-h-full flex-col bg-surface font-sans text-text">
       <section className="flex flex-col gap-2 border-b border-border px-4 pt-4 pb-3.5">
-        <h3 className="m-0 text-[19px] font-bold text-accent-text">@{group.name}</h3>
+        <h3 className="m-0 text-heading font-bold text-accent-text">@{group.name}</h3>
         {group.description !== undefined && group.description.length > 0 && (
-          <p className="m-0 text-[13px]">{group.description}</p>
+          <p className="m-0 text-body-sm">{group.description}</p>
         )}
         <div className="flex flex-wrap gap-1.5">
           {canManage && (

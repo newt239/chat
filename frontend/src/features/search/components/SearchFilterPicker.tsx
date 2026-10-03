@@ -57,7 +57,7 @@ export const SearchFilterPicker = <T extends string>({
         }
       }}
       renderEmptyState={() => (
-        <p className="m-0 px-2.5 py-1.5 text-[13px] text-muted">{t("ui.comboBox.empty")}</p>
+        <p className="m-0 px-2.5 py-1.5 text-body-sm text-muted">{t("ui.comboBox.empty")}</p>
       )}
       className="max-h-72 overflow-y-auto p-1 outline-none"
     >

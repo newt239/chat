@@ -20,8 +20,8 @@ export const MobileHome = ({ workspaceId }: MobileHomeProps) => {
   const { data: user } = useMe();
 
   return (
-    <div className={`flex min-h-0 flex-1 flex-col text-[15px] ${mobileNavTone}`}>
-      <header className="flex shrink-0 items-center gap-2 px-3 pt-2 pb-1 [&_button]:text-[19px]">
+    <div className={`flex min-h-0 flex-1 flex-col text-title font-normal ${mobileNavTone}`}>
+      <header className="flex shrink-0 items-center gap-2 px-3 pt-2 pb-1 [&_button]:text-heading [&_button]:font-normal">
         <WorkspaceMenu workspaceId={workspaceId} />
         {user && (
           <Link

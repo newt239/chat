@@ -34,12 +34,12 @@ export const ThemeSettings = () => {
               onPress={() => {
                 updatePreferences({ theme: themePresets[name] });
               }}
-              className={`flex cursor-pointer flex-col overflow-hidden rounded-[10px] border border-border bg-surface text-left aria-pressed:border-accent aria-pressed:ring-1 aria-pressed:ring-accent ${focusRing}`}
+              className={`flex cursor-pointer flex-col overflow-hidden rounded-lg border border-border bg-surface text-left aria-pressed:border-accent aria-pressed:ring-1 aria-pressed:ring-accent ${focusRing}`}
             >
               <ThemePreview theme={themePresets[name]} />
-              <span className="flex items-center justify-between px-2.5 py-1.5 text-[13px] font-semibold">
+              <span className="flex items-center justify-between px-2.5 py-1.5 text-body-sm font-semibold">
                 {t(`preferences.theme.presets.${name}`)}
-                <small className="font-mono text-[11px] font-normal text-muted">
+                <small className="font-mono text-caption font-normal text-muted">
                   {themePresets[name].hue}°
                 </small>
               </span>
@@ -116,7 +116,7 @@ export const ThemeSettings = () => {
 
       <section className="flex flex-col gap-2">
         <h3 className="m-0 text-body-strong">{t("preferences.theme.preview")}</h3>
-        <div className="overflow-hidden rounded-[10px] border border-border [&>span]:h-28">
+        <div className="overflow-hidden rounded-lg border border-border [&>span]:h-28">
           <ThemePreview theme={theme} />
         </div>
       </section>

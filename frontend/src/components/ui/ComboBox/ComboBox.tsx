@@ -69,7 +69,7 @@ export const ComboBox = <T extends string>({
         <ListBox
           className="max-h-72 overflow-y-auto outline-none"
           renderEmptyState={() => (
-            <p className="m-0 px-2.5 py-1.5 text-[13px] text-muted">{t("ui.comboBox.empty")}</p>
+            <p className="m-0 px-2.5 py-1.5 text-body-sm text-muted">{t("ui.comboBox.empty")}</p>
           )}
         >
           {(option: Option<T>) => (

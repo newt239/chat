@@ -109,7 +109,7 @@ export const useRightPanel = (workspaceId: string) => {
                 <LinkButton
                   variant="ghost"
                   aria-label={t("shell.openInNewTab")}
-                  className="size-[30px] px-0 [&_svg]:size-4"
+                  className="size-7.5 px-0 [&_svg]:size-4"
                   to="/app/$workspaceId/$channelId/thread/$messageId"
                   params={{ channelId, messageId, workspaceId }}
                   target="_blank"

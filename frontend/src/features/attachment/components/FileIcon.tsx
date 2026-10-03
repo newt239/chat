@@ -39,7 +39,7 @@ const iconOf = (mimeType: string) => {
 };
 
 export const FileIcon = ({ mimeType }: FileIconProps) => (
-  <span className="grid size-[34px] shrink-0 place-items-center rounded-md bg-accent-soft text-accent-text [&_svg]:size-[18px]">
+  <span className="grid size-8.5 shrink-0 place-items-center rounded-md bg-accent-soft text-accent-text [&_svg]:size-4.5">
     {iconOf(mimeType)}
   </span>
 );

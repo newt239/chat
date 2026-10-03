@@ -24,12 +24,12 @@ export const AppRow = ({ app, actions }: AppRowProps) => {
   return (
     <li className="flex items-center gap-2 rounded-md px-2 py-1">
       <Avatar name={app.name} src={app.avatarUrl} size={28} />
-      <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
-        <span className="flex items-center gap-1.5 truncate text-[13.5px]">
+      <span className="flex min-w-0 flex-1 flex-col leading-snug">
+        <span className="flex items-center gap-1.5 truncate text-body-sm">
           {app.name}
           {app.isOfficial && <Badge tone="tag">{t("app.official")}</Badge>}
         </span>
-        <small className="truncate text-[11.5px] text-subtle">
+        <small className="truncate text-caption text-subtle">
           {app.isOfficial
             ? app.description
             : [

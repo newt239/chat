@@ -45,7 +45,7 @@ export const ChannelNameField = ({
       </span>
       <Input
         placeholder={placeholder}
-        className="h-full min-w-0 flex-1 border-0 bg-transparent pr-2.5 pl-0.5 font-sans text-[13.5px] text-text outline-none placeholder:text-subtle"
+        className="h-full min-w-0 flex-1 border-0 bg-transparent pr-2.5 pl-0.5 font-sans text-body-sm text-text outline-none placeholder:text-subtle"
       />
     </Group>
     {errorMessage === null ? (

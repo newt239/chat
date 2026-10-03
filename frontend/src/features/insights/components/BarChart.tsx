@@ -45,7 +45,7 @@ export const BarChart = ({ data, height, labelEvery, ariaLabel }: BarChartProps)
     >
       <div
         aria-hidden
-        className="-my-[5px] flex flex-col justify-between text-right font-mono text-[10.5px] leading-none tabular-nums"
+        className="-my-1.25 flex flex-col justify-between text-right font-mono text-caption leading-none tabular-nums"
         style={{ height }}
       >
         <span>{formatNumber(max, locale)}</span>
@@ -93,7 +93,7 @@ export const BarChart = ({ data, height, labelEvery, ariaLabel }: BarChartProps)
         )}
       </div>
       <span />
-      <div aria-hidden className="relative h-[18px] font-mono text-[10.5px]">
+      <div aria-hidden className="relative h-4.5 font-mono text-caption">
         {data.map((datum, index) =>
           (index % labelEvery === 0 && index < data.length - Math.ceil(labelEvery / 2)) ||
           index === data.length - 1 ? (
@@ -101,7 +101,7 @@ export const BarChart = ({ data, height, labelEvery, ariaLabel }: BarChartProps)
               key={datum.key}
               className={cn(
                 "absolute top-1 -translate-x-1/2 whitespace-nowrap",
-                index === data.length - 1 && "-translate-x-[80%]",
+                index === data.length - 1 && "-translate-x-4/5",
               )}
               style={{ left: `${xOf(index)}%` }}
             >

@@ -35,15 +35,15 @@ export const AlertDialog = ({
       onOpenChange={onOpenChange}
       layout="center"
       role="alertdialog"
-      className="max-w-[440px]"
+      className="max-w-110"
     >
-      <Heading slot="title" className="m-0 px-[18px] pt-4 text-base font-bold">
+      <Heading slot="title" className="m-0 px-4.5 pt-4 text-base font-bold">
         {title}
       </Heading>
-      <div className="flex flex-col gap-3 px-[18px] pt-2.5 pb-1 text-[13.5px] text-muted">
+      <div className="flex flex-col gap-3 px-4.5 pt-2.5 pb-1 text-body-sm text-muted">
         {children}
       </div>
-      <footer className="flex justify-end gap-2 px-[18px] pt-3.5 pb-4">
+      <footer className="flex justify-end gap-2 px-4.5 pt-3.5 pb-4">
         <Button
           variant="secondary"
           onPress={() => {

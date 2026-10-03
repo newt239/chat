@@ -26,7 +26,7 @@ export const TypingIndicator = ({ channelId }: TypingIndicatorProps) => {
   return (
     <div
       aria-live="polite"
-      className="absolute inset-x-0 bottom-full flex h-[18px] items-center gap-1.5 bg-surface px-5 font-sans text-[11.5px] text-muted"
+      className="absolute inset-x-0 bottom-full flex h-4.5 items-center gap-1.5 bg-surface px-5 font-sans text-caption text-muted"
     >
       <span aria-hidden className="inline-flex gap-0.5">
         {[0, 1, 2].map((index) => (

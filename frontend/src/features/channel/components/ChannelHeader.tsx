@@ -105,7 +105,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
 
   return (
     <>
-      <header className="flex h-12 shrink-0 items-center gap-1.5 border-b border-border pr-2.5 pl-[18px] max-md:pl-3">
+      <header className="flex h-12 shrink-0 items-center gap-1.5 border-b border-border pr-2.5 pl-4.5 max-md:pl-3">
         <BackButton />
         <IconToggleButton
           label={t("shell.channelMenu.star")}
@@ -121,7 +121,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
           onPress={() => {
             openRightPanel(infoPanel);
           }}
-          className={`flex min-w-0 shrink cursor-pointer items-center gap-1 rounded-[6px] px-1 py-0.5 text-[15px] font-bold whitespace-nowrap data-hovered:bg-hover [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted ${focusRing}`}
+          className={`flex min-w-0 shrink cursor-pointer items-center gap-1 rounded-md px-1 py-0.5 text-title font-bold whitespace-nowrap data-hovered:bg-hover [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted ${focusRing}`}
         >
           {channel ? (
             <ChannelName name={channel.name} isPrivate={channel.isPrivate} />
@@ -145,7 +145,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
           </Tooltip>
         )}
         {!isMobile && descendantsToggle}
-        <p className="m-0 flex min-w-0 flex-1 items-center gap-1 truncate pl-1.5 text-[12.5px] text-muted max-md:invisible [&_svg]:size-3.5 [&_svg]:shrink-0">
+        <p className="m-0 flex min-w-0 flex-1 items-center gap-1 truncate pl-1.5 text-label font-normal text-muted max-md:invisible [&_svg]:size-3.5 [&_svg]:shrink-0">
           {channel?.description}
           {isGroupDM && t("dm.header.groupCount", { count: dm.members.length + 1 })}
           {memo && (
@@ -163,7 +163,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
             onPress={() => {
               openRightPanel({ panel: "members" });
             }}
-            className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border max-md:hidden border-border py-0.5 pr-2 pl-[3px] text-xs text-muted tabular-nums data-hovered:bg-hover ${focusRing}`}
+            className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border max-md:hidden border-border py-0.5 pr-2 pl-0.75 text-xs text-muted tabular-nums data-hovered:bg-hover ${focusRing}`}
           >
             <span className="flex [&>*+*]:-ml-1.5 [&>*]:ring-2 [&>*]:ring-surface">
               {members.slice(0, 3).map((member) => (
@@ -186,7 +186,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
         >
           <IconPin />
           {pinsCount > 0 && (
-            <span className="absolute top-px right-0 font-mono text-[9.5px] leading-none font-semibold text-muted">
+            <span className="absolute top-px right-0 font-mono text-caption leading-none font-semibold text-muted">
               {pinsCount > 99 ? "99+" : pinsCount}
             </span>
           )}

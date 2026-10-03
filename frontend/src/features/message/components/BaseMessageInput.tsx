@@ -225,7 +225,7 @@ export const BaseMessageInput = ({
         event.preventDefault();
         handleSubmit();
       }}
-      className="shrink-0 px-[18px] pb-3 font-sans max-md:px-2.5 max-md:pb-2"
+      className="shrink-0 px-4.5 pb-3 font-sans max-md:px-2.5 max-md:pb-2"
     >
       {targetPicker}
       <div className="relative rounded-lg border border-border-strong bg-surface focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
@@ -302,7 +302,7 @@ export const BaseMessageInput = ({
                   start: event.currentTarget.selectionStart,
                 });
               }}
-              className="block max-h-[180px] min-h-[38px] w-full resize-none border-0 bg-transparent px-3 pt-[9px] pb-0.5 font-sans text-body leading-[1.6] text-text outline-none [field-sizing:content] placeholder:text-subtle"
+              className="block max-h-45 min-h-9.5 w-full resize-none border-0 bg-transparent px-3 pt-2.25 pb-0.5 font-sans text-body leading-relaxed text-text outline-none [field-sizing:content] placeholder:text-subtle"
             />
           </TextField>
         )}

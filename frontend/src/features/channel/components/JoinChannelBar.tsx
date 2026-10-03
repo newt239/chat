@@ -17,9 +17,9 @@ export const JoinChannelBar = ({ workspaceId, channelId, channelName }: JoinChan
   const { join } = useChannelMemberActions(workspaceId);
 
   return (
-    <div className="shrink-0 px-[18px] pb-3 font-sans max-md:px-2.5 max-md:pb-2">
+    <div className="shrink-0 px-4.5 pb-3 font-sans max-md:px-2.5 max-md:pb-2">
       <div className="flex flex-col items-center gap-2 rounded-lg border border-border bg-sunken px-4 py-3 text-center">
-        <p className="m-0 text-[13.5px] font-semibold">
+        <p className="m-0 text-body-sm font-semibold">
           {t("channel.preview.notice", { name: channelName })}
         </p>
         <p className="m-0 text-caption text-muted">{t("channel.preview.notJoined")}</p>

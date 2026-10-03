@@ -44,9 +44,7 @@ export const RightSidePanel = ({ workspaceId }: RightSidePanelProps) => {
           />
           <div style={{ width: widths.right }} className="flex shrink-0 flex-col">
             <header className="flex h-12 shrink-0 items-center gap-1 border-b border-border pr-2 pl-4">
-              <h2 className="m-0 min-w-0 flex-1 truncate text-[14.5px] font-bold">
-                {content.title}
-              </h2>
+              <h2 className="m-0 min-w-0 flex-1 truncate text-body font-bold">{content.title}</h2>
               {content.extra}
               <IconButton label={t("common.close")} onPress={close}>
                 <IconX />

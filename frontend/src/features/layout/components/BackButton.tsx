@@ -13,11 +13,7 @@ export const BackButton = () => {
     return null;
   }
   return (
-    <IconButton
-      label={t("shell.back")}
-      onPress={back}
-      className="-ml-2 size-10 [&_svg]:size-[21px]"
-    >
+    <IconButton label={t("shell.back")} onPress={back} className="-ml-2 size-10 [&_svg]:size-5.25">
       <IconChevronLeft />
     </IconButton>
   );

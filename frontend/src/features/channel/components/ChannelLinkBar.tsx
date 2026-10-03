@@ -29,7 +29,7 @@ export const ChannelLinkBar = ({ channelId }: ChannelLinkBarProps) => {
     return null;
   }
 
-  const linkClassName = `inline-flex h-6 shrink-0 cursor-pointer items-center gap-1.5 rounded-[6px] px-2 text-[12.5px] whitespace-nowrap text-text no-underline data-hovered:bg-hover [&_svg]:size-3.5 [&_svg]:text-muted ${focusRing}`;
+  const linkClassName = `inline-flex h-6 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 text-label font-normal whitespace-nowrap text-text no-underline data-hovered:bg-hover [&_svg]:size-3.5 [&_svg]:text-muted ${focusRing}`;
 
   return (
     <nav

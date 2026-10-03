@@ -41,7 +41,7 @@ export const VideoAttachment = ({ attachment, message }: VideoAttachmentProps) =
   return (
     <div
       ref={inlineRef}
-      className="max-w-full overflow-hidden rounded-[10px] border border-border bg-surface font-sans text-muted"
+      className="max-w-full overflow-hidden rounded-lg border border-border bg-surface font-sans text-muted"
       style={{ width: Math.min(MAX_WIDTH, Math.round(MAX_HEIGHT * ratio)) }}
     >
       <div className="relative w-full bg-media" style={{ aspectRatio: ratio }}>
@@ -69,7 +69,7 @@ export const VideoAttachment = ({ attachment, message }: VideoAttachmentProps) =
           {!isActive && (
             <>
               <span className="absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-media/72 to-transparent" />
-              <span className="absolute bottom-2.5 left-3 max-w-[calc(100%-24px)] truncate text-[13px] text-media-fg">
+              <span className="absolute bottom-2.5 left-3 max-w-[calc(100%-24px)] truncate text-body-sm text-media-fg">
                 {attachment.fileName}
               </span>
             </>
@@ -81,14 +81,14 @@ export const VideoAttachment = ({ attachment, message }: VideoAttachmentProps) =
           )}
         </Button>
       </div>
-      <div className="flex items-center gap-2 border-t border-border py-[5px] pr-2.5 pl-1.5">
+      <div className="flex items-center gap-2 border-t border-border py-1.25 pr-2.5 pl-1.5">
         <PlayPauseButton
           isPlaying={isPlaying}
           onPress={handleToggle}
           className="size-7 rounded-md text-text max-md:size-11 data-hovered:bg-hover [&_svg]:size-3.5"
         />
         <SeekBar position={position} duration={duration} onSeek={handleSeek} track="bar" />
-        <span className="font-mono text-[11px] whitespace-nowrap tabular-nums">
+        <span className="font-mono text-caption whitespace-nowrap tabular-nums">
           {formatDuration(position)} / {formatDuration(duration)}
         </span>
         <SpeedButton rate={rate} onPress={handleCycleRate} />

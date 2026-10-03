@@ -48,7 +48,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
   if (isLoading) {
     return (
       <div className="flex flex-col gap-3 p-4">
-        <Skeleton className="size-[72px] rounded-xl" />
+        <Skeleton className="size-18 rounded-xl" />
         <Skeleton className="h-5 w-40" />
       </div>
     );
@@ -67,7 +67,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
       <section className="flex flex-col gap-2.5 border-b border-border px-4 pt-4 pb-3.5">
         <Avatar name={member.displayName} src={member.avatarUrl} size={72} />
         <div className="flex flex-col gap-0.5">
-          <h3 className="m-0 flex items-center gap-1.5 text-[19px] font-bold">
+          <h3 className="m-0 flex items-center gap-1.5 text-heading font-bold">
             {member.nickname ?? member.displayName}
             {member.nickname !== undefined && (
               <IconTag
@@ -78,12 +78,12 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
             )}
           </h3>
           {member.nickname !== undefined && (
-            <span className="text-[12.5px] text-muted">
+            <span className="text-label font-normal text-muted">
               {t("member.note.realName", { name: member.displayName })}
             </span>
           )}
         </div>
-        <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-1 text-[12.5px]">
+        <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-1 text-label font-normal">
           <dt className="text-muted">{t("member.profile.role")}</dt>
           <dd className="m-0">{t(workspaceRoleKeys[member.role])}</dd>
           <dt className="text-muted">{t("member.profile.email")}</dt>
@@ -119,7 +119,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
             {member.links.map((url) => {
               const SiteIcon = linkIconOf(url);
               return (
-                <li key={url} className="flex min-w-0 items-center gap-1.5 text-[13.5px]">
+                <li key={url} className="flex min-w-0 items-center gap-1.5 text-body-sm">
                   <SiteIcon aria-hidden className="size-4 shrink-0 text-muted" />
                   <Link
                     href={url}
@@ -147,7 +147,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
       {member.bio !== undefined && member.bio.length > 0 && (
         <section className="flex flex-col gap-2 px-4 py-3">
           <h4 className="m-0 text-xs font-semibold text-muted">{t("member.profile.bio")}</h4>
-          <p className="m-0 text-[13.5px] whitespace-pre-wrap">{member.bio}</p>
+          <p className="m-0 text-body-sm whitespace-pre-wrap">{member.bio}</p>
         </section>
       )}
     </div>

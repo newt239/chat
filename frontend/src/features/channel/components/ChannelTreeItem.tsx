@@ -77,7 +77,7 @@ export const ChannelTreeItem = ({ workspaceId, node, depth, isLast }: ChannelTre
           {isCollapsed && (
             <span
               aria-label={t("channel.tree.childCount", { count: children.length })}
-              className="font-mono text-[10.5px] font-medium text-(--nav-muted)"
+              className="font-mono text-caption font-medium text-(--nav-muted)"
             >
               {children.length}
             </span>
@@ -97,7 +97,7 @@ export const ChannelTreeItem = ({ workspaceId, node, depth, isLast }: ChannelTre
             <IconChevronDown
               aria-hidden
               className={cn(
-                "size-[13px] transition-transform motion-reduce:transition-none",
+                "size-3.25 transition-transform motion-reduce:transition-none",
                 isCollapsed && "-rotate-90",
               )}
             />

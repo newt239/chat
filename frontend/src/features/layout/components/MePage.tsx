@@ -56,7 +56,7 @@ export const MePage = () => {
           <NavLink to="." search={openPanel({ profile: user.id })} className="h-auto gap-3 py-3">
             <Avatar name={user.displayName} src={user.avatarUrl} size={52} presence="online" />
             <span className="flex min-w-0 flex-1 flex-col">
-              <b className="truncate text-[16px]">{user.displayName}</b>
+              <b className="truncate text-title">{user.displayName}</b>
               <span className="truncate text-caption text-muted">{user.email}</span>
             </span>
             <IconChevronRight aria-hidden />

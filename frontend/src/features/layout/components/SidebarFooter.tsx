@@ -37,7 +37,7 @@ export const SidebarFooter = () => {
             className={`flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-left data-hovered:bg-(--nav-hover) ${focusRing}`}
           >
             <Avatar name={user.displayName} src={user.avatarUrl} size={28} presence="online" />
-            <span className="min-w-0 truncate text-[13px] font-bold text-(--nav-strong)">
+            <span className="min-w-0 truncate text-body-sm font-bold text-(--nav-strong)">
               {user.displayName}
             </span>
           </Button>

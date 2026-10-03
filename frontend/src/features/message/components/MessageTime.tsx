@@ -23,7 +23,7 @@ export const MessageTime = ({ date }: MessageTimeProps) => {
           // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- キーボードでもツールチップを開けるようにする
           tabIndex={0}
           dateTime={date.toISOString()}
-          className={`shrink-0 rounded-sm font-mono text-[11.5px] text-subtle tabular-nums ${focusRing}`}
+          className={`shrink-0 rounded-sm font-mono text-caption text-subtle tabular-nums ${focusRing}`}
         >
           {time}
         </time>

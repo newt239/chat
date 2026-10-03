@@ -4,12 +4,12 @@ import { cn } from "#/components/ui/styles/styles";
 
 const tones = {
   // 強調したいラベル
-  accent: "rounded-[6px] bg-accent-soft px-1.5 text-xs leading-5 font-semibold text-accent-text",
+  accent: "rounded-md bg-accent-soft px-1.5 text-xs leading-5 font-semibold text-accent-text",
   // 未読数などの件数
   count:
-    "h-[17px] min-w-[18px] justify-center rounded-full bg-badge px-[5px] text-[10.5px] font-bold text-badge-fg tabular-nums",
+    "h-4.25 min-w-4.5 justify-center rounded-full bg-badge px-1.25 text-caption font-bold text-badge-fg tabular-nums",
   // BOT・管理者などのラベル
-  tag: "rounded-sm border border-border bg-sunken px-1 text-[9.5px] leading-[15px] font-bold tracking-[.06em] text-muted",
+  tag: "rounded-sm border border-border bg-sunken px-1 text-caption leading-3.75 font-bold tracking-wide text-muted",
 };
 
 type BadgeProps = {

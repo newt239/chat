@@ -31,12 +31,12 @@ export const ChartCard = ({ title, note, table, children, wide }: ChartCardProps
       )}
     >
       <header className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-        <h2 className="m-0 text-[13.5px] font-bold">{title}</h2>
-        <span className="flex-1 text-[11.5px] text-muted">{note}</span>
+        <h2 className="m-0 text-body-sm font-bold">{title}</h2>
+        <span className="flex-1 text-caption text-muted">{note}</span>
         <ToggleButton
           isSelected={showTable}
           onChange={setShowTable}
-          className={`cursor-pointer rounded-[6px] border border-border bg-transparent px-2 py-0.5 font-sans text-[11.5px] font-semibold text-accent-text data-hovered:bg-hover ${focusRing}`}
+          className={`cursor-pointer rounded-md border border-border bg-transparent px-2 py-0.5 font-sans text-caption font-semibold text-accent-text data-hovered:bg-hover ${focusRing}`}
         >
           {showTable ? t("insights.table.showChart") : t("insights.table.showTable")}
         </ToggleButton>

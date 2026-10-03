@@ -57,7 +57,7 @@ export const Slider = ({
               style={{ width: `${state.getThumbPercent(0) * 100}%` }}
             />
           )}
-          <SliderThumb className="top-1/2 size-[18px] cursor-grab rounded-full border-2 border-text bg-surface shadow-md data-dragging:cursor-grabbing data-focus-visible:outline-2 data-focus-visible:outline-offset-2 data-focus-visible:outline-focus data-focus-visible:outline-solid" />
+          <SliderThumb className="top-1/2 size-4.5 cursor-grab rounded-full border-2 border-text bg-surface shadow-md data-dragging:cursor-grabbing data-focus-visible:outline-2 data-focus-visible:outline-offset-2 data-focus-visible:outline-focus data-focus-visible:outline-solid" />
         </>
       )}
     </SliderTrack>

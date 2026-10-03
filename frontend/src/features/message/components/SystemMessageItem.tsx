@@ -80,7 +80,7 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
   const createdAt = toDate(message.createdAt);
 
   return (
-    <div className="flex items-center gap-2.5 px-[18px] py-[3px] font-sans text-[12.5px] text-muted">
+    <div className="flex items-center gap-2.5 px-4.5 py-0.75 font-sans text-label font-normal text-muted">
       <span className="grid w-8 shrink-0 place-items-center text-subtle [&_svg]:size-3.5">
         <IconInfoCircle aria-hidden />
       </span>

@@ -72,7 +72,7 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
           value={query}
           onChange={setQuery}
           label={t("admin.members.search")}
-          className="flex-[1_1_200px]"
+          className="flex-1 basis-50"
         />
         <Select
           label={t("admin.members.columns.role")}
@@ -120,7 +120,7 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
                           {member.displayName}
                           {isMe && t("admin.members.you")}
                         </span>
-                        <small className="text-[11.5px] text-muted">{member.email}</small>
+                        <small className="text-caption text-muted">{member.email}</small>
                       </div>
                     </div>
                   </td>
@@ -152,11 +152,11 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
                     )}
                   </td>
                   <td className={tableClassNames.cell}>
-                    <span className="inline-flex items-center gap-[5px] text-[12.5px]">
+                    <span className="inline-flex items-center gap-1.25 text-label font-normal">
                       <i
                         aria-hidden
                         className={cn(
-                          "block size-[7px] rounded-full",
+                          "block size-1.75 rounded-full",
                           isSuspended ? "bg-danger" : "bg-success",
                         )}
                       />

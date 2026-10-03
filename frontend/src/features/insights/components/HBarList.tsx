@@ -29,7 +29,7 @@ export const HBarList = ({ rows, emptyLabel }: HBarListProps) => {
   }
   return (
     <ul
-      className="m-0 flex list-none flex-col gap-[7px] p-0"
+      className="m-0 flex list-none flex-col gap-1.75 p-0"
       onPointerLeave={() => {
         setHovered(null);
       }}
@@ -37,12 +37,12 @@ export const HBarList = ({ rows, emptyLabel }: HBarListProps) => {
       {rows.map((row) => (
         <li
           key={row.key}
-          className="grid grid-cols-[minmax(80px,150px)_1fr_72px] items-center gap-2.5 text-[12.5px]"
+          className="grid grid-cols-[minmax(80px,150px)_1fr_72px] items-center gap-2.5 text-label font-normal"
           onPointerEnter={() => {
             setHovered(row.key);
           }}
         >
-          <span className="flex min-w-0 items-center gap-1 text-text [&_svg]:size-[13px] [&_svg]:shrink-0 [&_svg]:text-muted">
+          <span className="flex min-w-0 items-center gap-1 text-text [&_svg]:size-3.25 [&_svg]:shrink-0 [&_svg]:text-muted">
             {row.icon}
             <span className="truncate">{row.label}</span>
           </span>

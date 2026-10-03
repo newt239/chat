@@ -11,7 +11,7 @@ export const MessagePreview = ({ content }: MessagePreviewProps) => {
   const { t } = useTranslation();
 
   return (
-    <div className="max-h-[180px] min-h-[60px] overflow-y-auto px-3 pt-[9px] pb-0.5">
+    <div className="max-h-45 min-h-15 overflow-y-auto px-3 pt-2.25 pb-0.5">
       {content ? (
         <div className={markdownClassName}>{renderMarkdown(content, [])}</div>
       ) : (

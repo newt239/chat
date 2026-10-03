@@ -47,7 +47,7 @@ export const DateDivider = ({ dateKey, floating = false }: DateDividerProps) => 
       className={
         floating
           ? "pointer-events-none absolute inset-x-0 top-1.5 z-10 flex justify-center font-sans"
-          : "pointer-events-none relative z-10 -mt-[11px] mb-1 flex justify-center font-sans"
+          : "pointer-events-none relative z-10 -mt-2.75 mb-1 flex justify-center font-sans"
       }
     >
       <Menu

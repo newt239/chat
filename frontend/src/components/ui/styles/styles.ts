@@ -28,15 +28,15 @@ export const fieldStyles = {
   description: "text-xs text-muted",
   error: "text-xs text-danger",
   input:
-    "h-[34px] max-md:h-11 w-full min-w-0 rounded-md border border-border-strong bg-surface px-2.5 font-sans text-[13.5px] text-text outline-none placeholder:text-subtle data-disabled:bg-sunken data-disabled:text-subtle data-focused:border-accent data-focused:ring-3 data-focused:ring-accent-soft data-invalid:border-danger",
+    "h-8.5 max-md:h-11 w-full min-w-0 rounded-md border border-border-strong bg-surface px-2.5 font-sans text-body-sm text-text outline-none placeholder:text-subtle data-disabled:bg-sunken data-disabled:text-subtle data-focused:border-accent data-focused:ring-3 data-focused:ring-accent-soft data-invalid:border-danger",
   label: "text-label text-text",
-  root: "flex flex-col gap-[5px] font-sans",
+  root: "flex flex-col gap-1.25 font-sans",
 };
 
 export const overlayStyles = {
   listItem:
-    "flex min-h-[30px] max-md:min-h-11 cursor-default items-center gap-2.5 rounded-[6px] px-2.5 text-[13.5px] text-text no-underline outline-none data-disabled:text-subtle data-focused:bg-accent data-focused:text-accent-fg [&_svg]:size-4 [&_svg]:shrink-0",
-  menu: "flex min-w-[220px] flex-col p-1 outline-none",
+    "flex min-h-7.5 max-md:min-h-11 cursor-default items-center gap-2.5 rounded-md px-2.5 text-body-sm text-text no-underline outline-none data-disabled:text-subtle data-focused:bg-accent data-focused:text-accent-fg [&_svg]:size-4 [&_svg]:shrink-0",
+  menu: "flex min-w-55 flex-col p-1 outline-none",
   popover:
     "rounded-lg border border-border bg-raised font-sans text-text shadow-lg outline-none data-entering:animate-pop-in data-exiting:animate-pop-out motion-reduce:animate-none",
 };

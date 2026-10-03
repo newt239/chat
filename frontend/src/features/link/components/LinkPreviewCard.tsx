@@ -24,7 +24,7 @@ export const LinkPreviewCard = ({ url, onRemove }: LinkPreviewCardProps) => {
 
   if (isLoading) {
     return (
-      <div className="flex w-[min(420px,100%)] flex-col gap-1.5 rounded-[10px] border border-border p-3">
+      <div className="flex w-105 max-w-full flex-col gap-1.5 rounded-lg border border-border p-3">
         <Skeleton className="h-3 w-24" />
         <Skeleton className="h-4 w-4/5" />
         <Skeleton className="h-3 w-3/5" />
@@ -34,7 +34,7 @@ export const LinkPreviewCard = ({ url, onRemove }: LinkPreviewCardProps) => {
 
   if (ogp === undefined) {
     return (
-      <div className="flex w-[min(420px,100%)] items-center gap-2 rounded-[10px] border border-border py-1.5 pr-1.5 pl-3 text-caption">
+      <div className="flex w-105 max-w-full items-center gap-2 rounded-lg border border-border py-1.5 pr-1.5 pl-3 text-caption">
         <span className="min-w-0 flex-1 truncate text-danger">
           {t("link.previewFailed")} · <span className="text-muted">{url}</span>
         </span>

@@ -63,7 +63,7 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
           )}
           <span className="min-w-0 truncate">{activeChannel.name}</span>
         </h3>
-        <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-1 text-[12.5px]">
+        <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-1 text-label font-normal">
           <dt className="text-muted">{t("channel.info.visibility")}</dt>
           <dd className="m-0">
             {activeChannel.isPrivate ? t("channel.info.private") : t("channel.info.public")}
@@ -75,9 +75,9 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
       <section className="flex flex-col gap-2 border-b border-border px-4 py-3">
         <h4 className="m-0 text-xs font-semibold text-muted">{t("channel.info.description")}</h4>
         {description.length > 0 ? (
-          <p className="m-0 text-[13.5px] whitespace-pre-wrap">{description}</p>
+          <p className="m-0 text-body-sm whitespace-pre-wrap">{description}</p>
         ) : (
-          <p className="m-0 text-[12.5px] text-muted">{t("channel.info.noDescription")}</p>
+          <p className="m-0 text-label font-normal text-muted">{t("channel.info.noDescription")}</p>
         )}
       </section>
       <ChannelLinksSection channelId={activeChannel.id} />
@@ -117,7 +117,7 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
             ))}
           </div>
           {descendants.length > 0 && (
-            <p className="m-0 text-[11.5px] text-subtle">{t("channel.info.descendantsHint")}</p>
+            <p className="m-0 text-caption text-subtle">{t("channel.info.descendantsHint")}</p>
           )}
         </section>
       )}

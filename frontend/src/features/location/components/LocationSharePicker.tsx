@@ -27,7 +27,7 @@ export const LocationSharePicker = ({ onConfirm, onCancel }: LocationSharePicker
 
   return (
     <>
-      <div className="grid h-[220px] place-items-center overflow-hidden rounded-lg border border-border bg-sunken text-caption text-muted">
+      <div className="grid h-55 place-items-center overflow-hidden rounded-lg border border-border bg-sunken text-caption text-muted">
         {state.status === "ready" ? (
           <LocationMap location={state.location} className="size-full" />
         ) : state.status === "locating" ? (
@@ -47,7 +47,7 @@ export const LocationSharePicker = ({ onConfirm, onCancel }: LocationSharePicker
         )}
       </div>
       {state.status === "ready" && (
-        <p className="m-0 font-mono text-[11.5px] text-subtle tabular-nums">
+        <p className="m-0 font-mono text-caption text-subtle tabular-nums">
           {formatCoordinates(state.location)}
           {state.location.accuracyMeters !== undefined &&
             ` · ${t("location.accuracy", { meters: Math.round(state.location.accuracyMeters) })}`}

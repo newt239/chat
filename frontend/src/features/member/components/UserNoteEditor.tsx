@@ -67,7 +67,7 @@ export const UserNoteEditor = ({
         maxLength={2000}
       />
       <div className="flex items-center gap-2">
-        <span className="flex-1 text-[11.5px] text-subtle">{t("member.note.private")}</span>
+        <span className="flex-1 text-caption text-subtle">{t("member.note.private")}</span>
         <Button type="submit" size="sm" isDisabled={!isDirty} isPending={update.isPending}>
           {t("common.save")}
         </Button>

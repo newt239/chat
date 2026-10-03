@@ -25,16 +25,16 @@ type MiniPlayerProps = {
 
 const variants = {
   mobile: {
-    button: "size-[38px] rounded-md text-text data-hovered:bg-hover [&_svg]:size-[17px]",
+    button: "size-9.5 rounded-md text-text data-hovered:bg-hover [&_svg]:size-4.25",
     root: "relative shrink-0 border-t border-border bg-raised text-text",
     source: "text-xs text-muted",
-    title: "text-[13.5px] text-text",
+    title: "text-body-sm text-text",
   },
   sidebar: {
     button: "size-7 rounded-md text-side-strong data-hovered:bg-side-active/40 [&_svg]:size-3.5",
-    root: "mx-2 mb-1.5 shrink-0 overflow-hidden rounded-[10px] border border-side-hover bg-side-hover text-side-fg",
-    source: "text-[11px] text-side-muted",
-    title: "text-[12.5px] text-side-strong",
+    root: "mx-2 mb-1.5 shrink-0 overflow-hidden rounded-lg border border-side-hover bg-side-hover text-side-fg",
+    source: "text-caption text-side-muted",
+    title: "text-label font-normal text-side-strong",
   },
 };
 
@@ -115,12 +115,12 @@ export const MiniPlayer = ({ variant }: MiniPlayerProps) => {
               </span>
             ) : (
               !isVideo && (
-                <span className="mr-1.5 grid size-[26px] shrink-0 place-items-center rounded-[7px] bg-accent text-accent-fg [&_svg]:size-[15px]">
+                <span className="mr-1.5 grid size-6.5 shrink-0 place-items-center rounded-md bg-accent text-accent-fg [&_svg]:size-3.75">
                   <IconMusic aria-hidden />
                 </span>
               )
             )}
-            <div className="flex min-w-0 flex-1 flex-col leading-[1.3]">
+            <div className="flex min-w-0 flex-1 flex-col leading-snug">
               <b className={cn("truncate font-semibold", styles.title)}>{track.fileName}</b>
               <Button
                 onPress={handleJump}
@@ -155,7 +155,7 @@ export const MiniPlayer = ({ variant }: MiniPlayerProps) => {
             </Button>
           </div>
           {variant === "sidebar" && (
-            <div className="flex items-center gap-2 pr-2 pb-1.5 pl-2.5 font-mono text-[10.5px] text-side-muted tabular-nums">
+            <div className="flex items-center gap-2 pr-2 pb-1.5 pl-2.5 font-mono text-caption text-side-muted tabular-nums">
               <SeekBar
                 position={position}
                 duration={duration}

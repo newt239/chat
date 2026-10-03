@@ -52,19 +52,19 @@ export const SearchResultList = ({
             const authorName = displayName(message.userId, message.user?.displayName ?? "");
             const body = excerpt(toText(message.body), highlights, 40);
             return (
-              <div key={message.id} className="mx-[18px] my-1.5">
+              <div key={message.id} className="mx-4.5 my-1.5">
                 <MessageListCard workspaceId={workspaceId} message={message}>
                   <div className="flex gap-2.5 px-3 py-2">
                     <Avatar name={authorName} src={message.user?.avatarUrl} size={32} />
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <span className="text-body-strong">{authorName}</span>
-                      <p className="m-0 line-clamp-3 text-[14px] break-words whitespace-pre-wrap">
+                      <p className="m-0 line-clamp-3 text-body break-words whitespace-pre-wrap">
                         {body.isTrimmed && "…"}
                         {splitHighlights(body.text, body.ranges).map((part) =>
                           part.isMatch ? (
                             <mark
                               key={part.start}
-                              className="rounded-[2px] bg-mention-chip text-inherit"
+                              className="rounded-xs bg-mention-chip text-inherit"
                             >
                               {part.text}
                             </mark>
@@ -90,14 +90,14 @@ export const SearchResultList = ({
                 <Link
                   to="/app/$workspaceId/$channelId"
                   params={{ channelId: channel.id, workspaceId }}
-                  className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[13.5px] text-text no-underline data-hovered:bg-hover"
+                  className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-body-sm text-text no-underline data-hovered:bg-hover"
                 >
                   {channel.isPrivate ? (
                     <IconLock aria-hidden className="size-4 shrink-0 text-muted" />
                   ) : (
                     <IconHash aria-hidden className="size-4 shrink-0 text-muted" />
                   )}
-                  <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
+                  <span className="flex min-w-0 flex-1 flex-col leading-snug">
                     <span className="truncate">{channel.name}</span>
                     <small className="truncate text-xs text-muted">
                       {channel.description || t("search.noDescription")}
@@ -133,10 +133,10 @@ export const SearchResultList = ({
             {groups.map((group) => (
               <li
                 key={group.id}
-                className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[13.5px]"
+                className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-body-sm"
               >
                 <IconUsers aria-hidden className="size-4 shrink-0 text-muted" />
-                <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
+                <span className="flex min-w-0 flex-1 flex-col leading-snug">
                   <span className="truncate font-semibold text-accent-text">@{group.name}</span>
                   <small className="truncate text-xs text-muted">
                     {group.description || t("search.noDescription")}

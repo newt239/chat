@@ -175,7 +175,7 @@ export const CreateDMModal = ({ workspaceId, onClose }: CreateDMModalProps) => {
                       toggle(member.userId);
                     }}
                     className={cn(
-                      "grid size-[18px] cursor-pointer place-items-center rounded-full data-hovered:bg-accent/20",
+                      "grid size-4.5 cursor-pointer place-items-center rounded-full data-hovered:bg-accent/20",
                       focusRing,
                     )}
                   >
@@ -242,19 +242,19 @@ export const CreateDMModal = ({ workspaceId, onClose }: CreateDMModalProps) => {
           renderEmptyState={() => (
             <p className="m-0 px-2.5 py-2 text-caption text-muted">{t("dm.create.noResults")}</p>
           )}
-          className="flex max-h-[210px] flex-col overflow-y-auto rounded-lg border border-border outline-none"
+          className="flex max-h-52.5 flex-col overflow-y-auto rounded-lg border border-border outline-none"
         >
           {(member) => (
             <ListBoxItem
               id={member.userId}
               textValue={member.nickname ?? member.displayName}
-              className="flex cursor-pointer items-center gap-2.5 px-2.5 py-1.5 text-[13px] text-text outline-none data-focus-visible:bg-hover data-hovered:bg-hover"
+              className="flex cursor-pointer items-center gap-2.5 px-2.5 py-1.5 text-body-sm text-text outline-none data-focus-visible:bg-hover data-hovered:bg-hover"
             >
               {({ isSelected }) => (
                 <>
                   <span
                     className={cn(
-                      "grid size-[15px] shrink-0 place-items-center rounded-sm border border-border-strong bg-surface text-accent-fg",
+                      "grid size-3.75 shrink-0 place-items-center rounded-sm border border-border-strong bg-surface text-accent-fg",
                       isSelected && "border-accent bg-accent",
                     )}
                   >
@@ -264,7 +264,7 @@ export const CreateDMModal = ({ workspaceId, onClose }: CreateDMModalProps) => {
                   <Text slot="label" className="min-w-0 flex-1 truncate">
                     {member.nickname ?? member.displayName}
                   </Text>
-                  <Text slot="description" className="truncate text-[11.5px] text-subtle">
+                  <Text slot="description" className="truncate text-caption text-subtle">
                     {member.email}
                   </Text>
                 </>

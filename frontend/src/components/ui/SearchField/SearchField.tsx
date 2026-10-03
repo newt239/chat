@@ -27,7 +27,7 @@ export const SearchField = ({
     aria-label={label}
     className={withBaseClassName(
       className,
-      "flex h-[34px] min-w-0 items-center gap-2 rounded-md border border-border-strong bg-surface px-2.5 font-sans text-[13.5px] text-muted data-focus-within:border-accent data-focus-within:ring-3 data-focus-within:ring-accent-soft max-md:h-11",
+      "flex h-8.5 min-w-0 items-center gap-2 rounded-md border border-border-strong bg-surface px-2.5 font-sans text-body-sm text-muted data-focus-within:border-accent data-focus-within:ring-3 data-focus-within:ring-accent-soft max-md:h-11",
     )}
   >
     <IconSearch aria-hidden className="size-4 shrink-0" />

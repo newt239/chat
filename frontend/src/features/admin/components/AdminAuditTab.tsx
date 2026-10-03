@@ -182,7 +182,7 @@ export const AdminAuditTab = ({ workspaceId, members }: AdminAuditTabProps) => {
         </div>
         <Button
           variant="secondary"
-          className="mt-[22px] ml-auto"
+          className="mt-5.5 ml-auto"
           isPending={exportAuditLogs.isPending}
           onPress={() => {
             exportAuditLogs.mutate(filter, {

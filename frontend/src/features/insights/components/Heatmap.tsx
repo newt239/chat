@@ -35,7 +35,7 @@ export const Heatmap = ({ grid, ariaLabel }: HeatmapProps) => {
       <div
         role="img"
         aria-label={ariaLabel}
-        className="grid grid-cols-[20px_repeat(24,minmax(0,1fr))] gap-0.5 font-mono text-[10px] text-subtle"
+        className="grid grid-cols-[20px_repeat(24,minmax(0,1fr))] gap-0.5 font-mono text-caption text-subtle"
         onPointerLeave={() => {
           setHovered(null);
         }}
@@ -50,7 +50,7 @@ export const Heatmap = ({ grid, ariaLabel }: HeatmapProps) => {
               <i
                 key={`${weekday}-${hour}`}
                 className={cn(
-                  "block aspect-square min-w-0 rounded-[2px]",
+                  "block aspect-square min-w-0 rounded-xs",
                   hovered?.weekday === weekday &&
                     hovered.hour === hour &&
                     "outline-2 -outline-offset-1 outline-text outline-solid",
@@ -70,7 +70,7 @@ export const Heatmap = ({ grid, ariaLabel }: HeatmapProps) => {
           ))}
         </div>
       </div>
-      <div className="flex flex-wrap justify-between gap-2.5 text-[11.5px] text-muted tabular-nums">
+      <div className="flex flex-wrap justify-between gap-2.5 text-caption text-muted tabular-nums">
         <span aria-live="polite">
           {hovered === null || hoveredValue === undefined
             ? t("insights.charts.heatmap.hint")
@@ -80,12 +80,12 @@ export const Heatmap = ({ grid, ariaLabel }: HeatmapProps) => {
                 weekday: isoWeekdayLabel(hovered.weekday, locale),
               })}
         </span>
-        <span aria-hidden className="flex items-center gap-[3px] text-[11px]">
+        <span aria-hidden className="flex items-center gap-0.75 text-caption">
           {t("insights.charts.heatmap.less")}
           {LEGEND_STEPS.map((step) => (
             <i
               key={step}
-              className="block h-2.5 w-3.5 rounded-[2px]"
+              className="block h-2.5 w-3.5 rounded-xs"
               style={{ background: colorOf(step) }}
             />
           ))}

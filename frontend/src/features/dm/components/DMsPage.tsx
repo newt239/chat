@@ -30,7 +30,7 @@ export const DMsPage = () => {
       <div
         className={cn(
           mobileNavTone,
-          "flex min-h-0 flex-1 flex-col gap-px overflow-y-auto p-1.5 text-[15px] [--nav-row:52px]",
+          "flex min-h-0 flex-1 flex-col gap-px overflow-y-auto p-1.5 text-title font-normal [--nav-row:52px]",
         )}
       >
         <DMList workspaceId={workspaceId} />

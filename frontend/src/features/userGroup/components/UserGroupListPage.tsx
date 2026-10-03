@@ -52,7 +52,7 @@ export const UserGroupListPage = () => {
                 >
                   <span className="text-sm font-bold text-accent-text">@{group.name}</span>
                   {group.description !== undefined && group.description.length > 0 && (
-                    <span className="line-clamp-2 text-[12.5px] text-muted">
+                    <span className="line-clamp-2 text-label font-normal text-muted">
                       {group.description}
                     </span>
                   )}

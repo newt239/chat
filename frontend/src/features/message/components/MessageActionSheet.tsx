@@ -26,7 +26,7 @@ type MessageActionSheetProps = {
   onReact: (emoji: string) => void;
 };
 
-const roundButtonClassName = `grid size-11 place-items-center rounded-full bg-sunken text-[21px] text-muted data-pressed:bg-hover [&_svg]:size-[21px] ${focusRing}`;
+const roundButtonClassName = `grid size-11 place-items-center rounded-full bg-sunken text-heading font-normal text-muted data-pressed:bg-hover [&_svg]:size-5.25 ${focusRing}`;
 
 // モバイルでメッセージを長押ししたときの操作。開いている間だけマウントする。新しいタブで開く操作はモバイルでは出さない
 export const MessageActionSheet = ({
@@ -65,7 +65,7 @@ export const MessageActionSheet = ({
         </div>
       ) : (
         <>
-          <div className="mx-4 mb-3 flex flex-col gap-0.5 rounded-lg bg-sunken px-3 py-2.5 text-[13px] text-muted">
+          <div className="mx-4 mb-3 flex flex-col gap-0.5 rounded-lg bg-sunken px-3 py-2.5 text-body-sm text-muted">
             <b className="text-text">
               {displayName(message.userId, message.user?.displayName ?? "")}
             </b>
@@ -83,7 +83,7 @@ export const MessageActionSheet = ({
                   react(emoji);
                 }}
               >
-                <span className="text-[21px] leading-none">{emoji}</span>
+                <span className="text-heading font-normal leading-none">{emoji}</span>
               </Button>
             ))}
             <Button

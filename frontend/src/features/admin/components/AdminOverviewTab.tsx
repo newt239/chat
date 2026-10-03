@@ -92,7 +92,7 @@ export const AdminOverviewTab = ({ workspaceId, members }: AdminOverviewTabProps
       </div>
       <section className="flex flex-col gap-2">
         <header className="flex items-baseline justify-between gap-2">
-          <h2 className="m-0 text-[13.5px] font-bold">{t("admin.overview.recentAudit")}</h2>
+          <h2 className="m-0 text-body-sm font-bold">{t("admin.overview.recentAudit")}</h2>
           <Link
             to="/app/$workspaceId/admin"
             params={{ workspaceId }}

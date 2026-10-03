@@ -160,7 +160,7 @@ export const MessageItem = ({
       {...longPressProps}
       data-message-id={message.id}
       className={cn(
-        "relative flex gap-2.5 px-[18px] py-1.5 font-sans text-text",
+        "relative flex gap-2.5 px-4.5 py-1.5 font-sans text-text",
         (isHovered || isOverlayOpen) && "bg-hover",
         isMobile && "select-none [-webkit-touch-callout:none]",
         isPressed && "bg-hover",
@@ -186,9 +186,9 @@ export const MessageItem = ({
         </Button>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.25">
         {message.pin && (
-          <span className="-mb-0.5 inline-flex items-center gap-1 self-start text-[11px] font-semibold text-accent-text [&_svg]:size-3">
+          <span className="-mb-0.5 inline-flex items-center gap-1 self-start text-caption font-semibold text-accent-text [&_svg]:size-3">
             <IconPin aria-hidden />
             {t("pin.label", {
               name:
@@ -198,7 +198,7 @@ export const MessageItem = ({
             })}
           </span>
         )}
-        <div className="flex flex-wrap items-baseline gap-[7px] leading-[1.3]">
+        <div className="flex flex-wrap items-baseline gap-1.75 leading-snug">
           {isApp ? (
             <>
               <span className="text-sm font-bold text-text">{displayName}</span>
@@ -217,7 +217,7 @@ export const MessageItem = ({
           <MessageTime date={createdAt} />
           {channelChip}
           {message.editedAt && !message.isDeleted && (
-            <span className="text-[11px] text-subtle">{t("message.edited")}</span>
+            <span className="text-caption text-subtle">{t("message.edited")}</span>
           )}
           {isBookmarked && (
             <IconBookmarkFilled

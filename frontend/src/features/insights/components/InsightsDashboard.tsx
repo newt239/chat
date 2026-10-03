@@ -56,7 +56,7 @@ export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
   }
   if (insights === undefined) {
     return (
-      <div className="flex flex-col gap-3.5 p-[18px]">
+      <div className="flex flex-col gap-3.5 p-4.5">
         <Skeleton className="h-24 w-full rounded-xl" />
         <Skeleton className="h-56 w-full rounded-xl" />
         <Skeleton className="h-56 w-full rounded-xl" />
@@ -112,7 +112,7 @@ export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
     t(`insights.charts.storage.categories.${storageCategoryKeys[category]}`);
 
   return (
-    <div className="flex flex-col gap-3.5 px-[18px] pt-4 pb-6 max-md:px-3.5 max-md:pt-3">
+    <div className="flex flex-col gap-3.5 px-4.5 pt-4 pb-6 max-md:px-3.5 max-md:pt-3">
       <InsightsKpis insights={insights} />
       <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
         <ChartCard

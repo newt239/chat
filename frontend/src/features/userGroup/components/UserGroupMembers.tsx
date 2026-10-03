@@ -47,7 +47,7 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
           const member = workspaceMembers?.find((candidate) => candidate.userId === userId);
           const name = member?.nickname ?? member?.displayName ?? userId;
           return (
-            <li key={userId} className="flex items-center gap-2.5 py-0.5 text-[13.5px]">
+            <li key={userId} className="flex items-center gap-2.5 py-0.5 text-body-sm">
               <Avatar name={name} src={member?.avatarUrl} size={24} />
               <span className="min-w-0 flex-1 truncate">{name}</span>
               {/* 管理者でなくても自分はグループから抜けられる */}

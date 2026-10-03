@@ -80,7 +80,7 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
           return (
             <li
               key={member.userId}
-              className="flex items-center gap-2.5 rounded-md px-2 py-1 text-[13.5px]"
+              className="flex items-center gap-2.5 rounded-md px-2 py-1 text-body-sm"
             >
               <Avatar name={member.displayName} src={member.avatarUrl} size={28} />
               <span className="min-w-0 flex-1 truncate">{name}</span>

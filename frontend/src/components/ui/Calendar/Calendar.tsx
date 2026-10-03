@@ -54,7 +54,7 @@ export const Calendar = ({ "aria-label": ariaLabel, maxDate, onChange }: Calenda
           {(date) => (
             <CalendarCell
               date={date}
-              className={`grid size-8 cursor-pointer place-items-center rounded-md text-[13px] text-text tabular-nums data-hovered:bg-hover data-outside-month:hidden data-selected:bg-accent data-selected:text-accent-fg data-unavailable:cursor-default data-unavailable:text-subtle data-unavailable:line-through ${focusRing}`}
+              className={`grid size-8 cursor-pointer place-items-center rounded-md text-body-sm text-text tabular-nums data-hovered:bg-hover data-outside-month:hidden data-selected:bg-accent data-selected:text-accent-fg data-unavailable:cursor-default data-unavailable:text-subtle data-unavailable:line-through ${focusRing}`}
             />
           )}
         </CalendarGridBody>

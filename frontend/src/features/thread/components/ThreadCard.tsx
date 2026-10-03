@@ -41,7 +41,7 @@ export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
   return (
     <MessageListCard workspaceId={workspaceId} message={firstMessage}>
       <MessageItem message={firstMessage} onCopyLink={handleCopyLink} onCreateThread={openThread} />
-      <div className="flex items-center gap-2 pr-3 pl-[60px] max-md:pl-3">
+      <div className="flex items-center gap-2 pr-3 pl-15 max-md:pl-3">
         <Link
           to="/app/$workspaceId/$channelId/thread/$messageId"
           params={{ channelId, messageId: threadId, workspaceId }}

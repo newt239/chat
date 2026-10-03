@@ -16,15 +16,15 @@ type MessageLocationCardProps = {
 export const MessageLocationCard = ({ location }: MessageLocationCardProps) => {
   const { t } = useTranslation();
   return (
-    <div className="flex w-[min(400px,100%)] flex-col overflow-hidden rounded-xl border border-border bg-surface font-sans">
-      <LocationMap location={location} className="h-[180px] w-full" />
+    <div className="flex w-100 max-w-full flex-col overflow-hidden rounded-xl border border-border bg-surface font-sans">
+      <LocationMap location={location} className="h-45 w-full" />
       <div className="flex items-center gap-2 px-3 py-2">
         <IconMapPin aria-hidden className="size-4 shrink-0 text-accent-text" />
-        <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
-          <b className="truncate text-[13px] font-semibold text-text">
+        <span className="flex min-w-0 flex-1 flex-col leading-snug">
+          <b className="truncate text-body-sm font-semibold text-text">
             {location.label ?? t("location.card.title")}
           </b>
-          <small className="truncate font-mono text-[11px] text-subtle tabular-nums">
+          <small className="truncate font-mono text-caption text-subtle tabular-nums">
             {formatCoordinates(location)}
             {location.accuracyMeters !== undefined &&
               ` · ${t("location.accuracy", { meters: Math.round(location.accuracyMeters) })}`}

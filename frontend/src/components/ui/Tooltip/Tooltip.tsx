@@ -18,7 +18,7 @@ export const Tooltip = ({ content, children, placement = "top" }: TooltipProps) 
     <AriaTooltip
       offset={6}
       placement={placement}
-      className="max-w-60 rounded-[6px] bg-text px-2 py-1 font-sans text-caption text-surface tabular-nums shadow-md data-entering:animate-fade-in data-exiting:animate-fade-out motion-reduce:animate-none"
+      className="max-w-60 rounded-md bg-text px-2 py-1 font-sans text-caption text-surface tabular-nums shadow-md data-entering:animate-fade-in data-exiting:animate-fade-out motion-reduce:animate-none"
     >
       {content}
     </AriaTooltip>

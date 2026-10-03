@@ -38,7 +38,7 @@ export const PostTargetPicker = ({
       trigger={
         <Button
           aria-label={t("channel.aggregate.target", { name: selected.name })}
-          className={`mb-1.5 inline-flex h-[26px] cursor-pointer items-center gap-1 rounded-[6px] border border-border px-2 text-xs whitespace-nowrap text-muted data-hovered:border-border-strong [&_svg]:size-3 ${focusRing}`}
+          className={`mb-1.5 inline-flex h-6.5 cursor-pointer items-center gap-1 rounded-md border border-border px-2 text-xs whitespace-nowrap text-muted data-hovered:border-border-strong [&_svg]:size-3 ${focusRing}`}
         >
           {t("channel.aggregate.targetLabel")}
           <b className="font-semibold text-text">

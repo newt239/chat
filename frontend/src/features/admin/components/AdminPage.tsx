@@ -103,7 +103,7 @@ export const AdminPage = () => {
           <TabPanel
             key={value}
             id={value}
-            className="overflow-y-auto px-[18px] pt-4 pb-6 max-md:px-3.5 max-md:pt-3"
+            className="overflow-y-auto px-4.5 pt-4 pb-6 max-md:px-3.5 max-md:pt-3"
           >
             {renderTab(value)}
           </TabPanel>

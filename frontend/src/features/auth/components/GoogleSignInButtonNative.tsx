@@ -57,7 +57,7 @@ export const GoogleSignInButtonNative = ({ workspaceId }: GoogleSignInButtonNati
     <div className="flex flex-col items-center gap-2">
       <Button
         variant="secondary"
-        className="h-10 w-[320px] max-w-full"
+        className="h-10 w-80 max-w-full"
         isPending={isPending}
         onPress={() => {
           setFailed(false);

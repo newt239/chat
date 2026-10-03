@@ -26,9 +26,9 @@ export const ThreadListPage = () => {
   return (
     <>
       <PageHeader icon={<IconMessages />} title={t("shell.nav.threads")} />
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-[18px] py-3 max-md:px-2.5">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4.5 py-3 max-md:px-2.5">
         {isLoading ? (
-          <Skeleton className="h-32 w-full rounded-[10px]" />
+          <Skeleton className="h-32 w-full rounded-lg" />
         ) : threads === undefined || threads.length === 0 ? (
           <EmptyState
             icon={<IconMessages />}
@@ -41,7 +41,7 @@ export const ThreadListPage = () => {
           ))
         )}
         <div ref={loadMoreRef}>
-          {isFetchingNextPage && <Skeleton className="h-32 w-full rounded-[10px]" />}
+          {isFetchingNextPage && <Skeleton className="h-32 w-full rounded-lg" />}
         </div>
       </div>
     </>
