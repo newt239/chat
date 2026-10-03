@@ -17,11 +17,15 @@ const pinned = (payload: Record<string, string>) =>
   });
 
 const setup = (payload: Record<string, string>) =>
-  renderWithProviders(<SystemMessageItem message={pinned(payload)} />, "/app/ws1", (routes) => {
-    routes.rpc(WorkspaceService.method.listMembers, () => ({
-      members: [create(WorkspaceMemberSchema, { displayName: "Bob", userId: "u-bob" })],
-    }));
-  });
+  renderWithProviders(
+    <SystemMessageItem message={pinned(payload)} channelLabel={null} />,
+    "/app/ws1",
+    (routes) => {
+      routes.rpc(WorkspaceService.method.listMembers, () => ({
+        members: [create(WorkspaceMemberSchema, { displayName: "Bob", userId: "u-bob" })],
+      }));
+    },
+  );
 
 describe("SystemMessageItem", () => {
   test("ピン留めのお知らせはピン留めされたメッセージへリンクする", async () => {

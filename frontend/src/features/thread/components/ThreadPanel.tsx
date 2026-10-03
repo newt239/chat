@@ -6,6 +6,7 @@ import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { BaseMessageInput } from "#/features/message/components/BaseMessageInput";
 import { MessageItem } from "#/features/message/components/MessageItem";
 import { MessageList } from "#/features/message/components/MessageList";
+import { SystemMessageItem } from "#/features/message/components/SystemMessageItem";
 import { ThreadPanelContext } from "#/features/message/hooks/useOwnsMessageOverlay";
 import { buildTimelineRows } from "#/features/message/utils/timelineRows";
 import { TimelineItemSchema } from "#/gen/chat/v1/message_pb";
@@ -14,7 +15,7 @@ import { useDateFormat } from "#/hooks/useDateFormat";
 import { useThreadReplies } from "../hooks/useThreadReplies";
 
 import type { TimelineRow } from "#/features/message/utils/timelineRows";
-import type { Message } from "#/gen/chat/v1/message_pb";
+import type { Message, SystemMessage } from "#/gen/chat/v1/message_pb";
 
 type ThreadPanelProps = {
   channelId: string;
@@ -23,6 +24,10 @@ type ThreadPanelProps = {
 
 const renderMessage = (message: Message, isHighlighted: boolean) => (
   <MessageItem message={message} isHighlighted={isHighlighted} channelChip={null} />
+);
+
+const renderSystemMessage = (message: SystemMessage) => (
+  <SystemMessageItem message={message} channelLabel={null} />
 );
 
 export const ThreadPanel = ({ channelId, threadId }: ThreadPanelProps) => {
@@ -92,6 +97,7 @@ export const ThreadPanel = ({ channelId, threadId }: ThreadPanelProps) => {
           void navigate({ search: (prev) => ({ ...prev, message: undefined }), to: "." });
         }}
         renderMessage={renderMessage}
+        renderSystemMessage={renderSystemMessage}
         header={
           <>
             {renderMessage(parentMessage, false)}
