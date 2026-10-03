@@ -17,10 +17,7 @@ export const TimezoneSettings = () => {
 
   return (
     <>
-      <SettingRow
-        title={t("preferences.timezone.title")}
-        description={t("preferences.timezone.description")}
-      >
+      <SettingRow title={t("preferences.timezone.title")} description={null}>
         <ComboBox
           label={t("preferences.timezone.title")}
           options={options}

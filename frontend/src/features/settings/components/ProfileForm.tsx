@@ -71,6 +71,7 @@ export const ProfileForm = ({ me }: ProfileFormProps) => {
         onChange={setAvatarUrl}
         purpose={ImagePurpose.AVATAR}
         workspaceId={null}
+        layout="stacked"
       />
       <TextField
         label={t("auth.displayName")}
