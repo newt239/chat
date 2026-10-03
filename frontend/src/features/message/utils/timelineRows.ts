@@ -41,8 +41,3 @@ export const buildTimelineRows = (
   }
   return rows;
 };
-
-export const findRowIndex = (rows: readonly TimelineRow[], messageId: string) =>
-  rows.findIndex(
-    (row) => (row.kind === "user" || row.kind === "system") && row.message.id === messageId,
-  );

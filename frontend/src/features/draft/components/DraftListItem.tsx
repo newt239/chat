@@ -5,8 +5,8 @@ import { Badge } from "#/components/ui/Badge/Badge";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
-import { messageLocation } from "#/features/message/utils/messageLocation";
 import { useDateFormat } from "#/hooks/useDateFormat";
+import { messageLocation } from "#/lib/messageLocation";
 import { toDate } from "#/lib/timestamp";
 
 import type { Draft } from "#/gen/chat/v1/draft_service_pb";

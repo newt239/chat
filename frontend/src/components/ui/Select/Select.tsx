@@ -21,6 +21,8 @@ type SelectProps<T extends string> = {
   value: T;
   onChange: (value: T) => void;
   description?: string;
+  // 表の中に置くため、見出しを出さない小さな形にする
+  isCompact?: boolean;
   isDisabled?: boolean;
   className?: string;
 };
@@ -31,10 +33,12 @@ export const Select = <T extends string>({
   value,
   onChange,
   description,
+  isCompact,
   isDisabled,
   className,
 }: SelectProps<T>) => (
   <AriaSelect
+    aria-label={isCompact ? label : undefined}
     value={value}
     onChange={(key) => {
       const option = findOption(options, key);
@@ -45,16 +49,21 @@ export const Select = <T extends string>({
     isDisabled={isDisabled}
     className={cn(fieldStyles.root, className)}
   >
-    <Label className={fieldStyles.label}>{label}</Label>
+    {!isCompact && <Label className={fieldStyles.label}>{label}</Label>}
     <Button
       className={cn(
-        fieldStyles.input,
         focusRing,
-        "flex cursor-pointer items-center gap-2 text-left data-pressed:border-accent",
+        "flex cursor-pointer items-center text-left",
+        isCompact
+          ? "h-7 min-w-24 gap-1.5 rounded-md border border-border-strong bg-surface px-2 text-label font-normal text-text data-disabled:cursor-default data-disabled:bg-sunken data-disabled:text-subtle"
+          : cn(fieldStyles.input, "gap-2 data-pressed:border-accent"),
       )}
     >
       <SelectValue className="flex-1 truncate" />
-      <IconChevronDown aria-hidden className="size-4 shrink-0 text-muted" />
+      <IconChevronDown
+        aria-hidden
+        className={cn("shrink-0 text-muted", isCompact ? "size-3.5" : "size-4")}
+      />
     </Button>
     {description && (
       <Text slot="description" className={fieldStyles.description}>

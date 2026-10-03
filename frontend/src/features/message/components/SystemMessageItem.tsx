@@ -7,9 +7,9 @@ import { Trans, useTranslation } from "react-i18next";
 import { Link } from "#/components/ui/Link/Link";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { SystemMessageKind } from "#/gen/chat/v1/message_pb";
+import { messageLocation } from "#/lib/messageLocation";
 import { toDate } from "#/lib/timestamp";
 
-import { messageLocation } from "../utils/messageLocation";
 import { MessageTime } from "./MessageTime";
 
 import type { SystemMessage } from "#/gen/chat/v1/message_pb";

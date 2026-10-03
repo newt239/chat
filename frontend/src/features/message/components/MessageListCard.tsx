@@ -5,9 +5,8 @@ import { useTranslation } from "react-i18next";
 import { Link } from "#/components/ui/Link/Link";
 import { useConversationLabel } from "#/features/channel/hooks/useConversationLabel";
 import { useDateFormat } from "#/hooks/useDateFormat";
+import { messageLocation } from "#/lib/messageLocation";
 import { toDate } from "#/lib/timestamp";
-
-import { messageLocation } from "../utils/messageLocation";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 
@@ -30,7 +29,7 @@ export const MessageListCard = ({ workspaceId, message, children }: MessageListC
         {label && <b className="max-w-1/2 truncate font-semibold text-text">{label}</b>}
         <span className="min-w-0 flex-1 truncate">
           {formatDateTime(toDate(message.createdAt))}
-          {parentId !== undefined && ` · ${t("search.inThread")}`}
+          {parentId !== undefined && ` · ${t("message.card.inThread")}`}
         </span>
         <Link
           {...messageLocation({
@@ -41,7 +40,7 @@ export const MessageListCard = ({ workspaceId, message, children }: MessageListC
           })}
           className="shrink-0 rounded-sm px-2 py-0.5 text-xs font-semibold text-accent-text no-underline data-hovered:bg-hover"
         >
-          {t(parentId === undefined ? "search.showInChannel" : "search.showInThread")}
+          {t(parentId === undefined ? "message.card.showInChannel" : "message.card.showInThread")}
         </Link>
       </header>
       {children}

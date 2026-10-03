@@ -3,9 +3,8 @@ import { Link } from "#/components/ui/Link/Link";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { useDateFormat } from "#/hooks/useDateFormat";
+import { messageLocation } from "#/lib/messageLocation";
 import { toDate } from "#/lib/timestamp";
-
-import { messageLocation } from "../utils/messageLocation";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 

@@ -2,10 +2,8 @@ import { useState } from "react";
 
 import { useMutation, useQuery } from "@connectrpc/connect-query";
 import { getRouteApi } from "@tanstack/react-router";
-import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button/Button";
 import { Link } from "#/components/ui/Link/Link";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { useCompleteLogin } from "#/features/auth/hooks/useCompleteLogin";
@@ -14,6 +12,7 @@ import { InvitationService } from "#/gen/chat/v1/invitation_service_pb";
 
 import { AuthCard } from "./AuthCard";
 import { AuthMethods } from "./AuthMethods";
+import { PasswordAuthForm } from "./PasswordAuthForm";
 
 const inviteRoute = getRouteApi("/invite/$token");
 
@@ -54,12 +53,13 @@ export const InvitationAccept = () => {
       <AuthMethods
         workspaceId={null}
         passwordForm={
-          <Form
-            className="flex flex-col gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
+          <PasswordAuthForm
+            onSubmit={() => {
               signUp.mutate({ displayName, password, token });
             }}
+            error={signUp.error}
+            isPending={signUp.isPending}
+            submitLabel={t("auth.invite.submit")}
           >
             <p className="m-0 text-caption text-muted">{t("auth.invite.passwordLead")}</p>
             <TextField
@@ -79,13 +79,7 @@ export const InvitationAccept = () => {
               minLength={8}
               isRequired
             />
-            {signUp.isError && (
-              <p className="m-0 text-caption text-danger">{signUp.error.message}</p>
-            )}
-            <Button type="submit" isPending={signUp.isPending}>
-              {t("auth.invite.submit")}
-            </Button>
-          </Form>
+          </PasswordAuthForm>
         }
       />
     </AuthCard>

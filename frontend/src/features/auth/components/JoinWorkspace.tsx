@@ -3,10 +3,8 @@ import { useState } from "react";
 import { useMutation, useQuery } from "@connectrpc/connect-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
-import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button/Button";
 import { Link } from "#/components/ui/Link/Link";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { useCompleteLogin } from "#/features/auth/hooks/useCompleteLogin";
@@ -17,6 +15,7 @@ import { sessionAtom } from "#/providers/store/auth";
 import { AuthCard } from "./AuthCard";
 import { AuthMethods } from "./AuthMethods";
 import { JoinAsMember } from "./JoinAsMember";
+import { PasswordAuthForm } from "./PasswordAuthForm";
 
 const joinRoute = getRouteApi("/join/$workspaceId");
 
@@ -66,12 +65,13 @@ export const JoinWorkspace = () => {
             workspaceId={workspaceId}
             passwordForm={
               emailSignupEnabled ? (
-                <Form
-                  className="flex flex-col gap-4"
-                  onSubmit={(event) => {
-                    event.preventDefault();
+                <PasswordAuthForm
+                  onSubmit={() => {
                     signUp.mutate({ displayName, email, password, workspaceId });
                   }}
+                  error={signUp.error}
+                  isPending={signUp.isPending}
+                  submitLabel={t("auth.join.signUp")}
                 >
                   <TextField
                     label={t("auth.email")}
@@ -99,13 +99,7 @@ export const JoinWorkspace = () => {
                     minLength={8}
                     isRequired
                   />
-                  {signUp.isError && (
-                    <p className="m-0 text-caption text-danger">{signUp.error.message}</p>
-                  )}
-                  <Button type="submit" isPending={signUp.isPending}>
-                    {t("auth.join.signUp")}
-                  </Button>
-                </Form>
+                </PasswordAuthForm>
               ) : null
             }
           />

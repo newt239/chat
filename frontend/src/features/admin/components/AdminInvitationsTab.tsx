@@ -7,11 +7,12 @@ import { toast } from "#/components/ui/ToastRegion/toast";
 import { AdminSignupSettings } from "#/features/admin/components/AdminSignupSettings";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";
 import { workspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
-import { InviteMemberForm } from "#/features/workspace/components/InviteMemberForm";
-import { useInvitationActions } from "#/features/workspace/hooks/useInvitationActions";
 import { InvitationService } from "#/gen/chat/v1/invitation_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
+
+import { useInvitationActions } from "../hooks/useInvitationActions";
+import { InviteMemberForm } from "./InviteMemberForm";
 
 const columns = ["email", "role", "invitedBy", "expiresAt"] as const;
 

@@ -13,7 +13,6 @@ export const schedule: Messages["schedule"] = {
     actions: "Scheduled message actions",
     attachments: "{{count}} attachments",
     body: "Message",
-    delete: "Delete",
     deleted: "Scheduled message deleted",
     edit: "Edit",
     editTitle: "Edit scheduled message",

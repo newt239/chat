@@ -16,6 +16,11 @@ export const message = {
     unbookmark: "ブックマークを外す",
     unpin: "ピン留めを外す",
   },
+  card: {
+    inThread: "スレッド内",
+    showInChannel: "チャンネルで表示",
+    showInThread: "スレッドで表示",
+  },
   composer: {
     attach: "ファイルを添付",
     bold: "太字",

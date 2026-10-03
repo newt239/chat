@@ -42,7 +42,6 @@ export const search: Messages["search"] = {
     thread: "Thread replies and posts with replies",
   },
   invalidDate: "Use the YYYY-MM-DD format for dates: {{tokens}}",
-  inThread: "In thread",
   input: "Search keywords",
   noDescription: "No description",
   placeholder: "Keywords, from:@name in:#channel has:image",
@@ -54,8 +53,6 @@ export const search: Messages["search"] = {
     messages: "Messages",
     users: "People",
   },
-  showInChannel: "View in channel",
-  showInThread: "View in thread",
   sort: {
     label: "Sort",
     newest: "Newest",

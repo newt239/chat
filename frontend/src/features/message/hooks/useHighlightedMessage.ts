@@ -2,12 +2,8 @@ import { useEffect, useRef, useState } from "react";
 
 const HIGHLIGHT_DURATION_MS = 3_000;
 
-/**
- * TargetMessageId のメッセージへスクロールし、一定時間ハイライトする。 scrollToMessage は対象がまだ一覧にないとき false
- * を返し、一覧が変わって作り直されたときに再び試す。
- */
+// 対象へスクロールして一定時間ハイライトする。scrollToMessage が false なら作り直されたときに再び試す
 export const useHighlightedMessage = (
-  isReady: boolean,
   targetMessageId: string | null,
   scrollToMessage: (messageId: string) => boolean,
 ) => {
@@ -25,7 +21,7 @@ export const useHighlightedMessage = (
   }, [targetMessageId]);
 
   useEffect(() => {
-    if (!isReady || targetMessageId === null) {
+    if (targetMessageId === null) {
       return;
     }
     // 再レンダリングのたびにスクロールし直さない
@@ -35,7 +31,7 @@ export const useHighlightedMessage = (
     if (scrollToMessage(targetMessageId)) {
       scrolledMessageIdRef.current = targetMessageId;
     }
-  }, [isReady, targetMessageId, scrollToMessage]);
+  }, [targetMessageId, scrollToMessage]);
 
   return expiredMessageId === targetMessageId ? null : targetMessageId;
 };

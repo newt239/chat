@@ -18,6 +18,11 @@ export const message: Messages["message"] = {
     unbookmark: "Remove bookmark",
     unpin: "Unpin",
   },
+  card: {
+    inThread: "In thread",
+    showInChannel: "View in channel",
+    showInThread: "View in thread",
+  },
   composer: {
     attach: "Attach files",
     bold: "Bold",

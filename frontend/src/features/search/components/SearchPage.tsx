@@ -165,7 +165,7 @@ export const SearchPage = () => {
         />
         <SearchModifierHelp onInsert={insertModifier} />
       </Form>
-      <SearchFilterBar resolved={resolved} />
+      <SearchFilterBar resolved={resolved} unresolved={unresolved} />
       <Tabs
         selectedKey={filter}
         onSelectionChange={(key) => {

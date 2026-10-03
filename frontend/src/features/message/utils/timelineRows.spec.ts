@@ -10,7 +10,7 @@ import {
   TimelineItemSchema,
 } from "#/gen/chat/v1/message_pb";
 
-import { buildTimelineRows, findRowIndex } from "./timelineRows";
+import { buildTimelineRows } from "./timelineRows";
 
 const at = (iso: string) => timestampFromDate(new Date(iso));
 
@@ -44,8 +44,6 @@ describe("buildTimelineRows", () => {
       "d-2026-09-29",
       "u-m2",
     ]);
-    expect(findRowIndex(rows, "m2")).toBe(4);
-    expect(findRowIndex(rows, "missing")).toBe(-1);
   });
 
   test("参加のお知らせを隠すと、それしかない日の区切りも出さない", () => {

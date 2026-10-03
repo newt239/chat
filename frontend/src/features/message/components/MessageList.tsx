@@ -10,7 +10,6 @@ import { Button } from "#/components/ui/Button/Button";
 import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useHighlightedMessage } from "../hooks/useHighlightedMessage";
-import { findRowIndex } from "../utils/timelineRows";
 import { DateDivider } from "./DateDivider";
 import { SystemMessageItem } from "./SystemMessageItem";
 
@@ -75,7 +74,7 @@ export const MessageList = ({
   // コンパイラがメモ化しないため、一覧が変わったときだけ useHighlightedMessage が試し直すよう手で安定させる
   const scrollToMessage = useCallback(
     (messageId: string) => {
-      const index = findRowIndex(rows, messageId);
+      const index = rows.findIndex((row) => isMessageRow(row) && row.message.id === messageId);
       if (index === -1) {
         return false;
       }
@@ -84,7 +83,7 @@ export const MessageList = ({
     },
     [rows, virtualizer],
   );
-  const highlightedId = useHighlightedMessage(rows.length > 0, targetMessageId, scrollToMessage);
+  const highlightedId = useHighlightedMessage(targetMessageId, scrollToMessage);
 
   const isAtBottomRef = useRef(targetMessageId === null);
   // 最初の位置へスクロールし終えるまでは、先頭にいても過去を読み込まない

@@ -26,10 +26,9 @@ import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirector
 import { usePinActions } from "#/features/pin/hooks/usePinActions";
 import { useToggleThreadFollow } from "#/features/thread/hooks/useToggleThreadFollow";
 import { copyWithToast } from "#/lib/clipboard";
+import { messageLocation } from "#/lib/messageLocation";
 import { workspaceRoute } from "#/lib/overlaySearch";
 import { toShareUrl } from "#/lib/shareUrl";
-
-import { messageLocation } from "../utils/messageLocation";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 

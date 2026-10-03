@@ -29,8 +29,6 @@ const lineFormats = {
   quote: { marker: quoteMarker, prefix: () => "> ", replaces: quoteMarker },
 };
 
-type Range = { start: number; end: number };
-
 const lineRangeOf = (text: string, { start, end }: Selection) => {
   const lineEnd = text.indexOf("\n", end);
   return {
@@ -78,7 +76,7 @@ const findEnclosingLink = (text: string, selection: Selection) => {
 const removePair = (
   text: string,
   selection: Selection,
-  { open, close }: { open: Range; close: Range },
+  { open, close }: { open: Selection; close: Selection },
 ) => {
   const openLength = open.end - open.start;
   const shift = (position: number) =>
@@ -113,7 +111,7 @@ const toggleLink = (text: string, selection: Selection) => {
 };
 
 // 選択範囲にかかる各行の行頭へ記号を付ける。すべての行に付いていれば外す
-const toggleLines = (text: string, selection: Selection, key: keyof typeof lineFormats) => {
+const toggleLine = (key: keyof typeof lineFormats) => (text: string, selection: Selection) => {
   const { marker, prefix, replaces } = lineFormats[key];
   const range = lineRangeOf(text, selection);
   const lines = text.slice(range.start, range.end).split("\n");
@@ -145,9 +143,6 @@ const toggleInline = (key: keyof typeof inlineFormats) => (text: string, selecti
   const pair = findEnclosingPair(text, selection, pattern.tokens);
   return pair ? removePair(text, selection, pair) : wrap(text, selection, pattern);
 };
-
-const toggleLine = (key: keyof typeof lineFormats) => (text: string, selection: Selection) =>
-  toggleLines(text, selection, key);
 
 const formatToggles = {
   bold: toggleInline("bold"),

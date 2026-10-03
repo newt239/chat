@@ -10,8 +10,9 @@ import { Select } from "#/components/ui/Select/Select";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { assignableWorkspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
-import { useInvitationActions } from "#/features/workspace/hooks/useInvitationActions";
 import { toShareUrl } from "#/lib/shareUrl";
+
+import { useInvitationActions } from "../hooks/useInvitationActions";
 
 import type { WorkspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
 

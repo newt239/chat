@@ -71,7 +71,7 @@ export const ChannelCategoryDialog = ({
             isDisabled={trimmed === ""}
             isPending={create.isPending || update.isPending}
           >
-            {category === null ? t("channel.create.submit") : t("channel.category.save")}
+            {category === null ? t("channel.create.submit") : t("common.save")}
           </Button>
         </>
       }

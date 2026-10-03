@@ -19,9 +19,9 @@ import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { useMentionCodec } from "#/features/mention/hooks/useMentionCodec";
 import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
-import { messageLocation } from "#/features/message/utils/messageLocation";
 import { ScheduledMessageStatus } from "#/gen/chat/v1/scheduled_message_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
+import { messageLocation } from "#/lib/messageLocation";
 import { toDate } from "#/lib/timestamp";
 
 import { useScheduledMessageActions } from "../hooks/useScheduledMessages";
@@ -141,7 +141,7 @@ export const ScheduledMessageItem = ({
               remove.mutate({ id: message.id });
             }}
           >
-            {t("schedule.list.delete")}
+            {t("common.delete")}
           </MenuItem>
         </Menu>
       )}

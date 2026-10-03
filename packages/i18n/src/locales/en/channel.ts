@@ -50,7 +50,6 @@ export const channel: Messages["channel"] = {
     newCategory: "New category…",
     rename: "Rename",
     renameTitle: "Rename category",
-    save: "Save",
   },
   create: {
     created: "Created #{{name}}",

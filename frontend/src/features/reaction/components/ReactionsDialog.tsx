@@ -8,6 +8,7 @@ import { Tab } from "#/components/ui/Tab/Tab";
 import { TabList } from "#/components/ui/TabList/TabList";
 import { TabPanel } from "#/components/ui/TabPanel/TabPanel";
 import { Tabs } from "#/components/ui/Tabs/Tabs";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
@@ -31,6 +32,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
   const { t } = useTranslation();
   const { toExcerpt } = useMentionDirectory();
   const { formatDateTime } = useDateFormat();
+  const displayName = useDisplayName();
   const currentUserId = useAtomValue(myUserIdAtom);
   const toggleReaction = useToggleReaction(message);
   const groups = groupReactions(message.reactions, currentUserId);
@@ -53,7 +55,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
       title={t("reaction.list.title")}
     >
       <p className="-mt-1 mb-0 truncate text-label font-normal text-muted">
-        {message.user?.displayName}: {toExcerpt(message.body)}
+        {displayName(message.userId, message.user?.displayName ?? "")}: {toExcerpt(message.body)}
       </p>
       <Tabs
         selectedKey={selectedTab}
@@ -81,19 +83,16 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
                 .filter((row) => id === ALL_REACTIONS_TAB || row.emoji === id)
                 .map((row) => {
                   const isMine = row.user?.id === currentUserId;
+                  const name = displayName(row.user?.id ?? "", row.user?.displayName ?? "");
                   return (
                     <li
                       key={`${row.emoji}-${row.user?.id}`}
                       className="flex items-center gap-2.5 rounded-lg px-2 py-1.5"
                     >
-                      <Avatar
-                        name={row.user?.displayName ?? ""}
-                        src={row.user?.avatarUrl}
-                        size={30}
-                      />
+                      <Avatar name={name} src={row.user?.avatarUrl} size={30} />
                       <span className="flex min-w-0 flex-1 flex-col leading-snug">
                         <span className="truncate text-body-sm font-medium">
-                          {isMine ? t("reaction.names.you") : row.user?.displayName}
+                          {isMine ? t("reaction.names.you") : name}
                         </span>
                         <small className="font-mono text-caption text-subtle tabular-nums">
                           {formatDateTime(toDate(row.createdAt))}

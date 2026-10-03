@@ -40,7 +40,6 @@ export const search = {
     thread: "スレッドの返信と、返信のある投稿",
   },
   invalidDate: "日付は YYYY-MM-DD の形式で指定してください: {{tokens}}",
-  inThread: "スレッド内",
   input: "検索キーワード",
   noDescription: "説明なし",
   placeholder: "キーワード、from:@名前 in:#チャンネル has:image",
@@ -52,8 +51,6 @@ export const search = {
     messages: "メッセージ",
     users: "ユーザー",
   },
-  showInChannel: "チャンネルで表示",
-  showInThread: "スレッドで表示",
   sort: {
     label: "並び順",
     newest: "新しい順",

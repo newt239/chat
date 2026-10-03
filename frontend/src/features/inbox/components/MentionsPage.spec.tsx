@@ -11,7 +11,7 @@ import { MessageSchema } from "#/gen/chat/v1/message_pb";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
-import { MentionList } from "./MentionList";
+import { MentionsPage } from "./MentionsPage";
 
 import type { ListMentionsRequest } from "#/gen/chat/v1/mention_service_pb";
 import type { CreateMessageRequest } from "#/gen/chat/v1/message_service_pb";
@@ -43,7 +43,7 @@ const message = (id: string, body: string, parentId?: string) =>
 const setup = async () => {
   const listed = vi.fn<(req: ListMentionsRequest) => void>();
   const created = vi.fn<(req: CreateMessageRequest) => void>();
-  await renderWithProviders(<MentionList workspaceId="ws1" />, "/app/ws1", (routes) => {
+  await renderWithProviders(<MentionsPage />, "/app/ws1", (routes) => {
     routes.rpc(ChannelService.method.listChannels, () => ({
       channels: [create(ChannelSchema, { id: "c1", name: "design" })],
     }));
@@ -65,7 +65,7 @@ const setup = async () => {
   return { created, listed };
 };
 
-describe("MentionList", () => {
+describe("MentionsPage", () => {
   test("メンションを並べ、末尾が見えたら次のページを読み込む", async () => {
     const { listed } = await setup();
     expect(await screen.findByText("確認お願いします")).toBeInTheDocument();
@@ -103,7 +103,7 @@ describe("MentionList", () => {
   });
 
   test("メンションがなければ案内を出す", async () => {
-    await renderWithProviders(<MentionList workspaceId="ws1" />, "/app/ws1", (routes) => {
+    await renderWithProviders(<MentionsPage />, "/app/ws1", (routes) => {
       routes.rpc(MentionService.method.listMentions, () => ({ messages: [] }));
     });
     expect(await screen.findByText("メンションはありません")).toBeInTheDocument();

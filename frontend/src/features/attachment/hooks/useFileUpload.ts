@@ -9,7 +9,6 @@ import { usePreferences } from "#/hooks/usePreferences";
 import { putToStorage } from "#/lib/upload";
 
 import { measureMedia } from "../utils/measureMedia";
-import { validateFile } from "../utils/validator";
 
 export type PendingAttachment = {
   id: string;
@@ -20,6 +19,8 @@ export type PendingAttachment = {
     | { status: "completed"; attachmentId: string }
     | { status: "error"; error: string };
 };
+
+const MAX_FILE_SIZE = 1024 * 1024 * 1024;
 
 type UploadOptions = {
   channelId: string;
@@ -42,8 +43,7 @@ export const useFileUpload = () => {
 
   const uploadFile = async (file: File, options: UploadOptions) => {
     const id = crypto.randomUUID();
-    const invalidReason = validateFile(file);
-    if (invalidReason !== null) {
+    if (file.size === 0 || file.size > MAX_FILE_SIZE) {
       setPendingAttachments((prev) => [
         ...prev,
         {
@@ -51,7 +51,7 @@ export const useFileUpload = () => {
           id,
           state: {
             error:
-              invalidReason === "empty"
+              file.size === 0
                 ? t("attachment.errors.empty")
                 : t("attachment.errors.tooLarge", { size: formatBytes(file.size, locale) }),
             status: "error",

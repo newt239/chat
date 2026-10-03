@@ -48,7 +48,6 @@ export const channel = {
     newCategory: "新しいカテゴリ…",
     rename: "名前を変更",
     renameTitle: "カテゴリの名前を変更",
-    save: "保存",
   },
   create: {
     created: "#{{name}} を作成しました",

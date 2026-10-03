@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { cn, focusRing } from "#/components/ui/styles/styles";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 import { transitions } from "#/lib/motion";
@@ -34,6 +35,7 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
   const { t } = useTranslation();
   const { formatDateTime } = useDateFormat();
   const isMobile = useIsMobile();
+  const displayName = useDisplayName();
   const image = index === null ? undefined : images[index];
   const { data: url } = useAttachmentUrl(image?.id ?? null, false);
   const hasMany = images.length > 1;
@@ -48,7 +50,7 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
     image?.media?.width !== undefined &&
     image.media.height !== undefined &&
     image.media.height / image.media.width > TALL_RATIO;
-  const authorName = message.user?.displayName ?? "";
+  const authorName = displayName(message.userId, message.user?.displayName ?? "");
 
   return (
     <AnimatePresence>
@@ -161,7 +163,6 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
                   )}
                 >
                   <AttachmentImage
-                    thumbnail={false}
                     attachmentId={image.id}
                     alt={image.fileName}
                     className={cn(

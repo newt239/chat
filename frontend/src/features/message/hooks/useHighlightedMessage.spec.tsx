@@ -5,7 +5,7 @@ import { useHighlightedMessage } from "#/features/message/hooks/useHighlightedMe
 
 describe("useHighlightedMessage", () => {
   test("対象が無いときはハイライトしない", () => {
-    const { result } = renderHook(() => useHighlightedMessage(true, null, () => true));
+    const { result } = renderHook(() => useHighlightedMessage(null, () => true));
 
     expect(result.current).toBeNull();
   });
@@ -13,7 +13,7 @@ describe("useHighlightedMessage", () => {
   test("対象のメッセージへスクロールしてハイライトする", () => {
     const calls: string[] = [];
     const { result } = renderHook(() =>
-      useHighlightedMessage(true, "m1", (id) => {
+      useHighlightedMessage("m1", (id) => {
         calls.push(id);
         return true;
       }),
@@ -23,15 +23,19 @@ describe("useHighlightedMessage", () => {
     expect(calls).toEqual(["m1"]);
   });
 
-  test("一覧が揃うまではスクロールしない", () => {
+  test("対象が一覧に無ければ、作り直された関数で再び試す", () => {
     const calls: string[] = [];
-    renderHook(() =>
-      useHighlightedMessage(false, "m1", (id) => {
-        calls.push(id);
-        return true;
-      }),
+    const { rerender } = renderHook(
+      ({ found }: { found: boolean }) =>
+        useHighlightedMessage("m1", (id) => {
+          calls.push(id);
+          return found;
+        }),
+      { initialProps: { found: false } },
     );
+    rerender({ found: true });
+    rerender({ found: true });
 
-    expect(calls).toEqual([]);
+    expect(calls).toEqual(["m1", "m1"]);
   });
 });
