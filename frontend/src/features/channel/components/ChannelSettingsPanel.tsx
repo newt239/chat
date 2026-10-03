@@ -4,7 +4,7 @@ import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
-import { Checkbox } from "#/components/ui/Checkbox/Checkbox";
+import { Switch } from "#/components/ui/Switch/Switch";
 import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { lastSegment, parentPath, validateChannelPath } from "#/features/channel/utils/channelPath";
@@ -64,9 +64,9 @@ export const ChannelSettingsPanel = ({ workspaceId, channel }: ChannelSettingsPa
         value={description}
         onChange={setDescription}
       />
-      <Checkbox isSelected={isPrivate} onChange={setIsPrivate}>
+      <Switch isSelected={isPrivate} onChange={setIsPrivate}>
         {t("channel.settings.private")}
-      </Checkbox>
+      </Switch>
       <div className="flex justify-end">
         <Button type="submit" isPending={update.isPending}>
           {t("common.save")}
