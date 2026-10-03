@@ -55,9 +55,7 @@ export const MessageActionSheet = ({
         {t("message.sheet.title")}
       </Heading>
       {isPickingEmoji ? (
-        <div className="flex justify-center px-3">
-          <EmojiPicker onEmojiSelect={react} />
-        </div>
+        <EmojiPicker onEmojiSelect={react} />
       ) : (
         <>
           <div className="mx-4 mb-3 flex flex-col gap-0.5 rounded-lg bg-sunken px-3 py-2.5 text-body-sm text-muted">

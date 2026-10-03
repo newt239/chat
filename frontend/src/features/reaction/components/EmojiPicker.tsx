@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { useCustomEmojiMap } from "#/features/customEmoji/hooks/useCustomEmojis";
 import { toCustomEmojiValue } from "#/features/customEmoji/utils/customEmoji";
+import { useIsMobile } from "#/hooks/useMediaQuery";
 import { usePreferences } from "#/hooks/usePreferences";
 import { useColorMode } from "#/providers/theme/colorMode";
 
@@ -29,6 +30,7 @@ export const EmojiPicker = ({ onEmojiSelect }: EmojiPickerProps) => {
   const { t } = useTranslation();
   const { locale } = usePreferences();
   const colorMode = useColorMode();
+  const isMobile = useIsMobile();
   const customEmojis = useCustomEmojiMap();
   const custom = [
     {
@@ -43,7 +45,7 @@ export const EmojiPicker = ({ onEmojiSelect }: EmojiPickerProps) => {
     },
   ];
 
-  return (
+  const picker = (
     <Picker
       data={data}
       custom={custom}
@@ -54,6 +56,15 @@ export const EmojiPicker = ({ onEmojiSelect }: EmojiPickerProps) => {
       locale={locale}
       i18n={i18n[locale]}
       previewPosition="none"
+      dynamicWidth={isMobile}
     />
+  );
+  // モバイルのシートでは枠と影を外し、幅いっぱいに広げる
+  return isMobile ? (
+    <div className="w-full [&_em-emoji-picker]:h-[min(420px,55dvh)] [&_em-emoji-picker]:w-full [&_em-emoji-picker]:[--border-radius:0] [&_em-emoji-picker]:[--shadow:none]">
+      {picker}
+    </div>
+  ) : (
+    picker
   );
 };

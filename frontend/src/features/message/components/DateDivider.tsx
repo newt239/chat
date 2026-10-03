@@ -9,7 +9,7 @@ import { Calendar } from "#/components/ui/Calendar/Calendar";
 import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
-import { Popover } from "#/components/ui/Popover/Popover";
+import { ResponsivePopover } from "#/components/ui/ResponsivePopover/ResponsivePopover";
 import { focusRing } from "#/components/ui/styles/styles";
 import { useDateFormat } from "#/hooks/useDateFormat";
 
@@ -88,7 +88,7 @@ export const DateDivider = ({ dateKey, floating }: DateDividerProps) => {
           {t("message.date.pick")}
         </MenuItem>
       </Menu>
-      <Popover
+      <ResponsivePopover
         aria-label={t("message.date.calendar")}
         triggerRef={anchorRef}
         isOpen={isPickerOpen}
@@ -103,7 +103,7 @@ export const DateDivider = ({ dateKey, floating }: DateDividerProps) => {
             jump(date);
           }}
         />
-      </Popover>
+      </ResponsivePopover>
     </div>
   );
 
