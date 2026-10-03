@@ -32,6 +32,10 @@ export const auth = {
     submit: "ログイン",
     title: "ログイン",
   },
+  logoutConfirm: {
+    body: "この端末からログアウトします。続けて使うには再びログインしてください。",
+    title: "ログアウトしますか？",
+  },
   password: "パスワード",
   passwordRule: "8 文字以上",
 } as const;

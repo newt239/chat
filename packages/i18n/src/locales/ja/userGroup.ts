@@ -19,6 +19,9 @@ export const userGroup = {
   noMembers: "メンバーはまだいません",
   notFound: "グループが見つかりませんでした",
   pageTitle: "ユーザーグループ",
+  remove: "外す",
   removeMember: "{{name}} をグループから外す",
+  removeMemberBody: "グループへのメンションが届かなくなります。",
+  removeMemberTitle: "{{name}} をグループから外しますか？",
   updated: "@{{name}} を更新しました",
 } as const;

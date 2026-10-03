@@ -21,6 +21,9 @@ export const userGroup: Messages["userGroup"] = {
   noMembers: "No members yet",
   notFound: "Group not found",
   pageTitle: "User groups",
+  remove: "Remove",
   removeMember: "Remove {{name}} from the group",
+  removeMemberBody: "They will no longer be notified when the group is mentioned.",
+  removeMemberTitle: "Remove {{name}} from the group?",
   updated: "Updated @{{name}}",
 };

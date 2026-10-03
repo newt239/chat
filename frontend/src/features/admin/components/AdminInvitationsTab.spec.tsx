@@ -1,5 +1,5 @@
 import { create } from "@bufbuild/protobuf";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
@@ -32,6 +32,10 @@ describe("AdminInvitationsTab", () => {
 
     await userEvent.click(
       screen.getByRole("button", { name: "new@example.com への招待を取り消す" }),
+    );
+    expect(revoke).not.toHaveBeenCalled();
+    await userEvent.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "取り消す" }),
     );
     await waitFor(() => {
       expect(revoke).toHaveBeenCalledWith(

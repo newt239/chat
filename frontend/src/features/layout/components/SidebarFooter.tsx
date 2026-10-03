@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { IconLogout, IconSettings, IconUser } from "@tabler/icons-react";
 import { useParams } from "@tanstack/react-router";
 import { Button } from "react-aria-components";
@@ -10,7 +12,7 @@ import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { MenuSection } from "#/components/ui/MenuSection/MenuSection";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { focusRing } from "#/components/ui/styles/styles";
-import { useLogout } from "#/features/auth/hooks/useLogout";
+import { LogoutConfirmDialog } from "#/features/auth/components/LogoutConfirmDialog";
 import { useMe } from "#/hooks/useMe";
 import { openPanel } from "#/lib/overlaySearch";
 
@@ -19,7 +21,7 @@ export const SidebarFooter = () => {
   const { t } = useTranslation();
   const { data: user } = useMe();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
-  const logout = useLogout();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   if (user === undefined) {
     return null;
@@ -56,12 +58,13 @@ export const SidebarFooter = () => {
         <MenuItem
           icon={<IconLogout />}
           onAction={() => {
-            logout.mutate({});
+            setIsLoggingOut(true);
           }}
         >
           {t("shell.me.logout")}
         </MenuItem>
       </Menu>
+      <LogoutConfirmDialog isOpen={isLoggingOut} onOpenChange={setIsLoggingOut} />
     </div>
   );
 };

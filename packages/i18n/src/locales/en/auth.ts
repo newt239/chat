@@ -34,6 +34,10 @@ export const auth: Messages["auth"] = {
     submit: "Log in",
     title: "Log in",
   },
+  logoutConfirm: {
+    body: "You will be signed out on this device. You will need to sign in again to continue.",
+    title: "Log out?",
+  },
   password: "Password",
   passwordRule: "At least 8 characters",
 };

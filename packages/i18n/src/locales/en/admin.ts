@@ -86,8 +86,10 @@ export const admin: Messages["admin"] = {
     note: "Registered addresses are added as members right away. Otherwise an invitation link is issued.",
     pending: "Pending invitations",
     revoke: "Revoke",
+    revokeBody: "The invitation link that was sent will stop working.",
     revokeLabel: "Revoke the invitation for {{email}}",
     revoked: "Revoked the invitation",
+    revokeTitle: "Revoke the invitation for {{email}}?",
   },
   loadFailed: "Couldn't load",
   members: {
