@@ -123,7 +123,7 @@ func (i *Interactor) ListMembers(ctx context.Context, channelID, userID string) 
 	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID); err != nil {
 		return nil, err
 	}
-	members, err := i.channelMemberRepo.FindMembers(ctx, channelID)
+	members, err := i.channelMemberRepo.FindMembersByChannelIDs(ctx, []string{channelID})
 	if err != nil {
 		return nil, fmt.Errorf("failed to find members: %w", err)
 	}

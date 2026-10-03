@@ -13,9 +13,8 @@ service BookmarkService {
 }
 
 message Bookmark {
-  string user_id = 1;
-  Message message = 2;
-  google.protobuf.Timestamp created_at = 3;
+  Message message = 1;
+  google.protobuf.Timestamp created_at = 2;
 }
 
 message ListBookmarksRequest {}

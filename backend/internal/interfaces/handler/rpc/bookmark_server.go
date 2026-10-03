@@ -16,13 +16,12 @@ type BookmarkServer struct {
 }
 
 func (s *BookmarkServer) ListBookmarks(ctx context.Context, _ *chatv1.ListBookmarksRequest) (*chatv1.ListBookmarksResponse, error) {
-	userID := userIDFrom(ctx)
-	out, err := s.UC.ListBookmarks(ctx, userID)
+	out, err := s.UC.ListBookmarks(ctx, userIDFrom(ctx))
 	if err != nil {
 		return nil, err
 	}
 	return &chatv1.ListBookmarksResponse{Bookmarks: presenter.ConvertAll(out, func(b bookmarkuc.Output) *chatv1.Bookmark {
-		return &chatv1.Bookmark{UserId: userID, Message: presenter.Message(b.Message), CreatedAt: timestamppb.New(b.CreatedAt)}
+		return &chatv1.Bookmark{Message: presenter.Message(b.Message), CreatedAt: timestamppb.New(b.CreatedAt)}
 	})}, nil
 }
 

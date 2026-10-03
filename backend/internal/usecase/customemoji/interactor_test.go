@@ -119,15 +119,11 @@ func (s *fakeStorage) DeleteObject(_ context.Context, key string) error {
 }
 
 type fakeNotifier struct {
-	created, deleted []string
+	workspaceIDs []string
 }
 
-func (n *fakeNotifier) NotifyCustomEmojiCreated(e *entity.CustomEmoji) {
-	n.created = append(n.created, e.Name)
-}
-
-func (n *fakeNotifier) NotifyCustomEmojiDeleted(e *entity.CustomEmoji) {
-	n.deleted = append(n.deleted, e.Name)
+func (n *fakeNotifier) NotifyCustomEmojisChanged(workspaceID string) {
+	n.workspaceIDs = append(n.workspaceIDs, workspaceID)
 }
 
 type fixture struct {
@@ -208,8 +204,8 @@ func TestCreate(t *testing.T) {
 		if !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionCustomEmojiCreated}) {
 			t.Fatalf("unexpected audit: %v", f.recorder.Actions())
 		}
-		if !slices.Equal(f.notifier.created, []string{"tada"}) {
-			t.Fatalf("unexpected notification: %v", f.notifier.created)
+		if !slices.Equal(f.notifier.workspaceIDs, []string{workspaceID}) {
+			t.Fatalf("unexpected notification: %v", f.notifier.workspaceIDs)
 		}
 	})
 
@@ -229,7 +225,7 @@ func TestCreate(t *testing.T) {
 			if !errors.Is(err, tt.want) {
 				t.Fatalf("got %v, want %v", err, tt.want)
 			}
-			if len(f.recorder.Logs) != 0 || len(f.notifier.created) != 0 {
+			if len(f.recorder.Logs) != 0 || len(f.notifier.workspaceIDs) != 0 {
 				t.Fatal("失敗したのに記録・通知された")
 			}
 		})
@@ -274,8 +270,8 @@ func TestDelete(t *testing.T) {
 			if !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionCustomEmojiDeleted}) {
 				t.Fatalf("unexpected audit: %v", f.recorder.Actions())
 			}
-			if !slices.Equal(f.notifier.deleted, []string{"party"}) {
-				t.Fatalf("unexpected notification: %v", f.notifier.deleted)
+			if !slices.Equal(f.notifier.workspaceIDs, []string{workspaceID}) {
+				t.Fatalf("unexpected notification: %v", f.notifier.workspaceIDs)
 			}
 		})
 	}

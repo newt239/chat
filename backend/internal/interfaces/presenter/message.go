@@ -6,7 +6,6 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
-	mentionuc "github.com/newt239/chat/internal/usecase/mention"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 )
@@ -169,7 +168,7 @@ func ReactionEvent(channelID string, r reactionuc.ReactionNotification) *chatv1.
 	return event
 }
 
-func Mentions(out *mentionuc.ListMentionsOutput) *chatv1.ListMentionsResponse {
+func Mentions(out *messageuc.ListMentionsOutput) *chatv1.ListMentionsResponse {
 	res := &chatv1.ListMentionsResponse{Messages: ConvertAll(out.Messages, Message)}
 	if c := out.NextCursor; c != nil {
 		res.NextCursor = &chatv1.MentionCursor{CreatedAt: timestamppb.New(c.CreatedAt), MessageId: c.MessageID}

@@ -11,8 +11,8 @@ type PinRepository interface {
 	Create(ctx context.Context, pin *entity.MessagePin) error
 	// Delete はピンがなくても成功します
 	Delete(ctx context.Context, channelID, messageID string) error
-	// List は新しい順に limit 件返します。cursor は前のページの nextCursor で、それより前にピン留めしたものを返します
-	List(ctx context.Context, channelID string, limit int, cursor *string) (pins []*entity.MessagePin, nextCursor *string, err error)
+	// List はピン留めした新しい順に limit 件返します
+	List(ctx context.Context, channelID string, limit int) ([]*entity.MessagePin, error)
 	// FindByMessageIDs は Message を設定しません
 	FindByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*entity.MessagePin, error)
 }

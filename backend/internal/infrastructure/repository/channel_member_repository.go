@@ -84,10 +84,6 @@ func (r *channelMemberRepository) RemoveMember(ctx context.Context, channelID, u
 	return err
 }
 
-func (r *channelMemberRepository) FindMembers(ctx context.Context, channelID string) ([]*entity.ChannelMember, error) {
-	return r.FindMembersByChannelIDs(ctx, []string{channelID})
-}
-
 func (r *channelMemberRepository) IsMember(ctx context.Context, channelID, userID string) (bool, error) {
 	where, err := memberOf(channelID, userID)
 	if err != nil {

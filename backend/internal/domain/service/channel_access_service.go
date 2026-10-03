@@ -93,6 +93,10 @@ func (s *channelAccessService) EnsureChannelMember(ctx context.Context, channelI
 	if err != nil {
 		return nil, err
 	}
+	// 非公開チャンネルは EnsureChannelAccess で参加を確認済み
+	if ch.IsPrivate() {
+		return ch, nil
+	}
 	isMember, err := s.channelMemberRepo.IsMember(ctx, ch.ID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify channel membership: %w", err)

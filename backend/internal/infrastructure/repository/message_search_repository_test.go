@@ -194,9 +194,6 @@ func TestFindSearchDocuments(t *testing.T) {
 	if location := byKey["location"]; !reflect.DeepEqual(location.Has, []domainrepository.MessageContentKind{domainrepository.MessageContentLocation}) {
 		t.Errorf("位置情報が期待と異なります: %+v", location.Has)
 	}
-	if group := byKey["group"]; !reflect.DeepEqual(group.MentionedGroupIDs, []string{f.group.ID.String()}) {
-		t.Errorf("グループメンションが期待と異なります: %+v", group.MentionedGroupIDs)
-	}
 	if !byKey["broadcast"].MentionsChannel || byKey["not-broadcast"].MentionsChannel {
 		t.Error("@channel の判定が期待と異なります")
 	}

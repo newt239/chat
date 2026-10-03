@@ -71,9 +71,7 @@ type MessageHit struct {
 type Paginated[T any] struct {
 	Items   []T
 	Total   int
-	Page    int
 	PerPage int
-	HasMore bool
 }
 
 type WorkspaceSearchOutput struct {

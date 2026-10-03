@@ -8,14 +8,14 @@
     "private": "./scripts/tunnel.sh off",
     "tunnel:status": "./scripts/tunnel.sh status",
     "logs": "docker compose logs -f",
-    "test": "turbo run test",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
-    "format": "turbo run format",
-    "format:fix": "turbo run format:fix",
-    "typecheck": "turbo run typecheck",
-    "knip": "turbo run knip",
-    "codecheck": "turbo run codecheck",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint",
+    "lint:fix": "pnpm -r run lint:fix",
+    "format": "pnpm -r run format",
+    "format:fix": "pnpm -r run format:fix",
+    "typecheck": "pnpm -r run typecheck",
+    "knip": "pnpm -r run knip",
+    "codecheck": "pnpm -r run codecheck",
     "clean": "./scripts/clean.sh",
     "claude": "claude --setting-sources project,local --permission-mode bypassPermissions",
     "generate:proto": "buf generate proto --template proto/buf.gen.yaml",
@@ -28,8 +28,7 @@
     "@bufbuild/buf": "1.73.0",
     "@bufbuild/protoc-gen-es": "2.15.0",
     "lefthook": "2.1.14",
-    "portless": "0.15.6",
-    "turbo": "2.11.3"
+    "portless": "0.15.6"
   },
   "devEngines": {
     "runtime": {

@@ -94,29 +94,15 @@ func (p *fakePoster) PostAsOfficial(_ context.Context, _ string, channelID strin
 	return &messageuc.MessageOutput{ChannelID: channelID, Body: body}, nil
 }
 
-type fakeMemberRepo struct {
-	domainrepository.ChannelMemberRepository
-	joined []string
-}
-
-func (*fakeMemberRepo) IsMember(context.Context, string, string) (bool, error) {
-	return false, nil
-}
-
-func (r *fakeMemberRepo) AddMember(_ context.Context, m *entity.ChannelMember) error {
-	r.joined = append(r.joined, m.UserID)
-	return nil
-}
-
-func newInteractor() (*Interactor, *fakeReminderRepo, *stubChannelRepo, *fakePoster, *fakeMemberRepo) {
-	reminders, channels, poster, members := &fakeReminderRepo{}, &stubChannelRepo{}, &fakePoster{}, &fakeMemberRepo{}
-	i := New(reminders, stubUserRepo{}, stubWorkspaceRepo{}, channels, members, stubAccess{}, poster)
+func newInteractor() (*Interactor, *fakeReminderRepo, *stubChannelRepo, *fakePoster) {
+	reminders, channels, poster := &fakeReminderRepo{}, &stubChannelRepo{}, &fakePoster{}
+	i := New(reminders, stubUserRepo{}, stubWorkspaceRepo{}, channels, stubAccess{}, poster)
 	i.now = func() time.Time { return time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC) }
-	return i, reminders, channels, poster, members
+	return i, reminders, channels, poster
 }
 
 func TestRemindCreatesReminderAndDeliversToDM(t *testing.T) {
-	i, reminders, channels, poster, members := newInteractor()
+	i, reminders, channels, poster := newInteractor()
 	ctx := context.Background()
 
 	out, err := i.Execute(ctx, ExecuteInput{UserID: userID, ChannelID: channelID, Text: "/remind <@" + otherID + "> 資料を送る 明日 9:00"})
@@ -138,16 +124,13 @@ func TestRemindCreatesReminderAndDeliversToDM(t *testing.T) {
 	if delivered.channelID != dmID || channels.dmWith[0] != botID || channels.dmWith[1] != otherID || !strings.Contains(delivered.body, "<@"+otherID+"> リマインダー: 資料を送る") {
 		t.Fatalf("宛先との DM に届いていません: %+v %v", delivered, channels.dmWith)
 	}
-	if len(members.joined) != 2 || members.joined[0] != botID || members.joined[1] != otherID {
-		t.Fatalf("DM に公式アプリと宛先が参加していません: %v", members.joined)
-	}
 	if len(reminders.sent) != 1 {
 		t.Fatal("送信済みになっていません")
 	}
 }
 
 func TestUnknownCommand(t *testing.T) {
-	i, _, _, _, _ := newInteractor()
+	i, _, _, _ := newInteractor()
 	if _, err := i.Execute(context.Background(), ExecuteInput{UserID: userID, ChannelID: channelID, Text: "/nope"}); !errors.Is(err, ErrUnknownCommand) {
 		t.Fatalf("不明なコマンドを拒否していません: %v", err)
 	}

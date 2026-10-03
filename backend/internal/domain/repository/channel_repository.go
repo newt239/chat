@@ -41,9 +41,9 @@ type ChannelRepository interface {
 	// FindLastMessageAtBatch はスレッドの返信を除いた最後のメッセージの投稿日時を返します。メッセージのないチャンネルは含みません
 	FindLastMessageAtBatch(ctx context.Context, channelIDs []string) (map[string]time.Time, error)
 	CountMembersBatch(ctx context.Context, channelIDs []string) (map[string]int, error)
-	SearchAccessibleChannels(ctx context.Context, workspaceID string, userID string, query string, limit int, offset int) ([]*entity.Channel, int, error)
 	Create(ctx context.Context, channel *entity.Channel) error
 	Update(ctx context.Context, channel *entity.Channel) error
+	// FindOrCreateDM と FindOrCreateGroupDM は DM を返し、参加者を全員参加させます
 	FindOrCreateDM(ctx context.Context, workspaceID string, userID1 string, userID2 string) (*entity.Channel, error)
 	FindOrCreateGroupDM(ctx context.Context, workspaceID string, creatorID string, memberIDs []string, name string) (*entity.Channel, error)
 	FindUserDMs(ctx context.Context, workspaceID string, userID string) ([]*entity.Channel, error)

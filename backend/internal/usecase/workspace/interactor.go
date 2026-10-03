@@ -37,23 +37,13 @@ func New(
 }
 
 func (i *Interactor) ListWorkspaces(ctx context.Context, userID string) ([]WorkspaceOutput, error) {
-	workspaces, err := i.workspaceRepo.FindByUserID(ctx, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get workspaces: %w", err)
-	}
 	memberships, err := i.workspaceRepo.FindMembershipsByUserID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get memberships: %w", err)
 	}
-	roles := make(map[string]entity.WorkspaceRole, len(memberships))
+	outputs := make([]WorkspaceOutput, 0, len(memberships))
 	for _, m := range memberships {
-		roles[m.WorkspaceID] = m.Role
-	}
-	outputs := make([]WorkspaceOutput, 0, len(workspaces))
-	for _, ws := range workspaces {
-		if role, ok := roles[ws.ID]; ok {
-			outputs = append(outputs, WorkspaceOutput{Workspace: ws, Role: role})
-		}
+		outputs = append(outputs, WorkspaceOutput{Workspace: m.Workspace, Role: m.Role})
 	}
 	return outputs, nil
 }
@@ -193,13 +183,13 @@ func (i *Interactor) ListPublicWorkspaces(ctx context.Context, userID string) ([
 	if err != nil {
 		return nil, fmt.Errorf("failed to list public workspaces: %w", err)
 	}
-	joined, err := i.workspaceRepo.FindByUserID(ctx, userID)
+	joined, err := i.workspaceRepo.FindMembershipsByUserID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list user workspaces: %w", err)
 	}
 	joinedMap := make(map[string]bool, len(joined))
-	for _, w := range joined {
-		joinedMap[w.ID] = true
+	for _, m := range joined {
+		joinedMap[m.WorkspaceID] = true
 	}
 	ids := make([]string, len(workspaces))
 	for idx, w := range workspaces {

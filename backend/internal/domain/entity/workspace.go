@@ -35,6 +35,8 @@ type WorkspaceMember struct {
 	UserID      string
 	Role        WorkspaceRole
 	SuspendedAt *time.Time
+	// FindMembershipsByUserID のときだけ設定される
+	Workspace *Workspace
 }
 
 // IsAdmin はワークスペースの管理画面を操作できるロールかを返します

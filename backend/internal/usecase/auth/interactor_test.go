@@ -87,8 +87,8 @@ type stubWorkspaceRepo struct {
 	added []*entity.WorkspaceMember
 }
 
-func (stubWorkspaceRepo) FindByUserID(context.Context, string) ([]*entity.Workspace, error) {
-	return []*entity.Workspace{{ID: "ws1"}, {ID: "ws2"}}, nil
+func (stubWorkspaceRepo) FindMembershipsByUserID(context.Context, string) ([]*entity.WorkspaceMember, error) {
+	return []*entity.WorkspaceMember{{WorkspaceID: "ws1"}, {WorkspaceID: "ws2"}}, nil
 }
 
 func (stubWorkspaceRepo) FindByID(_ context.Context, id string) (*entity.Workspace, error) {
@@ -233,8 +233,7 @@ func newFixture(passwordAuthEnabled bool) fixture {
 		recorder: &audittest.Recorder{},
 		closer:   &stubCloser{},
 	}
-	settings := Settings{AccessTokenTTL: time.Minute, RefreshTokenTTL: time.Hour, PasswordAuthEnabled: passwordAuthEnabled}
-	f.uc = New(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, googleCode, stubTx{}, f.recorder, f.closer, settings)
+	f.uc = New(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, googleCode, stubTx{}, f.recorder, f.closer, passwordAuthEnabled)
 	return f
 }
 

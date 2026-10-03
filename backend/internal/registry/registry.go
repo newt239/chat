@@ -42,7 +42,6 @@ import (
 	draftuc "github.com/newt239/chat/internal/usecase/draft"
 	imageuc "github.com/newt239/chat/internal/usecase/image"
 	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
-	mentionuc "github.com/newt239/chat/internal/usecase/mention"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	notificationuc "github.com/newt239/chat/internal/usecase/notification"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
@@ -122,7 +121,7 @@ func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func
 	var storage service.StorageService
 	var storageHandler http.Handler
 	if cfg.Storage.Driver == "local" {
-		localStorage := local.New(cfg.Storage.LocalDir, cfg.Storage.PublicBaseURL, cfg.JWT.Secret)
+		localStorage := local.New("tmp/storage", cfg.Storage.PublicBaseURL, cfg.JWT.Secret)
 		storage, storageHandler = localStorage, localStorage
 	} else {
 		storage = wasabi.NewPresignService(cfg.Wasabi)
@@ -144,14 +143,14 @@ func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func
 	app := appuc.New(appRepo, userRepo, workspaceRepo, channelRepo, channelMemberRepo, messageRepo, channelAccess, message, txManager, recorder)
 	admin := adminuc.New(workspaceRepo, userRepo, sessionRepo, auditLogRepo, permissionRepo, permissionSvc, recorder, hub)
 	realtime := realtimeuc.New(redis.NewTicketStore(rdb), workspaceRepo, sessionRepo)
-	command := commanduc.New(repository.NewReminderRepository(client), userRepo, workspaceRepo, channelRepo, channelMemberRepo, channelAccess, app)
+	command := commanduc.New(repository.NewReminderRepository(client), userRepo, workspaceRepo, channelRepo, channelAccess, app)
 	scheduled := scheduledmessageuc.New(repository.NewScheduledMessageRepository(client), messageRepo, attachmentRepo, channelAccess, message)
 
 	opts := rpc.HandlerOptions(jwtService, cfg.CORS.AllowedOrigins)
 	mux := http.NewServeMux()
 	mux.Handle(chatv1connect.NewAuthServiceHandler(&rpc.AuthServer{UC: authuc.New(userRepo, sessionRepo, workspaceRepo, invitationRepo, jwtService, passwordSvc,
 		auth.GoogleVerifier{ClientID: cfg.Auth.GoogleOAuthClientID}, googleOAuth, txManager, recorder, hub,
-		authuc.Settings{AccessTokenTTL: cfg.JWT.AccessTokenTTL, RefreshTokenTTL: cfg.JWT.RefreshTokenTTL, PasswordAuthEnabled: cfg.Auth.PasswordAuthEnabled})}, opts...))
+		cfg.Auth.PasswordAuthEnabled)}, opts...))
 	mux.Handle(chatv1connect.NewInvitationServiceHandler(&rpc.InvitationServer{UC: invitationuc.New(invitationRepo, workspaceRepo, userRepo, permissionSvc)}, opts...))
 	mux.Handle(chatv1connect.NewUserServiceHandler(&rpc.UserServer{
 		UC:     useruc.New(userRepo, sessionRepo, passwordSvc, hub),
@@ -171,7 +170,7 @@ func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func
 	mux.Handle(chatv1connect.NewLinkServiceHandler(&rpc.LinkServer{UC: message}, opts...))
 	mux.Handle(chatv1connect.NewAttachmentServiceHandler(&rpc.AttachmentServer{UC: attachmentuc.New(attachmentRepo, messageRepo, channelAccess, storage)}, opts...))
 	mux.Handle(chatv1connect.NewSearchServiceHandler(&rpc.SearchServer{UC: searchuc.New(workspaceRepo, channelRepo, messageRepo, searchIndex, userRepo, userGroupRepo, outputBuilder)}, opts...))
-	mux.Handle(chatv1connect.NewMentionServiceHandler(&rpc.MentionServer{UC: mentionuc.New(workspaceRepo, messageRepo, outputBuilder)}, opts...))
+	mux.Handle(chatv1connect.NewMentionServiceHandler(&rpc.MentionServer{UC: message}, opts...))
 	mux.Handle(chatv1connect.NewMessageServiceHandler(&rpc.MessageServer{UC: message}, opts...))
 	mux.Handle(chatv1connect.NewDraftServiceHandler(&rpc.DraftServer{UC: draftuc.New(repository.NewDraftRepository(client), messageRepo, channelAccess)}, opts...))
 	mux.Handle(chatv1connect.NewScheduledMessageServiceHandler(&rpc.ScheduledMessageServer{UC: scheduled}, opts...))
@@ -189,7 +188,6 @@ func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func
 
 	router := httpapi.NewRouter(httpapi.RouterConfig{
 		AllowedOrigins:     cfg.CORS.AllowedOrigins,
-		TrustedProxies:     cfg.Server.TrustedProxies,
 		WebSocketHub:       hub,
 		Tickets:            realtime,
 		RPCHandler:         mux,

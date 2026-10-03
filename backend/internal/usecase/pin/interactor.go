@@ -1,7 +1,6 @@
 package pin
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"log/slog"
@@ -20,19 +19,6 @@ type PinInput struct {
 	ChannelID string
 	MessageID string
 	UserID    string
-}
-
-type ListPinsInput struct {
-	ChannelID string
-	UserID    string
-	Limit     int
-	Cursor    *string
-}
-
-type ListPinsOutput struct {
-	// ピン留めの情報は MessageOutput.Pin に入る
-	Pins       []message.MessageOutput
-	NextCursor *string
 }
 
 type Interactor struct {
@@ -131,7 +117,7 @@ func (i *Interactor) UnpinMessage(ctx context.Context, input PinInput) error {
 
 // memberIDs はピンの件数を知らせるチャンネルの参加者です。取得できなくてもピン留めは成功させる
 func (i *Interactor) memberIDs(ctx context.Context, channelID string) []string {
-	members, err := i.channelMemberRepo.FindMembers(ctx, channelID)
+	members, err := i.channelMemberRepo.FindMembersByChannelIDs(ctx, []string{channelID})
 	if err != nil {
 		slog.WarnContext(ctx, "ピン留めを知らせる参加者を取得できません", "error", err)
 		return nil
@@ -143,11 +129,12 @@ func (i *Interactor) memberIDs(ctx context.Context, channelID string) []string {
 	return ids
 }
 
-func (i *Interactor) ListPins(ctx context.Context, input ListPinsInput) (*ListPinsOutput, error) {
-	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
+// ListPins はピン留めした新しい順にメッセージを返します。ピン留めの情報は MessageOutput.Pin に入る
+func (i *Interactor) ListPins(ctx context.Context, channelID, userID string) ([]message.MessageOutput, error) {
+	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID); err != nil {
 		return nil, err
 	}
-	pins, next, err := i.pinRepo.List(ctx, input.ChannelID, min(cmp.Or(input.Limit, maxPins), maxPins), input.Cursor)
+	pins, err := i.pinRepo.List(ctx, channelID, maxPins)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list pins: %w", err)
 	}
@@ -155,9 +142,5 @@ func (i *Interactor) ListPins(ctx context.Context, input ListPinsInput) (*ListPi
 	for idx, p := range pins {
 		messages[idx] = p.Message
 	}
-	outputs, err := i.outputBuilder.Build(ctx, input.UserID, messages)
-	if err != nil {
-		return nil, err
-	}
-	return &ListPinsOutput{Pins: outputs, NextCursor: next}, nil
+	return i.outputBuilder.Build(ctx, userID, messages)
 }

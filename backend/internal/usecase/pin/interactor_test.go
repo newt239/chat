@@ -32,7 +32,7 @@ type stubMemberRepo struct {
 	domainrepository.ChannelMemberRepository
 }
 
-func (stubMemberRepo) FindMembers(context.Context, string) ([]*entity.ChannelMember, error) {
+func (stubMemberRepo) FindMembersByChannelIDs(context.Context, []string) ([]*entity.ChannelMember, error) {
 	return []*entity.ChannelMember{{UserID: "alice"}, {UserID: "bob"}}, nil
 }
 

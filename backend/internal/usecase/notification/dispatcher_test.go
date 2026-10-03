@@ -31,7 +31,7 @@ type stubMemberRepo struct {
 	members []string
 }
 
-func (r stubMemberRepo) FindMembers(context.Context, string) ([]*entity.ChannelMember, error) {
+func (r stubMemberRepo) FindMembersByChannelIDs(context.Context, []string) ([]*entity.ChannelMember, error) {
 	result := []*entity.ChannelMember{}
 	for _, id := range r.members {
 		result = append(result, &entity.ChannelMember{UserID: id})

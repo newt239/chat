@@ -13,8 +13,6 @@ cd "$(dirname "$0")/.."
 
 # 削除対象のファイル・ディレクトリを定義
 TARGETS=(
-    ".turbo"
-    "frontend/.turbo"
     "node_modules"
     "frontend/node_modules"
     "pnpm-lock.yaml"

@@ -113,7 +113,7 @@ pnpm run proto:format && pnpm run proto:lint && pnpm run generate:proto
 
 ### 開発ツール
 
-- pnpm 12 (workspace) + Turborepo
+- pnpm 12 (workspace)
 - lefthook (pre-commit フック)
 - knip (未使用コード検出)
 - buf (`proto/` から Go と TypeScript のコードを生成)
@@ -144,14 +144,19 @@ chat/
 │   │   │   └── presenter/  # ユースケースの出力から proto への変換
 │   │   ├── registry/       # 依存関係の組み立て
 │   │   └── infrastructure/
+│   │       ├── appwebhook/  # アプリの Webhook 送信
 │   │       ├── auth/        # JWT・パスワード・Google ログイン
 │   │       ├── config/      # 環境変数の読み込み
 │   │       ├── database/    # ent クライアントとマイグレーション
+│   │       ├── fcm/         # プッシュ通知の送信
 │   │       ├── meilisearch/ # メッセージの全文検索
+│   │       ├── ogp/         # リンクのプレビュー取得
 │   │       ├── redis/       # Pub/Sub・閲覧者・レート制限
 │   │       ├── repository/  # リポジトリの実装
+│   │       ├── safehttp/    # 内部アドレスに繋がない HTTP クライアント
 │   │       ├── seed/        # 開発用の初期データ
-│   │       └── storage/     # Wasabi / ローカルのファイル保存
+│   │       ├── storage/     # Wasabi / ローカルのファイル保存
+│   │       └── transaction/ # トランザクション
 │   └── ent/              # ent のスキーマと生成コード
 ├── frontend/         # React frontend
 │   ├── src/
@@ -254,7 +259,7 @@ docker compose exec backend go run cmd/seed/main.go -messages 1000
 | backend | `go build` / `go test` / golangci-lint |
 | proto | buf lint と format の検査、生成物が最新かを再生成して差分検証 |
 
-依存関係の更新は Dependabot が週次でまとめて PR を作成し、`dependabot-auto-merge.yml` が自動マージします。
+依存関係の更新は Dependabot が月次でまとめて PR を作成し、`dependabot-auto-merge.yml` が自動マージします。
 
 ## デプロイ
 

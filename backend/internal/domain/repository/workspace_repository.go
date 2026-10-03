@@ -9,7 +9,6 @@ import (
 
 type WorkspaceRepository interface {
 	FindByID(ctx context.Context, id string) (*entity.Workspace, error)
-	FindByUserID(ctx context.Context, userID string) ([]*entity.Workspace, error)
 	// Create は ID が使われていれば ErrWorkspaceIDExists を返します
 	Create(ctx context.Context, workspace *entity.Workspace) error
 	Update(ctx context.Context, workspace *entity.Workspace) error
@@ -27,7 +26,7 @@ type WorkspaceRepository interface {
 	SearchMembers(ctx context.Context, workspaceID string, query string, limit int, offset int) ([]*entity.WorkspaceMember, int, error)
 	FindAllPublic(ctx context.Context) ([]*entity.Workspace, error)
 	CountMembersBatch(ctx context.Context, workspaceIDs []string) (map[string]int, error)
-	// FindMembershipsByUserID は停止されずに参加しているワークスペースのメンバー情報を返します
+	// FindMembershipsByUserID は停止されずに参加しているワークスペースのメンバー情報をワークスペースとともに返します
 	FindMembershipsByUserID(ctx context.Context, userID string) ([]*entity.WorkspaceMember, error)
 	// FindMemberActivities は since 以降の投稿数・アップロードした添付の合計サイズ・最後の投稿日時をユーザーごとに返します
 	FindMemberActivities(ctx context.Context, workspaceID string, since time.Time) (map[string]entity.MemberActivity, error)

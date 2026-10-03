@@ -6,11 +6,11 @@ import (
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
-	mentionuc "github.com/newt239/chat/internal/usecase/mention"
+	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
 type MentionServer struct {
-	UC *mentionuc.Interactor
+	UC *messageuc.Interactor
 }
 
 func (s *MentionServer) ListMentions(ctx context.Context, req *chatv1.ListMentionsRequest) (*chatv1.ListMentionsResponse, error) {

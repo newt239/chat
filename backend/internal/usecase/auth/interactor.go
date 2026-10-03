@@ -13,6 +13,11 @@ import (
 	"github.com/newt239/chat/internal/usecase/audit"
 )
 
+const (
+	accessTokenTTL  = 15 * time.Minute
+	refreshTokenTTL = 30 * 24 * time.Hour
+)
+
 // TokenClaims はアクセストークンに載せる本人とセッションです
 type TokenClaims struct {
 	UserID    string
@@ -45,18 +50,18 @@ type GoogleCodeExchanger interface {
 }
 
 type Interactor struct {
-	userRepo       domainrepository.UserRepository
-	sessionRepo    domainrepository.SessionRepository
-	workspaceRepo  domainrepository.WorkspaceRepository
-	invitationRepo domainrepository.InvitationRepository
-	jwtService     JWTService
-	passwordSvc    PasswordService
-	googleVerifier GoogleVerifier
-	googleCode     GoogleCodeExchanger
-	txManager      domaintransaction.Manager
-	recorder       audit.Recorder
-	sessionCloser  SessionCloser
-	settings       Settings
+	userRepo            domainrepository.UserRepository
+	sessionRepo         domainrepository.SessionRepository
+	workspaceRepo       domainrepository.WorkspaceRepository
+	invitationRepo      domainrepository.InvitationRepository
+	jwtService          JWTService
+	passwordSvc         PasswordService
+	googleVerifier      GoogleVerifier
+	googleCode          GoogleCodeExchanger
+	txManager           domaintransaction.Manager
+	recorder            audit.Recorder
+	sessionCloser       SessionCloser
+	passwordAuthEnabled bool
 }
 
 func New(
@@ -71,30 +76,30 @@ func New(
 	txManager domaintransaction.Manager,
 	recorder audit.Recorder,
 	sessionCloser SessionCloser,
-	settings Settings,
+	passwordAuthEnabled bool,
 ) *Interactor {
 	return &Interactor{
-		userRepo:       userRepo,
-		sessionRepo:    sessionRepo,
-		workspaceRepo:  workspaceRepo,
-		invitationRepo: invitationRepo,
-		jwtService:     jwtService,
-		passwordSvc:    passwordSvc,
-		googleVerifier: googleVerifier,
-		googleCode:     googleCode,
-		txManager:      txManager,
-		recorder:       recorder,
-		sessionCloser:  sessionCloser,
-		settings:       settings,
+		userRepo:            userRepo,
+		sessionRepo:         sessionRepo,
+		workspaceRepo:       workspaceRepo,
+		invitationRepo:      invitationRepo,
+		jwtService:          jwtService,
+		passwordSvc:         passwordSvc,
+		googleVerifier:      googleVerifier,
+		googleCode:          googleCode,
+		txManager:           txManager,
+		recorder:            recorder,
+		sessionCloser:       sessionCloser,
+		passwordAuthEnabled: passwordAuthEnabled,
 	}
 }
 
 func (i *Interactor) PasswordAuthEnabled() bool {
-	return i.settings.PasswordAuthEnabled
+	return i.passwordAuthEnabled
 }
 
 func (i *Interactor) Login(ctx context.Context, input LoginInput) (*AuthOutput, error) {
-	if !i.settings.PasswordAuthEnabled {
+	if !i.passwordAuthEnabled {
 		return nil, domerr.ErrPasswordAuthDisabled
 	}
 	user, err := i.userRepo.FindByEmail(ctx, entity.NormalizeEmail(input.Email))
@@ -214,7 +219,7 @@ func (i *Interactor) createGoogleUser(ctx context.Context, identity *GoogleIdent
 }
 
 func (i *Interactor) SignUp(ctx context.Context, input SignUpInput) (*AuthOutput, error) {
-	if !i.settings.PasswordAuthEnabled {
+	if !i.passwordAuthEnabled {
 		return nil, domerr.ErrPasswordAuthDisabled
 	}
 	email := entity.NormalizeEmail(input.Email)
@@ -278,7 +283,7 @@ func (i *Interactor) addSignupMember(ctx context.Context, workspaceID, userID st
 }
 
 func (i *Interactor) SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error) {
-	if !i.settings.PasswordAuthEnabled {
+	if !i.passwordAuthEnabled {
 		return nil, domerr.ErrPasswordAuthDisabled
 	}
 	now := time.Now()
@@ -349,7 +354,7 @@ func (i *Interactor) login(ctx context.Context, user *entity.User) (*AuthOutput,
 
 // recordLogin はログインがワークスペースに属さないため、ユーザーが参加している全ワークスペースの監査ログに記録します
 func (i *Interactor) recordLogin(ctx context.Context, user *entity.User, action entity.AuditAction) {
-	workspaces, err := i.workspaceRepo.FindByUserID(ctx, user.ID)
+	memberships, err := i.workspaceRepo.FindMembershipsByUserID(ctx, user.ID)
 	if err != nil {
 		return
 	}
@@ -358,9 +363,9 @@ func (i *Interactor) recordLogin(ctx context.Context, user *entity.User, action 
 	if action == entity.AuditActionLogin {
 		actorID = &user.ID
 	}
-	for _, ws := range workspaces {
+	for _, m := range memberships {
 		i.recorder.Record(ctx, entity.AuditLog{
-			WorkspaceID: ws.ID,
+			WorkspaceID: m.WorkspaceID,
 			ActorID:     actorID,
 			Action:      action,
 			TargetType:  entity.AuditTargetUser,
@@ -428,7 +433,7 @@ type issuedTokens struct {
 }
 
 func (i *Interactor) issueTokens(user *entity.User, sessionID string) (*issuedTokens, error) {
-	accessToken, err := i.jwtService.GenerateToken(TokenClaims{UserID: user.ID, SessionID: sessionID}, i.settings.AccessTokenTTL)
+	accessToken, err := i.jwtService.GenerateToken(TokenClaims{UserID: user.ID, SessionID: sessionID}, accessTokenTTL)
 	if err != nil {
 		return nil, err
 	}
@@ -443,7 +448,7 @@ func (i *Interactor) issueTokens(user *entity.User, sessionID string) (*issuedTo
 		output: &AuthOutput{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
-			ExpiresAt:    time.Now().Add(i.settings.RefreshTokenTTL),
+			ExpiresAt:    time.Now().Add(refreshTokenTTL),
 			User:         user,
 		},
 		refreshTokenHash: refreshTokenHash,

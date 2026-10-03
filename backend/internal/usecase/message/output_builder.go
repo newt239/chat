@@ -151,7 +151,7 @@ func (b *MessageOutputBuilder) fetchAccessibleMessages(ctx context.Context, view
 	if len(ids) == 0 {
 		return nil, map[string]*entity.Channel{}, nil
 	}
-	messages, err := b.messageRepo.FindByIDs(ctx, uniqueStrings(ids))
+	messages, err := b.messageRepo.FindByIDs(ctx, ids)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch linked messages: %w", err)
 	}
@@ -159,7 +159,7 @@ func (b *MessageOutputBuilder) fetchAccessibleMessages(ctx context.Context, view
 	for _, msg := range messages {
 		channelIDs = append(channelIDs, msg.ChannelID)
 	}
-	channels, err := b.channelAccessSvc.AccessibleChannelsByIDs(ctx, uniqueStrings(channelIDs), viewerID)
+	channels, err := b.channelAccessSvc.AccessibleChannelsByIDs(ctx, channelIDs, viewerID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -214,7 +214,7 @@ func (b *MessageOutputBuilder) fetchRelatedData(ctx context.Context, messageIDs 
 	}
 	groups := map[string]*entity.UserGroup{}
 	if len(groupIDs) > 0 {
-		groupList, err := b.userGroupRepo.FindByIDs(ctx, uniqueStrings(groupIDs))
+		groupList, err := b.userGroupRepo.FindByIDs(ctx, groupIDs)
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch groups: %w", err)
 		}
@@ -341,16 +341,4 @@ func groupByMessageID[T any](items []T, messageID func(T) string) map[string][]T
 		grouped[messageID(item)] = append(grouped[messageID(item)], item)
 	}
 	return grouped
-}
-
-func uniqueStrings(values []string) []string {
-	seen := make(map[string]bool, len(values))
-	unique := make([]string, 0, len(values))
-	for _, v := range values {
-		if !seen[v] {
-			seen[v] = true
-			unique = append(unique, v)
-		}
-	}
-	return unique
 }

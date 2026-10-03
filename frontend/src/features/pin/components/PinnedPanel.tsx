@@ -36,12 +36,12 @@ export const PinnedPanel = ({ workspaceId, channelId }: PinnedPanelProps) => {
 
   return (
     <div className="flex flex-col gap-0.5 overflow-y-auto p-1.5">
-      {pins.map((pin) => (
+      {pins.map((message) => (
         <MessageLinkCard
-          key={pin.message.id}
-          message={pin.message}
+          key={message.id}
+          message={message}
           workspaceId={workspaceId}
-          markedAt={pin.pinnedAt}
+          markedAt={message.pin?.pinnedAt}
         />
       ))}
     </div>

@@ -75,15 +75,8 @@ func (n Notifier) NotifyPinDeleted(workspaceID, channelID string, memberIDs []st
 }
 
 // 絵文字はどのチャンネルでも使うため、ワークスペースの全員に送る
-
-func (n Notifier) NotifyCustomEmojiCreated(emoji *entity.CustomEmoji) {
-	n.BroadcastToWorkspace(emoji.WorkspaceID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_CustomEmojiCreated{
-		CustomEmojiCreated: &chatv1.CustomEmojiEvent{WorkspaceId: emoji.WorkspaceID, EmojiId: emoji.ID, Name: emoji.Name},
-	}})
-}
-
-func (n Notifier) NotifyCustomEmojiDeleted(emoji *entity.CustomEmoji) {
-	n.BroadcastToWorkspace(emoji.WorkspaceID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_CustomEmojiDeleted{
-		CustomEmojiDeleted: &chatv1.CustomEmojiEvent{WorkspaceId: emoji.WorkspaceID, EmojiId: emoji.ID, Name: emoji.Name},
+func (n Notifier) NotifyCustomEmojisChanged(workspaceID string) {
+	n.BroadcastToWorkspace(workspaceID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_CustomEmojisChanged{
+		CustomEmojisChanged: &chatv1.CustomEmojisChangedEvent{},
 	}})
 }

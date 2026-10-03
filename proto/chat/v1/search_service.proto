@@ -113,31 +113,23 @@ message MessageSearchHit {
 message MessageSearchResult {
   repeated MessageSearchHit items = 1;
   int32 total = 2;
-  int32 page = 3;
-  int32 per_page = 4;
-  bool has_more = 5;
+  int32 per_page = 3;
 }
 
 message ChannelSearchResult {
   repeated Channel items = 1;
   int32 total = 2;
-  int32 page = 3;
-  int32 per_page = 4;
-  bool has_more = 5;
+  int32 per_page = 3;
 }
 
 message UserSearchResult {
   repeated WorkspaceMember items = 1;
   int32 total = 2;
-  int32 page = 3;
-  int32 per_page = 4;
-  bool has_more = 5;
+  int32 per_page = 3;
 }
 
 message UserGroupSearchResult {
   repeated UserGroup items = 1;
   int32 total = 2;
-  int32 page = 3;
-  int32 per_page = 4;
-  bool has_more = 5;
+  int32 per_page = 3;
 }

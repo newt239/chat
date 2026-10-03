@@ -172,10 +172,6 @@ dev で次を確かめてから prod を作る。
 - [ ] Webhook（連続で送ると全レプリカ合わせて毎秒 1 回・瞬間 10 回で 429 になる）
 - [ ] `kubectl -n chat-dev delete pod <backend の Pod>` で、クライアントがつなぎ直して配信が続く
 
-### 11. 旧構成の片付け
-
-Autopilot の構成を作っていた場合は、動作確認のあとで旧 Autopilot クラスタ、外部 HTTP(S) LB、静的 IP、managed 証明書、GCS の添付ファイル用バケット、HMAC キーとそのサービスアカウント、旧シークレット（接頭辞のない `DATABASE_URL` など）を削除する。旧 `envs/dev` の state は `envs/dev` の prefix に残っているので、新しい `envs/dev` を apply する前に `gsutil rm -r gs://PROJECT_ID-tfstate/envs/dev` で消すか、旧構成を `terraform destroy` しておく。
-
 ## デプロイ
 
 GitHub Actions の「Deploy」（`.github/workflows/deploy.yml`）で行う。`environment` は `dev`・`prod`・`mini`（[mini 構成](#mini-構成k3s-の-vm-1-台)）から選ぶ。ref を空にした方はクラスタで動いているイメージをそのまま使う。

@@ -109,7 +109,7 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*Output, er
 		return nil, err
 	}
 	i.record(ctx, emoji, input.UserID, entity.AuditActionCustomEmojiCreated)
-	i.notifier.NotifyCustomEmojiCreated(emoji)
+	i.notifier.NotifyCustomEmojisChanged(emoji.WorkspaceID)
 
 	outputs, err := i.toOutputs(ctx, []*entity.CustomEmoji{emoji}, member)
 	if err != nil {
@@ -141,7 +141,7 @@ func (i *Interactor) Delete(ctx context.Context, input DeleteInput) error {
 		slog.WarnContext(ctx, "カスタム絵文字の画像の削除に失敗しました", "storageKey", emoji.StorageKey, "error", err)
 	}
 	i.record(ctx, emoji, input.UserID, entity.AuditActionCustomEmojiDeleted)
-	i.notifier.NotifyCustomEmojiDeleted(emoji)
+	i.notifier.NotifyCustomEmojisChanged(emoji.WorkspaceID)
 	return nil
 }
 

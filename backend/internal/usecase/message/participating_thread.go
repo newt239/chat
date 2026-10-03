@@ -11,7 +11,7 @@ import (
 	"github.com/newt239/chat/internal/domain/service"
 )
 
-const defaultThreadLimit = 20
+const defaultListLimit = 20
 
 type ParticipatingThreadOutput struct {
 	ThreadID       string
@@ -34,7 +34,7 @@ func (i *Interactor) ListParticipatingThreads(ctx context.Context, input domainr
 	if _, err := service.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID); err != nil {
 		return nil, err
 	}
-	input.Limit = min(cmp.Or(input.Limit, defaultThreadLimit), maxMessageLimit)
+	input.Limit = min(cmp.Or(input.Limit, defaultListLimit), maxMessageLimit)
 	result, err := i.threadRepo.FindParticipatingThreads(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find participating threads: %w", err)
@@ -73,6 +73,36 @@ func (i *Interactor) ListParticipatingThreads(ctx context.Context, input domainr
 		outputs = outputs[1+replyCount:]
 	}
 	return &ListParticipatingThreadsOutput{Items: items, NextCursor: result.NextCursor}, nil
+}
+
+type ListMentionsOutput struct {
+	Messages   []MessageOutput
+	NextCursor *domainrepository.MessageCursor
+}
+
+// ListMentions は自分宛てのメンションを含むメッセージを新しい順に返します
+func (i *Interactor) ListMentions(ctx context.Context, input domainrepository.FindMentionsInput) (*ListMentionsOutput, error) {
+	if _, err := service.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID); err != nil {
+		return nil, err
+	}
+	limit := min(cmp.Or(input.Limit, defaultListLimit), maxMessageLimit)
+	input.Limit = limit + 1
+	messages, err := i.messageRepo.FindMentions(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find mentions: %w", err)
+	}
+
+	var nextCursor *domainrepository.MessageCursor
+	if len(messages) > limit {
+		messages = messages[:limit]
+		last := messages[limit-1]
+		nextCursor = &domainrepository.MessageCursor{CreatedAt: last.CreatedAt, MessageID: last.ID}
+	}
+	outputs, err := i.outputBuilder.Build(ctx, input.UserID, messages)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build message outputs: %w", err)
+	}
+	return &ListMentionsOutput{Messages: outputs, NextCursor: nextCursor}, nil
 }
 
 func (i *Interactor) MarkThreadRead(ctx context.Context, threadID, userID string) error {

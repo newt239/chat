@@ -13,11 +13,11 @@ type PinServer struct {
 }
 
 func (s *PinServer) ListPins(ctx context.Context, req *chatv1.ListPinsRequest) (*chatv1.ListPinsResponse, error) {
-	out, err := s.UC.ListPins(ctx, pinuc.ListPinsInput{ChannelID: req.ChannelId, UserID: userIDFrom(ctx), Limit: int(req.Limit), Cursor: req.Cursor})
+	out, err := s.UC.ListPins(ctx, req.ChannelId, userIDFrom(ctx))
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.ListPinsResponse{Pins: presenter.ConvertAll(out.Pins, presenter.PinnedMessage), NextCursor: out.NextCursor}, nil
+	return &chatv1.ListPinsResponse{Messages: presenter.ConvertAll(out, presenter.Message)}, nil
 }
 
 func (s *PinServer) CreatePin(ctx context.Context, req *chatv1.CreatePinRequest) (*chatv1.CreatePinResponse, error) {

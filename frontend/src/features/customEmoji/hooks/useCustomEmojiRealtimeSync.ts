@@ -19,8 +19,7 @@ export const useCustomEmojiRealtimeSync = (workspaceId: string) => {
       void queryClient.invalidateQueries({ queryKey: customEmojiListKey(workspaceId) });
     };
     const unsubscribes = [
-      wsClient.on("customEmojiCreated", refetch),
-      wsClient.on("customEmojiDeleted", refetch),
+      wsClient.on("customEmojisChanged", refetch),
       wsClient.onReconnect(refetch),
     ];
     return () => {

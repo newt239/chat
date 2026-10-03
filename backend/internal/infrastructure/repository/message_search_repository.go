@@ -25,7 +25,6 @@ const searchDocumentSQL = `
 		ARRAY(SELECT a.file_name FROM attachment a WHERE a.message_id = m.id ORDER BY a.created_at),
 		ARRAY(SELECT a.mime_type FROM attachment a WHERE a.message_id = m.id),
 		ARRAY(SELECT um.user_id::text FROM message_user_mention um WHERE um.message_id = m.id),
-		ARRAY(SELECT gm.group_id::text FROM message_group_mention gm WHERE gm.message_id = m.id),
 		m.mentions_channel OR m.mentions_here,
 		EXISTS (SELECT 1 FROM message_link l WHERE l.message_id = m.id),
 		EXISTS (SELECT 1 FROM message_pin p WHERE p.message_id = m.id),
@@ -93,28 +92,27 @@ func (r *messageRepository) querySearchDocuments(ctx context.Context, where stri
 			workspaceID, body                       string
 			parentID                                uuid.NullUUID
 			createdAt                               time.Time
-			fileNames, mimeTypes, userIDs, groupIDs pq.StringArray
+			fileNames, mimeTypes, userIDs           pq.StringArray
 			mentionsChannel, hasLink, pinned, reply bool
 			hasLocation                             bool
 		)
 		if err := rows.Scan(&id, &workspaceID, &channelID, &senderID, &parentID, &body, &createdAt,
-			&fileNames, &mimeTypes, &userIDs, &groupIDs, &mentionsChannel, &hasLink, &pinned, &reply, &hasLocation); err != nil {
+			&fileNames, &mimeTypes, &userIDs, &mentionsChannel, &hasLink, &pinned, &reply, &hasLocation); err != nil {
 			return nil, err
 		}
 		doc := domainrepository.MessageSearchDocument{
-			ID:                id.String(),
-			WorkspaceID:       workspaceID,
-			ChannelID:         channelID.String(),
-			SenderID:          senderID.String(),
-			Body:              body,
-			AttachmentNames:   fileNames,
-			Has:               contentKinds(body, mimeTypes, hasLink, hasLocation),
-			MentionedUserIDs:  userIDs,
-			MentionedGroupIDs: groupIDs,
-			MentionsChannel:   mentionsChannel,
-			Pinned:            pinned,
-			HasReplies:        reply,
-			CreatedAt:         createdAt,
+			ID:               id.String(),
+			WorkspaceID:      workspaceID,
+			ChannelID:        channelID.String(),
+			SenderID:         senderID.String(),
+			Body:             body,
+			AttachmentNames:  fileNames,
+			Has:              contentKinds(body, mimeTypes, hasLink, hasLocation),
+			MentionedUserIDs: userIDs,
+			MentionsChannel:  mentionsChannel,
+			Pinned:           pinned,
+			HasReplies:       reply,
+			CreatedAt:        createdAt,
 		}
 		if parentID.Valid {
 			doc.ParentID = new(parentID.UUID.String())

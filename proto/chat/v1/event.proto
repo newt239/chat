@@ -37,9 +37,8 @@ message ServerEvent {
     TypingEvent typing = 10;
     TypingEvent stop_typing = 11;
     ChannelViewersEvent channel_viewers = 14;
-    // ワークスペースの全員に送る。一覧を取り直すきっかけにする
-    CustomEmojiEvent custom_emoji_created = 15;
-    CustomEmojiEvent custom_emoji_deleted = 16;
+    // カスタム絵文字の登録・削除をワークスペースの全員に送る。一覧を取り直すきっかけにする
+    CustomEmojisChangedEvent custom_emojis_changed = 15;
   }
 }
 
@@ -96,9 +95,4 @@ message ChannelViewersEvent {
   repeated string user_ids = 2;
 }
 
-// カスタム絵文字の登録・削除
-message CustomEmojiEvent {
-  string workspace_id = 1;
-  string emoji_id = 2;
-  string name = 3;
-}
+message CustomEmojisChangedEvent {}

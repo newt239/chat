@@ -69,16 +69,15 @@ type MessageSearchScope struct {
 
 // MessageSearchDocument は検索インデックスに載せる、削除されていないメッセージの内容です
 type MessageSearchDocument struct {
-	ID                string
-	WorkspaceID       string
-	ChannelID         string
-	SenderID          string
-	ParentID          *string
-	Body              string
-	AttachmentNames   []string
-	Has               []MessageContentKind
-	MentionedUserIDs  []string
-	MentionedGroupIDs []string
+	ID               string
+	WorkspaceID      string
+	ChannelID        string
+	SenderID         string
+	ParentID         *string
+	Body             string
+	AttachmentNames  []string
+	Has              []MessageContentKind
+	MentionedUserIDs []string
 	// MentionsChannel は本文が <@channel> / <@here> を含むかどうか
 	MentionsChannel bool
 	Pinned          bool

@@ -60,8 +60,8 @@ func (r *stubChannelRepo) FindDescendants(_ context.Context, parent *entity.Chan
 	return found, nil
 }
 
-func (r *stubChannelRepo) SearchAccessibleChannels(_ context.Context, _ string, _ string, query string, _ int, _ int) ([]*entity.Channel, int, error) {
-	r.searchedQuery = &query
+func (r *stubChannelRepo) SearchBrowsableChannels(_ context.Context, _ string, _ string, filter domainrepository.BrowsableChannelFilter) ([]*entity.Channel, int, error) {
+	r.searchedQuery = &filter.Query
 	return []*entity.Channel{}, 0, nil
 }
 

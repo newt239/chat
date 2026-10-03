@@ -53,8 +53,7 @@ export class WsClient {
   // 型を case ごとに対応づけるため、Map ではなく全 case を持つオブジェクトにする
   private readonly handlers: { [K in WsEventType]: Set<(payload: WsEventPayload<K>) => void> } = {
     channelViewers: new Set(),
-    customEmojiCreated: new Set(),
-    customEmojiDeleted: new Set(),
+    customEmojisChanged: new Set(),
     messageDeleted: new Set(),
     messageUpdated: new Set(),
     newMessage: new Set(),

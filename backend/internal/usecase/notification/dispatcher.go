@@ -131,7 +131,7 @@ func (d *Dispatcher) candidates(ctx context.Context, channel *entity.Channel, me
 		add(m.UserID, reasonMention)
 	}
 	if channel.IsDM() {
-		members, err := d.channelMemberRepo.FindMembers(ctx, channel.ID)
+		members, err := d.channelMemberRepo.FindMembersByChannelIDs(ctx, []string{channel.ID})
 		if err != nil {
 			return nil, fmt.Errorf("failed to load DM members: %w", err)
 		}

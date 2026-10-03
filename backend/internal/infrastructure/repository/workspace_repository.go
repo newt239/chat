@@ -43,20 +43,6 @@ func (r *workspaceRepository) FindByID(ctx context.Context, id string) (*entity.
 	return workspaceToEntity(w), nil
 }
 
-func (r *workspaceRepository) FindByUserID(ctx context.Context, userID string) ([]*entity.Workspace, error) {
-	uid, err := parseUUID(userID, "user ID")
-	if err != nil {
-		return nil, err
-	}
-	workspaces, err := r.query(ctx).
-		Where(workspace.HasMembersWith(workspacemember.UserID(uid), workspacemember.SuspendedAtIsNil())).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return convertAll(workspaces, workspaceToEntity), nil
-}
-
 func (r *workspaceRepository) Create(ctx context.Context, w *entity.Workspace) error {
 	createdBy, err := parseUUID(w.CreatedBy, "created by user ID")
 	if err != nil {
@@ -244,11 +230,15 @@ func (r *workspaceRepository) FindMembershipsByUserID(ctx context.Context, userI
 	if err != nil {
 		return nil, err
 	}
-	members, err := r.members(ctx).Where(workspacemember.UserID(uid), workspacemember.SuspendedAtIsNil()).All(ctx)
+	members, err := r.members(ctx).Where(workspacemember.UserID(uid), workspacemember.SuspendedAtIsNil()).WithWorkspace().All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return convertAll(members, workspaceMemberToEntity), nil
+	return convertAll(members, func(wm *ent.WorkspaceMember) *entity.WorkspaceMember {
+		m := workspaceMemberToEntity(wm)
+		m.Workspace = workspaceToEntity(wm.Edges.Workspace)
+		return m
+	}), nil
 }
 
 func (r *workspaceRepository) FindActiveMemberIDs(ctx context.Context, workspaceID string, userIDs []string) (map[string]bool, error) {

@@ -70,14 +70,14 @@ func (s *Interactor) SearchWorkspace(ctx context.Context, input WorkspaceSearchI
 
 	var err error
 	out := &WorkspaceSearchOutput{
-		Messages: Paginated[MessageHit]{Items: []MessageHit{}, Page: page, PerPage: perPage},
-		Channels: Paginated[channeluc.ChannelOutput]{Items: []channeluc.ChannelOutput{}, Page: page, PerPage: perPage},
-		Users:    Paginated[workspaceuc.MemberInfo]{Items: []workspaceuc.MemberInfo{}, Page: page, PerPage: perPage},
-		Groups:   Paginated[*entity.UserGroup]{Items: []*entity.UserGroup{}, Page: page, PerPage: perPage},
+		Messages: Paginated[MessageHit]{Items: []MessageHit{}, PerPage: perPage},
+		Channels: Paginated[channeluc.ChannelOutput]{Items: []channeluc.ChannelOutput{}, PerPage: perPage},
+		Users:    Paginated[workspaceuc.MemberInfo]{Items: []workspaceuc.MemberInfo{}, PerPage: perPage},
+		Groups:   Paginated[*entity.UserGroup]{Items: []*entity.UserGroup{}, PerPage: perPage},
 	}
 
 	if input.Target.includes(SearchTargetMessages) {
-		if out.Messages, err = s.searchMessages(ctx, input, terms, page, perPage, offset); err != nil {
+		if out.Messages, err = s.searchMessages(ctx, input, terms, page, perPage); err != nil {
 			return nil, err
 		}
 	}
@@ -88,17 +88,17 @@ func (s *Interactor) SearchWorkspace(ctx context.Context, input WorkspaceSearchI
 		return out, nil
 	}
 	if input.Target.includes(SearchTargetChannels) {
-		if out.Channels, err = s.searchChannels(ctx, keyword, input.WorkspaceID, input.RequesterID, page, perPage, offset); err != nil {
+		if out.Channels, err = s.searchChannels(ctx, keyword, input.WorkspaceID, input.RequesterID, perPage, offset); err != nil {
 			return nil, err
 		}
 	}
 	if input.Target.includes(SearchTargetUsers) {
-		if out.Users, err = s.searchUsers(ctx, keyword, input.WorkspaceID, page, perPage, offset); err != nil {
+		if out.Users, err = s.searchUsers(ctx, keyword, input.WorkspaceID, perPage, offset); err != nil {
 			return nil, err
 		}
 	}
 	if input.Target.includes(SearchTargetGroups) {
-		if out.Groups, err = s.searchUserGroups(ctx, keyword, input.WorkspaceID, page, perPage, offset); err != nil {
+		if out.Groups, err = s.searchUserGroups(ctx, keyword, input.WorkspaceID, perPage, offset); err != nil {
 			return nil, err
 		}
 	}
@@ -111,9 +111,8 @@ func (s *Interactor) searchMessages(
 	terms []string,
 	page int,
 	limit int,
-	offset int,
 ) (Paginated[MessageHit], error) {
-	result := Paginated[MessageHit]{Items: []MessageHit{}, Page: page, PerPage: limit}
+	result := Paginated[MessageHit]{Items: []MessageHit{}, PerPage: limit}
 	f := input.Filter
 
 	channelIDs := f.ChannelIDs
@@ -172,7 +171,6 @@ func (s *Interactor) searchMessages(
 		result.Items = append(result.Items, MessageHit{Message: o, Highlights: highlightRanges(o.Body, terms)})
 	}
 	result.Total = hits.Total
-	result.HasMore = offset+len(hits.MessageIDs) < hits.Total
 	return result, nil
 }
 
@@ -251,11 +249,10 @@ func (s *Interactor) searchChannels(
 	query string,
 	workspaceID string,
 	userID string,
-	page int,
 	limit int,
 	offset int,
 ) (Paginated[channeluc.ChannelOutput], error) {
-	channels, total, err := s.channelRepo.SearchAccessibleChannels(ctx, workspaceID, userID, query, limit, offset)
+	channels, total, err := s.channelRepo.SearchBrowsableChannels(ctx, workspaceID, userID, domainrepository.BrowsableChannelFilter{Query: query, Limit: limit, Offset: offset})
 	if err != nil {
 		return Paginated[channeluc.ChannelOutput]{}, fmt.Errorf("failed to search channels: %w", err)
 	}
@@ -268,9 +265,7 @@ func (s *Interactor) searchChannels(
 	return Paginated[channeluc.ChannelOutput]{
 		Items:   items,
 		Total:   total,
-		Page:    page,
 		PerPage: limit,
-		HasMore: offset+len(items) < total,
 	}, nil
 }
 
@@ -279,7 +274,6 @@ func (s *Interactor) searchUserGroups(
 	ctx context.Context,
 	query string,
 	workspaceID string,
-	page int,
 	limit int,
 	offset int,
 ) (Paginated[*entity.UserGroup], error) {
@@ -303,9 +297,7 @@ func (s *Interactor) searchUserGroups(
 	return Paginated[*entity.UserGroup]{
 		Items:   matched[offset:end],
 		Total:   total,
-		Page:    page,
 		PerPage: limit,
-		HasMore: end < total,
 	}, nil
 }
 
@@ -313,7 +305,6 @@ func (s *Interactor) searchUsers(
 	ctx context.Context,
 	query string,
 	workspaceID string,
-	page int,
 	limit int,
 	offset int,
 ) (Paginated[workspaceuc.MemberInfo], error) {
@@ -335,8 +326,6 @@ func (s *Interactor) searchUsers(
 	return Paginated[workspaceuc.MemberInfo]{
 		Items:   items,
 		Total:   total,
-		Page:    page,
 		PerPage: limit,
-		HasMore: offset+len(items) < total,
 	}, nil
 }

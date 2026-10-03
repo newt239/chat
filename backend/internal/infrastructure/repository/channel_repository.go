@@ -148,23 +148,6 @@ func (r *channelRepository) Update(ctx context.Context, ch *entity.Channel) erro
 	return nil
 }
 
-func (r *channelRepository) SearchAccessibleChannels(ctx context.Context, workspaceID, userID string, query string, limit int, offset int) ([]*entity.Channel, int, error) {
-	uid, err := parseUUID(userID, "user ID")
-	if err != nil {
-		return nil, 0, err
-	}
-	channelQuery := r.query(ctx).Where(channel.WorkspaceID(workspaceID), channel.HasMembersWith(channelmember.UserID(uid)))
-	if keyword := strings.TrimSpace(query); keyword != "" {
-		channelQuery.Where(channel.Or(channel.NameContainsFold(keyword), channel.DescriptionContainsFold(keyword)))
-	}
-	total, err := channelQuery.Clone().Count(ctx)
-	if err != nil {
-		return nil, 0, err
-	}
-	channels, err := r.all(ctx, channelQuery.Offset(offset).Limit(limit).Order(ent.Asc(channel.FieldName)))
-	return channels, total, err
-}
-
 func (r *channelRepository) FindAccessibleChannels(ctx context.Context, workspaceID, userID string) ([]*entity.Channel, error) {
 	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
@@ -176,21 +159,18 @@ func (r *channelRepository) FindAccessibleChannels(ctx context.Context, workspac
 		Order(ent.Asc(channel.FieldName)))
 }
 
-// FindOrCreateDM は 2 人の DM を返します。なければ作ります。同時に作られても dm_key の一意制約で 1 つにまとまる
+// FindOrCreateDM は 2 人の DM を返します。なければ作ります
 func (r *channelRepository) FindOrCreateDM(ctx context.Context, workspaceID string, userID1 string, userID2 string) (*entity.Channel, error) {
 	return r.findOrCreateByDMKey(ctx, &entity.Channel{
 		WorkspaceID: workspaceID,
 		Name:        "dm_" + userID1 + "_" + userID2,
 		Type:        entity.ChannelTypeDM,
 		CreatedBy:   userID1,
-	}, dmKey("dm:", userID1, userID2))
+	}, "dm:", []string{userID1, userID2})
 }
 
 // FindOrCreateGroupDM はメンバーがまったく同じグループ DM を返します。なければ name で作ります
 func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID string, creatorID string, memberIDs []string, name string) (*entity.Channel, error) {
-	if len(memberIDs) > entity.MaxGroupDMMembers {
-		return nil, entity.ErrGroupDMMaxMembers
-	}
 	if name == "" {
 		name = "group_dm_" + creatorID
 	}
@@ -199,22 +179,23 @@ func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID
 		Name:        name,
 		Type:        entity.ChannelTypeGroupDM,
 		CreatedBy:   creatorID,
-	}, dmKey("g:", memberIDs...))
+	}, "g:", memberIDs)
 }
 
 // dmKey は参加者の ID を並べ替えてつなげ、参加者が同じ DM を同じキーにします
-func dmKey(prefix string, userIDs ...string) string {
-	sorted := slices.Clone(userIDs)
-	slices.Sort(sorted)
-	return prefix + strings.Join(slices.Compact(sorted), ",")
-}
 
-func (r *channelRepository) findOrCreateByDMKey(ctx context.Context, ch *entity.Channel, key string) (*entity.Channel, error) {
+// findOrCreateByDMKey は参加者の組で一意な DM を返し、参加者を揃えます。同時に作られても dm_key の一意制約で 1 つにまとまる
+func (r *channelRepository) findOrCreateByDMKey(ctx context.Context, ch *entity.Channel, keyPrefix string, memberIDs []string) (*entity.Channel, error) {
 	createdBy, err := parseUUID(ch.CreatedBy, "created_by user ID")
 	if err != nil {
 		return nil, err
 	}
-	err = transaction.ResolveClient(ctx, r.client).Channel.Create().
+	sorted := slices.Clone(memberIDs)
+	slices.Sort(sorted)
+	sorted = slices.Compact(sorted)
+	key := keyPrefix + strings.Join(sorted, ",")
+	client := transaction.ResolveClient(ctx, r.client)
+	err = client.Channel.Create().
 		SetWorkspaceID(ch.WorkspaceID).
 		SetCreatedByID(createdBy).
 		SetName(ch.Name).
@@ -229,6 +210,22 @@ func (r *channelRepository) findOrCreateByDMKey(ctx context.Context, ch *entity.
 	c, err := r.query(ctx).Where(channel.WorkspaceID(ch.WorkspaceID), channel.DmKey(key)).Only(ctx)
 	if err != nil {
 		return nil, err
+	}
+	for _, id := range sorted {
+		uid, err := parseUUID(id, "user ID")
+		if err != nil {
+			return nil, err
+		}
+		err = client.ChannelMember.Create().
+			SetChannelID(c.ID).
+			SetUserID(uid).
+			SetRole(string(entity.ChannelRoleMember)).
+			OnConflictColumns(channelmember.FieldChannelID, channelmember.FieldUserID).
+			DoNothing().
+			Exec(ctx)
+		if err := ignoreConflict(err); err != nil {
+			return nil, err
+		}
 	}
 	return channelToEntity(c), nil
 }

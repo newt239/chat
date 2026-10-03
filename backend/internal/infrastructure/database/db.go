@@ -26,7 +26,7 @@ func InitDB(cfg config.DatabaseConfig) (*ent.Client, *sql.DB, error) {
 	db := drv.DB()
 	db.SetMaxOpenConns(cfg.MaxOpenConns)
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
-	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
+	db.SetConnMaxLifetime(30 * time.Minute)
 	db.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
 
 	const maxRetries = 10

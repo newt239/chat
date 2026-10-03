@@ -91,6 +91,10 @@ func TestFindOrCreateDMReusesChannelByKey(t *testing.T) {
 	if err != nil || same.ID != group.ID {
 		t.Fatalf("メンバーが同じグループ DM を返すことを期待しましたが %v, %v でした", same, err)
 	}
+	members, err := NewChannelMemberRepository(client).FindMembersByChannelIDs(ctx, []string{dm.ID, group.ID})
+	if err != nil || len(members) != 4 {
+		t.Fatalf("DM とグループ DM に 2 人ずつ参加していることを期待しましたが %d 人, %v でした", len(members), err)
+	}
 }
 
 func TestAddMemberReportsDuplicate(t *testing.T) {
@@ -103,7 +107,7 @@ func TestAddMemberReportsDuplicate(t *testing.T) {
 	if err := repo.AddMember(ctx, member); !errors.Is(err, domerr.ErrAlreadyMember) {
 		t.Fatalf("参加済みのメンバーは ErrAlreadyMember を返すことを期待しましたが %v でした", err)
 	}
-	members, err := repo.FindMembers(ctx, member.ChannelID)
+	members, err := repo.FindMembersByChannelIDs(ctx, []string{member.ChannelID})
 	if err != nil || len(members) != 2 {
 		t.Fatalf("メンバーが重複していないことを期待しましたが %d 人, %v でした", len(members), err)
 	}

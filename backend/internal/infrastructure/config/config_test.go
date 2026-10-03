@@ -36,7 +36,7 @@ func TestDatabasePoolFromEnv(t *testing.T) {
 	if cfg.Database.MaxOpenConns != 4 || cfg.Database.ConnMaxIdleTime != 30*time.Second {
 		t.Errorf("環境変数が反映されていません: %+v", cfg.Database)
 	}
-	if cfg.Database.MaxIdleConns != 5 || cfg.Database.ConnMaxLifetime != 30*time.Minute {
+	if cfg.Database.MaxIdleConns != 5 {
 		t.Errorf("未設定の項目が既定値になっていません: %+v", cfg.Database)
 	}
 }

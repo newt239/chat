@@ -6,16 +6,12 @@
 .env.*.local
 .env.production
 .env.preview
-.serena/
 
 # Monorepo
-.turbo
 node_modules
 
 # Backend (Go)
 backend/tmp/
-backend/gen/
-backend/server
 *.exe
 *.exe~
 *.dll
@@ -36,15 +32,6 @@ frontend/build/
 frontend/.vite/
 frontend/dev-dist/
 frontend/**/*.tsbuildinfo
-
-# Docker
-docker/data/
-
-# Atlas
-atlas.sum
-
-# Ansible
-ansible/inventory.ini
 
 # Playwright MCP
 .playwright-mcp/

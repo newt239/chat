@@ -242,75 +242,7 @@ func CreateSeedData(ctx context.Context, client *ent.Client) error {
 		return fmt.Errorf("failed to create bookmark: %w", err)
 	}
 
-	if err := createDisplaySamples(ctx, client, users, channels, messages, baseTime.Add(time.Duration(len(messages))*30*time.Minute)); err != nil {
-		return err
-	}
 	return createRichSamples(ctx, client, passwordHash, users, channels, messages)
-}
-
-// createDisplaySamples は YouTube・メッセージリンク・ピン・多数のリアクションの表示確認用データを作ります
-func createDisplaySamples(ctx context.Context, client *ent.Client, users []*entity.User, channels []*entity.Channel, messages []*entity.Message, startAt time.Time) error {
-	permalink := func(msg *entity.Message) string {
-		return samplePermalink(msg.ChannelID, msg.ID)
-	}
-	youtubeURL := "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-	durationSeconds := int32(213)
-
-	samples := []struct {
-		message *entity.Message
-		link    *entity.MessageLink
-	}{
-		{
-			message: &entity.Message{ID: "f0c00001-0000-4000-8000-000000000001", ChannelID: channels[1].ID, UserID: users[2].ID, Body: "この動画がおすすめです " + youtubeURL},
-			link: &entity.MessageLink{URL: youtubeURL, OGP: entity.OGPData{
-				Title:    new("Rick Astley - Never Gonna Give You Up (Official Video)"),
-				SiteName: new("YouTube"),
-				ImageURL: new("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"),
-				YouTube:  &entity.YouTubeVideo{VideoID: "dQw4w9WgXcQ", ChannelName: new("Rick Astley"), DurationSeconds: &durationSeconds},
-			}},
-		},
-		{
-			message: &entity.Message{ID: "f0c00002-0000-4000-8000-000000000002", ChannelID: channels[0].ID, UserID: users[1].ID, Body: "レビュー依頼はこちらです " + permalink(messages[6])},
-			link:    &entity.MessageLink{URL: permalink(messages[6]), LinkedMessageID: &messages[6].ID},
-		},
-		{
-			// private-team のメッセージへのリンク。メンバーでない Charlie と Diana には引用カードが出ない
-			message: &entity.Message{ID: "f0c00003-0000-4000-8000-000000000003", ChannelID: channels[0].ID, UserID: users[0].ID, Body: "ロードマップの議論はここを見てください " + permalink(messages[9])},
-			link:    &entity.MessageLink{URL: permalink(messages[9]), LinkedMessageID: &messages[9].ID},
-		},
-	}
-
-	linkRepo := repository.NewLinkRepository(client)
-	for i, sample := range samples {
-		sample.message.CreatedAt = startAt.Add(time.Duration(i) * 10 * time.Minute)
-		if err := createMessage(ctx, client, sample.message); err != nil {
-			return fmt.Errorf("failed to create sample message: %w", err)
-		}
-		sample.link.MessageID = sample.message.ID
-		if err := createLink(ctx, linkRepo, sample.link); err != nil {
-			return fmt.Errorf("failed to create sample link: %w", err)
-		}
-	}
-
-	pinRepo := repository.NewPinRepository(client)
-	for _, pin := range []*entity.MessagePin{
-		{ChannelID: messages[0].ChannelID, MessageID: messages[0].ID, PinnedBy: users[1].ID},
-		{ChannelID: messages[6].ChannelID, MessageID: messages[6].ID, PinnedBy: users[0].ID},
-	} {
-		if err := pinRepo.Create(ctx, pin); err != nil {
-			return fmt.Errorf("failed to create pin: %w", err)
-		}
-	}
-
-	// ツールチップや「+N」の確認用に、1 つのメッセージへ多くのリアクションを付ける
-	for i, emoji := range []string{"👍", "🎉", "❤️", "😂", "👀", "🚀", "✅", "🙏"} {
-		for _, user := range users[:len(users)-i%len(users)] {
-			if err := createReaction(ctx, client, messages[0].ID, user.ID, emoji, startAt.Add(time.Duration(i)*time.Minute)); err != nil {
-				return fmt.Errorf("failed to create sample reaction: %w", err)
-			}
-		}
-	}
-	return nil
 }
 
 // samplePermalink はフロントの URL（APP_URL）でメッセージへのリンクを作ります

@@ -2,7 +2,6 @@ package dm
 
 import (
 	"context"
-	"errors"
 	"slices"
 
 	"github.com/newt239/chat/internal/domain/entity"
@@ -64,9 +63,6 @@ func (i *Interactor) CreateDM(ctx context.Context, input CreateDMInput) (*DMOutp
 		return nil, err
 	}
 
-	if err := i.joinMembers(ctx, channel.ID, input.UserID, input.TargetUserID); err != nil {
-		return nil, err
-	}
 	return i.buildDMOutput(ctx, channel, input.UserID)
 }
 
@@ -97,21 +93,7 @@ func (i *Interactor) CreateGroupDM(ctx context.Context, input CreateGroupDMInput
 		return nil, err
 	}
 
-	if err := i.joinMembers(ctx, channel.ID, input.MemberIDs...); err != nil {
-		return nil, err
-	}
 	return i.buildDMOutput(ctx, channel, input.CreatorID)
-}
-
-// joinMembers は DM の参加者を揃えます。同時に作られて既に参加していても成功させる
-func (i *Interactor) joinMembers(ctx context.Context, channelID string, userIDs ...string) error {
-	for _, userID := range userIDs {
-		err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: channelID, UserID: userID, Role: entity.ChannelRoleMember})
-		if err != nil && !errors.Is(err, domerr.ErrAlreadyMember) {
-			return err
-		}
-	}
-	return nil
 }
 
 func (i *Interactor) ListDMs(ctx context.Context, input ListDMsInput) ([]*DMOutput, error) {

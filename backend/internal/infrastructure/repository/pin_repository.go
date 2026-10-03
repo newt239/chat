@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/messagepin"
@@ -64,33 +63,21 @@ func (r *pinRepository) Delete(ctx context.Context, channelID, messageID string)
 	return err
 }
 
-func (r *pinRepository) List(ctx context.Context, channelID string, limit int, cursor *string) ([]*entity.MessagePin, *string, error) {
+func (r *pinRepository) List(ctx context.Context, channelID string, limit int) ([]*entity.MessagePin, error) {
 	chID, err := parseUUID(channelID, "channel ID")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	query := transaction.ResolveClient(ctx, r.client).MessagePin.Query().
+	rows, err := transaction.ResolveClient(ctx, r.client).MessagePin.Query().
 		Where(messagepin.ChannelID(chID)).
 		WithMessage().
 		Order(ent.Desc(messagepin.FieldCreatedAt)).
-		Limit(limit + 1)
-	if cursor != nil && *cursor != "" {
-		pinnedBefore, err := time.Parse(time.RFC3339Nano, *cursor)
-		if err != nil {
-			return nil, nil, domerr.New(domerr.ErrValidation, "invalid cursor format")
-		}
-		query.Where(messagepin.CreatedAtLT(pinnedBefore))
-	}
-	rows, err := query.All(ctx)
+		Limit(limit).
+		All(ctx)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	var next *string
-	if len(rows) > limit {
-		rows = rows[:limit]
-		next = new(rows[limit-1].CreatedAt.Format(time.RFC3339Nano))
-	}
-	return convertAll(rows, messagePinToEntity), next, nil
+	return convertAll(rows, messagePinToEntity), nil
 }
 
 func (r *pinRepository) FindByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*entity.MessagePin, error) {

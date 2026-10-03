@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -49,30 +48,24 @@ type SearchConfig struct {
 // StorageConfig は添付ファイルの保存先。Driver は wasabi（S3 互換）か local（開発用）
 type StorageConfig struct {
 	Driver string
-	// local のときの保存先ディレクトリと、署名付き URL に使うバックエンドの公開 URL
-	LocalDir      string
+	// local のときに署名付き URL に使うバックエンドの公開 URL
 	PublicBaseURL string
 }
 
 type ServerConfig struct {
 	Port string
 	Env  string
-	// X-Forwarded-For を信頼するプロキシの CIDR。空ならループバックとプライベートネットワークを信頼する
-	TrustedProxies []string
 }
 
 type DatabaseConfig struct {
 	URL             string
 	MaxOpenConns    int
 	MaxIdleConns    int
-	ConnMaxLifetime time.Duration
 	ConnMaxIdleTime time.Duration
 }
 
 type JWTConfig struct {
-	Secret          string
-	AccessTokenTTL  time.Duration
-	RefreshTokenTTL time.Duration
+	Secret string
 }
 
 // AuthConfig は Google ログインとパスワード認証の設定。パスワード認証は production では既定で無効
@@ -103,21 +96,17 @@ func Load() *Config {
 	env := getEnv("ENV", "development")
 	return &Config{
 		Server: ServerConfig{
-			Port:           getEnv("PORT", "8080"),
-			Env:            env,
-			TrustedProxies: getEnvList("TRUSTED_PROXIES", ""),
+			Port: getEnv("PORT", "8080"),
+			Env:  env,
 		},
 		Database: DatabaseConfig{
 			URL:             getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/chat?sslmode=disable"),
 			MaxOpenConns:    getEnvInt("DB_MAX_OPEN_CONNS", 10),
 			MaxIdleConns:    getEnvInt("DB_MAX_IDLE_CONNS", 5),
-			ConnMaxLifetime: getEnvDuration("DB_CONN_MAX_LIFETIME", 30*time.Minute),
 			ConnMaxIdleTime: getEnvDuration("DB_CONN_MAX_IDLE_TIME", 5*time.Minute),
 		},
 		JWT: JWTConfig{
-			Secret:          getEnv("JWT_SECRET", "change-me-in-production"),
-			AccessTokenTTL:  time.Duration(getEnvInt("JWT_ACCESS_TOKEN_TTL", 15)) * time.Minute,
-			RefreshTokenTTL: time.Duration(getEnvInt("JWT_REFRESH_TOKEN_TTL", 30)) * 24 * time.Hour,
+			Secret: getEnv("JWT_SECRET", "change-me-in-production"),
 		},
 		Auth: AuthConfig{
 			GoogleOAuthClientID: getEnv("GOOGLE_OAUTH_CLIENT_ID", ""),
@@ -129,7 +118,6 @@ func Load() *Config {
 		},
 		Storage: StorageConfig{
 			Driver:        getEnv("STORAGE_DRIVER", "wasabi"),
-			LocalDir:      getEnv("LOCAL_STORAGE_DIR", "tmp/storage"),
 			PublicBaseURL: getEnv("PUBLIC_BASE_URL", "http://localhost:"+getEnv("PORT", "8080")),
 		},
 		Wasabi: WasabiConfig{
@@ -201,11 +189,6 @@ func getEnvBool(key string, defaultVal bool) bool {
 }
 
 func (c *Config) Validate() error {
-	for _, cidr := range c.Server.TrustedProxies {
-		if _, _, err := net.ParseCIDR(cidr); err != nil {
-			return fmt.Errorf("TRUSTED_PROXIES must be a list of CIDRs: %q", cidr)
-		}
-	}
 	if c.JWT.Secret == "change-me-in-production" && c.Server.Env == "production" {
 		return fmt.Errorf("JWT_SECRET must be set in production")
 	}

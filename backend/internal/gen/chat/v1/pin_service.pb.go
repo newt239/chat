@@ -10,7 +10,6 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -23,79 +22,16 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type PinnedMessage struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       *Message               `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
-	PinnedBy      string                 `protobuf:"bytes,2,opt,name=pinned_by,json=pinnedBy,proto3" json:"pinned_by,omitempty"`
-	PinnedAt      *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=pinned_at,json=pinnedAt,proto3" json:"pinned_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PinnedMessage) Reset() {
-	*x = PinnedMessage{}
-	mi := &file_chat_v1_pin_service_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PinnedMessage) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PinnedMessage) ProtoMessage() {}
-
-func (x *PinnedMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_pin_service_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PinnedMessage.ProtoReflect.Descriptor instead.
-func (*PinnedMessage) Descriptor() ([]byte, []int) {
-	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *PinnedMessage) GetMessage() *Message {
-	if x != nil {
-		return x.Message
-	}
-	return nil
-}
-
-func (x *PinnedMessage) GetPinnedBy() string {
-	if x != nil {
-		return x.PinnedBy
-	}
-	return ""
-}
-
-func (x *PinnedMessage) GetPinnedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.PinnedAt
-	}
-	return nil
-}
-
 type ListPinsRequest struct {
-	state     protoimpl.MessageState `protogen:"open.v1"`
-	ChannelId string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	// 0 の場合はサーバーの既定値を使う
-	Limit         int32   `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
-	Cursor        *string `protobuf:"bytes,3,opt,name=cursor,proto3,oneof" json:"cursor,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListPinsRequest) Reset() {
 	*x = ListPinsRequest{}
-	mi := &file_chat_v1_pin_service_proto_msgTypes[1]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -107,7 +43,7 @@ func (x *ListPinsRequest) String() string {
 func (*ListPinsRequest) ProtoMessage() {}
 
 func (x *ListPinsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_pin_service_proto_msgTypes[1]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -120,7 +56,7 @@ func (x *ListPinsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPinsRequest.ProtoReflect.Descriptor instead.
 func (*ListPinsRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{1}
+	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ListPinsRequest) GetChannelId() string {
@@ -130,31 +66,17 @@ func (x *ListPinsRequest) GetChannelId() string {
 	return ""
 }
 
-func (x *ListPinsRequest) GetLimit() int32 {
-	if x != nil {
-		return x.Limit
-	}
-	return 0
-}
-
-func (x *ListPinsRequest) GetCursor() string {
-	if x != nil && x.Cursor != nil {
-		return *x.Cursor
-	}
-	return ""
-}
-
+// ピン留めした新しい順。ピン留めの情報は Message.pin に入る
 type ListPinsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pins          []*PinnedMessage       `protobuf:"bytes,1,rep,name=pins,proto3" json:"pins,omitempty"`
-	NextCursor    *string                `protobuf:"bytes,2,opt,name=next_cursor,json=nextCursor,proto3,oneof" json:"next_cursor,omitempty"`
+	Messages      []*Message             `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListPinsResponse) Reset() {
 	*x = ListPinsResponse{}
-	mi := &file_chat_v1_pin_service_proto_msgTypes[2]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -166,7 +88,7 @@ func (x *ListPinsResponse) String() string {
 func (*ListPinsResponse) ProtoMessage() {}
 
 func (x *ListPinsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_pin_service_proto_msgTypes[2]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -179,21 +101,14 @@ func (x *ListPinsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPinsResponse.ProtoReflect.Descriptor instead.
 func (*ListPinsResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{2}
+	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ListPinsResponse) GetPins() []*PinnedMessage {
+func (x *ListPinsResponse) GetMessages() []*Message {
 	if x != nil {
-		return x.Pins
+		return x.Messages
 	}
 	return nil
-}
-
-func (x *ListPinsResponse) GetNextCursor() string {
-	if x != nil && x.NextCursor != nil {
-		return *x.NextCursor
-	}
-	return ""
 }
 
 type CreatePinRequest struct {
@@ -206,7 +121,7 @@ type CreatePinRequest struct {
 
 func (x *CreatePinRequest) Reset() {
 	*x = CreatePinRequest{}
-	mi := &file_chat_v1_pin_service_proto_msgTypes[3]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -218,7 +133,7 @@ func (x *CreatePinRequest) String() string {
 func (*CreatePinRequest) ProtoMessage() {}
 
 func (x *CreatePinRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_pin_service_proto_msgTypes[3]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -231,7 +146,7 @@ func (x *CreatePinRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePinRequest.ProtoReflect.Descriptor instead.
 func (*CreatePinRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{3}
+	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *CreatePinRequest) GetChannelId() string {
@@ -256,7 +171,7 @@ type CreatePinResponse struct {
 
 func (x *CreatePinResponse) Reset() {
 	*x = CreatePinResponse{}
-	mi := &file_chat_v1_pin_service_proto_msgTypes[4]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -268,7 +183,7 @@ func (x *CreatePinResponse) String() string {
 func (*CreatePinResponse) ProtoMessage() {}
 
 func (x *CreatePinResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_pin_service_proto_msgTypes[4]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -281,7 +196,7 @@ func (x *CreatePinResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePinResponse.ProtoReflect.Descriptor instead.
 func (*CreatePinResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{4}
+	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{3}
 }
 
 type DeletePinRequest struct {
@@ -294,7 +209,7 @@ type DeletePinRequest struct {
 
 func (x *DeletePinRequest) Reset() {
 	*x = DeletePinRequest{}
-	mi := &file_chat_v1_pin_service_proto_msgTypes[5]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -306,7 +221,7 @@ func (x *DeletePinRequest) String() string {
 func (*DeletePinRequest) ProtoMessage() {}
 
 func (x *DeletePinRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_pin_service_proto_msgTypes[5]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -319,7 +234,7 @@ func (x *DeletePinRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePinRequest.ProtoReflect.Descriptor instead.
 func (*DeletePinRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{5}
+	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *DeletePinRequest) GetChannelId() string {
@@ -344,7 +259,7 @@ type DeletePinResponse struct {
 
 func (x *DeletePinResponse) Reset() {
 	*x = DeletePinResponse{}
-	mi := &file_chat_v1_pin_service_proto_msgTypes[6]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -356,7 +271,7 @@ func (x *DeletePinResponse) String() string {
 func (*DeletePinResponse) ProtoMessage() {}
 
 func (x *DeletePinResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_pin_service_proto_msgTypes[6]
+	mi := &file_chat_v1_pin_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -369,29 +284,19 @@ func (x *DeletePinResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePinResponse.ProtoReflect.Descriptor instead.
 func (*DeletePinResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{6}
+	return file_chat_v1_pin_service_proto_rawDescGZIP(), []int{5}
 }
 
 var File_chat_v1_pin_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_pin_service_proto_rawDesc = "" +
 	"\n" +
-	"\x19chat/v1/pin_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x91\x01\n" +
-	"\rPinnedMessage\x12*\n" +
-	"\amessage\x18\x01 \x01(\v2\x10.chat.v1.MessageR\amessage\x12\x1b\n" +
-	"\tpinned_by\x18\x02 \x01(\tR\bpinnedBy\x127\n" +
-	"\tpinned_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\bpinnedAt\"\x83\x01\n" +
+	"\x19chat/v1/pin_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\":\n" +
 	"\x0fListPinsRequest\x12'\n" +
 	"\n" +
-	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12\x1f\n" +
-	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\x12\x1b\n" +
-	"\x06cursor\x18\x03 \x01(\tH\x00R\x06cursor\x88\x01\x01B\t\n" +
-	"\a_cursor\"t\n" +
-	"\x10ListPinsResponse\x12*\n" +
-	"\x04pins\x18\x01 \x03(\v2\x16.chat.v1.PinnedMessageR\x04pins\x12$\n" +
-	"\vnext_cursor\x18\x02 \x01(\tH\x00R\n" +
-	"nextCursor\x88\x01\x01B\x0e\n" +
-	"\f_next_cursor\"d\n" +
+	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\"@\n" +
+	"\x10ListPinsResponse\x12,\n" +
+	"\bmessages\x18\x01 \x03(\v2\x10.chat.v1.MessageR\bmessages\"d\n" +
 	"\x10CreatePinRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12'\n" +
@@ -423,33 +328,29 @@ func file_chat_v1_pin_service_proto_rawDescGZIP() []byte {
 	return file_chat_v1_pin_service_proto_rawDescData
 }
 
-var file_chat_v1_pin_service_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_chat_v1_pin_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_chat_v1_pin_service_proto_goTypes = []any{
-	(*PinnedMessage)(nil),         // 0: chat.v1.PinnedMessage
-	(*ListPinsRequest)(nil),       // 1: chat.v1.ListPinsRequest
-	(*ListPinsResponse)(nil),      // 2: chat.v1.ListPinsResponse
-	(*CreatePinRequest)(nil),      // 3: chat.v1.CreatePinRequest
-	(*CreatePinResponse)(nil),     // 4: chat.v1.CreatePinResponse
-	(*DeletePinRequest)(nil),      // 5: chat.v1.DeletePinRequest
-	(*DeletePinResponse)(nil),     // 6: chat.v1.DeletePinResponse
-	(*Message)(nil),               // 7: chat.v1.Message
-	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
+	(*ListPinsRequest)(nil),   // 0: chat.v1.ListPinsRequest
+	(*ListPinsResponse)(nil),  // 1: chat.v1.ListPinsResponse
+	(*CreatePinRequest)(nil),  // 2: chat.v1.CreatePinRequest
+	(*CreatePinResponse)(nil), // 3: chat.v1.CreatePinResponse
+	(*DeletePinRequest)(nil),  // 4: chat.v1.DeletePinRequest
+	(*DeletePinResponse)(nil), // 5: chat.v1.DeletePinResponse
+	(*Message)(nil),           // 6: chat.v1.Message
 }
 var file_chat_v1_pin_service_proto_depIdxs = []int32{
-	7, // 0: chat.v1.PinnedMessage.message:type_name -> chat.v1.Message
-	8, // 1: chat.v1.PinnedMessage.pinned_at:type_name -> google.protobuf.Timestamp
-	0, // 2: chat.v1.ListPinsResponse.pins:type_name -> chat.v1.PinnedMessage
-	1, // 3: chat.v1.PinService.ListPins:input_type -> chat.v1.ListPinsRequest
-	3, // 4: chat.v1.PinService.CreatePin:input_type -> chat.v1.CreatePinRequest
-	5, // 5: chat.v1.PinService.DeletePin:input_type -> chat.v1.DeletePinRequest
-	2, // 6: chat.v1.PinService.ListPins:output_type -> chat.v1.ListPinsResponse
-	4, // 7: chat.v1.PinService.CreatePin:output_type -> chat.v1.CreatePinResponse
-	6, // 8: chat.v1.PinService.DeletePin:output_type -> chat.v1.DeletePinResponse
-	6, // [6:9] is the sub-list for method output_type
-	3, // [3:6] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	6, // 0: chat.v1.ListPinsResponse.messages:type_name -> chat.v1.Message
+	0, // 1: chat.v1.PinService.ListPins:input_type -> chat.v1.ListPinsRequest
+	2, // 2: chat.v1.PinService.CreatePin:input_type -> chat.v1.CreatePinRequest
+	4, // 3: chat.v1.PinService.DeletePin:input_type -> chat.v1.DeletePinRequest
+	1, // 4: chat.v1.PinService.ListPins:output_type -> chat.v1.ListPinsResponse
+	3, // 5: chat.v1.PinService.CreatePin:output_type -> chat.v1.CreatePinResponse
+	5, // 6: chat.v1.PinService.DeletePin:output_type -> chat.v1.DeletePinResponse
+	4, // [4:7] is the sub-list for method output_type
+	1, // [1:4] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_pin_service_proto_init() }
@@ -458,15 +359,13 @@ func file_chat_v1_pin_service_proto_init() {
 		return
 	}
 	file_chat_v1_message_proto_init()
-	file_chat_v1_pin_service_proto_msgTypes[1].OneofWrappers = []any{}
-	file_chat_v1_pin_service_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_pin_service_proto_rawDesc), len(file_chat_v1_pin_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

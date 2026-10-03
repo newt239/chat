@@ -3,7 +3,6 @@ package httpapi
 import (
 	"net"
 	"net/http"
-	"strings"
 
 	connectcors "connectrpc.com/cors"
 	"github.com/labstack/echo/v4"
@@ -18,8 +17,6 @@ import (
 
 type RouterConfig struct {
 	AllowedOrigins []string
-	// X-Forwarded-For を信頼するプロキシの CIDR。空ならループバックとプライベートネットワークを信頼する
-	TrustedProxies []string
 
 	WebSocketHub       *websocket.Hub
 	Tickets            *realtimeuc.Interactor
@@ -37,7 +34,7 @@ type RouterConfig struct {
 func NewRouter(cfg RouterConfig) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
-	e.IPExtractor = echo.ExtractIPFromXFFHeader(trustOptions(cfg.TrustedProxies)...)
+	e.IPExtractor = echo.ExtractIPFromXFFHeader()
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     cfg.AllowedOrigins,
@@ -46,12 +43,6 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 		ExposeHeaders:    connectcors.ExposedHeaders(),
 		AllowCredentials: true,
 	}))
-	// 開発用のローカルストレージはファイル本体を受け取るため上限をかけない
-	e.Use(middleware.BodyLimitWithConfig(middleware.BodyLimitConfig{
-		Limit:   "1M",
-		Skipper: func(c echo.Context) bool { return strings.HasPrefix(c.Request().URL.Path, "/storage/") },
-	}))
-
 	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
 
@@ -79,20 +70,6 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	}
 
 	return e
-}
-
-// trustOptions は X-Forwarded-For をたどるときに信頼するプロキシを決めます
-func trustOptions(trustedProxies []string) []echo.TrustOption {
-	if len(trustedProxies) == 0 {
-		return nil
-	}
-	opts := []echo.TrustOption{echo.TrustLoopback(false), echo.TrustLinkLocal(false), echo.TrustPrivateNet(false)}
-	for _, cidr := range trustedProxies {
-		if _, ipNet, err := net.ParseCIDR(cidr); err == nil {
-			opts = append(opts, echo.TrustIPRange(ipNet))
-		}
-	}
-	return opts
 }
 
 // withRealIP は Connect のハンドラが接続元として読む RemoteAddr を、信頼するプロキシを考慮した IP に置き換えます
