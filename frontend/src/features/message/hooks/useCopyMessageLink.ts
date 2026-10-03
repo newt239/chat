@@ -1,5 +1,3 @@
-import { useCallback } from "react";
-
 import { useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
@@ -10,18 +8,15 @@ export const useCopyMessageLink = (workspaceId: string | null, channelId: string
   const router = useRouter();
   const { t } = useTranslation();
 
-  return useCallback(
-    (messageId: string) => {
-      if (workspaceId === null || channelId === null) {
-        return;
-      }
-      const { href } = router.buildLocation({
-        params: { channelId, workspaceId },
-        search: { message: messageId },
-        to: "/app/$workspaceId/$channelId",
-      });
-      void copyWithToast(toShareUrl(href), t("message.link.copied"));
-    },
-    [router, workspaceId, channelId, t],
-  );
+  return (messageId: string) => {
+    if (workspaceId === null || channelId === null) {
+      return;
+    }
+    const { href } = router.buildLocation({
+      params: { channelId, workspaceId },
+      search: { message: messageId },
+      to: "/app/$workspaceId/$channelId",
+    });
+    void copyWithToast(toShareUrl(href), t("message.link.copied"));
+  };
 };

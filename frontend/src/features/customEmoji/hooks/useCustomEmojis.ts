@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import { createConnectQueryKey, skipToken, useQuery } from "@connectrpc/connect-query";
 import { useParams } from "@tanstack/react-router";
 
@@ -35,8 +33,5 @@ export const useCustomEmojis = (workspaceId: string | undefined) =>
 export const useCustomEmojiMap = () => {
   const { workspaceId } = useParams({ strict: false });
   const { data } = useCustomEmojis(workspaceId);
-  return useMemo(
-    () => (data === undefined ? emptyMap : new Map(data.map((emoji) => [emoji.name, emoji]))),
-    [data],
-  );
+  return data === undefined ? emptyMap : new Map(data.map((emoji) => [emoji.name, emoji]));
 };

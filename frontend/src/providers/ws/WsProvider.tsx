@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { createClient } from "@connectrpc/connect";
 import { useAtomValue } from "jotai";
@@ -38,6 +38,5 @@ export const WsProvider = ({ workspaceId, children }: WsProviderProps) => {
     };
   }, [hasSession, workspaceId]);
 
-  const value = useMemo(() => ({ wsClient }), [wsClient]);
-  return <WsClientContext.Provider value={value}>{children}</WsClientContext.Provider>;
+  return <WsClientContext.Provider value={{ wsClient }}>{children}</WsClientContext.Provider>;
 };

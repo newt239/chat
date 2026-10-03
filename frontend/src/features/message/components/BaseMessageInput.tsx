@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { Form, TextArea, TextField } from "react-aria-components";
@@ -99,14 +99,11 @@ export const BaseMessageInput = ({
     setBody((current) => (current === "" ? decode(draftBody) : current));
   }, [draftBody, isCodecReady, decode]);
 
-  const handleBodyChange = useCallback(
-    (next: string) => {
-      setBody(next);
-      notifyTyping();
-      saveDraft(encode(next));
-    },
-    [notifyTyping, saveDraft, encode],
-  );
+  const handleBodyChange = (next: string) => {
+    setBody(next);
+    notifyTyping();
+    saveDraft(encode(next));
+  };
 
   const replaceSelection = (next: { text: string; selection: Selection }) => {
     handleBodyChange(next.text);

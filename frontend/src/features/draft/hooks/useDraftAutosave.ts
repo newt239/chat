@@ -24,6 +24,7 @@ export const useDraftAutosave = (channelId: string, parentId: string | null) => 
   const pendingRef = useRef<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  // 宛先が変わったときだけ後始末で保存するよう、effect の依存にするため参照を固定する
   const flush = useCallback(() => {
     clearTimeout(timerRef.current);
     const body = pendingRef.current;

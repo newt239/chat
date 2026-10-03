@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 import { create } from "@bufbuild/protobuf";
 import { timestampNow } from "@bufbuild/protobuf/wkt";
@@ -209,19 +209,17 @@ export const useChannelTimeline = ({
   }, [wsClient, queryClient, channelId, includeDescendants, descendantKey]);
 
   // ページの境目で重なった項目を除き、古い順にする
-  const orderedItems = useMemo(() => {
-    const seen = new Set<string>();
-    return (items ?? [])
-      .filter((item) => {
-        const id = item.content.value?.id;
-        if (id === undefined || seen.has(id)) {
-          return id === undefined;
-        }
-        seen.add(id);
-        return true;
-      })
-      .toReversed();
-  }, [items]);
+  const seen = new Set<string>();
+  const orderedItems = (items ?? [])
+    .filter((item) => {
+      const id = item.content.value?.id;
+      if (id === undefined || seen.has(id)) {
+        return id === undefined;
+      }
+      seen.add(id);
+      return true;
+    })
+    .toReversed();
 
   return { orderedItems };
 };

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { IconMoodPlus, IconTrash } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
@@ -31,10 +31,8 @@ export const CustomEmojiSettings = ({ workspaceId }: CustomEmojiSettingsProps) =
   const [deleting, setDeleting] = useState<CustomEmoji | null>(null);
   const { remove } = useCustomEmojiActions(workspaceId);
 
-  const filtered = useMemo(() => {
-    const keyword = query.trim().toLowerCase().replaceAll(":", "");
-    return emojis?.filter((emoji) => emoji.name.includes(keyword));
-  }, [emojis, query]);
+  const keyword = query.trim().toLowerCase().replaceAll(":", "");
+  const filtered = emojis?.filter((emoji) => emoji.name.includes(keyword));
 
   return (
     <div className="flex flex-col gap-5">

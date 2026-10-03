@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import { createConnectQueryKey, useMutation } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom, useStore } from "jotai";
@@ -20,8 +18,7 @@ const getMeKey = createConnectQueryKey({ cardinality: "finite", schema: UserServ
 export const usePreferences = () => {
   const stored = useAtomValue(storedPreferencesAtom);
   const saved = useMe().data?.preferences;
-  // 変換した値を毎回作り直さないよう、保存された設定が変わったときだけ変換する
-  return useMemo(() => (saved ? preferencesFromProto(saved) : stored), [saved, stored]);
+  return saved ? preferencesFromProto(saved) : stored;
 };
 
 /** 表示設定を変える。preview は画面に反映するだけで、update はアカウントにも保存し、失敗したら元に戻す */

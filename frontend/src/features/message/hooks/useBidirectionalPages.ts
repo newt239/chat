@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
@@ -26,7 +24,7 @@ type UseBidirectionalPagesArgs<P extends Page, Item extends { createdAt?: Timest
   queryKey: QueryKey;
   enabled: boolean;
   fetchPage: (cursor: PageCursor, signal: AbortSignal) => Promise<P>;
-  // 並びの順で返す。モジュールの直下に置き、毎回作り直さない
+  // 並びの順で返す
   getItems: (page: P) => Item[];
   // 項目が新しい順に並ぶ（チャンネル）か、古い順に並ぶ（スレッド）か
   newestFirst: boolean;
@@ -57,7 +55,7 @@ export const useBidirectionalPages = <P extends Page, Item extends { createdAt?:
   });
 
   const pages = query.data?.pages;
-  const items = useMemo(() => pages?.flatMap((page) => getItems(page)), [pages, getItems]);
+  const items = pages?.flatMap((page) => getItems(page));
 
   // スクロールのたびに呼ばれるため、読み込み中は重ねて取得しない
   const load = (direction: Direction) => {

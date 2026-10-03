@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import { useQuery } from "@connectrpc/connect-query";
 
 import { PinService } from "#/gen/chat/v1/pin_service_pb";
@@ -28,12 +26,8 @@ export const usePinnedMessages = (channelId: string) => {
     { select: toVisiblePins },
   );
 
-  const pinsSorted = useMemo(
-    () =>
-      (query.data ?? []).toSorted(
-        (a, b) => toDate(b.pinnedAt).getTime() - toDate(a.pinnedAt).getTime(),
-      ),
-    [query.data],
+  const pinsSorted = (query.data ?? []).toSorted(
+    (a, b) => toDate(b.pinnedAt).getTime() - toDate(a.pinnedAt).getTime(),
   );
 
   return { ...query, pins: pinsSorted };

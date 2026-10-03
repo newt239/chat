@@ -1,5 +1,3 @@
-import { useCallback, useMemo } from "react";
-
 import { create } from "@bufbuild/protobuf";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -52,41 +50,37 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
   const threadChannelId = parentMessage?.channelId ?? channelId;
   const handleCopyLink = useCopyMessageLink(workspaceId, threadChannelId);
 
-  const handleCreateThread = useCallback(
-    (messageId: string) => {
-      void navigate({
-        params: { channelId, messageId, workspaceId },
-        to: "/app/$workspaceId/$channelId/thread/$messageId",
-      });
-    },
-    [navigate, channelId, workspaceId],
-  );
+  const handleCreateThread = (messageId: string) => {
+    void navigate({
+      params: { channelId, messageId, workspaceId },
+      to: "/app/$workspaceId/$channelId/thread/$messageId",
+    });
+  };
 
   // 親メッセージは最初の返信まで読み込んだときだけ先頭に置く
-  const rows = useMemo(() => {
-    if (replies === undefined || parentMessage === undefined) {
-      return [];
-    }
-    const replyRows = buildTimelineRows(
-      replies.map((reply) =>
-        create(TimelineItemSchema, {
-          content: { case: "userMessage", value: reply },
-          createdAt: reply.createdAt,
-        }),
-      ),
-      false,
-      timeZone,
-    );
-    if (hasOlder) {
-      return replyRows;
-    }
-    const header: TimelineRow = {
-      dateKey: toDateKey(toDate(parentMessage.createdAt), timeZone),
-      key: "header",
-      kind: "header",
-    };
-    return [header, ...replyRows];
-  }, [replies, hasOlder, parentMessage, timeZone]);
+  const replyRows = buildTimelineRows(
+    (replies ?? []).map((reply) =>
+      create(TimelineItemSchema, {
+        content: { case: "userMessage", value: reply },
+        createdAt: reply.createdAt,
+      }),
+    ),
+    false,
+    timeZone,
+  );
+  const rows: TimelineRow[] =
+    replies === undefined || parentMessage === undefined
+      ? []
+      : hasOlder
+        ? replyRows
+        : [
+            {
+              dateKey: toDateKey(toDate(parentMessage.createdAt), timeZone),
+              key: "header",
+              kind: "header",
+            },
+            ...replyRows,
+          ];
 
   const renderMessage = (message: Message, isHighlighted: boolean) => (
     <MessageItem

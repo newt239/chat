@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 
 import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -33,25 +33,24 @@ export const useMediaControls = (
   const isActive = state !== null;
 
   const start = async () => {
+    // React Compiler が try/catch の中の ?? を扱えないため、外で組み立てる
+    const track = {
+      attachmentId: attachment.id,
+      authorName: message.user?.displayName ?? "",
+      channelId: message.channelId,
+      durationSeconds: attachment.media?.durationSeconds ?? 0,
+      fileName: attachment.fileName,
+      kind,
+      messageId: message.id,
+      parentId: message.parentId,
+      posterUrl,
+      workspaceId,
+    };
     try {
-      await mediaPlayer.play(
-        {
-          attachmentId: attachment.id,
-          authorName: message.user?.displayName ?? "",
-          channelId: message.channelId,
-          durationSeconds: attachment.media?.durationSeconds ?? 0,
-          fileName: attachment.fileName,
-          kind,
-          messageId: message.id,
-          parentId: message.parentId,
-          posterUrl,
-          workspaceId,
-        },
-        async () => {
-          const { url } = await fetchUrl({ attachmentId: attachment.id });
-          return url;
-        },
-      );
+      await mediaPlayer.play(track, async () => {
+        const { url } = await fetchUrl({ attachmentId: attachment.id });
+        return url;
+      });
     } catch {
       toast(t("attachment.player.playFailed"), { tone: "danger" });
     }
@@ -79,13 +78,10 @@ export const useMediaControls = (
 
   // 再生中の添付がメッセージ一覧に見えているかをプレイヤーに伝える
   const detachRef = useRef<(() => void) | null>(null);
-  const inlineRef = useCallback(
-    (element: HTMLElement | null) => {
-      detachRef.current?.();
-      detachRef.current = element !== null && isActive ? mediaPlayer.attachInline(element) : null;
-    },
-    [isActive],
-  );
+  const inlineRef = (element: HTMLElement | null) => {
+    detachRef.current?.();
+    detachRef.current = element !== null && isActive ? mediaPlayer.attachInline(element) : null;
+  };
 
   return {
     duration: state?.duration ?? attachment.media?.durationSeconds ?? 0,

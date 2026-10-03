@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import type { ReactNode } from "react";
 
 import { useSetAtom } from "jotai";
@@ -26,7 +26,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const setStoredPreferences = useSetAtom(storedPreferencesAtom);
   const prefersDark = useMediaQuery("(prefers-color-scheme: dark)");
   const colorMode = mode === "system" ? (prefersDark ? "dark" : "light") : mode;
-  const variables = useMemo(() => themeVariables(theme, colorMode), [theme, colorMode]);
+  const variables = themeVariables(theme, colorMode);
 
   useLayoutEffect(() => {
     const root = document.documentElement;

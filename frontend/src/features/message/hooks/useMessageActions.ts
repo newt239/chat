@@ -1,5 +1,3 @@
-import { useCallback } from "react";
-
 import { ConnectError } from "@connectrpc/connect";
 import { useTranslation } from "react-i18next";
 
@@ -18,40 +16,34 @@ export const useMessageActions = () => {
   const deleteMessage = useDeleteMessage();
   const invalidateThreadMetadata = useInvalidateThreadMetadata();
 
-  const handleEdit = useCallback(
-    async (messageId: string, nextBody: string) => {
-      try {
-        await updateMessage.mutateAsync({ body: nextBody, messageId });
-        toast(t("message.edit.done"), { tone: "success" });
-      } catch (error) {
-        toast(t("message.edit.failed"), {
-          description: ConnectError.from(error).message || undefined,
-          tone: "danger",
-        });
-        throw error;
-      }
-    },
-    [updateMessage, t],
-  );
+  const handleEdit = async (messageId: string, nextBody: string) => {
+    try {
+      await updateMessage.mutateAsync({ body: nextBody, messageId });
+      toast(t("message.edit.done"), { tone: "success" });
+    } catch (error) {
+      toast(t("message.edit.failed"), {
+        description: ConnectError.from(error).message || undefined,
+        tone: "danger",
+      });
+      throw error;
+    }
+  };
 
-  const handleDelete = useCallback(
-    async ({ id, channelId, parentId }: Message) => {
-      try {
-        await deleteMessage.mutateAsync({ messageId: id });
-        toast(t("message.delete.done"), { tone: "success" });
-        // 返信を消すと親のスレッドの件数が変わる
-        if (parentId !== undefined) {
-          await invalidateThreadMetadata(channelId);
-        }
-      } catch (error) {
-        toast(t("message.delete.failed"), {
-          description: ConnectError.from(error).message || undefined,
-          tone: "danger",
-        });
+  const handleDelete = async ({ id, channelId, parentId }: Message) => {
+    try {
+      await deleteMessage.mutateAsync({ messageId: id });
+      toast(t("message.delete.done"), { tone: "success" });
+      // 返信を消すと親のスレッドの件数が変わる
+      if (parentId !== undefined) {
+        await invalidateThreadMetadata(channelId);
       }
-    },
-    [deleteMessage, invalidateThreadMetadata, t],
-  );
+    } catch (error) {
+      toast(t("message.delete.failed"), {
+        description: ConnectError.from(error).message || undefined,
+        tone: "danger",
+      });
+    }
+  };
 
   return { handleDelete, handleEdit, isDeleting: deleteMessage.isPending };
 };

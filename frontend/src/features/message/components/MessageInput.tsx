@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -31,14 +31,11 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
       : null;
   const targetId = target?.id ?? channelId;
 
-  const handleSubmit = useCallback(
-    (content: ComposerContent) => {
-      if (targetId !== null) {
-        sendMessage.mutate({ ...content, channelId: targetId });
-      }
-    },
-    [sendMessage, targetId],
-  );
+  const handleSubmit = (content: ComposerContent) => {
+    if (targetId !== null) {
+      sendMessage.mutate({ ...content, channelId: targetId });
+    }
+  };
 
   if (!channelId || targetId === null) {
     return null;

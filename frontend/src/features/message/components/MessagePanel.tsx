@@ -1,5 +1,3 @@
-import { useCallback, useMemo } from "react";
-
 import { IconHash } from "@tabler/icons-react";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -89,10 +87,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   });
 
   const { hideJoinMessages } = usePreferences();
-  const rows = useMemo(
-    () => buildTimelineRows(orderedItems, hideJoinMessages, timeZone),
-    [orderedItems, hideJoinMessages, timeZone],
-  );
+  const rows = buildTimelineRows(orderedItems, hideJoinMessages, timeZone);
   const navigate = useNavigate();
 
   const latestUserMessage = orderedItems.findLast((item) => item.content.case === "userMessage");
@@ -113,15 +108,12 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
 
   const handleCopyLink = useCopyMessageLink(workspaceId, channelId);
 
-  const handleOpenThread = useCallback(
-    (messageId: string) => {
-      void navigate({
-        params: { channelId, messageId, workspaceId },
-        to: "/app/$workspaceId/$channelId/thread/$messageId",
-      });
-    },
-    [navigate, channelId, workspaceId],
-  );
+  const handleOpenThread = (messageId: string) => {
+    void navigate({
+      params: { channelId, messageId, workspaceId },
+      to: "/app/$workspaceId/$channelId/thread/$messageId",
+    });
+  };
 
   const renderMessage = (msg: Message, isHighlighted: boolean) => (
     <MessageItem

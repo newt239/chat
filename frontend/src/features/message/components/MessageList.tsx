@@ -78,6 +78,7 @@ export const MessageList = ({
     paddingStart: 32,
   });
 
+  // コンパイラがメモ化しないため、一覧が変わったときだけ useHighlightedMessage が試し直すよう手で安定させる
   const scrollToMessage = useCallback(
     (messageId: string) => {
       const index = findRowIndex(rows, messageId);

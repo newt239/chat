@@ -1,5 +1,3 @@
-import { useCallback } from "react";
-
 import { useParams } from "@tanstack/react-router";
 
 import { useMembers } from "./useMembers";
@@ -9,11 +7,8 @@ export const useDisplayName = () => {
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { data: members } = useMembers(workspaceId);
 
-  return useCallback(
-    (userId: string, fallback: string) => {
-      const member = members?.find((candidate) => candidate.userId === userId);
-      return member?.nickname ?? member?.displayName ?? fallback;
-    },
-    [members],
-  );
+  return (userId: string, fallback: string) => {
+    const member = members?.find((candidate) => candidate.userId === userId);
+    return member?.nickname ?? member?.displayName ?? fallback;
+  };
 };
