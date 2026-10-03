@@ -1,3 +1,4 @@
+import { Code, ConnectError } from "@connectrpc/connect";
 import { afterEach, describe, expect, test, vi } from "vite-plus/test";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
@@ -11,12 +12,12 @@ describe("toastError", () => {
   });
 
   test("サーバーのメッセージを出す", () => {
-    toastError(new Error("権限がありません"));
+    toastError(new ConnectError("権限がありません", Code.PermissionDenied));
     expect(toast).toHaveBeenCalledWith("権限がありません", { tone: "danger" });
   });
 
   test("メッセージがなければ共通の文言を出す", () => {
-    toastError(new Error(""));
+    toastError(new ConnectError("", Code.Internal));
     expect(toast).toHaveBeenCalledWith("操作できませんでした", { tone: "danger" });
   });
 });
