@@ -42,7 +42,7 @@ type SearchConfig struct {
 // StorageConfig は添付ファイルの保存先。Driver は wasabi（S3 互換）か local（開発用）
 type StorageConfig struct {
 	Driver string
-	// local のときに署名付き URL に使うバックエンドの公開 URL
+	// 画像の配信 URL と local の署名付き URL に使うバックエンドの公開 URL
 	PublicBaseURL string
 }
 
@@ -191,7 +191,7 @@ func (c *Config) Validate() error {
 	if c.Auth.GoogleOAuthClientID == "" && !c.Auth.PasswordAuthEnabled {
 		return fmt.Errorf("GOOGLE_OAUTH_CLIENT_ID or PASSWORD_AUTH_ENABLED must be set to allow login")
 	}
-	for name, value := range map[string]string{"DATABASE_URL": c.Database.URL, "MEILISEARCH_URL": c.Search.MeilisearchURL, "REDIS_URL": c.Redis.URL} {
+	for name, value := range map[string]string{"DATABASE_URL": c.Database.URL, "MEILISEARCH_URL": c.Search.MeilisearchURL, "REDIS_URL": c.Redis.URL, "PUBLIC_BASE_URL": c.Storage.PublicBaseURL} {
 		if value == "" {
 			return fmt.Errorf("%s must be set", name)
 		}

@@ -4,6 +4,11 @@ import { callUnaryMethod, createConnectQueryKey, useTransport } from "@connectrp
 import { useQueryClient } from "@tanstack/react-query";
 
 import { toRange, useBidirectionalPages } from "#/features/message/hooks/useBidirectionalPages";
+import {
+  addPin,
+  addReaction,
+  removeReaction,
+} from "#/features/message/utils/updateTimelineMessage";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
@@ -70,8 +75,14 @@ export const useThreadReplies = (threadId: string, aroundReplyId: string | null)
           },
       );
     };
-    const updateReplies = (update: (reply: Message) => Message) => {
-      updatePages((page) => ({ ...page, replies: page.replies.map(update) }));
+    // 親メッセージはパネルの先頭に出るので返信と同じく更新する
+    const updateMessage = (messageId: string, update: (message: Message) => Message) => {
+      updatePages((page) => ({
+        ...page,
+        parentMessage:
+          page.parentMessage?.id === messageId ? update(page.parentMessage) : page.parentMessage,
+        replies: page.replies.map((reply) => (reply.id === messageId ? update(reply) : reply)),
+      }));
     };
 
     const unsubscribes = [
@@ -90,15 +101,30 @@ export const useThreadReplies = (threadId: string, aroundReplyId: string | null)
         }));
       }),
       wsClient.on("messageUpdated", ({ message }) => {
-        if (message?.parentId === threadId) {
-          updateReplies((reply) => (reply.id === message.id ? message : reply));
+        if (message !== undefined) {
+          // スレッドの情報は取得時にだけ付くため引き継ぐ
+          updateMessage(message.id, (prev) => ({
+            ...message,
+            threadMetadata: prev.threadMetadata,
+          }));
         }
       }),
       wsClient.on("messageDeleted", ({ deletedMessageIds }) => {
-        const deletedIds = new Set(deletedMessageIds);
-        updateReplies((reply) =>
-          deletedIds.has(reply.id) ? { ...reply, isDeleted: true } : reply,
-        );
+        for (const id of deletedMessageIds) {
+          updateMessage(id, (message) => ({ ...message, isDeleted: true }));
+        }
+      }),
+      wsClient.on("reactionAdded", (event) => {
+        updateMessage(event.messageId, (message) => addReaction(message, event));
+      }),
+      wsClient.on("reactionRemoved", (event) => {
+        updateMessage(event.messageId, (message) => removeReaction(message, event));
+      }),
+      wsClient.on("pinCreated", (event) => {
+        updateMessage(event.messageId, (message) => addPin(message, event));
+      }),
+      wsClient.on("pinDeleted", ({ messageId }) => {
+        updateMessage(messageId, (message) => ({ ...message, pin: undefined }));
       }),
     ];
     return () => {

@@ -1,3 +1,9 @@
+import { create } from "@bufbuild/protobuf";
+import { timestampNow } from "@bufbuild/protobuf/wkt";
+
+import { MessagePinSchema, ReactionSchema } from "#/gen/chat/v1/message_pb";
+
+import type { PinEvent, ReactionEvent } from "#/gen/chat/v1/event_pb";
 import type { Message, TimelineItem } from "#/gen/chat/v1/message_pb";
 import type { ListMessagesResponse } from "#/gen/chat/v1/message_service_pb";
 
@@ -39,3 +45,32 @@ export const updateMessagePages = (
       },
   );
 };
+
+export const addReaction = (
+  message: Message,
+  { createdAt, emoji, messageId, user, userId }: ReactionEvent,
+) =>
+  message.reactions.some((r) => r.emoji === emoji && r.user?.id === userId)
+    ? message
+    : {
+        ...message,
+        reactions: [
+          ...message.reactions,
+          create(ReactionSchema, {
+            createdAt: createdAt ?? timestampNow(),
+            emoji,
+            messageId,
+            user: user ?? { id: userId },
+          }),
+        ],
+      };
+
+export const removeReaction = (message: Message, { emoji, userId }: ReactionEvent) => ({
+  ...message,
+  reactions: message.reactions.filter((r) => !(r.emoji === emoji && r.user?.id === userId)),
+});
+
+export const addPin = (message: Message, { pinnedAt, pinnedByUser }: PinEvent) => ({
+  ...message,
+  pin: create(MessagePinSchema, { pinnedAt, pinnedBy: pinnedByUser }),
+});

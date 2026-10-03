@@ -87,6 +87,7 @@ export const IconImageField = ({
         </p>
       )}
       <ImageCropDialog
+        key={cropSrc}
         src={cropSrc}
         isPending={upload.isPending}
         onCancel={closeCrop}

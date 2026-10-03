@@ -59,6 +59,7 @@ func TestValidateRequiresConnections(t *testing.T) {
 		"DATABASE_URL":    "postgres://db:5432/chat",
 		"MEILISEARCH_URL": "http://meilisearch:7700",
 		"REDIS_URL":       "redis://redis:6379",
+		"PUBLIC_BASE_URL": "https://api.example.com",
 	}
 	for name, value := range required {
 		t.Setenv(name, value)

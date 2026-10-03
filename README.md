@@ -41,6 +41,9 @@ pnpm start
 # アプリケーションを停止
 pnpm stop
 
+# データベースも含めて完全に削除
+docker compose down -v
+
 # データベースと検索インデックスをリセットしてシードし直す（起動中のコンテナで実行）
 pnpm db:reset
 
@@ -81,8 +84,6 @@ pnpm run proto:format && pnpm run proto:lint && pnpm run generate:proto
 
 - **メールアドレス**: alice@example.com
 - **パスワード**: password123
-
-詳細なセットアップ手順は [ローカル環境のセットアップ](#ローカル環境のセットアップ) を参照してください。
 
 ## 技術スタック
 
@@ -178,57 +179,11 @@ chat/
 └── scripts/          # 開発用スクリプト
 ```
 
-## ローカル環境のセットアップ
-
-### 起動方法
-
-#### 必要な環境
-
-- **Docker Desktop**
-
-#### 手順
-
-```bash
-# 1. リポジトリのクローン
-git clone <repository-url>
-cd chat
-
-# 2. アプリケーションを起動（スキーマの適用と、DB が空なら初期データの作成は自動で行われます）
-pnpm install
-pnpm start
-
-# 3. 起動完了後、https://chat.localhost にアクセス
-```
-
-#### 停止方法
-
-```bash
-# アプリケーションを停止
-pnpm stop
-
-# データベースも含めて完全削除
-docker compose down -v
-```
-
-### アプリケーションへアクセス
-
-ブラウザで https://chat.localhost にアクセスしてください。
-
-シードの[テストアカウント](#テストアカウント)でログインできます。
-
 ## データベース管理
 
 ### スキーマ管理
 
-このプロジェクトでは [ent](https://entgo.io/) を使用してデータベーススキーマを管理しています。
-
-```bash
-# データベーススキーマをリセット（全テーブルを再作成してシードし、検索インデックスも作り直す）
-docker compose exec backend go run cmd/reset/main.go
-
-# 性能検証用に大量のメッセージを投入（初期データは起動時に自動で作られます）
-docker compose exec backend go run cmd/seed/main.go -messages 1000
-```
+このプロジェクトでは [ent](https://entgo.io/) を使用してデータベーススキーマを管理しています。リセットは `pnpm db:reset`、大量データの投入は `pnpm db:seed:bulk` で行います。
 
 ### スキーマの変更
 

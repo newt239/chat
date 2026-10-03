@@ -123,7 +123,7 @@ helm upgrade --install external-secrets external-secrets/external-secrets \
 `infra/k8s/overlays/<環境>/` の 2 ファイルを `terraform output` の値で書き換えてコミットする。
 
 - `params.yaml`: `PROJECT_ID`、`CLUSTER_NAME`・`CLUSTER_LOCATION`（shared の `gke_cluster_*`）、`BACKEND_SERVICE_ACCOUNT`（envs の `backend_service_account_email`）、`CLOUDSQL_CONNECTION_NAME`（shared の `cloudsql_connection_name`）
-- `kustomization.yaml`: `images` の `newName`（shared の `artifact_registry_url` + `/backend`・`/frontend`）、`backend-env` の `CORS_ALLOWED_ORIGINS`（`https://FRONTEND_DOMAIN`）・`WASABI_BUCKET`（envs の `attachments_bucket`）・`GOOGLE_OAUTH_CLIENT_ID`・`FIREBASE_PROJECT_ID`・`PASSWORD_AUTH_ENABLED`
+- `kustomization.yaml`: `images` の `newName`（shared の `artifact_registry_url` + `/backend`・`/frontend`）、`backend-env` の `CORS_ALLOWED_ORIGINS`（`https://FRONTEND_DOMAIN`）・`WASABI_BUCKET`（envs の `attachments_bucket`）・`GOOGLE_OAUTH_CLIENT_ID`・`FIREBASE_PROJECT_ID`・`PASSWORD_AUTH_ENABLED`・`PUBLIC_BASE_URL`（`https://API_DOMAIN`）
 
 `kustomize build infra/k8s/overlays/dev` で展開結果を確認できる。
 
