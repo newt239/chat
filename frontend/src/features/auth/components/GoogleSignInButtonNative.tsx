@@ -13,6 +13,9 @@ type GoogleSignInButtonNativeProps = {
   workspaceId: string | null;
 };
 
+// React Compiler はコンポーネント内の動的 import を扱えないため外に出す
+const loadDeepLink = () => import("#/lib/platform/tauri/deepLink");
+
 // ネイティブアプリでは WebView で Google のボタンを使えないため、システムのブラウザでログインしてディープリンクで戻る
 export const GoogleSignInButtonNative = ({ workspaceId }: GoogleSignInButtonNativeProps) => {
   const { t } = useTranslation();
@@ -22,7 +25,7 @@ export const GoogleSignInButtonNative = ({ workspaceId }: GoogleSignInButtonNati
   useEffect(() => {
     let stop: (() => void) | null = null;
     let active = true;
-    void import("#/lib/platform/tauri/deepLink").then(({ listenDeepLinks }) => {
+    void loadDeepLink().then(({ listenDeepLinks }) => {
       if (!active) {
         return;
       }

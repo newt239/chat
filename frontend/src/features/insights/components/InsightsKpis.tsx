@@ -23,7 +23,7 @@ export const InsightsKpis = ({ insights }: InsightsKpisProps) => {
     previous: bigint | undefined,
     isGoodWhenUp: boolean | null,
   ): KpiDelta | null => {
-    const percent = percentChange(Number(current ?? 0n), Number(previous ?? 0n));
+    const percent = percentChange(Number(current ?? 0), Number(previous ?? 0));
     return percent === null
       ? null
       : {
@@ -38,16 +38,16 @@ export const InsightsKpis = ({ insights }: InsightsKpisProps) => {
   const rate = insights.activeRate;
   const ratePoints = Math.round(((rate?.current ?? 0) - (rate?.previous ?? 0)) * 100);
   const storage = insights.storageBytes;
-  const storageDiff = Number((storage?.current ?? 0n) - (storage?.previous ?? 0n));
+  const storageDiff = Number(storage?.current ?? 0) - Number(storage?.previous ?? 0);
   const myTotal = insights.myDailyMessages.reduce((sum, day) => sum + day.count, 0);
 
   return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-2.5 max-md:grid-cols-2 max-md:gap-2">
       <KpiCard
         label={t("insights.kpi.activeMembers")}
-        value={formatNumber(Number(insights.activeMembers?.current ?? 0n), locale)}
+        value={formatNumber(Number(insights.activeMembers?.current ?? 0), locale)}
         unit={t("insights.kpi.ofMembers", {
-          count: Number(insights.memberCount?.current ?? 0n),
+          count: Number(insights.memberCount?.current ?? 0),
         })}
         delta={percentDelta(
           insights.activeMembers?.current,
@@ -69,13 +69,13 @@ export const InsightsKpis = ({ insights }: InsightsKpisProps) => {
       />
       <KpiCard
         label={t("insights.kpi.messages")}
-        value={formatNumber(Number(insights.messageCount?.current ?? 0n), locale)}
+        value={formatNumber(Number(insights.messageCount?.current ?? 0), locale)}
         unit={t("insights.kpi.unitCount")}
         delta={percentDelta(insights.messageCount?.current, insights.messageCount?.previous, null)}
       />
       <KpiCard
         label={t("insights.kpi.storage")}
-        value={formatBytes(Number(storage?.current ?? 0n), locale)}
+        value={formatBytes(Number(storage?.current ?? 0), locale)}
         unit=""
         delta={{
           direction: directionOf(storageDiff),

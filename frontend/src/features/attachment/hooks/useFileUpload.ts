@@ -51,7 +51,8 @@ export const useFileUpload = () => {
 
     setPendingAttachments((prev) => [...prev, { file, id, state: { status: "presigning" } }]);
 
-    try {
+    // React Compiler は try の中の ?? などを扱えないため、本体を関数に分ける
+    const upload = async () => {
       // 表示時にレイアウトを予約できるよう、寸法と再生時間を送る。動画はサムネイルも一緒に上げる
       const { thumbnail, ...measured } = await measureMedia(file);
       const presignData = await presignMutation.mutateAsync({
@@ -84,6 +85,9 @@ export const useFileUpload = () => {
 
       setState(id, { attachmentId: presignData.attachmentId, status: "completed" });
       return presignData.attachmentId;
+    };
+    try {
+      return await upload();
     } catch (error) {
       setState(id, {
         error: error instanceof Error ? error.message : t("attachment.errors.unknown"),

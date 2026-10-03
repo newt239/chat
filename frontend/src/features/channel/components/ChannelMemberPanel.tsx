@@ -43,7 +43,7 @@ export const ChannelMemberPanel = ({ channelId }: ChannelMemberPanelProps) => {
 
   const viewers = members.filter((member) => viewerIds.includes(member.userId));
   const others = members.filter((member) => !viewerIds.includes(member.userId));
-  const section = (
+  const renderSection = (
     title: string,
     list: ChannelMember[],
     detail: (member: ChannelMember) => string,
@@ -69,8 +69,8 @@ export const ChannelMemberPanel = ({ channelId }: ChannelMemberPanelProps) => {
 
   return (
     <div className="flex min-h-full flex-col bg-surface p-1.5">
-      {section(t("channel.members.viewing"), viewers, () => t("channel.members.viewingNow"))}
-      {section(t("channel.members.others"), others, (member) => member.email)}
+      {renderSection(t("channel.members.viewing"), viewers, () => t("channel.members.viewingNow"))}
+      {renderSection(t("channel.members.others"), others, (member) => member.email)}
     </div>
   );
 };
