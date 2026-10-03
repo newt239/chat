@@ -2,15 +2,6 @@ const MAX_DEPTH = 4;
 const MAX_SEGMENT_LENGTH = 32;
 const SEGMENT_PATTERN = /^[a-z0-9_-]+$/;
 
-export const channelPathErrorKeys = {
-  exists: "channel.name.exists",
-  invalid: "channel.name.invalid",
-  required: "channel.name.required",
-  segmentEmpty: "channel.name.segmentEmpty",
-  segmentTooLong: "channel.name.segmentTooLong",
-  tooDeep: "channel.name.tooDeep",
-} as const;
-
 // "dev/frontend/web" -> ["dev", "dev/frontend"]
 export const ancestorPaths = (path: string) => {
   const segments = path.split("/");

@@ -19,6 +19,7 @@ describe("ReactionList", () => {
           reactions: emojis.map((emoji) => create(ReactionSchema, { emoji, user: { id: "u2" } })),
         })}
         onOpenList={vi.fn<(emoji: string) => void>()}
+        onToggleReaction={vi.fn<(emoji: string) => void>()}
       />,
       "/app/ws1/ch1",
       () => {},

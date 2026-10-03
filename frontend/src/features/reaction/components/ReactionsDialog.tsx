@@ -14,7 +14,6 @@ import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 import { myUserIdAtom } from "#/providers/store/auth";
 
-import { useToggleReaction } from "../hooks/useReactions";
 import { ALL_REACTIONS_TAB, groupReactions } from "../utils/groupReactions";
 import { ReactionEmoji } from "./ReactionEmoji";
 
@@ -22,25 +21,30 @@ import type { Message } from "#/gen/chat/v1/message_pb";
 
 type ReactionsDialogProps = {
   message: Message;
-  // 開いているタブ（絵文字か ALL_REACTIONS_TAB）。null のときは閉じている
-  tab: string | null;
+  // 開いているタブ（絵文字か ALL_REACTIONS_TAB）
+  tab: string;
+  // null で閉じる
   onTabChange: (tab: string | null) => void;
+  onToggleReaction: (emoji: string) => void;
 };
 
 // 誰がいつどのリアクションを付けたかの一覧。新しい順に並べる
-export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogProps) => {
+export const ReactionsDialog = ({
+  message,
+  tab,
+  onTabChange,
+  onToggleReaction,
+}: ReactionsDialogProps) => {
   const { t } = useTranslation();
   const { toExcerpt } = useMentionDirectory();
   const { formatDateTime } = useDateFormat();
   const displayName = useDisplayName();
   const currentUserId = useAtomValue(myUserIdAtom);
-  const toggleReaction = useToggleReaction(message);
   const groups = groupReactions(message.reactions, currentUserId);
   const rows = message.reactions.toSorted(
     (a, b) => toDate(b.createdAt).getTime() - toDate(a.createdAt).getTime(),
   );
-  const selectedTab =
-    tab !== null && groups.some(({ emoji }) => emoji === tab) ? tab : ALL_REACTIONS_TAB;
+  const selectedTab = groups.some(({ emoji }) => emoji === tab) ? tab : ALL_REACTIONS_TAB;
   const tabs = [
     { count: rows.length, id: ALL_REACTIONS_TAB },
     ...groups.map(({ emoji, count }) => ({ count, id: emoji })),
@@ -48,7 +52,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
 
   return (
     <Dialog
-      isOpen={tab !== null}
+      isOpen
       onOpenChange={() => {
         onTabChange(null);
       }}
@@ -108,7 +112,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
                           variant="secondary"
                           size="sm"
                           onPress={() => {
-                            toggleReaction(row.emoji);
+                            onToggleReaction(row.emoji);
                           }}
                         >
                           {t("reaction.list.undo")}

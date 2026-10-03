@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { IconHash, IconLock, IconUsers } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
@@ -36,125 +38,126 @@ export const SearchResultList = ({
   const { t } = useTranslation();
   const { toText } = useMentionDirectory();
   const displayName = useDisplayName();
-  const shows = (section: SearchFilter) => filter === "all" || filter === section;
+  const renderSection = (
+    section: Exclude<SearchFilter, "all">,
+    count: number,
+    children: ReactNode,
+  ) =>
+    (filter === "all" || filter === section) &&
+    count > 0 && (
+      <section className="flex flex-col">
+        <h3 className="m-0 px-4.5 pt-3 pb-1 text-caption font-semibold text-muted">
+          {t(`search.sections.${section}`)}
+        </h3>
+        {children}
+      </section>
+    );
 
   return (
     <div className="flex flex-col gap-1 pb-4 font-sans text-text">
-      {shows("messages") && messages.length > 0 && (
-        <section className="flex flex-col">
-          <h3 className="m-0 px-4.5 pt-3 pb-1 text-caption font-semibold text-muted">
-            {t("search.sections.messages")}
-          </h3>
-          {messages.map(({ message, highlights }) => {
-            if (message === undefined) {
-              return null;
-            }
-            const authorName = displayName(message.userId, message.user?.displayName ?? "");
-            const body = excerpt(toText(message.body), highlights, 40);
-            return (
-              <div key={message.id} className="mx-4.5 my-1.5">
-                <MessageListCard workspaceId={workspaceId} message={message}>
-                  <div className="flex gap-2.5 px-3 py-2">
-                    <Avatar name={authorName} src={message.user?.avatarUrl} size={32} />
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                      <span className="text-body-strong">{authorName}</span>
-                      <p className="m-0 line-clamp-3 text-body break-words whitespace-pre-wrap">
-                        {body.isTrimmed && "…"}
-                        {splitHighlights(body.text, body.ranges).map((part) =>
-                          part.isMatch ? (
-                            <mark
-                              key={part.start}
-                              className="rounded-xs bg-mention-chip text-inherit"
-                            >
-                              {part.text}
-                            </mark>
-                          ) : (
-                            part.text
-                          ),
-                        )}
-                      </p>
-                    </div>
+      {renderSection(
+        "messages",
+        messages.length,
+        messages.map(({ message, highlights }) => {
+          if (message === undefined) {
+            return null;
+          }
+          const authorName = displayName(message.userId, message.user?.displayName ?? "");
+          const body = excerpt(toText(message.body), highlights, 40);
+          return (
+            <div key={message.id} className="mx-4.5 my-1.5">
+              <MessageListCard workspaceId={workspaceId} message={message}>
+                <div className="flex gap-2.5 px-3 py-2">
+                  <Avatar name={authorName} src={message.user?.avatarUrl} size={32} />
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="text-body-strong">{authorName}</span>
+                    <p className="m-0 line-clamp-3 text-body break-words whitespace-pre-wrap">
+                      {body.isTrimmed && "…"}
+                      {splitHighlights(body.text, body.ranges).map((part) =>
+                        part.isMatch ? (
+                          <mark
+                            key={part.start}
+                            className="rounded-xs bg-mention-chip text-inherit"
+                          >
+                            {part.text}
+                          </mark>
+                        ) : (
+                          part.text
+                        ),
+                      )}
+                    </p>
                   </div>
-                </MessageListCard>
-              </div>
-            );
-          })}
-        </section>
+                </div>
+              </MessageListCard>
+            </div>
+          );
+        }),
       )}
 
-      {shows("channels") && channels.length > 0 && (
-        <section className="flex flex-col">
-          <h3 className="m-0 px-4.5 pt-3 pb-1 text-caption font-semibold text-muted">
-            {t("search.sections.channels")}
-          </h3>
-          <ul className="m-0 flex list-none flex-col px-2.5 py-0">
-            {channels.map((channel) => (
-              <li key={channel.id}>
-                <Link
-                  to="/app/$workspaceId/$channelId"
-                  params={{ channelId: channel.id, workspaceId }}
-                  className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-body-sm text-text no-underline data-hovered:bg-hover"
-                >
-                  {channel.isPrivate ? (
-                    <IconLock aria-hidden className="size-4 shrink-0 text-muted" />
-                  ) : (
-                    <IconHash aria-hidden className="size-4 shrink-0 text-muted" />
-                  )}
-                  <span className="flex min-w-0 flex-1 flex-col leading-snug">
-                    <span className="truncate">{channel.name}</span>
-                    <small className="truncate text-xs text-muted">
-                      {channel.description || t("search.noDescription")}
-                    </small>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {shows("users") && users.length > 0 && (
-        <section className="flex flex-col">
-          <h3 className="m-0 px-4.5 pt-3 pb-1 text-caption font-semibold text-muted">
-            {t("search.sections.users")}
-          </h3>
-          <ul className="m-0 flex list-none flex-col px-2.5 py-0">
-            {users.map((user) => (
-              <li key={user.userId}>
-                <MemberRow
-                  userId={user.userId}
-                  name={displayName(user.userId, user.displayName)}
-                  avatarUrl={user.avatarUrl}
-                  detail={`${t(`member.role.${workspaceRoleKey(user.role)}`)} · ${user.email}`}
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {shows("groups") && groups.length > 0 && (
-        <section className="flex flex-col">
-          <h3 className="m-0 px-4.5 pt-3 pb-1 text-caption font-semibold text-muted">
-            {t("search.sections.groups")}
-          </h3>
-          <ul className="m-0 flex list-none flex-col px-2.5 py-0">
-            {groups.map((group) => (
-              <li
-                key={group.id}
-                className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-body-sm"
+      {renderSection(
+        "channels",
+        channels.length,
+        <ul className="m-0 flex list-none flex-col px-2.5 py-0">
+          {channels.map((channel) => (
+            <li key={channel.id}>
+              <Link
+                to="/app/$workspaceId/$channelId"
+                params={{ channelId: channel.id, workspaceId }}
+                className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-body-sm text-text no-underline data-hovered:bg-hover"
               >
-                <IconUsers aria-hidden className="size-4 shrink-0 text-muted" />
+                {channel.isPrivate ? (
+                  <IconLock aria-hidden className="size-4 shrink-0 text-muted" />
+                ) : (
+                  <IconHash aria-hidden className="size-4 shrink-0 text-muted" />
+                )}
                 <span className="flex min-w-0 flex-1 flex-col leading-snug">
-                  <span className="truncate font-semibold text-accent-text">@{group.name}</span>
+                  <span className="truncate">{channel.name}</span>
                   <small className="truncate text-xs text-muted">
-                    {group.description || t("search.noDescription")}
+                    {channel.description || t("search.noDescription")}
                   </small>
                 </span>
-              </li>
-            ))}
-          </ul>
-        </section>
+              </Link>
+            </li>
+          ))}
+        </ul>,
+      )}
+
+      {renderSection(
+        "users",
+        users.length,
+        <ul className="m-0 flex list-none flex-col px-2.5 py-0">
+          {users.map((user) => (
+            <li key={user.userId}>
+              <MemberRow
+                userId={user.userId}
+                name={displayName(user.userId, user.displayName)}
+                avatarUrl={user.avatarUrl}
+                detail={`${t(`member.role.${workspaceRoleKey(user.role)}`)} · ${user.email}`}
+              />
+            </li>
+          ))}
+        </ul>,
+      )}
+
+      {renderSection(
+        "groups",
+        groups.length,
+        <ul className="m-0 flex list-none flex-col px-2.5 py-0">
+          {groups.map((group) => (
+            <li
+              key={group.id}
+              className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-body-sm"
+            >
+              <IconUsers aria-hidden className="size-4 shrink-0 text-muted" />
+              <span className="flex min-w-0 flex-1 flex-col leading-snug">
+                <span className="truncate font-semibold text-accent-text">@{group.name}</span>
+                <small className="truncate text-xs text-muted">
+                  {group.description || t("search.noDescription")}
+                </small>
+              </span>
+            </li>
+          ))}
+        </ul>,
       )}
     </div>
   );

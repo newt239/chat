@@ -14,7 +14,7 @@ describe("DMAvatar", () => {
     });
     render(<DMAvatar dm={dm} size={24} />);
 
-    const avatar = screen.getByRole("img", { name: "4 人のグループ" });
+    const avatar = screen.getByRole("img", { name: "4人のグループ DM" });
     expect(avatar).toHaveTextContent("4");
     expect(avatar).toHaveStyle({ width: "24px" });
   });

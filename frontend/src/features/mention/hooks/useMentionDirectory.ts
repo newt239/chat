@@ -59,11 +59,14 @@ export const useMentionDirectory = () => {
     toPlainText(toText(body)) || t("message.sheet.attachmentOnly");
 
   return {
+    browsable,
     channel,
     group,
+    groups,
     isReady: members !== undefined && groups !== undefined && channels !== undefined,
     labelOf,
     member,
+    members,
     textOf,
     toExcerpt,
     toText,

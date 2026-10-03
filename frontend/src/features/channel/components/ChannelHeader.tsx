@@ -143,7 +143,7 @@ export const ChannelHeader = ({ workspaceId, channelId, channel, dm }: ChannelHe
         {!isMobile && descendantsToggle}
         <p className="m-0 flex min-w-0 flex-1 items-center gap-1 truncate pl-1.5 text-label font-normal text-muted max-md:invisible [&_svg]:size-3.5 [&_svg]:shrink-0">
           {channel?.description}
-          {isGroupDM && t("dm.header.groupCount", { count: dm.members.length + 1 })}
+          {isGroupDM && t("dm.groupCount", { count: dm.members.length + 1 })}
           {memo && (
             <>
               <IconNote aria-label={t("member.note.memo")} role="img" />

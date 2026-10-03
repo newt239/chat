@@ -8,7 +8,6 @@ import { useTranslation } from "react-i18next";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { myUserIdAtom } from "#/providers/store/auth";
 
-import { useToggleReaction } from "../hooks/useReactions";
 import { groupReactions } from "../utils/groupReactions";
 import { reactionPillClassName } from "../utils/reactionPillClassName";
 import { EmojiPickerPopover } from "./EmojiPickerPopover";
@@ -19,15 +18,15 @@ import type { Message } from "#/gen/chat/v1/message_pb";
 type ReactionListProps = {
   message: Message;
   onOpenList: (emoji: string) => void;
+  onToggleReaction: (emoji: string) => void;
 };
 
 // これを超える種類は「+N」にまとめる
 const VISIBLE_LIMIT = 10;
 
-export const ReactionList = ({ message, onOpenList }: ReactionListProps) => {
+export const ReactionList = ({ message, onOpenList, onToggleReaction }: ReactionListProps) => {
   const { t } = useTranslation();
   const myId = useAtomValue(myUserIdAtom);
-  const toggleReaction = useToggleReaction(message);
   const [isExpanded, setIsExpanded] = useState(false);
   const groups = groupReactions(message.reactions, myId);
 
@@ -44,7 +43,7 @@ export const ReactionList = ({ message, onOpenList }: ReactionListProps) => {
           key={group.emoji}
           group={group}
           onPress={() => {
-            toggleReaction(group.emoji);
+            onToggleReaction(group.emoji);
           }}
           onOpenList={() => {
             onOpenList(group.emoji);
@@ -78,7 +77,7 @@ export const ReactionList = ({ message, onOpenList }: ReactionListProps) => {
             <IconMoodPlus aria-hidden />
           </Button>
         }
-        onSelect={toggleReaction}
+        onSelect={onToggleReaction}
         onOpenChange={null}
         label={t("reaction.add")}
         placement="bottom end"

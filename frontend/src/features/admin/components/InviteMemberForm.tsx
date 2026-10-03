@@ -12,7 +12,7 @@ import { toast } from "#/components/ui/ToastRegion/toast";
 import { assignableWorkspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
 import { toShareUrl } from "#/lib/shareUrl";
 
-import { useInvitationActions } from "../hooks/useInvitationActions";
+import { useAdminActions } from "../hooks/useAdminActions";
 
 import type { WorkspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
 
@@ -29,14 +29,14 @@ type InviteMemberFormProps = {
 export const InviteMemberForm = ({ workspaceId }: InviteMemberFormProps) => {
   const { t } = useTranslation();
   const router = useRouter();
-  const { create } = useInvitationActions();
+  const { createInvitation } = useAdminActions();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<WorkspaceRoleKey>("member");
   const [issued, setIssued] = useState<IssuedInvitation | null>(null);
 
   const submit = () => {
     const target = email.trim();
-    create.mutate(
+    createInvitation.mutate(
       {
         email: target,
         role: assignableWorkspaceRoles.find((option) => option.key === role)?.role,
@@ -88,7 +88,11 @@ export const InviteMemberForm = ({ workspaceId }: InviteMemberFormProps) => {
             value: key,
           }))}
         />
-        <Button type="submit" isDisabled={email.trim().length === 0} isPending={create.isPending}>
+        <Button
+          type="submit"
+          isDisabled={email.trim().length === 0}
+          isPending={createInvitation.isPending}
+        >
           {t("workspace.invite.submit")}
         </Button>
       </Form>

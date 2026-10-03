@@ -1,7 +1,4 @@
 export const ui = {
-  avatar: {
-    groupMembers: "{{count}} 人のグループ",
-  },
   calendar: {
     next: "次の月",
     previous: "前の月",

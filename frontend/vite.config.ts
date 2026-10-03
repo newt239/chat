@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
     // モバイルアプリかどうかを TAURI_ENV_PLATFORM で判定するため
     envPrefix: ["VITE_", "TAURI_ENV_PLATFORM"],
     fmt: {
-      ignorePatterns: ["dist/", "dev-dist/", "src-tauri/", ...generatedFiles],
+      ignorePatterns: ["dist/", "src-tauri/", ...generatedFiles],
       jsdoc: true,
       sortImports: {
         customGroups: [
@@ -59,7 +59,7 @@ export default defineConfig(({ mode }) => {
         browser: true,
         node: true,
       },
-      ignorePatterns: ["dist/", "dev-dist/", "src-tauri/", ...generatedFiles],
+      ignorePatterns: ["dist/", "src-tauri/", ...generatedFiles],
       jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
       options: {
         typeAware: true,

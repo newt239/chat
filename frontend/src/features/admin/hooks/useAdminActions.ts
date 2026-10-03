@@ -4,11 +4,12 @@ import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { AdminService } from "#/gen/chat/v1/admin_service_pb";
+import { InvitationService } from "#/gen/chat/v1/invitation_service_pb";
 import { PermissionService } from "#/gen/chat/v1/permission_service_pb";
 import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 
-// 操作は監査ログにも残るため、管理画面の問い合わせはまとめて取り直す
-const affectedServices = [AdminService, PermissionService, WorkspaceService];
+// 操作は監査ログにも残り、招待で既存ユーザーはメンバーに加わるため、管理画面の問い合わせはまとめて取り直す
+const affectedServices = [AdminService, InvitationService, PermissionService, WorkspaceService];
 
 export const useAdminActions = () => {
   const { t } = useTranslation();
@@ -28,6 +29,10 @@ export const useAdminActions = () => {
   };
 
   return {
+    // 失敗はフォームに出すため、トーストは出さない
+    createInvitation: useMutation(InvitationService.method.createInvitation, {
+      onSuccess: options.onSuccess,
+    }),
     // 書き出しは監査ログに 1 行増えるだけなので、ほかの一覧は取り直さない
     exportAuditLogs: useMutation(AdminService.method.exportAuditLogs, {
       onError: options.onError,
@@ -41,6 +46,7 @@ export const useAdminActions = () => {
     }),
     remove: useMutation(WorkspaceService.method.removeMember, options),
     resume: useMutation(AdminService.method.resumeMember, options),
+    revokeInvitation: useMutation(InvitationService.method.revokeInvitation, options),
     suspend: useMutation(AdminService.method.suspendMember, options),
     updatePermission: useMutation(PermissionService.method.updatePermission, options),
     updateRole: useMutation(WorkspaceService.method.updateMemberRole, options),

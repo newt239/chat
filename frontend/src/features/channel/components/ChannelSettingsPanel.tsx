@@ -7,12 +7,7 @@ import { Button } from "#/components/ui/Button/Button";
 import { Checkbox } from "#/components/ui/Checkbox/Checkbox";
 import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import {
-  channelPathErrorKeys,
-  lastSegment,
-  parentPath,
-  validateChannelPath,
-} from "#/features/channel/utils/channelPath";
+import { lastSegment, parentPath, validateChannelPath } from "#/features/channel/utils/channelPath";
 
 import { useUpdateChannel } from "../hooks/useChannel";
 import { ChannelNameField } from "./ChannelNameField";
@@ -61,7 +56,7 @@ export const ChannelSettingsPanel = ({ workspaceId, channel }: ChannelSettingsPa
         value={segment}
         onChange={setSegment}
         description={t("channel.settings.nameHint")}
-        errorMessage={nameError === null ? null : t(channelPathErrorKeys[nameError], { name })}
+        errorMessage={nameError === null ? null : t(`channel.name.${nameError}`, { name })}
         placeholder=""
       />
       <TextArea

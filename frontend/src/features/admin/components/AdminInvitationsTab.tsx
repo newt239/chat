@@ -11,7 +11,7 @@ import { InvitationService } from "#/gen/chat/v1/invitation_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 
-import { useInvitationActions } from "../hooks/useInvitationActions";
+import { useAdminActions } from "../hooks/useAdminActions";
 import { InviteMemberForm } from "./InviteMemberForm";
 
 const columns = ["email", "role", "invitedBy", "expiresAt"] as const;
@@ -28,7 +28,7 @@ export const AdminInvitationsTab = ({ workspaceId }: AdminInvitationsTabProps) =
     { workspaceId },
     { select: (res) => res.invitations },
   );
-  const { revoke } = useInvitationActions();
+  const { revokeInvitation } = useAdminActions();
 
   return (
     <div className="flex flex-col gap-5">
@@ -73,7 +73,7 @@ export const AdminInvitationsTab = ({ workspaceId }: AdminInvitationsTabProps) =
                         variant="ghost"
                         aria-label={t("admin.invitations.revokeLabel", { email: invitation.email })}
                         onPress={() => {
-                          revoke.mutate(
+                          revokeInvitation.mutate(
                             { invitationId: invitation.id, workspaceId },
                             {
                               onSuccess: () => {

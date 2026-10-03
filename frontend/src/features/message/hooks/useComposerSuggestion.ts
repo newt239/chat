@@ -1,13 +1,8 @@
 import { useId, useState } from "react";
 
-import { skipToken, useQuery } from "@connectrpc/connect-query";
-import { useParams } from "@tanstack/react-router";
-
-import { useMembers } from "#/features/member/hooks/useMembers";
+import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { toMentionToken } from "#/features/mention/utils/mentionToken";
 import { commandNames } from "#/features/message/utils/commands";
-import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
-import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
 import { applySuggestion, findSuggestionQuery, rankByQuery } from "../utils/suggestion";
 
@@ -50,7 +45,7 @@ const broadcasts = (["channel", "here"] as const).map((id) => ({
 
 /** 入力欄で @ を打つとユーザーとユーザーグループ、# を打つとチャンネル、先頭で / を打つとコマンドの候補を出す */
 export const useComposerSuggestion = ({ body, cursor, allowsCommands, onApply }: Options) => {
-  const { workspaceId = null } = useParams({ strict: false });
+  const { members = [], groups = [], browsable = [] } = useMentionDirectory();
   const listId = useId();
   const query = findSuggestionQuery(body, cursor, allowsCommands);
   // 選択中の位置は検索語ごとに持ち、検索語が変わったら先頭に戻す
@@ -58,19 +53,12 @@ export const useComposerSuggestion = ({ body, cursor, allowsCommands, onApply }:
   const [activeState, setActiveState] = useState({ index: 0, queryKey });
   // Esc で閉じた候補は、別の @ / # を打つまで出さない
   const [dismissedStart, setDismissedStart] = useState<number | null>(null);
-  const { data: members = [] } = useMembers(query?.trigger === "@" ? workspaceId : null);
-  const { data: groups = [] } = useUserGroups(query?.trigger === "@" ? workspaceId : null);
-  const { data: channels = [] } = useQuery(
-    ChannelService.method.listBrowsableChannels,
-    query?.trigger === "#" && workspaceId !== null ? { workspaceId } : skipToken,
-    { select: (res) => res.channels.flatMap(({ channel }) => channel ?? []) },
-  );
 
   const candidates: SuggestionItem[] =
     query?.trigger === "/"
       ? commands
       : query?.trigger === "#"
-        ? channels.map((channel) => ({
+        ? browsable.map((channel) => ({
             avatarUrl: undefined,
             id: channel.id,
             kind: "channel",

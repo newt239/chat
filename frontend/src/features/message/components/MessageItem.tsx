@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 
+import { useMutation } from "@connectrpc/connect-query";
 import { IconBookmarkFilled, IconPin } from "@tabler/icons-react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
@@ -11,6 +12,7 @@ import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Badge } from "#/components/ui/Badge/Badge";
 import { cn, focusRing } from "#/components/ui/styles/styles";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { MessageAttachments } from "#/features/attachment/components/MessageAttachments";
 import { MessageLocationCard } from "#/features/location/components/MessageLocationCard";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
@@ -19,13 +21,13 @@ import { ReactionList } from "#/features/reaction/components/ReactionList";
 import { ReactionsDialog } from "#/features/reaction/components/ReactionsDialog";
 import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
 import { ALL_REACTIONS_TAB } from "#/features/reaction/utils/groupReactions";
+import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 import { closeDialog, openDialog, openPanel, workspaceRoute } from "#/lib/overlaySearch";
 import { toDate } from "#/lib/timestamp";
 import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useLongPress } from "../hooks/useLongPress";
-import { useMessageActions } from "../hooks/useMessageActions";
 import { useMessageMenuActions } from "../hooks/useMessageMenuActions";
 import { useOwnsMessageOverlay } from "../hooks/useOwnsMessageOverlay";
 import { MessageActionSheet } from "./MessageActionSheet";
@@ -82,7 +84,28 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
   const { isPressed, longPressProps } = useLongPress(() => {
     void navigate({ search: openDialog({ sheet: message.id }), to: "." });
   }, isMobile && !isEditing);
-  const { handleEdit, handleDelete, isDeleting } = useMessageActions();
+  const updateMessage = useMutation(MessageService.method.updateMessage, {
+    onError: (error) => {
+      toast(t("message.edit.failed"), { description: error.message || undefined, tone: "danger" });
+    },
+    onSuccess: () => {
+      toast(t("message.edit.done"), { tone: "success" });
+    },
+  });
+  const deleteMessage = useMutation(MessageService.method.deleteMessage, {
+    onError: (error) => {
+      toast(t("message.delete.failed"), {
+        description: error.message || undefined,
+        tone: "danger",
+      });
+    },
+    onSettled: () => {
+      setIsDeleteOpen(false);
+    },
+    onSuccess: () => {
+      toast(t("message.delete.done"), { tone: "success" });
+    },
+  });
   const react = useToggleReaction(message);
   // グループ経由は投稿時点のメンバーに展開済み。@channel / @here はチャンネルのメンバー全員宛て
   const isMentioned =
@@ -226,7 +249,9 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
         ) : isEditing ? (
           <MessageEditor
             initialBody={message.body}
-            onSave={(body) => handleEdit(message.id, body)}
+            onSave={async (body) => {
+              await updateMessage.mutateAsync({ body, messageId: message.id });
+            }}
             onClose={() => {
               setIsEditing(false);
             }}
@@ -243,7 +268,7 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
         )}
         {!message.isDeleted && <MessageAttachments message={message} />}
 
-        <ReactionList message={message} onOpenList={setReactionTab} />
+        <ReactionList message={message} onOpenList={setReactionTab} onToggleReaction={react} />
 
         {message.threadMetadata && message.threadMetadata.replyCount > 0 && (
           <ThreadMetadataPreview metadata={message.threadMetadata} onPress={openThread} />
@@ -272,7 +297,14 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
         />
       )}
 
-      <ReactionsDialog message={message} tab={reactionTab} onTabChange={setReactionTab} />
+      {reactionTab !== null && (
+        <ReactionsDialog
+          message={message}
+          tab={reactionTab}
+          onTabChange={setReactionTab}
+          onToggleReaction={react}
+        />
+      )}
 
       <AlertDialog
         isOpen={isDeleteOpen}
@@ -280,11 +312,9 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
         title={t("message.delete.title")}
         confirmLabel={t("message.delete.confirm")}
         tone="danger"
-        isPending={isDeleting}
+        isPending={deleteMessage.isPending}
         onConfirm={() => {
-          void handleDelete(message.id).then(() => {
-            setIsDeleteOpen(false);
-          });
+          deleteMessage.mutate({ messageId: message.id });
         }}
       >
         {t("message.delete.body")}

@@ -8,7 +8,6 @@ export const common: Messages["common"] = {
   linkCopied: "Link copied",
   save: "Save",
   upload: {
-    aborted: "Upload canceled",
     http: "Upload failed (HTTP {{status}})",
     network: "A network error occurred",
   },

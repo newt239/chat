@@ -23,9 +23,6 @@ export const putToStorage = (
     xhr.addEventListener("error", () => {
       reject(new Error(i18n.t("common.upload.network")));
     });
-    xhr.addEventListener("abort", () => {
-      reject(new Error(i18n.t("common.upload.aborted")));
-    });
     xhr.open("PUT", uploadUrl);
     xhr.setRequestHeader("Content-Type", blob.type || "application/octet-stream");
     xhr.send(blob);

@@ -6,7 +6,6 @@ export const common = {
   linkCopied: "リンクをコピーしました",
   save: "保存",
   upload: {
-    aborted: "アップロードがキャンセルされました",
     http: "アップロードに失敗しました（HTTP {{status}}）",
     network: "ネットワークエラーが発生しました",
   },

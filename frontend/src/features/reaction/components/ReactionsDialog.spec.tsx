@@ -5,7 +5,6 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
 import { MessageSchema, ReactionSchema } from "#/gen/chat/v1/message_pb";
-import { ReactionService } from "#/gen/chat/v1/reaction_service_pb";
 import { currentUser, renderWithProviders } from "#/test/renderWithProviders";
 
 import { ReactionsDialog } from "./ReactionsDialog";
@@ -30,14 +29,17 @@ const message = create(MessageSchema, {
 
 describe("ReactionsDialog", () => {
   test("すべてのタブでは新しい順に並べ、絵文字のタブで絞り込み、自分のものは取り消せる", async () => {
-    const removeReaction = vi.fn<() => object>(() => ({}));
+    const onToggleReaction = vi.fn<(emoji: string) => void>();
     const onTabChange = vi.fn<(tab: string | null) => void>();
     await renderWithProviders(
-      <ReactionsDialog message={message} tab="all" onTabChange={onTabChange} />,
+      <ReactionsDialog
+        message={message}
+        tab="all"
+        onTabChange={onTabChange}
+        onToggleReaction={onToggleReaction}
+      />,
       "/app/ws1/ch1",
-      (routes) => {
-        routes.rpc(ReactionService.method.removeReaction, removeReaction);
-      },
+      () => {},
     );
 
     const dialog = screen.getByRole("dialog", { name: "リアクション" });
@@ -53,7 +55,7 @@ describe("ReactionsDialog", () => {
     expect(onTabChange).toHaveBeenCalledWith("👀");
 
     await userEvent.click(within(dialog).getByRole("button", { name: "取り消す" }));
-    expect(removeReaction).toHaveBeenCalledOnce();
+    expect(onToggleReaction).toHaveBeenCalledWith("🎉");
   });
 
   test("選んだ絵文字のタブを開く", async () => {
@@ -62,6 +64,7 @@ describe("ReactionsDialog", () => {
         message={message}
         tab="👀"
         onTabChange={vi.fn<(tab: string | null) => void>()}
+        onToggleReaction={vi.fn<(emoji: string) => void>()}
       />,
       "/app/ws1/ch1",
       () => {},

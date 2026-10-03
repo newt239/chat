@@ -1,9 +1,6 @@
 import type { Messages } from "../../messages";
 
 export const ui: Messages["ui"] = {
-  avatar: {
-    groupMembers: "Group of {{count}}",
-  },
   calendar: {
     next: "Next month",
     previous: "Previous month",

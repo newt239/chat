@@ -15,7 +15,7 @@ import { cn, focusRing } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { ChannelNameField } from "#/features/channel/components/ChannelNameField";
 import { useChannels, useCreateChannel } from "#/features/channel/hooks/useChannel";
-import { channelPathErrorKeys, validateChannelPath } from "#/features/channel/utils/channelPath";
+import { validateChannelPath } from "#/features/channel/utils/channelPath";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { transitions } from "#/lib/motion";
 import { myUserIdAtom } from "#/providers/store/auth";
@@ -211,7 +211,7 @@ export const CreateDMModal = ({ workspaceId, onClose }: CreateDMModalProps) => {
                   description={t("channel.create.nameHint")}
                   errorMessage={
                     isTouched && nameError !== null
-                      ? t(channelPathErrorKeys[nameError], { name: channelName })
+                      ? t(`channel.name.${nameError}`, { name: channelName })
                       : null
                   }
                 />

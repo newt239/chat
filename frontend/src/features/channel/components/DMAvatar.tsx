@@ -21,7 +21,7 @@ export const DMAvatar = ({ dm, size }: DMAvatarProps) => {
   return (
     <span
       role="img"
-      aria-label={t("ui.avatar.groupMembers", { count })}
+      aria-label={t("dm.groupCount", { count })}
       className="inline-grid shrink-0 place-items-center rounded-[28%] border border-border bg-sunken font-mono leading-none font-bold text-muted select-none"
       style={{ fontSize: Math.max(9, Math.round(size * 0.42)), height: size, width: size }}
     >

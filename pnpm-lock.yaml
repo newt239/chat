@@ -336,9 +336,6 @@ importers:
       '@types/google.accounts':
         specifier: 0.0.18
         version: 0.0.18
-      '@types/hast':
-        specifier: 3.0.5
-        version: 3.0.5
       '@types/mdast':
         specifier: 4.0.4
         version: 4.0.4

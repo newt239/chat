@@ -11,11 +11,7 @@ import { Switch } from "#/components/ui/Switch/Switch";
 import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useChannels, useCreateChannel } from "#/features/channel/hooks/useChannel";
-import {
-  ancestorPaths,
-  channelPathErrorKeys,
-  validateChannelPath,
-} from "#/features/channel/utils/channelPath";
+import { ancestorPaths, validateChannelPath } from "#/features/channel/utils/channelPath";
 
 import { ChannelNameField } from "./ChannelNameField";
 
@@ -102,9 +98,7 @@ export const CreateChannelModal = ({ workspaceId, parentId, onClose }: CreateCha
           onChange={setEditedName}
           placeholder="dev/frontend"
           description={t("channel.create.nameHint")}
-          errorMessage={
-            isTouched && error !== null ? t(channelPathErrorKeys[error], { name }) : null
-          }
+          errorMessage={isTouched && error !== null ? t(`channel.name.${error}`, { name }) : null}
         />
         {segments.length > 1 && (
           <ol
