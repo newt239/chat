@@ -39,15 +39,20 @@ export const useScheduleMessage = () => {
   const invalidate = useInvalidateScheduledMessages();
   const { mutate } = useMutation(ScheduledMessageService.method.createScheduledMessage);
 
-  return (target: ScheduleTarget, scheduledAt: Date, onScheduled: () => void) => {
+  return (
+    target: ScheduleTarget,
+    scheduledAt: Date,
+    callbacks: { onError: () => void; onSuccess: () => void },
+  ) => {
     mutate(
       { ...target, scheduledAt: timestampFromDate(scheduledAt) },
       {
         onError: (error) => {
-          toast(t("schedule.failed"), { description: error.message, tone: "danger" });
+          callbacks.onError();
+          toast(t("schedule.failed"), { description: error.rawMessage, tone: "danger" });
         },
         onSuccess: () => {
-          onScheduled();
+          callbacks.onSuccess();
           toast(t("schedule.scheduled", { time: formatDateTime(scheduledAt) }), {
             tone: "success",
           });

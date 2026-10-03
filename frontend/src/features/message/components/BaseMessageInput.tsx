@@ -118,10 +118,15 @@ export const BaseMessageInput = ({
     };
   };
 
-  // 送信中に入力欄を離れても送った本文が下書きに残らないよう、送る時点で消す
+  // 送信中に入力欄を離れても送った本文が下書きに残らないよう、送る時点で消す。消した下書きの取り直しで入力欄が空にならないよう本文を固定する
   const discardComposerDraft = () => {
+    setTypedBody(body);
     notifyStopTyping();
     discardDraft();
+  };
+
+  const restoreDraft = () => {
+    saveDraft(encode(body));
   };
 
   const clearComposer = () => {
@@ -142,9 +147,7 @@ export const BaseMessageInput = ({
     sendMessage.mutate(
       { ...content, channelId, parentId: parentId ?? undefined },
       {
-        onError: () => {
-          saveDraft(encode(body));
-        },
+        onError: restoreDraft,
         onSuccess: ({ message }) => {
           clearComposer();
           if (message && onSent) {
@@ -171,7 +174,7 @@ export const BaseMessageInput = ({
         { channelId, parentId: parentId ?? undefined, text: content.body },
         {
           onError: (commandError) => {
-            saveDraft(encode(body));
+            restoreDraft();
             toast(commandError.rawMessage || t("command.failed"), { tone: "danger" });
           },
           onSuccess: clearComposer,
@@ -204,11 +207,10 @@ export const BaseMessageInput = ({
     const content = collectContent();
     if (content !== null) {
       discardComposerDraft();
-      scheduleMessage(
-        { ...content, channelId, parentId: parentId ?? undefined },
-        scheduledAt,
-        clearComposer,
-      );
+      scheduleMessage({ ...content, channelId, parentId: parentId ?? undefined }, scheduledAt, {
+        onError: restoreDraft,
+        onSuccess: clearComposer,
+      });
     }
   };
 
