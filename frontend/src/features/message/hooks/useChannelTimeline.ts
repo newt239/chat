@@ -10,7 +10,7 @@ import {
   updateTimelineMessage,
   updateUserMessages,
 } from "#/features/message/utils/updateTimelineMessage";
-import { pinListKey } from "#/features/pin/hooks/usePinActions";
+import { pinListKey } from "#/features/pin/hooks/useTogglePin";
 import {
   MessagePinSchema,
   ReactionSchema,
@@ -83,7 +83,7 @@ export const useChannelTimeline = ({
       );
     };
 
-    // ピンの一覧も取り直す。自分の操作は usePinActions で取り直すため二重に取らない
+    // ピンの一覧も取り直す。自分の操作は useTogglePin で取り直すため二重に取らない
     const invalidatePins = (eventChannelId: string, pinnedBy: string) => {
       if (pinnedBy !== myId) {
         void queryClient.invalidateQueries({ queryKey: pinListKey(eventChannelId) });

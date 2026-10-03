@@ -17,16 +17,6 @@ export const workspace = {
     public: "参加できる公開ワークスペース",
     title: "ワークスペース",
   },
-  invite: {
-    addedDirectly: "{{email}} をワークスペースに追加しました",
-    email: "メールアドレスで招待",
-    failed: "招待できませんでした",
-    link: "{{email}} への招待リンク",
-    linkOnce:
-      "このリンクは今だけ表示されます。コピーして招待する人に共有してください（7 日間有効）。",
-    role: "招待するロール",
-    submit: "招待",
-  },
   emoji: {
     add: "絵文字を登録",
     added: "{{name}} を登録しました",

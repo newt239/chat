@@ -172,8 +172,7 @@ func (x *ThreadCursor) GetThreadId() string {
 type GetThreadRepliesRequest struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	MessageId string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
-	// 0 の場合はサーバーの既定値を使う
-	Limit int32 `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Limit     int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	// since だけなら直後から、until だけなら直前までを返す。どちらもなければ最新の返信を返す
 	Since *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=since,proto3" json:"since,omitempty"`
 	Until *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=until,proto3" json:"until,omitempty"`
@@ -419,9 +418,8 @@ type ListParticipatingThreadsRequest struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	WorkspaceId string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	// 前ページの next_cursor をそのまま渡す
-	Cursor *ThreadCursor `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
-	// 0 の場合はサーバーの既定値を使う
-	Limit         int32 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	Cursor        *ThreadCursor `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	Limit         int32         `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -789,7 +787,7 @@ const file_chat_v1_thread_service_proto_rawDesc = "" +
 	"\x17GetThreadRepliesRequest\x12'\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tmessageId\x12\x1f\n" +
-	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\x120\n" +
+	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x01R\x05limit\x120\n" +
 	"\x05since\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x05since\x120\n" +
 	"\x05until\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x125\n" +
 	"\x0faround_reply_id\x18\x05 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\raroundReplyId\x88\x01\x01B\x12\n" +
@@ -809,7 +807,7 @@ const file_chat_v1_thread_service_proto_rawDesc = "" +
 	"\x1fListParticipatingThreadsRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12-\n" +
 	"\x06cursor\x18\x02 \x01(\v2\x15.chat.v1.ThreadCursorR\x06cursor\x12\x1f\n" +
-	"\x05limit\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\"\x92\x01\n" +
+	"\x05limit\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x01R\x05limit\"\x92\x01\n" +
 	" ListParticipatingThreadsResponse\x126\n" +
 	"\athreads\x18\x01 \x03(\v2\x1c.chat.v1.ParticipatingThreadR\athreads\x126\n" +
 	"\vnext_cursor\x18\x02 \x01(\v2\x15.chat.v1.ThreadCursorR\n" +

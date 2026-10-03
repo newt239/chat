@@ -72,6 +72,16 @@ export const admin: Messages["admin"] = {
       role: "Role",
     },
     empty: "No pending invitations",
+    invite: {
+      addedDirectly: "Added {{email}} to the workspace",
+      email: "Invite by email",
+      failed: "Couldn't invite",
+      link: "Invitation link for {{email}}",
+      linkOnce:
+        "This link is shown only now. Copy it and share it with the person you invited (valid for 7 days).",
+      role: "Role to invite as",
+      submit: "Invite",
+    },
     note: "Registered addresses are added as members right away. Otherwise an invitation link is issued.",
     pending: "Pending invitations",
     revoke: "Revoke",

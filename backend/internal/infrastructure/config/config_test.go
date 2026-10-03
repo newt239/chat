@@ -52,16 +52,26 @@ func TestScheduledMessageDispatchInterval(t *testing.T) {
 	}
 }
 
-func TestValidateRequiresRedis(t *testing.T) {
+func TestValidateRequiresConnections(t *testing.T) {
 	t.Setenv("STORAGE_DRIVER", "local")
 	t.Setenv("PASSWORD_AUTH_ENABLED", "true")
-	t.Setenv("REDIS_URL", "")
-	cfg := Load()
-	if err := cfg.Validate(); err == nil {
-		t.Fatal("REDIS_URL が空なら検証に失敗するはず")
+	required := map[string]string{
+		"DATABASE_URL":    "postgres://db:5432/chat",
+		"MEILISEARCH_URL": "http://meilisearch:7700",
+		"REDIS_URL":       "redis://redis:6379",
 	}
-	cfg.Redis.URL = "redis://localhost:6379"
-	if err := cfg.Validate(); err != nil {
-		t.Fatalf("REDIS_URL があれば通るはず: %v", err)
+	for name, value := range required {
+		t.Setenv(name, value)
+	}
+	if err := Load().Validate(); err != nil {
+		t.Fatalf("接続先がそろっていれば通るはず: %v", err)
+	}
+	for name := range required {
+		t.Run(name, func(t *testing.T) {
+			t.Setenv(name, "")
+			if err := Load().Validate(); err == nil {
+				t.Fatalf("%s が空なら検証に失敗するはず", name)
+			}
+		})
 	}
 }

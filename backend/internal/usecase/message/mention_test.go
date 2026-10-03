@@ -73,7 +73,6 @@ func TestListMentionsPagination(t *testing.T) {
 	}{
 		{name: "次のページがある", total: 3, limit: 2, wantCount: 2, wantCursor: &domainrepository.MessageCursor{CreatedAt: mentionMessages(2)[1].CreatedAt, MessageID: "m1"}},
 		{name: "ちょうど最後まで", total: 2, limit: 2, wantCount: 2},
-		{name: "0 は既定値を使う", total: 25, limit: 0, wantCount: defaultListLimit, wantCursor: &domainrepository.MessageCursor{CreatedAt: mentionMessages(defaultListLimit)[defaultListLimit-1].CreatedAt, MessageID: fmt.Sprintf("m%d", defaultListLimit-1)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -97,7 +96,7 @@ func TestListMentionsPassesCursor(t *testing.T) {
 	lister, messageRepo := newMentionLister(true, mentionMessages(1))
 	cursor := domainrepository.MessageCursor{CreatedAt: time.Now(), MessageID: "m9"}
 
-	if _, err := lister.ListMentions(context.Background(), domainrepository.FindMentionsInput{WorkspaceID: "ws", UserID: "u1", Cursor: &cursor}); err != nil {
+	if _, err := lister.ListMentions(context.Background(), domainrepository.FindMentionsInput{WorkspaceID: "ws", UserID: "u1", Cursor: &cursor, Limit: 20}); err != nil {
 		t.Fatalf("取得に失敗しました: %v", err)
 	}
 	got := messageRepo.input.Cursor

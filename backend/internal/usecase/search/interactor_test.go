@@ -148,7 +148,7 @@ func TestSearchWorkspaceBuildsCriteria(t *testing.T) {
 		Target:      SearchTargetMessages,
 		Sort:        domainrepository.MessageSearchSortRelevance,
 		Page:        2,
-		PerPage:     100,
+		PerPage:     20,
 		Filter: MessageFilter{
 			FromUserIDs:               []string{"u2"},
 			ChannelIDs:                []string{"dev"},
@@ -173,7 +173,7 @@ func TestSearchWorkspaceBuildsCriteria(t *testing.T) {
 		After:      &after,
 		Sort:       domainrepository.MessageSearchSortRelevance,
 		Page:       2,
-		PerPage:    maxPerPage,
+		PerPage:    20,
 	}
 	if !reflect.DeepEqual(*index.criteria, want) {
 		t.Errorf("検索条件が期待と異なります:\n got=%+v\nwant=%+v", *index.criteria, want)

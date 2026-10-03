@@ -74,5 +74,5 @@
 - 過度に共通化しないでください。同様の処理が 2, 3 個しかないのに共通化してしまうと保守性が低下します。
 - データベースのテーブル名は単数形で命名してください。
 - API は`internal/interfaces/handler/rpc/`のサービスに実装し、ユースケースの出力から proto のメッセージへの変換は`internal/interfaces/presenter/`に置いてください。
-  - ユースケースのエラーは`rpc/error.go`の対応表で Connect のエラーコードに変換されるため、サービスではそのまま返してください。新しいエラーを追加したら対応表にも追加してください。
+  - ユースケースのエラーは`domain/errors`の`domerr.New`で既存の種類（`ErrNotFound`など）を持たせれば`rpc/error.go`の対応表で Connect のエラーコードに変換されるため、サービスではそのまま返してください。新しい種類を作ったときだけ`rpc/error.go`と`httpapi/webhook.go`の対応表に追加してください。
   - 入力の制約は proto に protovalidate のルールとして書いてください。

@@ -4,7 +4,6 @@ import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { cn, focusRing } from "#/components/ui/styles/styles";
-import { useOwnsMessageOverlay } from "#/features/message/hooks/useOwnsMessageOverlay";
 import { closeDialog, openDialog, workspaceRoute } from "#/lib/overlaySearch";
 
 import { imageBox } from "../utils/imageBox";
@@ -16,6 +15,8 @@ import type { Message, MessageAttachment } from "#/gen/chat/v1/message_pb";
 type ImageGalleryProps = {
   images: MessageAttachment[];
   message: Message;
+  // 同じメッセージが複数の場所に出るとき、拡大表示を開くのは 1 か所だけにする
+  ownsOverlay: boolean;
 };
 
 const GRID_LIMIT = 4;
@@ -31,10 +32,9 @@ const tileClassName = `relative block min-h-0 cursor-zoom-in overflow-hidden bg-
 
 const imageClassName = "block size-full object-cover";
 
-export const ImageGallery = ({ images, message }: ImageGalleryProps) => {
+export const ImageGallery = ({ images, message, ownsOverlay }: ImageGalleryProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const ownsOverlay = useOwnsMessageOverlay(message.id);
   // 開いている画像は ?image= の添付 ID で表す
   const imageId = workspaceRoute.useSearch({ select: (search) => search.image });
   const found = ownsOverlay ? images.findIndex((image) => image.id === imageId) : -1;

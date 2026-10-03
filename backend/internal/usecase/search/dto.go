@@ -69,9 +69,8 @@ type MessageHit struct {
 }
 
 type Paginated[T any] struct {
-	Items   []T
-	Total   int
-	PerPage int
+	Items []T
+	Total int
 }
 
 type WorkspaceSearchOutput struct {

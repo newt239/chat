@@ -8,6 +8,8 @@ import { applySuggestion, findSuggestionQuery, rankByQuery } from "../utils/sugg
 
 import type { SuggestionItem } from "../utils/suggestion";
 
+import type { MentionToken } from "#/features/mention/utils/mentionToken";
+
 type Options = {
   body: string;
   cursor: number;
@@ -34,14 +36,18 @@ const commands = commandNames.map((name) => ({
   value: `/${name}`,
 }));
 
-const broadcasts = (["channel", "here"] as const).map((id) => ({
-  avatarUrl: undefined,
-  id,
-  kind: "broadcast" as const,
-  label: id,
-  token: toMentionToken({ id, kind: "broadcast" }),
-  value: `@${id}`,
-}));
+const mentionItem = (token: MentionToken, label: string, avatarUrl: string | undefined) => ({
+  avatarUrl,
+  id: token.id,
+  kind: token.kind,
+  label,
+  token: toMentionToken(token),
+  value: `${token.kind === "channel" ? "#" : "@"}${label}`,
+});
+
+const broadcasts = (["channel", "here"] as const).map((id) =>
+  mentionItem({ id, kind: "broadcast" }, id, undefined),
+);
 
 /** 入力欄で @ を打つとユーザーとユーザーグループ、# を打つとチャンネル、先頭で / を打つとコマンドの候補を出す */
 export const useComposerSuggestion = ({ body, cursor, allowsCommands, onApply }: Options) => {
@@ -58,36 +64,22 @@ export const useComposerSuggestion = ({ body, cursor, allowsCommands, onApply }:
     query?.trigger === "/"
       ? commands
       : query?.trigger === "#"
-        ? browsable.map((channel) => ({
-            avatarUrl: undefined,
-            id: channel.id,
-            kind: "channel",
-            label: channel.name,
-            token: toMentionToken({ id: channel.id, kind: "channel" }),
-            value: `#${channel.name}`,
-          }))
+        ? browsable.map((channel) =>
+            mentionItem({ id: channel.id, kind: "channel" }, channel.name, undefined),
+          )
         : [
             ...members
               .filter((member) => member.suspendedAt === undefined)
-              .map((member) => {
-                const label = member.nickname ?? member.displayName;
-                return {
-                  avatarUrl: member.avatarUrl,
-                  id: member.userId,
-                  kind: "user" as const,
-                  label,
-                  token: toMentionToken({ id: member.userId, kind: "user" }),
-                  value: `@${label}`,
-                };
-              }),
-            ...groups.map((group) => ({
-              avatarUrl: undefined,
-              id: group.id,
-              kind: "group" as const,
-              label: group.name,
-              token: toMentionToken({ id: group.id, kind: "group" }),
-              value: `@${group.name}`,
-            })),
+              .map((member) =>
+                mentionItem(
+                  { id: member.userId, kind: "user" },
+                  member.nickname ?? member.displayName,
+                  member.avatarUrl,
+                ),
+              ),
+            ...groups.map((group) =>
+              mentionItem({ id: group.id, kind: "group" }, group.name, undefined),
+            ),
             ...broadcasts,
           ];
   const items =

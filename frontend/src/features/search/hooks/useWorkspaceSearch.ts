@@ -32,7 +32,7 @@ const hasMessages: Record<SearchHasValue, SearchHas> = {
   video: SearchHas.VIDEO,
 };
 
-const RESULTS_PER_PAGE = 20;
+export const RESULTS_PER_PAGE = 20;
 
 const same = (a: string, b: string | undefined) =>
   b !== undefined && a.toLowerCase() === b.toLowerCase();

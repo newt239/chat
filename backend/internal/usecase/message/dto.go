@@ -14,11 +14,6 @@ var (
 	ErrOfficialMessage       = domerr.New(domerr.ErrUnauthorized, "公式アプリの投稿は編集・削除できません")
 )
 
-const (
-	defaultMessageLimit = 50
-	maxMessageLimit     = 100
-)
-
 type ListMessagesInput struct {
 	ChannelID string
 	UserID    string

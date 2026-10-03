@@ -18,16 +18,6 @@ export const workspace: Messages["workspace"] = {
     public: "Public workspaces you can join",
     title: "Workspaces",
   },
-  invite: {
-    addedDirectly: "Added {{email}} to the workspace",
-    email: "Invite by email",
-    failed: "Couldn't invite",
-    link: "Invitation link for {{email}}",
-    linkOnce:
-      "This link is shown only now. Copy it and share it with the person you invited (valid for 7 days).",
-    role: "Role to invite as",
-    submit: "Invite",
-  },
   emoji: {
     add: "Add an emoji",
     added: "Added {{name}}",

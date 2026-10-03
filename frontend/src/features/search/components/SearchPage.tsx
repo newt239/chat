@@ -14,7 +14,7 @@ import { Tab } from "#/components/ui/Tab/Tab";
 import { TabList } from "#/components/ui/TabList/TabList";
 import { TabPanel } from "#/components/ui/TabPanel/TabPanel";
 import { Tabs } from "#/components/ui/Tabs/Tabs";
-import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearch";
+import { RESULTS_PER_PAGE, useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearch";
 import { searchFilterValues, searchSortValues } from "#/features/search/schemas";
 
 import { SearchFilterBar } from "./SearchFilterBar";
@@ -24,9 +24,6 @@ import { SearchResultList } from "./SearchResultList";
 import type { SearchFilter } from "#/features/search/schemas";
 
 const searchRoute = getRouteApi("/app/$workspaceId/search");
-
-const pageCount = (total: number, perPage: number) =>
-  Math.max(1, Math.ceil(total / Math.max(1, perPage)));
 
 export const SearchPage = () => {
   const { t } = useTranslation();
@@ -65,7 +62,7 @@ export const SearchPage = () => {
       : Math.max(
           ...Object.entries(data)
             .filter(([key]) => filter === "all" || key === filter)
-            .map(([, section]) => pageCount(section.total, section.perPage)),
+            .map(([, section]) => Math.max(1, Math.ceil(section.total / RESULTS_PER_PAGE))),
         );
 
   const renderResults = () => {

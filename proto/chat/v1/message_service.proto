@@ -17,9 +17,8 @@ service MessageService {
 
 message ListMessagesRequest {
   string channel_id = 1 [(buf.validate.field).string.uuid = true];
-  // 0 の場合はサーバーの既定値を使う
   int32 limit = 2 [(buf.validate.field).int32 = {
-    gte: 0
+    gte: 1
     lte: 100
   }];
   google.protobuf.Timestamp since = 3;

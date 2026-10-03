@@ -201,11 +201,7 @@ func CreateSeedData(ctx context.Context, client *ent.Client) error {
 
 // samplePermalink はフロントの URL（APP_URL）でメッセージへのリンクを作ります
 func samplePermalink(channelID, messageID string) string {
-	appURL := os.Getenv("APP_URL")
-	if appURL == "" {
-		appURL = "https://chat.localhost"
-	}
-	return fmt.Sprintf("%s/app/general/%s?message=%s", appURL, channelID, messageID)
+	return fmt.Sprintf("%s/app/general/%s?message=%s", os.Getenv("APP_URL"), channelID, messageID)
 }
 
 // createLink はメッセージへのリンクでなければプレビューを先に保存してからリンクを作ります

@@ -16,14 +16,9 @@ import {
 import { useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { toast } from "#/components/ui/ToastRegion/toast";
-import {
-  useAddBookmark,
-  useIsBookmarked,
-  useRemoveBookmark,
-} from "#/features/bookmark/hooks/useBookmarks";
+import { useToggleBookmark } from "#/features/bookmark/hooks/useBookmarks";
 import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
-import { usePinActions } from "#/features/pin/hooks/usePinActions";
+import { useTogglePin } from "#/features/pin/hooks/useTogglePin";
 import { useToggleThreadFollow } from "#/features/thread/hooks/useToggleThreadFollow";
 import { copyWithToast } from "#/lib/clipboard";
 import { messageLocation } from "#/lib/messageLocation";
@@ -69,39 +64,15 @@ export const useMessageMenuActions = ({
   const { toText } = useMentionDirectory();
   const router = useRouter();
   const { workspaceId } = workspaceRoute.useParams();
-  const isBookmarked = useIsBookmarked(message.id);
-  const addBookmark = useAddBookmark();
-  const removeBookmark = useRemoveBookmark();
+  const { isBookmarked, toggleBookmark } = useToggleBookmark(message.id);
   const isPinned = message.pin !== undefined;
-  const { pin, unpin } = usePinActions();
+  const togglePin = useTogglePin(message);
   const canModify = isAuthor && !message.isDeleted;
   const { setFollowing } = useToggleThreadFollow(message.id);
   const isFollowing = message.threadMetadata?.isFollowing ?? false;
 
-  const toggleBookmark = () => {
-    (isBookmarked ? removeBookmark : addBookmark).mutate(
-      { messageId: message.id },
-      {
-        onSuccess: () => {
-          toast(t(isBookmarked ? "bookmark.removed" : "bookmark.added"));
-        },
-      },
-    );
-  };
-
   const copyText = () => {
     void copyWithToast(toText(message.body), t("message.link.textCopied"));
-  };
-
-  const togglePin = () => {
-    (isPinned ? unpin : pin).mutate(
-      { channelId: message.channelId, messageId: message.id },
-      {
-        onSuccess: () => {
-          toast(t(isPinned ? "pin.unpinned" : "pin.pinned"));
-        },
-      },
-    );
   };
 
   const copyLink = () => {

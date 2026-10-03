@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"cmp"
 	"context"
 	"encoding/csv"
 	"fmt"
@@ -21,8 +20,7 @@ var errInvalidPageToken = domerr.New(domerr.ErrValidation, "ページトーク�
 
 const (
 	// CSV の書き出しは 1 回あたりこの件数までに抑える
-	maxExportAuditLogs   = 10000
-	defaultAuditLogLimit = 50
+	maxExportAuditLogs = 10000
 )
 
 // ListAuditLogs はページトークンに次のページの先頭の位置を入れて返します
@@ -30,7 +28,6 @@ func (i *Interactor) ListAuditLogs(ctx context.Context, input ListAuditLogsInput
 	if _, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.RequesterID); err != nil {
 		return nil, err
 	}
-	limit := cmp.Or(input.Limit, defaultAuditLogLimit)
 	offset := 0
 	if input.PageToken != "" {
 		var err error
@@ -39,14 +36,14 @@ func (i *Interactor) ListAuditLogs(ctx context.Context, input ListAuditLogsInput
 		}
 	}
 	// 続きがあるかを知るため 1 件多く取る
-	logs, err := i.auditLogRepo.List(ctx, input.filter(), limit+1, offset)
+	logs, err := i.auditLogRepo.List(ctx, input.filter(), input.Limit+1, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list audit logs: %w", err)
 	}
 	output := &ListAuditLogsOutput{}
-	if len(logs) > limit {
-		logs = logs[:limit]
-		output.NextPageToken = strconv.Itoa(offset + limit)
+	if len(logs) > input.Limit {
+		logs = logs[:input.Limit]
+		output.NextPageToken = strconv.Itoa(offset + input.Limit)
 	}
 	if output.Logs, err = i.withActors(ctx, logs); err != nil {
 		return nil, err

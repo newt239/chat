@@ -245,7 +245,7 @@ docker compose exec backend go run cmd/seed/main.go -messages 1000
 
 | ジョブ | 内容 |
 | --- | --- |
-| frontend | typecheck / Oxlint / Oxfmt / knip / Vitest / ビルド |
+| frontend | packages の codecheck / typecheck / Oxlint / Oxfmt / knip / Vitest / ビルド |
 | backend | `go build` / `go test` / golangci-lint |
 | proto | buf lint と format の検査、生成物が最新かを再生成して差分検証 |
 

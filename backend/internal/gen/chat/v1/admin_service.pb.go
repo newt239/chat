@@ -231,8 +231,7 @@ type ListAuditLogsRequest struct {
 	// since 以上 until 未満
 	Since *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=since,proto3,oneof" json:"since,omitempty"`
 	Until *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=until,proto3,oneof" json:"until,omitempty"`
-	// 未指定 (0) の場合は 50 件
-	Limit int32 `protobuf:"varint,6,opt,name=limit,proto3" json:"limit,omitempty"`
+	Limit int32                  `protobuf:"varint,6,opt,name=limit,proto3" json:"limit,omitempty"`
 	// 前ページの next_page_token。最初のページは空。保存先ごとに形式が違うため中身を解釈しない
 	PageToken     string `protobuf:"bytes,7,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -932,7 +931,7 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x05since\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampH\x01R\x05since\x88\x01\x01\x125\n" +
 	"\x05until\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampH\x02R\x05until\x88\x01\x01\x12 \n" +
 	"\x05limit\x18\x06 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xc8\x01(\x00R\x05limit\x12\x1d\n" +
+	"\xbaH\a\x1a\x05\x18\xc8\x01(\x01R\x05limit\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\a \x01(\tR\tpageTokenB\v\n" +
 	"\t_actor_idB\b\n" +

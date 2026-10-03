@@ -8,6 +8,7 @@ import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { MenuSection } from "#/components/ui/MenuSection/MenuSection";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
+import { navIconButtonClassName } from "#/components/ui/styles/navTone";
 import { usePreferences, useUpdatePreferences } from "#/hooks/usePreferences";
 import { openDialog } from "#/lib/overlaySearch";
 import { channelSortOrders } from "#/providers/store/preferences";
@@ -27,10 +28,7 @@ export const ChannelSectionMenu = ({ workspaceId }: ChannelSectionMenuProps) => 
     <Menu
       placement="bottom start"
       trigger={
-        <IconButton
-          label={t("channel.sectionMenu")}
-          className="size-6 text-(--nav-muted) data-hovered:bg-(--nav-hover) data-hovered:text-(--nav-strong) [&_svg]:size-3.5"
-        >
+        <IconButton label={t("channel.sectionMenu")} className={navIconButtonClassName}>
           <IconDots />
         </IconButton>
       }

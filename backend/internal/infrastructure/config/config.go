@@ -96,7 +96,7 @@ func Load() *Config {
 			Env:  env,
 		},
 		Database: DatabaseConfig{
-			URL:             getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/chat?sslmode=disable"),
+			URL:             getEnv("DATABASE_URL", ""),
 			MaxOpenConns:    getEnvInt("DB_MAX_OPEN_CONNS", 10),
 			MaxIdleConns:    getEnvInt("DB_MAX_IDLE_CONNS", 5),
 			ConnMaxIdleTime: getEnvDuration("DB_CONN_MAX_IDLE_TIME", 5*time.Minute),
@@ -114,7 +114,7 @@ func Load() *Config {
 		},
 		Storage: StorageConfig{
 			Driver:        getEnv("STORAGE_DRIVER", "wasabi"),
-			PublicBaseURL: getEnv("PUBLIC_BASE_URL", "http://localhost:"+getEnv("PORT", "8080")),
+			PublicBaseURL: getEnv("PUBLIC_BASE_URL", ""),
 		},
 		Wasabi: WasabiConfig{
 			Endpoint:        getEnv("WASABI_ENDPOINT", "https://s3.wasabisys.com"),
@@ -124,10 +124,10 @@ func Load() *Config {
 			SecretAccessKey: getEnv("WASABI_SECRET_ACCESS_KEY", ""),
 		},
 		CORS: CORSConfig{
-			AllowedOrigins: getEnvList("CORS_ALLOWED_ORIGINS", "http://localhost:5173"),
+			AllowedOrigins: getEnvList("CORS_ALLOWED_ORIGINS"),
 		},
 		Search: SearchConfig{
-			MeilisearchURL:    getEnv("MEILISEARCH_URL", "http://localhost:7700"),
+			MeilisearchURL:    getEnv("MEILISEARCH_URL", ""),
 			MeilisearchAPIKey: getEnv("MEILISEARCH_API_KEY", ""),
 		},
 		Firebase: FirebaseConfig{
@@ -150,8 +150,8 @@ func getEnv(key, defaultVal string) string {
 }
 
 // getEnvList はカンマ区切りの環境変数をリストとして読み込みます
-func getEnvList(key, defaultVal string) []string {
-	values := strings.Split(getEnv(key, defaultVal), ",")
+func getEnvList(key string) []string {
+	values := strings.Split(os.Getenv(key), ",")
 	result := make([]string, 0, len(values))
 	for _, value := range values {
 		if trimmed := strings.TrimSpace(value); trimmed != "" {
@@ -197,11 +197,10 @@ func (c *Config) Validate() error {
 	if c.Auth.GoogleOAuthClientID == "" && !c.Auth.PasswordAuthEnabled {
 		return fmt.Errorf("GOOGLE_OAUTH_CLIENT_ID or PASSWORD_AUTH_ENABLED must be set to allow login")
 	}
-	if c.Server.Env == "production" && os.Getenv("DATABASE_URL") == "" {
-		return fmt.Errorf("DATABASE_URL must be set in production")
-	}
-	if c.Redis.URL == "" {
-		return fmt.Errorf("REDIS_URL must be set")
+	for name, value := range map[string]string{"DATABASE_URL": c.Database.URL, "MEILISEARCH_URL": c.Search.MeilisearchURL, "REDIS_URL": c.Redis.URL} {
+		if value == "" {
+			return fmt.Errorf("%s must be set", name)
+		}
 	}
 	return nil
 }

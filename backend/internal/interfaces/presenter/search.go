@@ -8,24 +8,20 @@ import (
 func SearchResult(out *searchuc.WorkspaceSearchOutput) *chatv1.SearchWorkspaceResponse {
 	return &chatv1.SearchWorkspaceResponse{
 		Messages: &chatv1.MessageSearchResult{
-			Items:   ConvertAll(out.Messages.Items, messageSearchHit),
-			Total:   int32(out.Messages.Total),
-			PerPage: int32(out.Messages.PerPage),
+			Items: ConvertAll(out.Messages.Items, messageSearchHit),
+			Total: int32(out.Messages.Total),
 		},
 		Channels: &chatv1.ChannelSearchResult{
-			Items:   ConvertAll(out.Channels.Items, Channel),
-			Total:   int32(out.Channels.Total),
-			PerPage: int32(out.Channels.PerPage),
+			Items: ConvertAll(out.Channels.Items, Channel),
+			Total: int32(out.Channels.Total),
 		},
 		Users: &chatv1.UserSearchResult{
-			Items:   ConvertAll(out.Users.Items, WorkspaceMember),
-			Total:   int32(out.Users.Total),
-			PerPage: int32(out.Users.PerPage),
+			Items: ConvertAll(out.Users.Items, WorkspaceMember),
+			Total: int32(out.Users.Total),
 		},
 		Groups: &chatv1.UserGroupSearchResult{
-			Items:   ConvertAll(out.Groups.Items, UserGroup),
-			Total:   int32(out.Groups.Total),
-			PerPage: int32(out.Groups.PerPage),
+			Items: ConvertAll(out.Groups.Items, UserGroup),
+			Total: int32(out.Groups.Total),
 		},
 	}
 }

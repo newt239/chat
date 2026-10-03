@@ -9,7 +9,7 @@ import { Button } from "#/components/ui/Button/Button";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { useLogout } from "#/features/auth/hooks/useLogout";
+import { useDisablePushBeforeSignOut, useLogout } from "#/features/auth/hooks/useLogout";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { useMe } from "#/hooks/useMe";
 import { openPanel } from "#/lib/overlaySearch";
@@ -22,7 +22,10 @@ export const AccountSettings = () => {
   const { data: user } = useMe();
   // 変更後はサーバー側の全セッションが失効する
   const updatePassword = useMutation(UserService.method.updatePassword);
-  const deleteAccount = useMutation(UserService.method.deleteMe, { onSuccess: signOut });
+  const deleteAccount = useMutation(UserService.method.deleteMe, {
+    onMutate: useDisablePushBeforeSignOut(),
+    onSuccess: signOut,
+  });
   const logout = useLogout();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");

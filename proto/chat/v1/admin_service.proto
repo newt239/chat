@@ -62,9 +62,8 @@ message ListAuditLogsRequest {
   // since 以上 until 未満
   optional google.protobuf.Timestamp since = 4;
   optional google.protobuf.Timestamp until = 5;
-  // 未指定 (0) の場合は 50 件
   int32 limit = 6 [(buf.validate.field).int32 = {
-    gte: 0
+    gte: 1
     lte: 200
   }];
   // 前ページの next_page_token。最初のページは空。保存先ごとに形式が違うため中身を解釈しない

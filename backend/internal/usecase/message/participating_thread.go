@@ -1,7 +1,6 @@
 package message
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"time"
@@ -10,8 +9,6 @@ import (
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
-
-const defaultListLimit = 20
 
 type ParticipatingThreadOutput struct {
 	ThreadID       string
@@ -33,7 +30,6 @@ func (i *Interactor) ListParticipatingThreads(ctx context.Context, input domainr
 	if _, err := service.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID); err != nil {
 		return nil, err
 	}
-	input.Limit = min(cmp.Or(input.Limit, defaultListLimit), maxMessageLimit)
 	result, err := i.threadRepo.FindParticipatingThreads(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find participating threads: %w", err)
@@ -83,8 +79,8 @@ func (i *Interactor) ListMentions(ctx context.Context, input domainrepository.Fi
 	if _, err := service.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID); err != nil {
 		return nil, err
 	}
-	limit := min(cmp.Or(input.Limit, defaultListLimit), maxMessageLimit)
-	input.Limit = limit + 1
+	limit := input.Limit
+	input.Limit++
 	messages, err := i.messageRepo.FindMentions(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find mentions: %w", err)

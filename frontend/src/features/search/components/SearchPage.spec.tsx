@@ -52,7 +52,6 @@ const setup = async (url: string) => {
       return {
         channels: create(ChannelSearchResultSchema, {
           items: [create(ChannelSchema, { id: "c1", name: "dev/frontend" })],
-          perPage: 20,
           total: 1,
         }),
         messages: create(MessageSearchResultSchema, {
@@ -67,12 +66,10 @@ const setup = async (url: string) => {
               }),
             },
           ],
-          perPage: 20,
           total: 45,
         }),
         users: create(UserSearchResultSchema, {
           items: [create(WorkspaceMemberSchema, { displayName: "Release Bot", userId: "u-bot" })],
-          perPage: 20,
           total: 1,
         }),
       };

@@ -1,7 +1,6 @@
 package message
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"slices"
@@ -18,8 +17,6 @@ func (i *Interactor) ListMessages(ctx context.Context, input ListMessagesInput) 
 		return nil, err
 	}
 
-	limit := min(cmp.Or(input.Limit, defaultMessageLimit), maxMessageLimit)
-
 	channelIDs := []string{channel.ID}
 	if input.IncludeDescendants {
 		descendants, err := i.channelAccessSvc.AccessibleDescendants(ctx, channel, input.UserID)
@@ -32,13 +29,13 @@ func (i *Interactor) ListMessages(ctx context.Context, input ListMessagesInput) 
 	}
 
 	if input.Around != nil {
-		older, hasMore, err := i.fetchTimeline(ctx, input.UserID, channelIDs, limit, nil, input.Around, false)
+		older, hasMore, err := i.fetchTimeline(ctx, input.UserID, channelIDs, input.Limit, nil, input.Around, false)
 		if err != nil {
 			return nil, err
 		}
 		// 指定日時ちょうどの投稿も後ろ側に含める。created_at はマイクロ秒精度
 		since := input.Around.Add(-time.Microsecond)
-		newer, hasNewer, err := i.fetchTimeline(ctx, input.UserID, channelIDs, limit, &since, nil, true)
+		newer, hasNewer, err := i.fetchTimeline(ctx, input.UserID, channelIDs, input.Limit, &since, nil, true)
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +45,7 @@ func (i *Interactor) ListMessages(ctx context.Context, input ListMessagesInput) 
 
 	// since だけの指定は続きの読み込みなので、since の直後から古い順に取る
 	if input.Since != nil && input.Until == nil {
-		newer, hasNewer, err := i.fetchTimeline(ctx, input.UserID, channelIDs, limit, input.Since, nil, true)
+		newer, hasNewer, err := i.fetchTimeline(ctx, input.UserID, channelIDs, input.Limit, input.Since, nil, true)
 		if err != nil {
 			return nil, err
 		}
@@ -56,7 +53,7 @@ func (i *Interactor) ListMessages(ctx context.Context, input ListMessagesInput) 
 		return &ListMessagesOutput{Messages: newer, HasNewer: hasNewer}, nil
 	}
 
-	timeline, hasMore, err := i.fetchTimeline(ctx, input.UserID, channelIDs, limit, input.Since, input.Until, false)
+	timeline, hasMore, err := i.fetchTimeline(ctx, input.UserID, channelIDs, input.Limit, input.Since, input.Until, false)
 	if err != nil {
 		return nil, err
 	}
@@ -184,13 +181,12 @@ func (i *Interactor) GetThreadReplies(ctx context.Context, input GetThreadReplie
 
 // fetchThreadReplies は返信を古い順に limit 件ずつ取り、前後に続きがあるかを返します。範囲の指定がなければ最新の返信を返します
 func (i *Interactor) fetchThreadReplies(ctx context.Context, input GetThreadRepliesInput) (replies []*entity.Message, hasMore, hasNewer bool, err error) {
-	limit := min(cmp.Or(input.Limit, defaultMessageLimit), maxMessageLimit)
 	page := func(since, until *time.Time, ascending bool) ([]*entity.Message, bool, error) {
-		found, err := i.messageRepo.FindThreadReplies(ctx, input.MessageID, limit+1, since, until, ascending)
-		if err != nil || len(found) <= limit {
+		found, err := i.messageRepo.FindThreadReplies(ctx, input.MessageID, input.Limit+1, since, until, ascending)
+		if err != nil || len(found) <= input.Limit {
 			return found, false, err
 		}
-		return found[:limit], true, nil
+		return found[:input.Limit], true, nil
 	}
 
 	since, until := input.Since, input.Until

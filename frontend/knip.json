@@ -3,5 +3,5 @@
   "entry": ["src/routes/**/*.tsx"],
   "project": ["src/**/*.{ts,tsx}", "sw/**/*.ts"],
   "ignore": ["src/gen/**"],
-  "ignoreDependencies": ["@types/*", "tailwindcss"]
+  "ignoreDependencies": ["tailwindcss"]
 }

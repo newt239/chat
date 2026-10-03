@@ -1,7 +1,6 @@
 package search
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"slices"
@@ -16,9 +15,7 @@ import (
 )
 
 const (
-	defaultPerPage = 20
-	maxPerPage     = 50
-	maxTerms       = 10
+	maxTerms = 10
 )
 
 type Interactor struct {
@@ -60,9 +57,7 @@ func (s *Interactor) SearchWorkspace(ctx context.Context, input WorkspaceSearchI
 		return nil, ErrInvalidDateRange
 	}
 
-	page := max(input.Page, 1)
-	perPage := min(cmp.Or(input.PerPage, defaultPerPage), maxPerPage)
-	offset := (page - 1) * perPage
+	offset := (input.Page - 1) * input.PerPage
 
 	if _, err := domainservice.EnsureMember(ctx, s.workspaceRepo, input.WorkspaceID, input.RequesterID); err != nil {
 		return nil, err
@@ -70,14 +65,14 @@ func (s *Interactor) SearchWorkspace(ctx context.Context, input WorkspaceSearchI
 
 	var err error
 	out := &WorkspaceSearchOutput{
-		Messages: Paginated[MessageHit]{Items: []MessageHit{}, PerPage: perPage},
-		Channels: Paginated[channeluc.ChannelOutput]{Items: []channeluc.ChannelOutput{}, PerPage: perPage},
-		Users:    Paginated[workspaceuc.MemberInfo]{Items: []workspaceuc.MemberInfo{}, PerPage: perPage},
-		Groups:   Paginated[*entity.UserGroup]{Items: []*entity.UserGroup{}, PerPage: perPage},
+		Messages: Paginated[MessageHit]{Items: []MessageHit{}},
+		Channels: Paginated[channeluc.ChannelOutput]{Items: []channeluc.ChannelOutput{}},
+		Users:    Paginated[workspaceuc.MemberInfo]{Items: []workspaceuc.MemberInfo{}},
+		Groups:   Paginated[*entity.UserGroup]{Items: []*entity.UserGroup{}},
 	}
 
 	if input.Target.includes(SearchTargetMessages) {
-		if out.Messages, err = s.searchMessages(ctx, input, terms, page, perPage); err != nil {
+		if out.Messages, err = s.searchMessages(ctx, input, terms); err != nil {
 			return nil, err
 		}
 	}
@@ -88,17 +83,17 @@ func (s *Interactor) SearchWorkspace(ctx context.Context, input WorkspaceSearchI
 		return out, nil
 	}
 	if input.Target.includes(SearchTargetChannels) {
-		if out.Channels, err = s.searchChannels(ctx, keyword, input.WorkspaceID, input.RequesterID, perPage, offset); err != nil {
+		if out.Channels, err = s.searchChannels(ctx, keyword, input.WorkspaceID, input.RequesterID, input.PerPage, offset); err != nil {
 			return nil, err
 		}
 	}
 	if input.Target.includes(SearchTargetUsers) {
-		if out.Users, err = s.searchUsers(ctx, keyword, input.WorkspaceID, perPage, offset); err != nil {
+		if out.Users, err = s.searchUsers(ctx, keyword, input.WorkspaceID, input.PerPage, offset); err != nil {
 			return nil, err
 		}
 	}
 	if input.Target.includes(SearchTargetGroups) {
-		if out.Groups, err = s.searchUserGroups(ctx, keyword, input.WorkspaceID, perPage, offset); err != nil {
+		if out.Groups, err = s.searchUserGroups(ctx, keyword, input.WorkspaceID, input.PerPage, offset); err != nil {
 			return nil, err
 		}
 	}
@@ -109,10 +104,8 @@ func (s *Interactor) searchMessages(
 	ctx context.Context,
 	input WorkspaceSearchInput,
 	terms []string,
-	page int,
-	limit int,
 ) (Paginated[MessageHit], error) {
-	result := Paginated[MessageHit]{Items: []MessageHit{}, PerPage: limit}
+	result := Paginated[MessageHit]{Items: []MessageHit{}}
 	f := input.Filter
 
 	channelIDs := f.ChannelIDs
@@ -144,8 +137,8 @@ func (s *Interactor) searchMessages(
 		After:          f.After,
 		Before:         f.Before,
 		Sort:           input.Sort,
-		Page:           page,
-		PerPage:        limit,
+		Page:           input.Page,
+		PerPage:        input.PerPage,
 	}
 	if f.MentionsMe {
 		criteria.Mention = scope
@@ -263,9 +256,8 @@ func (s *Interactor) searchChannels(
 	}
 
 	return Paginated[channeluc.ChannelOutput]{
-		Items:   items,
-		Total:   total,
-		PerPage: limit,
+		Items: items,
+		Total: total,
 	}, nil
 }
 
@@ -295,9 +287,8 @@ func (s *Interactor) searchUserGroups(
 	end := min(offset+limit, total)
 
 	return Paginated[*entity.UserGroup]{
-		Items:   matched[offset:end],
-		Total:   total,
-		PerPage: limit,
+		Items: matched[offset:end],
+		Total: total,
 	}, nil
 }
 
@@ -324,8 +315,7 @@ func (s *Interactor) searchUsers(
 	items := workspaceuc.NewMemberInfos(members, users)
 
 	return Paginated[workspaceuc.MemberInfo]{
-		Items:   items,
-		Total:   total,
-		PerPage: limit,
+		Items: items,
+		Total: total,
 	}, nil
 }

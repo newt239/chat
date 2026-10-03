@@ -12,3 +12,7 @@ export const mobileNavTone = `${surfaceNavTone} [--nav-row:44px] [--nav-size:15p
 // 一覧の行。リンクにもボタンにも使う。現在地は data-status="active"
 export const navItemClassName =
   "relative flex h-(--nav-row,30px) w-full min-w-0 cursor-pointer items-center gap-2 rounded-md pr-1.5 pl-2 text-left text-[length:var(--nav-size,14px)] text-(--nav-fg) no-underline data-hovered:bg-(--nav-hover) data-[status=active]:bg-(--nav-active) data-[status=active]:font-semibold data-[status=active]:text-(--nav-active-fg) [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-(--nav-muted) data-[status=active]:[&_svg]:text-(--nav-active-fg)";
+
+// 一覧の見出しに添える小さなアイコンボタン
+export const navIconButtonClassName =
+  "size-6 text-(--nav-muted) data-hovered:bg-(--nav-hover) data-hovered:text-(--nav-strong) [&_svg]:size-3.5";

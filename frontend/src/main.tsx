@@ -7,13 +7,12 @@ import { Provider as JotaiProvider } from "jotai";
 import { createRoot } from "react-dom/client";
 
 import { ToastRegion } from "#/components/ui/ToastRegion/ToastRegion";
+import { transport } from "#/lib/api/transport";
 import { isTauri } from "#/lib/platform/platform";
 import { router } from "#/lib/router";
+import { queryClient } from "#/providers/query/query";
 import { store } from "#/providers/store/store";
-
-import { transport } from "./lib/api/transport";
-import { queryClient } from "./providers/query/query";
-import { ThemeProvider } from "./providers/theme/ThemeProvider";
+import { ThemeProvider } from "#/providers/theme/ThemeProvider";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import "@fontsource/ibm-plex-sans-jp/400.css";

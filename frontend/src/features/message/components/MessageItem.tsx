@@ -266,7 +266,7 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
         {!message.isDeleted && message.poll && (
           <MessagePollCard poll={message.poll} isAuthor={message.userId === myId} />
         )}
-        {!message.isDeleted && <MessageAttachments message={message} />}
+        {!message.isDeleted && <MessageAttachments message={message} ownsOverlay={ownsOverlay} />}
 
         <ReactionList message={message} onOpenList={setReactionTab} onToggleReaction={react} />
 

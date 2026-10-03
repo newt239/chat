@@ -11,7 +11,7 @@ export type ThemeInput = {
 };
 
 export type ColorMode = "light" | "dark";
-export const colorModePreferences = ["light", "dark", "system"] as const;
+export const colorModePreferences = ["system", "light", "dark"] as const;
 export type ColorModePreference = (typeof colorModePreferences)[number];
 
 export const themePresets = {
@@ -82,8 +82,8 @@ export const colorTokenNames = [
   "side-active",
   "side-active-fg",
 ] as const;
-export type ColorTokenName = (typeof colorTokenNames)[number];
-export type ColorTokens = Record<ColorTokenName, string>;
+type ColorTokenName = (typeof colorTokenNames)[number];
+type ColorTokens = Record<ColorTokenName, string>;
 
 type SidebarTokens = Pick<ColorTokens, Extract<ColorTokenName, `side${string}`>>;
 
