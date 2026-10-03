@@ -37,9 +37,9 @@ export const ChannelPage = () => {
           channelName={channel.name}
         />
       ) : (
-        <div className="relative">
-          <TypingIndicator key={channelId} channelId={channelId} />
-          <MessageInput key={channelId} channelId={channelId} />
+        <div key={channelId} className="relative">
+          <TypingIndicator channelId={channelId} />
+          <MessageInput channelId={channelId} />
         </div>
       )}
     </>
