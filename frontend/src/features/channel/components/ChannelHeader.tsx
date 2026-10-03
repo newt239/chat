@@ -1,5 +1,6 @@
 import {
   IconBellOff,
+  IconChevronsDown,
   IconNote,
   IconDots,
   IconInfoCircle,
@@ -35,6 +36,7 @@ import { openPanel } from "#/lib/overlaySearch";
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
 import { useChannelListActions } from "../hooks/useChannelListActions";
 import { useChannelMembers } from "../hooks/useChannelMembers";
+import { useNextUnreadChannel } from "../hooks/useNextUnreadChannel";
 import { ChannelLinkBar } from "./ChannelLinkBar";
 import { ChannelMenuItems } from "./ChannelMenuItems";
 import { ChannelName } from "./ChannelName";
@@ -64,6 +66,7 @@ export const ChannelHeader = ({ workspaceId, channelId, channel, dm }: ChannelHe
   const { data: members = [] } = useChannelMembers(channelId);
   const { setStarred } = useChannelListActions(workspaceId);
   const displayName = useDisplayName();
+  const { goNext, nextId } = useNextUnreadChannel(workspaceId);
 
   const isStarred = channel?.isStarred ?? dm?.isStarred ?? false;
   const isMuted = channel?.isMuted ?? dm?.isMuted ?? false;
@@ -169,6 +172,11 @@ export const ChannelHeader = ({ workspaceId, channelId, channel, dm }: ChannelHe
             </span>
             {members.length}
           </Button>
+        )}
+        {nextId !== undefined && (
+          <IconButton label={t("shell.channel.nextUnread")} onPress={goNext}>
+            <IconChevronsDown />
+          </IconButton>
         )}
         <IconButton
           label={t("shell.rightPanel.pins")}

@@ -5,6 +5,7 @@ export const shell: Messages["shell"] = {
   channel: {
     links: "Channel links",
     muted: "Muted",
+    nextUnread: "Next unread (⌥⇧↓ / Alt+Shift+↓)",
     private: "Private channel",
     public: "Public channel",
   },

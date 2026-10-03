@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 const shortcuts = [
   ["search", ["⌘ / Ctrl", "K"]],
   ["settings", ["⌘ / Ctrl", ","]],
+  ["nextUnread", ["⌥ / Alt", "Shift", "↓"]],
   ["send", ["Enter"]],
   ["newline", ["Shift", "Enter"]],
   ["close", ["Esc"]],
