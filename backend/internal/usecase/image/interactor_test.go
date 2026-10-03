@@ -36,12 +36,6 @@ func (*fakeStorage) GenerateDownloadURL(context.Context, string, time.Duration) 
 }
 func (*fakeStorage) DeleteObject(context.Context, string) error { return nil }
 
-type fakeConfig struct{}
-
-func (fakeConfig) GetMaxFileSize() int64             { return 0 }
-func (fakeConfig) GetUploadExpires() time.Duration   { return 0 }
-func (fakeConfig) GetDownloadExpires() time.Duration { return 0 }
-
 func TestPresign(t *testing.T) {
 	storage := &fakeStorage{}
 	uc := NewInteractor(fakeWorkspaceRepo{}, storage, "https://api.example.com/")

@@ -118,12 +118,6 @@ func (s *fakeStorage) DeleteObject(_ context.Context, key string) error {
 	return nil
 }
 
-type fakeConfig struct {
-	domainservice.StorageConfig
-}
-
-func (fakeConfig) GetUploadExpires() time.Duration { return 0 }
-
 type fakeNotifier struct {
 	created, deleted []string
 }
