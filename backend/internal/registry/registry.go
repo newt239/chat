@@ -53,7 +53,6 @@ import (
 	scheduledmessageuc "github.com/newt239/chat/internal/usecase/scheduledmessage"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
 	"github.com/newt239/chat/internal/usecase/searchindex"
-	threaduc "github.com/newt239/chat/internal/usecase/thread"
 	useruc "github.com/newt239/chat/internal/usecase/user"
 	usergroupuc "github.com/newt239/chat/internal/usecase/usergroup"
 	usernoteuc "github.com/newt239/chat/internal/usecase/usernote"
@@ -97,8 +96,7 @@ func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func
 	systemMessageRepo := repository.NewSystemMessageRepository(client)
 	readStateRepo := repository.NewReadStateRepository(client)
 	userGroupRepo := repository.NewUserGroupRepository(client)
-	userMentionRepo := repository.NewMessageUserMentionRepository(client)
-	groupMentionRepo := repository.NewMessageGroupMentionRepository(client)
+	mentionRepo := repository.NewMessageMentionRepository(client)
 	linkRepo := repository.NewLinkRepository(client)
 	attachmentRepo := repository.NewAttachmentRepository(client)
 	pinRepo := repository.NewPinRepository(client)
@@ -133,7 +131,7 @@ func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func
 	hub := websocket.NewHub(channelAccess, redis.NewBroker(rdb), redis.NewPresenceStore(rdb))
 	notifier := websocket.Notifier{Hub: hub}
 
-	outputBuilder := messageuc.NewMessageOutputBuilder(messageRepo, userRepo, userGroupRepo, userMentionRepo, groupMentionRepo, linkRepo, attachmentRepo, pinRepo, pollRepo, channelAccess)
+	outputBuilder := messageuc.NewMessageOutputBuilder(messageRepo, userRepo, userGroupRepo, mentionRepo, linkRepo, attachmentRepo, pinRepo, pollRepo, channelAccess)
 	systemMessages := messageuc.NewSystemMessages(systemMessageRepo, notifier)
 	indexer := searchindex.NewIndexer(messageRepo, searchIndex, mentionSvc)
 	observers := []messageuc.NewMessageObserver{
@@ -141,7 +139,7 @@ func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func
 		appuc.NewEventDispatcher(appRepo, mentionSvc, appwebhook.NewSender()),
 	}
 	linkSvc := service.NewLinkProcessingService(ogpSvc, linkRepo, messageRepo, channelRepo)
-	message := messageuc.New(messageRepo, systemMessageRepo, userRepo, threadRepo, attachmentRepo, pollRepo, userMentionRepo, groupMentionRepo, linkRepo,
+	message := messageuc.New(messageRepo, systemMessageRepo, userRepo, workspaceRepo, threadRepo, attachmentRepo, pollRepo, mentionRepo, linkRepo,
 		mentionSvc, linkSvc, ogpSvc, channelAccess, permissionSvc, txManager, outputBuilder, notifier, indexer, observers)
 	app := appuc.New(appRepo, userRepo, workspaceRepo, channelRepo, channelMemberRepo, messageRepo, channelAccess, message, txManager, recorder)
 	admin := adminuc.New(workspaceRepo, userRepo, sessionRepo, auditLogRepo, permissionRepo, permissionSvc, recorder, hub)
@@ -160,7 +158,7 @@ func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func
 		NoteUC: usernoteuc.New(userNoteRepo, userRepo),
 	}, opts...))
 	mux.Handle(chatv1connect.NewNotificationServiceHandler(&rpc.NotificationServer{UC: notificationuc.New(pushTokenRepo)}, opts...))
-	mux.Handle(chatv1connect.NewWorkspaceServiceHandler(&rpc.WorkspaceServer{UC: workspaceuc.New(workspaceRepo, userRepo, userNoteRepo, txManager, recorder, hub)}, opts...))
+	mux.Handle(chatv1connect.NewWorkspaceServiceHandler(&rpc.WorkspaceServer{UC: workspaceuc.New(workspaceRepo, userRepo, userNoteRepo, txManager), AdminUC: admin}, opts...))
 	mux.Handle(chatv1connect.NewChannelServiceHandler(&rpc.ChannelServer{UC: channeluc.New(channelRepo, channelMemberRepo, channelStarRepo, channelMuteRepo, workspaceRepo, readStateRepo,
 		txManager, systemMessages, channelAccess, permissionSvc, recorder, hub)}, opts...))
 	mux.Handle(chatv1connect.NewChannelLinkServiceHandler(&rpc.ChannelLinkServer{UC: channellinkuc.New(repository.NewChannelLinkRepository(client), channelAccess, permissionSvc, txManager)}, opts...))
@@ -177,7 +175,7 @@ func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func
 	mux.Handle(chatv1connect.NewMessageServiceHandler(&rpc.MessageServer{UC: message}, opts...))
 	mux.Handle(chatv1connect.NewDraftServiceHandler(&rpc.DraftServer{UC: draftuc.New(repository.NewDraftRepository(client), messageRepo, channelAccess)}, opts...))
 	mux.Handle(chatv1connect.NewScheduledMessageServiceHandler(&rpc.ScheduledMessageServer{UC: scheduled}, opts...))
-	mux.Handle(chatv1connect.NewThreadServiceHandler(&rpc.ThreadServer{MessageUC: message, UC: threaduc.New(threadRepo, workspaceRepo, channelAccess, outputBuilder)}, opts...))
+	mux.Handle(chatv1connect.NewThreadServiceHandler(&rpc.ThreadServer{UC: message}, opts...))
 	mux.Handle(chatv1connect.NewReactionServiceHandler(&rpc.ReactionServer{UC: reactionuc.New(messageRepo, userRepo, notifier, channelAccess)}, opts...))
 	mux.Handle(chatv1connect.NewPinServiceHandler(&rpc.PinServer{UC: pinuc.New(pinRepo, channelMemberRepo, userRepo, notifier, outputBuilder, channelAccess, systemMessages, permissionSvc, indexer)}, opts...))
 	mux.Handle(chatv1connect.NewAdminServiceHandler(&rpc.AdminServer{UC: admin}, opts...))

@@ -7,16 +7,14 @@ import (
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
-	threaduc "github.com/newt239/chat/internal/usecase/thread"
 )
 
 type ThreadServer struct {
-	MessageUC *messageuc.Interactor
-	UC        *threaduc.Interactor
+	UC *messageuc.Interactor
 }
 
 func (s *ThreadServer) GetThreadReplies(ctx context.Context, req *chatv1.GetThreadRepliesRequest) (*chatv1.GetThreadRepliesResponse, error) {
-	out, err := s.MessageUC.GetThreadReplies(ctx, messageuc.GetThreadRepliesInput{
+	out, err := s.UC.GetThreadReplies(ctx, messageuc.GetThreadRepliesInput{
 		MessageID:     req.MessageId,
 		UserID:        userIDFrom(ctx),
 		Limit:         int(req.Limit),
@@ -37,11 +35,11 @@ func (s *ThreadServer) GetThreadReplies(ctx context.Context, req *chatv1.GetThre
 }
 
 func (s *ThreadServer) GetThreadMetadata(ctx context.Context, req *chatv1.GetThreadMetadataRequest) (*chatv1.GetThreadMetadataResponse, error) {
-	out, err := s.MessageUC.GetThreadMetadata(ctx, messageuc.MessageInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
+	out, err := s.UC.GetThreadMetadata(ctx, messageuc.MessageInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.GetThreadMetadataResponse{Metadata: presenter.ThreadMetadata(*out)}, nil
+	return &chatv1.GetThreadMetadataResponse{Metadata: presenter.ThreadMetadata(out)}, nil
 }
 
 func (s *ThreadServer) ListParticipatingThreads(ctx context.Context, req *chatv1.ListParticipatingThreadsRequest) (*chatv1.ListParticipatingThreadsResponse, error) {

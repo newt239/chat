@@ -34,7 +34,6 @@ type WorkspaceMember struct {
 	WorkspaceID string
 	UserID      string
 	Role        WorkspaceRole
-	JoinedAt    time.Time
 	SuspendedAt *time.Time
 }
 

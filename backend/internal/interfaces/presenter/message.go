@@ -24,7 +24,7 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 		ParentId:  m.ParentID,
 		Body:      m.Body,
 		Mentions: ConvertAll(m.Mentions, func(u messageuc.UserMention) *chatv1.UserMention {
-			return &chatv1.UserMention{UserId: u.UserID, ViaGroupId: u.ViaGroupID}
+			return &chatv1.UserMention{UserId: u.UserID}
 		}),
 		Groups: ConvertAll(m.Groups, func(g messageuc.GroupMention) *chatv1.GroupMention {
 			return &chatv1.GroupMention{GroupId: g.GroupID, Name: g.Name}
@@ -46,7 +46,6 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 		}),
 		CreatedAt: timestamppb.New(m.CreatedAt),
 		EditedAt:  optionalTimestamp(m.EditedAt),
-		DeletedAt: optionalTimestamp(m.DeletedAt),
 		IsDeleted: m.DeletedAt != nil,
 
 		MentionsChannel: m.MentionsChannel,
@@ -61,6 +60,7 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 	}
 	msg.Location = MessageLocation(m.Location)
 	msg.Poll = Poll(m.Poll)
+	msg.ThreadMetadata = ThreadMetadata(m.ThreadMetadata)
 	return msg
 }
 
@@ -78,8 +78,6 @@ func OGPData(o entity.OGPData) *chatv1.OgpData {
 		ImageUrl:    o.ImageURL,
 		SiteName:    o.SiteName,
 		CardType:    o.CardType,
-		ImageWidth:  o.ImageWidth,
-		ImageHeight: o.ImageHeight,
 	}
 	if o.YouTube != nil {
 		data.Youtube = &chatv1.YouTubeVideo{VideoId: o.YouTube.VideoID, ChannelName: o.YouTube.ChannelName, DurationSeconds: o.YouTube.DurationSeconds}
@@ -113,15 +111,10 @@ func MessagePreview(p *messageuc.MessagePreviewOutput) *chatv1.MessagePreview {
 	}
 }
 
-func MessageWithThread(m messageuc.MessageWithThreadOutput) *chatv1.Message {
-	msg := Message(m.MessageOutput)
-	if m.ThreadMetadata != nil {
-		msg.ThreadMetadata = ThreadMetadata(*m.ThreadMetadata)
+func ThreadMetadata(t *messageuc.ThreadMetadataOutput) *chatv1.ThreadMetadata {
+	if t == nil {
+		return nil
 	}
-	return msg
-}
-
-func ThreadMetadata(t messageuc.ThreadMetadataOutput) *chatv1.ThreadMetadata {
 	metadata := &chatv1.ThreadMetadata{
 		MessageId:   t.MessageID,
 		ReplyCount:  int32(t.ReplyCount),

@@ -8,9 +8,6 @@
     "private": "./scripts/tunnel.sh off",
     "tunnel:status": "./scripts/tunnel.sh status",
     "logs": "docker compose logs -f",
-    "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
-    "preview": "turbo run preview",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
@@ -24,7 +21,7 @@
     "generate:proto": "buf generate proto --template proto/buf.gen.yaml",
     "proto:format": "buf format -w proto",
     "proto:lint": "buf lint proto",
-    "db:reset": "docker compose run --rm reset",
+    "db:reset": "docker compose exec backend go run cmd/reset/main.go",
     "db:seed:bulk": "docker compose exec backend go run cmd/seed/main.go"
   },
   "devDependencies": {

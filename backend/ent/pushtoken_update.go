@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -68,34 +67,6 @@ func (_u *PushTokenUpdate) SetPlatform(v pushtoken.Platform) *PushTokenUpdate {
 func (_u *PushTokenUpdate) SetNillablePlatform(v *pushtoken.Platform) *PushTokenUpdate {
 	if v != nil {
 		_u.SetPlatform(*v)
-	}
-	return _u
-}
-
-// SetUserAgent sets the "user_agent" field.
-func (_u *PushTokenUpdate) SetUserAgent(v string) *PushTokenUpdate {
-	_u.mutation.SetUserAgent(v)
-	return _u
-}
-
-// SetNillableUserAgent sets the "user_agent" field if the given value is not nil.
-func (_u *PushTokenUpdate) SetNillableUserAgent(v *string) *PushTokenUpdate {
-	if v != nil {
-		_u.SetUserAgent(*v)
-	}
-	return _u
-}
-
-// SetLastSeenAt sets the "last_seen_at" field.
-func (_u *PushTokenUpdate) SetLastSeenAt(v time.Time) *PushTokenUpdate {
-	_u.mutation.SetLastSeenAt(v)
-	return _u
-}
-
-// SetNillableLastSeenAt sets the "last_seen_at" field if the given value is not nil.
-func (_u *PushTokenUpdate) SetNillableLastSeenAt(v *time.Time) *PushTokenUpdate {
-	if v != nil {
-		_u.SetLastSeenAt(*v)
 	}
 	return _u
 }
@@ -178,12 +149,6 @@ func (_u *PushTokenUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Platform(); ok {
 		_spec.SetField(pushtoken.FieldPlatform, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.UserAgent(); ok {
-		_spec.SetField(pushtoken.FieldUserAgent, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.LastSeenAt(); ok {
-		_spec.SetField(pushtoken.FieldLastSeenAt, field.TypeTime, value)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -272,34 +237,6 @@ func (_u *PushTokenUpdateOne) SetPlatform(v pushtoken.Platform) *PushTokenUpdate
 func (_u *PushTokenUpdateOne) SetNillablePlatform(v *pushtoken.Platform) *PushTokenUpdateOne {
 	if v != nil {
 		_u.SetPlatform(*v)
-	}
-	return _u
-}
-
-// SetUserAgent sets the "user_agent" field.
-func (_u *PushTokenUpdateOne) SetUserAgent(v string) *PushTokenUpdateOne {
-	_u.mutation.SetUserAgent(v)
-	return _u
-}
-
-// SetNillableUserAgent sets the "user_agent" field if the given value is not nil.
-func (_u *PushTokenUpdateOne) SetNillableUserAgent(v *string) *PushTokenUpdateOne {
-	if v != nil {
-		_u.SetUserAgent(*v)
-	}
-	return _u
-}
-
-// SetLastSeenAt sets the "last_seen_at" field.
-func (_u *PushTokenUpdateOne) SetLastSeenAt(v time.Time) *PushTokenUpdateOne {
-	_u.mutation.SetLastSeenAt(v)
-	return _u
-}
-
-// SetNillableLastSeenAt sets the "last_seen_at" field if the given value is not nil.
-func (_u *PushTokenUpdateOne) SetNillableLastSeenAt(v *time.Time) *PushTokenUpdateOne {
-	if v != nil {
-		_u.SetLastSeenAt(*v)
 	}
 	return _u
 }
@@ -412,12 +349,6 @@ func (_u *PushTokenUpdateOne) sqlSave(ctx context.Context) (_node *PushToken, er
 	}
 	if value, ok := _u.mutation.Platform(); ok {
 		_spec.SetField(pushtoken.FieldPlatform, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.UserAgent(); ok {
-		_spec.SetField(pushtoken.FieldUserAgent, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.LastSeenAt(); ok {
-		_spec.SetField(pushtoken.FieldLastSeenAt, field.TypeTime, value)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

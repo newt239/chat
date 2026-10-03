@@ -1,6 +1,10 @@
 package auth
 
-import "time"
+import (
+	"time"
+
+	"github.com/newt239/chat/internal/domain/entity"
+)
 
 // Settings は設定ファイルから渡す認証の挙動です
 type Settings struct {
@@ -65,12 +69,5 @@ type AuthOutput struct {
 	AccessToken  string
 	RefreshToken string
 	ExpiresAt    time.Time
-	User         UserInfo
-}
-
-type UserInfo struct {
-	ID          string
-	Email       string
-	DisplayName string
-	AvatarURL   *string
+	User         *entity.User
 }

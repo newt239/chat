@@ -189,8 +189,6 @@ importers:
         specifier: 2.11.3
         version: 2.11.3
 
-  backend: {}
-
   frontend:
     dependencies:
       '@bufbuild/protobuf':

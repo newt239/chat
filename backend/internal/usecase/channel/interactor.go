@@ -111,12 +111,14 @@ func (i *Interactor) ListChannels(ctx context.Context, workspaceID, userID strin
 
 	output := make([]ChannelOutput, 0, len(all))
 	for idx, ch := range all {
-		out := NewChannelOutput(ch)
-		out.IsMember = idx < len(joined)
-		out.UnreadCount = unreadCounts[ch.ID]
-		out.MentionCount = mentionCounts[ch.ID]
-		out.IsStarred = starred[ch.ID]
-		out.IsMuted = muted[ch.ID]
+		out := ChannelOutput{
+			Channel:      ch,
+			IsMember:     idx < len(joined),
+			UnreadCount:  unreadCounts[ch.ID],
+			MentionCount: mentionCounts[ch.ID],
+			IsStarred:    starred[ch.ID],
+			IsMuted:      muted[ch.ID],
+		}
 		if at, ok := lastMessageAt[ch.ID]; ok {
 			out.LastMessageAt = &at
 		}
@@ -134,7 +136,7 @@ func (i *Interactor) ListBrowsableChannels(ctx context.Context, workspaceID, use
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch channels: %w", err)
 	}
-	return i.toBrowsableOutputs(ctx, workspaceID, userID, channels)
+	return i.toBrowsableOutputs(ctx, userID, channels)
 }
 
 func (i *Interactor) SearchBrowsableChannels(ctx context.Context, input SearchBrowsableChannelsInput) (*SearchBrowsableChannelsOutput, error) {
@@ -151,7 +153,7 @@ func (i *Interactor) SearchBrowsableChannels(ctx context.Context, input SearchBr
 	if err != nil {
 		return nil, fmt.Errorf("failed to search channels: %w", err)
 	}
-	outputs, err := i.toBrowsableOutputs(ctx, input.WorkspaceID, input.UserID, channels)
+	outputs, err := i.toBrowsableOutputs(ctx, input.UserID, channels)
 	if err != nil {
 		return nil, err
 	}
@@ -159,22 +161,19 @@ func (i *Interactor) SearchBrowsableChannels(ctx context.Context, input SearchBr
 }
 
 // toBrowsableOutputs はメンバー数と自分が参加しているかを付けます
-func (i *Interactor) toBrowsableOutputs(ctx context.Context, workspaceID, userID string, channels []*entity.Channel) ([]BrowsableChannelOutput, error) {
+func (i *Interactor) toBrowsableOutputs(ctx context.Context, userID string, channels []*entity.Channel) ([]BrowsableChannelOutput, error) {
 	memberCounts, err := i.channelRepo.CountMembersBatch(ctx, channelIDs(channels))
 	if err != nil {
 		return nil, fmt.Errorf("failed to count members: %w", err)
 	}
-	joined, err := i.channelRepo.FindAccessibleChannels(ctx, workspaceID, userID)
+	joined, err := i.channelMemberRepo.FindJoinedChannelIDs(ctx, userID, channelIDs(channels))
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch joined channels: %w", err)
 	}
-	joinedIDs := channelIDs(joined)
 
 	output := make([]BrowsableChannelOutput, 0, len(channels))
 	for _, ch := range channels {
-		out := NewChannelOutput(ch)
-		out.IsMember = slices.Contains(joinedIDs, ch.ID)
-		output = append(output, BrowsableChannelOutput{Channel: out, MemberCount: memberCounts[ch.ID]})
+		output = append(output, BrowsableChannelOutput{Channel: ChannelOutput{Channel: ch, IsMember: joined[ch.ID]}, MemberCount: memberCounts[ch.ID]})
 	}
 	return output, nil
 }
@@ -267,9 +266,7 @@ func (i *Interactor) CreateChannel(ctx context.Context, input CreateChannelInput
 		TargetLabel: channel.Name,
 		Metadata:    map[string]string{"private": fmt.Sprint(channel.IsPrivate())},
 	})
-	output := NewChannelOutput(channel)
-	output.IsMember = true
-	return &output, nil
+	return &ChannelOutput{Channel: channel, IsMember: true}, nil
 }
 
 // ensureAncestors は存在しない祖先チャンネルを子と同じ公開範囲で作って作成者を参加させ、直近の親の ID を返します
@@ -336,11 +333,7 @@ func (i *Interactor) GetChannel(ctx context.Context, channelID, userID string) (
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch muted channels: %w", err)
 	}
-	output := NewChannelOutput(ch)
-	output.IsMember = isMember
-	output.IsStarred = starred[ch.ID]
-	output.IsMuted = muted[ch.ID]
-	return &output, nil
+	return &ChannelOutput{Channel: ch, IsMember: isMember, IsStarred: starred[ch.ID], IsMuted: muted[ch.ID]}, nil
 }
 
 func (i *Interactor) SetChannelStarred(ctx context.Context, input SetFlagInput) error {
@@ -430,8 +423,7 @@ func (i *Interactor) UpdateChannel(ctx context.Context, input UpdateChannelInput
 			i.revoker.RevokeChannel(ch.WorkspaceID, ch.ID, "")
 		}
 	}
-	out := NewChannelOutput(ch)
-	return &out, nil
+	return &ChannelOutput{Channel: ch}, nil
 }
 
 func derefString(s *string) string {

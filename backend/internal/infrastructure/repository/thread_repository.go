@@ -256,8 +256,8 @@ func (r *threadRepository) UpsertReadState(ctx context.Context, userID, threadID
 		Exec(ctx)
 }
 
-// FollowThread は既にフォローしていても成功します
-func (r *threadRepository) FollowThread(ctx context.Context, userID, threadID string) error {
+// SetFollowing は既にその状態でも成功します
+func (r *threadRepository) SetFollowing(ctx context.Context, userID, threadID string, following bool) error {
 	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return err
@@ -266,28 +266,17 @@ func (r *threadRepository) FollowThread(ctx context.Context, userID, threadID st
 	if err != nil {
 		return err
 	}
-	err = transaction.ResolveClient(ctx, r.client).UserThreadFollow.Create().
+	client := transaction.ResolveClient(ctx, r.client)
+	if !following {
+		_, err = client.UserThreadFollow.Delete().Where(userthreadfollow.UserID(uid), userthreadfollow.ThreadID(tid)).Exec(ctx)
+		return err
+	}
+	return ignoreConflict(client.UserThreadFollow.Create().
 		SetUserID(uid).
 		SetThreadID(tid).
 		OnConflictColumns(userthreadfollow.FieldUserID, userthreadfollow.FieldThreadID).
 		DoNothing().
-		Exec(ctx)
-	return ignoreConflict(err)
-}
-
-func (r *threadRepository) UnfollowThread(ctx context.Context, userID, threadID string) error {
-	uid, err := parseUUID(userID, "user ID")
-	if err != nil {
-		return err
-	}
-	tid, err := parseUUID(threadID, "thread ID")
-	if err != nil {
-		return err
-	}
-	_, err = transaction.ResolveClient(ctx, r.client).UserThreadFollow.Delete().
-		Where(userthreadfollow.UserID(uid), userthreadfollow.ThreadID(tid)).
-		Exec(ctx)
-	return err
+		Exec(ctx))
 }
 
 func (r *threadRepository) FindFollowedThreadIDs(ctx context.Context, userID string, threadIDs []string) (map[string]bool, error) {

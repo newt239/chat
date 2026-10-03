@@ -86,7 +86,6 @@ type DirectMessage struct {
 	IsMuted     bool                   `protobuf:"varint,10,opt,name=is_muted,json=isMuted,proto3" json:"is_muted,omitempty"`
 	// ListDirectMessages でのみ設定される
 	UnreadCount   int32 `protobuf:"varint,11,opt,name=unread_count,json=unreadCount,proto3" json:"unread_count,omitempty"`
-	HasMention    bool  `protobuf:"varint,12,opt,name=has_mention,json=hasMention,proto3" json:"has_mention,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -196,13 +195,6 @@ func (x *DirectMessage) GetUnreadCount() int32 {
 		return x.UnreadCount
 	}
 	return 0
-}
-
-func (x *DirectMessage) GetHasMention() bool {
-	if x != nil {
-		return x.HasMention
-	}
-	return false
 }
 
 type DirectMessageMember struct {
@@ -557,7 +549,7 @@ var File_chat_v1_direct_message_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_direct_message_service_proto_rawDesc = "" +
 	"\n" +
-	"$chat/v1/direct_message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe9\x03\n" +
+	"$chat/v1/direct_message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc8\x03\n" +
 	"\rDirectMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
@@ -573,9 +565,7 @@ const file_chat_v1_direct_message_service_proto_rawDesc = "" +
 	"is_starred\x18\t \x01(\bR\tisStarred\x12\x19\n" +
 	"\bis_muted\x18\n" +
 	" \x01(\bR\aisMuted\x12!\n" +
-	"\funread_count\x18\v \x01(\x05R\vunreadCount\x12\x1f\n" +
-	"\vhas_mention\x18\f \x01(\bR\n" +
-	"hasMentionB\x0e\n" +
+	"\funread_count\x18\v \x01(\x05R\vunreadCountB\x0e\n" +
 	"\f_description\"\x84\x01\n" +
 	"\x13DirectMessageMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +

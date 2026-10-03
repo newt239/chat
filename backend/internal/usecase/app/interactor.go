@@ -512,25 +512,11 @@ func (i *Interactor) toOutputs(ctx context.Context, apps []*entity.App, viewerID
 	outputs := make([]Output, 0, len(apps))
 	for _, a := range apps {
 		canManage := !a.IsOfficial && (isAdmin || a.CreatedBy == viewerID)
-		output := Output{
-			ID:               a.ID,
-			WorkspaceID:      a.WorkspaceID,
-			Name:             a.Name,
-			Description:      a.Description,
-			AvatarURL:        a.AvatarURL,
-			Permissions:      a.Permissions,
-			DefaultChannelID: a.DefaultChannelID,
-			OutgoingURL:      a.OutgoingURL,
-			IsOfficial:       a.IsOfficial,
-			BotUserID:        a.BotUserID,
-			CreatedBy:        messageuc.UserInfoOf(a.CreatedBy, creators),
-			CreatedAt:        a.CreatedAt,
-			LastUsedAt:       a.LastUsedAt,
-			CanManage:        canManage,
+		app := *a
+		if !canManage {
+			app.OutgoingSecret = nil
 		}
-		if canManage {
-			output.OutgoingSecret = a.OutgoingSecret
-		}
+		output := Output{App: &app, Creator: messageuc.UserInfoOf(a.CreatedBy, creators), CanManage: canManage}
 		outputs = append(outputs, output)
 	}
 	return outputs, nil

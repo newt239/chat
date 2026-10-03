@@ -235,8 +235,7 @@ export const DeleteCustomEmojiResponseSchema: GenMessage<DeleteCustomEmojiRespon
   messageDesc(file_chat_v1_custom_emoji_service, 8);
 
 /**
- * ワークスペースのカスタム絵文字。メンバー全員が参照でき、登録は権限の設定に従う。削除は登録者と管理者だけができる。
- * 登録は PresignCustomEmojiUpload で得た URL に画像を PUT してから CreateCustomEmoji を呼ぶ
+ * カスタム絵文字。PresignCustomEmojiUpload の URL に画像を PUT してから CreateCustomEmoji で登録する
  *
  * @generated from service chat.v1.CustomEmojiService
  */

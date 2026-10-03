@@ -31,7 +31,7 @@ import { toShareUrl } from "#/lib/shareUrl";
 
 import { messageLocation } from "../utils/messageLocation";
 
-import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
+import type { Message } from "#/gen/chat/v1/message_pb";
 
 import type { Icon } from "@tabler/icons-react";
 
@@ -50,7 +50,6 @@ export const quickReactions = ["👍", "✅", "👀", "🎉", "🙏"] as const;
 
 type Options = {
   message: Message;
-  threadMetadata: ThreadMetadata | undefined;
   isAuthor: boolean;
   onReplyInThread: () => void;
   onEdit: () => void;
@@ -61,7 +60,6 @@ type Options = {
 // ホバー時の「その他」メニューとモバイルのシートで同じ操作を並べる
 export const useMessageMenuActions = ({
   message,
-  threadMetadata,
   isAuthor,
   onReplyInThread,
   onEdit,
@@ -79,7 +77,7 @@ export const useMessageMenuActions = ({
   const { pin, unpin } = usePinActions();
   const canModify = isAuthor && !message.isDeleted;
   const { setFollowing } = useToggleThreadFollow(message.id);
-  const isFollowing = threadMetadata?.isFollowing ?? false;
+  const isFollowing = message.threadMetadata?.isFollowing ?? false;
 
   const toggleBookmark = () => {
     (isBookmarked ? removeBookmark : addBookmark).mutate(
@@ -144,7 +142,7 @@ export const useMessageMenuActions = ({
       onAction: onReplyInThread,
       tone: "default",
     },
-    (threadMetadata?.replyCount ?? 0) > 0 && {
+    (message.threadMetadata?.replyCount ?? 0) > 0 && {
       icon: isFollowing ? IconBellOff : IconBell,
       id: "followThread",
       label: t(isFollowing ? "thread.follow.unfollow" : "thread.follow.follow"),

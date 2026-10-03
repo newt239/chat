@@ -10,7 +10,6 @@ var (
 	ErrAlreadyExists      = errors.New("既に存在します")
 	ErrValidation         = errors.New("入力値が条件を満たしていません")
 	ErrFailedPrecondition = errors.New("現在の状態ではこの操作を行えません")
-	ErrConflict           = errors.New("処理が競合しました")
 )
 
 type kindError struct {
@@ -44,12 +43,13 @@ var (
 	ErrAttachmentNotFound    = New(ErrNotFound, "添付ファイルが見つかりません")
 	ErrInvitationNotFound    = New(ErrNotFound, "招待が見つからないか、有効期限が切れています")
 
-	ErrUserAlreadyExists = New(ErrAlreadyExists, "ユーザーはすでに登録されています")
-	ErrAlreadyMember     = New(ErrAlreadyExists, "既にメンバーです")
-	ErrPinExists         = New(ErrAlreadyExists, "このメッセージは既にピン留めされています")
-	ErrReactionExists    = New(ErrAlreadyExists, "同じリアクションが既に追加されています")
-	ErrBookmarkExists    = New(ErrAlreadyExists, "このメッセージは既にブックマークされています")
-	ErrWorkspaceIDExists = New(ErrAlreadyExists, "このワークスペースIDは既に使用されています")
+	ErrUserAlreadyExists     = New(ErrAlreadyExists, "ユーザーはすでに登録されています")
+	ErrAlreadyMember         = New(ErrAlreadyExists, "既にメンバーです")
+	ErrPinExists             = New(ErrAlreadyExists, "このメッセージは既にピン留めされています")
+	ErrReactionExists        = New(ErrAlreadyExists, "同じリアクションが既に追加されています")
+	ErrBookmarkExists        = New(ErrAlreadyExists, "このメッセージは既にブックマークされています")
+	ErrWorkspaceIDExists     = New(ErrAlreadyExists, "このワークスペースIDは既に使用されています")
+	ErrCustomEmojiNameExists = New(ErrAlreadyExists, "同じ名前のカスタム絵文字がすでにあります")
 
 	ErrPasswordAuthDisabled = New(ErrFailedPrecondition, "パスワードによるログインは無効です")
 	ErrGoogleAuthDisabled   = New(ErrFailedPrecondition, "このサーバーでは Google ログインが設定されていません")

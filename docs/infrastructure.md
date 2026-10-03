@@ -156,7 +156,7 @@ helm upgrade --install external-secrets external-secrets/external-secrets \
 gh workflow run deploy.yml -R newt239/chat -f environment=dev -f backend_ref=main -f frontend_ref=main
 ```
 
-`ENV=production` では自動シードしないため、テスト用データが必要なら `kubectl -n chat-dev exec deploy/backend -c backend -- ./seed` を実行する。
+`ENV=production` ではテスト用データを自動で作らない。検索インデックスを作り直すときは `kubectl -n chat-dev exec deploy/backend -c backend -- ./reindex` を実行する。
 
 ### 10. 動作確認
 
@@ -279,11 +279,11 @@ gh workflow run deploy.yml -R newt239/chat -f environment=mini -f backend_ref=ma
 
 初回は両方の ref を指定する。ワークフローは apply のあとに imagePullSecret を作る Job を動かすので、Pod が一時的に `ImagePullBackOff` になっても数分で起動する。シークレットを変えたときは Environment の Secrets を更新してデプロイし直す（`secretGenerator` が名前を変えるので Pod が作り直される）。
 
-テスト用データが必要なら次を実行する。
+検索インデックスを作り直すときは次を実行する。
 
 ```sh
 gcloud compute ssh chat-mini --zone asia-northeast1-b --tunnel-through-iap \
-  --command 'sudo k3s kubectl -n chat-mini exec deploy/backend -- ./seed'
+  --command 'sudo k3s kubectl -n chat-mini exec deploy/backend -- ./reindex'
 ```
 
 ### 6. 運用

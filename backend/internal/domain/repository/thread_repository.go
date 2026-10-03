@@ -21,9 +21,8 @@ type ThreadRepository interface {
 
 	UpsertReadState(ctx context.Context, userID, threadID string, lastReadAt time.Time) error
 
-	// FollowThread は既にフォローしていても成功します
-	FollowThread(ctx context.Context, userID, threadID string) error
-	UnfollowThread(ctx context.Context, userID, threadID string) error
+	// SetFollowing は既にその状態でも成功します
+	SetFollowing(ctx context.Context, userID, threadID string, following bool) error
 	// FindFollowedThreadIDs は threadIDs のうち userID がフォローしているものを返します
 	FindFollowedThreadIDs(ctx context.Context, userID string, threadIDs []string) (map[string]bool, error)
 	FindFollowerIDs(ctx context.Context, threadID string) ([]string, error)

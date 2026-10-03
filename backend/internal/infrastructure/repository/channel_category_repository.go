@@ -81,12 +81,8 @@ func (r *channelCategoryRepository) Delete(ctx context.Context, id string) error
 	if err != nil {
 		return err
 	}
-	return transaction.WithTx(ctx, r.client, func(client *ent.Client) error {
-		if _, err := client.ChannelCategoryItem.Delete().Where(channelcategoryitem.CategoryID(categoryID)).Exec(ctx); err != nil {
-			return err
-		}
-		return client.ChannelCategory.DeleteOneID(categoryID).Exec(ctx)
-	})
+	// 中のチャンネルの割り当ては ON DELETE CASCADE で消える
+	return transaction.ResolveClient(ctx, r.client).ChannelCategory.DeleteOneID(categoryID).Exec(ctx)
 }
 
 func (r *channelCategoryRepository) UpdatePositions(ctx context.Context, categoryIDs []string) error {

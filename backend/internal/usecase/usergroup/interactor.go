@@ -3,7 +3,6 @@ package usergroup
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
@@ -42,7 +41,6 @@ type MemberOutput struct {
 	UserID      string
 	DisplayName string
 	AvatarURL   *string
-	JoinedAt    time.Time
 }
 
 type Interactor struct {
@@ -210,7 +208,7 @@ func (i *Interactor) ListMembers(ctx context.Context, groupID, userID string) ([
 	members := make([]MemberOutput, 0, len(groupMembers))
 	for _, member := range groupMembers {
 		if user := users[member.UserID]; user != nil {
-			members = append(members, MemberOutput{UserID: user.ID, DisplayName: user.DisplayName, AvatarURL: user.AvatarURL, JoinedAt: member.JoinedAt})
+			members = append(members, MemberOutput{UserID: user.ID, DisplayName: user.DisplayName, AvatarURL: user.AvatarURL})
 		}
 	}
 	return members, nil

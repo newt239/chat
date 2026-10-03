@@ -55,7 +55,7 @@ func expectNothing(t *testing.T, c *Client) {
 	}
 }
 
-var testEvent = &chatv1.ServerEvent{Event: &chatv1.ServerEvent_Ack{Ack: &chatv1.AckEvent{Event: "test"}}}
+var testEvent = &chatv1.ServerEvent{Event: &chatv1.ServerEvent_Typing{Typing: &chatv1.TypingEvent{ChannelId: "test"}}}
 
 func TestShutdownClosesConnectionsWithGoingAway(t *testing.T) {
 	h := StartTestHubs(t, nil, 1)[0]
@@ -115,7 +115,6 @@ func TestTypingRequiresSubscription(t *testing.T) {
 	alice.notifyTyping("general", true)
 	expectNothing(t, bob)
 	h.subscribe(alice, "general")
-	<-alice.send
 	alice.notifyTyping("general", true)
 	expectSent(t, bob)
 	// 入力中の通知は本人には届かない

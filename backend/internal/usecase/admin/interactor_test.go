@@ -17,7 +17,13 @@ import (
 
 type stubWorkspaceRepo struct {
 	domainrepository.WorkspaceRepository
-	members map[string]*entity.WorkspaceMember
+	members   map[string]*entity.WorkspaceMember
+	updatedTo []entity.WorkspaceRole
+}
+
+func (r *stubWorkspaceRepo) UpdateMemberRole(_ context.Context, _ string, _ string, role entity.WorkspaceRole) error {
+	r.updatedTo = append(r.updatedTo, role)
+	return nil
 }
 
 func (r *stubWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
@@ -89,6 +95,7 @@ func (r *stubPermissionRepo) Upsert(_ context.Context, _ string, o entity.Permis
 type fixture struct {
 	uc          *Interactor
 	members     map[string]*entity.WorkspaceMember
+	workspace   *stubWorkspaceRepo
 	sessions    *stubSessionRepo
 	auditLogs   *stubAuditLogRepo
 	permissions *stubPermissionRepo
@@ -115,14 +122,14 @@ func newFixture() *fixture {
 		recorder:    &audittest.Recorder{},
 		closer:      &stubCloser{},
 	}
-	workspaceRepo := &stubWorkspaceRepo{members: f.members}
+	f.workspace = &stubWorkspaceRepo{members: f.members}
 	f.uc = New(
-		workspaceRepo,
+		f.workspace,
 		stubUserRepo{},
 		f.sessions,
 		f.auditLogs,
 		f.permissions,
-		domainservice.NewPermissionService(workspaceRepo, f.permissions),
+		domainservice.NewPermissionService(f.workspace, f.permissions),
 		f.recorder,
 		f.closer,
 	)
@@ -279,5 +286,58 @@ func TestGetPermissionsForMember(t *testing.T) {
 	}
 	if out.RequesterRole != entity.WorkspaceRoleMember || out.Matrix.Allows(out.RequesterRole, entity.PermissionDeleteOthersMessages) {
 		t.Errorf("既定の権限が期待と異なります: %+v", out)
+	}
+}
+
+func TestUpdateMemberRole(t *testing.T) {
+	tests := []struct {
+		name     string
+		operator string
+		target   string
+		role     entity.WorkspaceRole
+		wantErr  error
+	}{
+		{name: "admin は owner を降格できない", operator: "admin", target: "owner", role: entity.WorkspaceRoleMember, wantErr: ErrCannotChangeOwnerRole},
+		{name: "admin は他人を owner に昇格できない", operator: "admin", target: "member", role: entity.WorkspaceRoleOwner, wantErr: ErrCannotChangeOwnerRole},
+		{name: "自分自身のロールは変更できない", operator: "admin", target: "admin", role: entity.WorkspaceRoleOwner, wantErr: ErrCannotChangeOwnerRole},
+		{name: "member はロールを変更できない", operator: "member", target: "admin", role: entity.WorkspaceRoleMember, wantErr: domerr.ErrUnauthorized},
+		{name: "admin は member を admin に昇格できる", operator: "admin", target: "member", role: entity.WorkspaceRoleAdmin},
+		{name: "owner は他人を owner に昇格できる", operator: "owner", target: "member", role: entity.WorkspaceRoleOwner},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture()
+			err := f.uc.UpdateMemberRole(context.Background(), UpdateMemberRoleInput{
+				MemberActionInput: MemberActionInput{WorkspaceID: "ws", OperatorID: tt.operator, TargetUserID: tt.target},
+				Role:              tt.role,
+			})
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
+			}
+			if updated := len(f.workspace.updatedTo) == 1; updated != (tt.wantErr == nil) {
+				t.Errorf("更新の有無が期待と異なります: %v", f.workspace.updatedTo)
+			}
+		})
+	}
+}
+
+func TestUpdateMemberRoleRecordsAuditLog(t *testing.T) {
+	f := newFixture()
+	err := f.uc.UpdateMemberRole(context.Background(), UpdateMemberRoleInput{
+		MemberActionInput: MemberActionInput{WorkspaceID: "ws", OperatorID: "admin", TargetUserID: "member"},
+		Role:              entity.WorkspaceRoleAdmin,
+	})
+	if err != nil {
+		t.Fatalf("予期しないエラー: %v", err)
+	}
+	if len(f.recorder.Logs) != 1 {
+		t.Fatalf("監査ログが 1 件記録されるはず: got=%d", len(f.recorder.Logs))
+	}
+	log := f.recorder.Logs[0]
+	if log.Action != entity.AuditActionMemberRoleChanged || *log.ActorID != "admin" || log.TargetID != "member" {
+		t.Errorf("監査ログの内容が期待と異なります: %+v", log)
+	}
+	if log.Metadata["from"] != "member" || log.Metadata["to"] != "admin" {
+		t.Errorf("変更前後のロールが記録されていません: %+v", log.Metadata)
 	}
 }

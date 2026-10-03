@@ -27,10 +27,9 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
   const { workspaceId } = useParams({ strict: false });
   const displayName = useDisplayName();
   const payload = message.payload ?? {};
-  const nameOf = (key: string) => {
-    const userId = textOf(payload[key]);
-    return displayName(userId, userId);
-  };
+  const nameOf = (userId: string) => displayName(userId, userId);
+  const actor = nameOf(message.actorId ?? "");
+  const user = nameOf(textOf(payload.userId));
   const from = textOf(payload.from);
   const to = textOf(payload.to);
 
@@ -49,10 +48,10 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
     );
 
   const texts: Partial<Record<SystemMessageKind, ReactNode>> = {
-    [SystemMessageKind.MEMBER_JOINED]: t("message.system.memberJoined", { user: nameOf("userId") }),
+    [SystemMessageKind.MEMBER_JOINED]: t("message.system.memberJoined", { user }),
     [SystemMessageKind.MEMBER_ADDED]: t("message.system.memberAdded", {
-      by: nameOf("addedBy"),
-      user: nameOf("userId"),
+      by: actor,
+      user,
     }),
     [SystemMessageKind.CHANNEL_PRIVACY_CHANGED]: t("message.system.privacyChanged", {
       from: from || "public",
@@ -63,7 +62,7 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
     [SystemMessageKind.MESSAGE_PINNED]: (
       <Trans
         i18nKey="message.system.messagePinned"
-        values={{ user: nameOf("pinnedBy") }}
+        values={{ user: actor }}
         components={{ target: pinnedLink }}
       />
     ),

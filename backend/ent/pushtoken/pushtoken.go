@@ -4,7 +4,6 @@ package pushtoken
 
 import (
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -22,10 +21,6 @@ const (
 	FieldToken = "token"
 	// FieldPlatform holds the string denoting the platform field in the database.
 	FieldPlatform = "platform"
-	// FieldUserAgent holds the string denoting the user_agent field in the database.
-	FieldUserAgent = "user_agent"
-	// FieldLastSeenAt holds the string denoting the last_seen_at field in the database.
-	FieldLastSeenAt = "last_seen_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the pushtoken in the database.
@@ -45,8 +40,6 @@ var Columns = []string{
 	FieldUserID,
 	FieldToken,
 	FieldPlatform,
-	FieldUserAgent,
-	FieldLastSeenAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -62,10 +55,6 @@ func ValidColumn(column string) bool {
 var (
 	// TokenValidator is a validator for the "token" field. It is called by the builders before save.
 	TokenValidator func(string) error
-	// DefaultUserAgent holds the default value on creation for the "user_agent" field.
-	DefaultUserAgent string
-	// DefaultLastSeenAt holds the default value on creation for the "last_seen_at" field.
-	DefaultLastSeenAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -115,16 +104,6 @@ func ByToken(opts ...sql.OrderTermOption) OrderOption {
 // ByPlatform orders the results by the platform field.
 func ByPlatform(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPlatform, opts...).ToFunc()
-}
-
-// ByUserAgent orders the results by the user_agent field.
-func ByUserAgent(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUserAgent, opts...).ToFunc()
-}
-
-// ByLastSeenAt orders the results by the last_seen_at field.
-func ByLastSeenAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLastSeenAt, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

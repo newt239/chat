@@ -18,8 +18,7 @@ type MessageOutputBuilder struct {
 	messageRepo      domainrepository.MessageRepository
 	userRepo         domainrepository.UserRepository
 	userGroupRepo    domainrepository.UserGroupRepository
-	userMentionRepo  domainrepository.MessageUserMentionRepository
-	groupMentionRepo domainrepository.MessageGroupMentionRepository
+	mentionRepo      domainrepository.MessageMentionRepository
 	linkRepo         domainrepository.MessageLinkRepository
 	attachmentRepo   domainrepository.AttachmentRepository
 	pinRepo          domainrepository.PinRepository
@@ -31,8 +30,7 @@ func NewMessageOutputBuilder(
 	messageRepo domainrepository.MessageRepository,
 	userRepo domainrepository.UserRepository,
 	userGroupRepo domainrepository.UserGroupRepository,
-	userMentionRepo domainrepository.MessageUserMentionRepository,
-	groupMentionRepo domainrepository.MessageGroupMentionRepository,
+	mentionRepo domainrepository.MessageMentionRepository,
 	linkRepo domainrepository.MessageLinkRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
 	pinRepo domainrepository.PinRepository,
@@ -43,8 +41,7 @@ func NewMessageOutputBuilder(
 		messageRepo:      messageRepo,
 		userRepo:         userRepo,
 		userGroupRepo:    userGroupRepo,
-		userMentionRepo:  userMentionRepo,
-		groupMentionRepo: groupMentionRepo,
+		mentionRepo:      mentionRepo,
 		linkRepo:         linkRepo,
 		attachmentRepo:   attachmentRepo,
 		pinRepo:          pinRepo,
@@ -177,13 +174,9 @@ func (b *MessageOutputBuilder) fetchAccessibleMessages(ctx context.Context, view
 }
 
 func (b *MessageOutputBuilder) fetchRelatedData(ctx context.Context, messageIDs []string) (*relatedData, error) {
-	userMentions, err := b.userMentionRepo.FindByMessageIDs(ctx, messageIDs)
+	userMentions, groupMentions, err := b.mentionRepo.FindByMessageIDs(ctx, messageIDs)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch user mentions: %w", err)
-	}
-	groupMentions, err := b.groupMentionRepo.FindByMessageIDs(ctx, messageIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch group mentions: %w", err)
+		return nil, fmt.Errorf("failed to fetch mentions: %w", err)
 	}
 	links, err := b.linkRepo.FindByMessageIDs(ctx, messageIDs)
 	if err != nil {
@@ -267,7 +260,7 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 	}
 
 	for _, mention := range related.userMentions[msg.ID] {
-		output.Mentions = append(output.Mentions, UserMention{UserID: mention.UserID, ViaGroupID: mention.ViaGroupID})
+		output.Mentions = append(output.Mentions, UserMention{UserID: mention.UserID})
 	}
 	for _, mention := range related.groupMentions[msg.ID] {
 		name := ""

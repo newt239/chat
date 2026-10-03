@@ -58,7 +58,6 @@ func AdminMember(m adminuc.MemberOutput) *chatv1.AdminMember {
 		DisplayName:        m.DisplayName,
 		AvatarUrl:          m.AvatarURL,
 		Role:               WorkspaceRoles[m.Role],
-		JoinedAt:           timestamppb.New(m.JoinedAt),
 		SuspendedAt:        optionalTimestamp(m.SuspendedAt),
 		RecentMessageCount: int32(m.Activity.MessageCount),
 		StorageBytes:       m.Activity.StorageBytes,

@@ -508,7 +508,6 @@ type AdminMember struct {
 	DisplayName string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	AvatarUrl   *string                `protobuf:"bytes,4,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
 	Role        WorkspaceRole          `protobuf:"varint,5,opt,name=role,proto3,enum=chat.v1.WorkspaceRole" json:"role,omitempty"`
-	JoinedAt    *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
 	// 停止中の場合だけ設定される
 	SuspendedAt        *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=suspended_at,json=suspendedAt,proto3,oneof" json:"suspended_at,omitempty"`
 	LastLoginAt        *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=last_login_at,json=lastLoginAt,proto3,oneof" json:"last_login_at,omitempty"`
@@ -586,13 +585,6 @@ func (x *AdminMember) GetRole() WorkspaceRole {
 		return x.Role
 	}
 	return WorkspaceRole_WORKSPACE_ROLE_UNSPECIFIED
-}
-
-func (x *AdminMember) GetJoinedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.JoinedAt
-	}
-	return nil
 }
 
 func (x *AdminMember) GetSuspendedAt() *timestamppb.Timestamp {
@@ -960,15 +952,14 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x06_until\"P\n" +
 	"\x17ExportAuditLogsResponse\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\tR\acontent\x12\x1b\n" +
-	"\tfile_name\x18\x02 \x01(\tR\bfileName\"\xc8\x05\n" +
+	"\tfile_name\x18\x02 \x01(\tR\bfileName\"\x8f\x05\n" +
 	"\vAdminMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
 	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\x12\"\n" +
 	"\n" +
 	"avatar_url\x18\x04 \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x12*\n" +
-	"\x04role\x18\x05 \x01(\x0e2\x16.chat.v1.WorkspaceRoleR\x04role\x127\n" +
-	"\tjoined_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\bjoinedAt\x12B\n" +
+	"\x04role\x18\x05 \x01(\x0e2\x16.chat.v1.WorkspaceRoleR\x04role\x12B\n" +
 	"\fsuspended_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampH\x01R\vsuspendedAt\x88\x01\x01\x12C\n" +
 	"\rlast_login_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampH\x02R\vlastLoginAt\x88\x01\x01\x12\"\n" +
 	"\rlast_login_ip\x18\t \x01(\tR\vlastLoginIp\x121\n" +
@@ -1062,26 +1053,25 @@ var file_chat_v1_admin_service_proto_depIdxs = []int32{
 	15, // 9: chat.v1.ExportAuditLogsRequest.since:type_name -> google.protobuf.Timestamp
 	15, // 10: chat.v1.ExportAuditLogsRequest.until:type_name -> google.protobuf.Timestamp
 	16, // 11: chat.v1.AdminMember.role:type_name -> chat.v1.WorkspaceRole
-	15, // 12: chat.v1.AdminMember.joined_at:type_name -> google.protobuf.Timestamp
-	15, // 13: chat.v1.AdminMember.suspended_at:type_name -> google.protobuf.Timestamp
-	15, // 14: chat.v1.AdminMember.last_login_at:type_name -> google.protobuf.Timestamp
-	15, // 15: chat.v1.AdminMember.last_message_at:type_name -> google.protobuf.Timestamp
-	6,  // 16: chat.v1.ListAdminMembersResponse.members:type_name -> chat.v1.AdminMember
-	2,  // 17: chat.v1.AdminService.ListAuditLogs:input_type -> chat.v1.ListAuditLogsRequest
-	4,  // 18: chat.v1.AdminService.ExportAuditLogs:input_type -> chat.v1.ExportAuditLogsRequest
-	7,  // 19: chat.v1.AdminService.ListAdminMembers:input_type -> chat.v1.ListAdminMembersRequest
-	9,  // 20: chat.v1.AdminService.SuspendMember:input_type -> chat.v1.SuspendMemberRequest
-	11, // 21: chat.v1.AdminService.ResumeMember:input_type -> chat.v1.ResumeMemberRequest
-	3,  // 22: chat.v1.AdminService.ListAuditLogs:output_type -> chat.v1.ListAuditLogsResponse
-	5,  // 23: chat.v1.AdminService.ExportAuditLogs:output_type -> chat.v1.ExportAuditLogsResponse
-	8,  // 24: chat.v1.AdminService.ListAdminMembers:output_type -> chat.v1.ListAdminMembersResponse
-	10, // 25: chat.v1.AdminService.SuspendMember:output_type -> chat.v1.SuspendMemberResponse
-	12, // 26: chat.v1.AdminService.ResumeMember:output_type -> chat.v1.ResumeMemberResponse
-	22, // [22:27] is the sub-list for method output_type
-	17, // [17:22] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	15, // 12: chat.v1.AdminMember.suspended_at:type_name -> google.protobuf.Timestamp
+	15, // 13: chat.v1.AdminMember.last_login_at:type_name -> google.protobuf.Timestamp
+	15, // 14: chat.v1.AdminMember.last_message_at:type_name -> google.protobuf.Timestamp
+	6,  // 15: chat.v1.ListAdminMembersResponse.members:type_name -> chat.v1.AdminMember
+	2,  // 16: chat.v1.AdminService.ListAuditLogs:input_type -> chat.v1.ListAuditLogsRequest
+	4,  // 17: chat.v1.AdminService.ExportAuditLogs:input_type -> chat.v1.ExportAuditLogsRequest
+	7,  // 18: chat.v1.AdminService.ListAdminMembers:input_type -> chat.v1.ListAdminMembersRequest
+	9,  // 19: chat.v1.AdminService.SuspendMember:input_type -> chat.v1.SuspendMemberRequest
+	11, // 20: chat.v1.AdminService.ResumeMember:input_type -> chat.v1.ResumeMemberRequest
+	3,  // 21: chat.v1.AdminService.ListAuditLogs:output_type -> chat.v1.ListAuditLogsResponse
+	5,  // 22: chat.v1.AdminService.ExportAuditLogs:output_type -> chat.v1.ExportAuditLogsResponse
+	8,  // 23: chat.v1.AdminService.ListAdminMembers:output_type -> chat.v1.ListAdminMembersResponse
+	10, // 24: chat.v1.AdminService.SuspendMember:output_type -> chat.v1.SuspendMemberResponse
+	12, // 25: chat.v1.AdminService.ResumeMember:output_type -> chat.v1.ResumeMemberResponse
+	21, // [21:26] is the sub-list for method output_type
+	16, // [16:21] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_admin_service_proto_init() }

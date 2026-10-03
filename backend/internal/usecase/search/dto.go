@@ -1,10 +1,10 @@
 package search
 
 import (
+	"cmp"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
-
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
@@ -83,28 +83,7 @@ type WorkspaceSearchOutput struct {
 	Groups   Paginated[*entity.UserGroup]
 }
 
-// Normalize はサポートされていない検索対象を all に丸めます
-func (f SearchTarget) Normalize() SearchTarget {
-	switch f {
-	case SearchTargetAll, SearchTargetMessages, SearchTargetChannels, SearchTargetUsers, SearchTargetGroups:
-		return f
-	default:
-		return SearchTargetAll
-	}
-}
-
-func (f SearchTarget) includesMessages() bool {
-	return f == SearchTargetAll || f == SearchTargetMessages
-}
-
-func (f SearchTarget) includesChannels() bool {
-	return f == SearchTargetAll || f == SearchTargetChannels
-}
-
-func (f SearchTarget) includesUsers() bool {
-	return f == SearchTargetAll || f == SearchTargetUsers
-}
-
-func (f SearchTarget) includesGroups() bool {
-	return f == SearchTargetAll || f == SearchTargetGroups
+// includes は未指定なら all として扱います
+func (t SearchTarget) includes(k SearchTarget) bool {
+	return cmp.Or(t, SearchTargetAll) == SearchTargetAll || t == k
 }

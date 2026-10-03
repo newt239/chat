@@ -10,6 +10,7 @@ import { SystemMessageItem } from "./SystemMessageItem";
 
 const pinned = (payload: Record<string, string>) =>
   create(SystemMessageSchema, {
+    actorId: "u-bob",
     channelId: "ch1",
     kind: SystemMessageKind.MESSAGE_PINNED,
     payload,
@@ -24,7 +25,7 @@ const setup = (payload: Record<string, string>) =>
 
 describe("SystemMessageItem", () => {
   test("ピン留めのお知らせはピン留めされたメッセージへリンクする", async () => {
-    await setup({ messageId: "m1", pinnedBy: "u-bob" });
+    await setup({ messageId: "m1" });
     expect(await screen.findByRole("link", { name: "メッセージ" })).toHaveAttribute(
       "href",
       "/app/ws1/ch1?message=m1",
@@ -32,7 +33,7 @@ describe("SystemMessageItem", () => {
   });
 
   test("スレッドの返信はスレッドを開くリンクにする", async () => {
-    await setup({ messageId: "r1", parentId: "m1", pinnedBy: "u-bob" });
+    await setup({ messageId: "r1", parentId: "m1" });
     expect(await screen.findByRole("link", { name: "メッセージ" })).toHaveAttribute(
       "href",
       "/app/ws1/ch1/thread/m1?message=r1",

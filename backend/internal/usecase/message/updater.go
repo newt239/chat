@@ -22,7 +22,7 @@ func (i *Interactor) UpdateMessage(ctx context.Context, input UpdateMessageInput
 		return nil, ErrCannotEditDeleted
 	}
 
-	previous, err := i.userMentionRepo.FindByMessageIDs(ctx, []string{message.ID})
+	previous, _, err := i.mentionRepo.FindByMessageIDs(ctx, []string{message.ID})
 	if err != nil {
 		return nil, fmt.Errorf("failed to load user mentions: %w", err)
 	}

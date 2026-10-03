@@ -20,12 +20,11 @@ func Channel(c channeluc.ChannelOutput) *chatv1.Channel {
 		WorkspaceId:   c.WorkspaceID,
 		Name:          c.Name,
 		Description:   c.Description,
-		IsPrivate:     c.IsPrivate,
+		IsPrivate:     c.IsPrivate(),
 		CreatedBy:     c.CreatedBy,
 		CreatedAt:     timestamppb.New(c.CreatedAt),
 		UpdatedAt:     timestamppb.New(c.UpdatedAt),
 		UnreadCount:   int32(c.UnreadCount),
-		HasMention:    c.MentionCount > 0,
 		MentionCount:  int32(c.MentionCount),
 		ParentId:      c.ParentID,
 		IsStarred:     c.IsStarred,
@@ -46,7 +45,6 @@ func ChannelMember(m channelmemberuc.MemberOutput) *chatv1.ChannelMember {
 		DisplayName: m.DisplayName,
 		AvatarUrl:   m.AvatarURL,
 		Role:        ChannelRoles[m.Role],
-		JoinedAt:    timestamppb.New(m.JoinedAt),
 	}
 }
 

@@ -161,7 +161,7 @@ func (r *userGroupRepository) FindMembersByGroupIDs(ctx context.Context, groupID
 		return nil, err
 	}
 	return convertAll(members, func(m *ent.UserGroupMember) *entity.UserGroupMember {
-		return &entity.UserGroupMember{GroupID: m.GroupID.String(), UserID: m.UserID.String(), JoinedAt: m.JoinedAt}
+		return &entity.UserGroupMember{GroupID: m.GroupID.String(), UserID: m.UserID.String()}
 	}), nil
 }
 

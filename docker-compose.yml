@@ -90,25 +90,6 @@ services:
     networks:
       - chat-network
     restart: unless-stopped
-    command: air -c air.toml
-
-  reset:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
-    volumes:
-      - ./backend:/app
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - chat-network
-    command: go run cmd/reset/main.go
-    restart: "no"
-    profiles:
-      - manual
 
   frontend:
     build:

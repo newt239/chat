@@ -5,8 +5,7 @@ package chat.v1;
 import "buf/validate/validate.proto";
 import "chat/v1/message.proto";
 
-// 入力欄の「/」から始まるコマンド。応答は公式アプリがチャンネル全員に見える形で投稿し、誰も削除できない。
-// /remind [me|<@ユーザーID>|<#チャンネルID>] 内容 日時 … 指定した日時に公式アプリが届ける
+// 入力欄の「/」から始まるコマンド (/remind [me|<@ユーザーID>|<#チャンネルID>] 内容 日時)。応答は公式アプリが投稿する
 service CommandService {
   rpc ExecuteCommand(ExecuteCommandRequest) returns (ExecuteCommandResponse);
 }

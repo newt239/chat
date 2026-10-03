@@ -58,9 +58,7 @@ message CreateScheduledMessageRequest {
   google.protobuf.Timestamp scheduled_at = 6 [(buf.validate.field).required = true];
 }
 
-message CreateScheduledMessageResponse {
-  ScheduledMessage scheduled_message = 1;
-}
+message CreateScheduledMessageResponse {}
 
 message ListScheduledMessagesRequest {
   string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
@@ -76,9 +74,7 @@ message UpdateScheduledMessageRequest {
   google.protobuf.Timestamp scheduled_at = 3 [(buf.validate.field).required = true];
 }
 
-message UpdateScheduledMessageResponse {
-  ScheduledMessage scheduled_message = 1;
-}
+message UpdateScheduledMessageResponse {}
 
 message DeleteScheduledMessageRequest {
   string id = 1 [(buf.validate.field).string.uuid = true];
@@ -90,6 +86,4 @@ message SendScheduledMessageNowRequest {
   string id = 1 [(buf.validate.field).string.uuid = true];
 }
 
-message SendScheduledMessageNowResponse {
-  ScheduledMessage scheduled_message = 1;
-}
+message SendScheduledMessageNowResponse {}

@@ -4,10 +4,13 @@ import (
 	"context"
 	"log"
 
-	"github.com/newt239/chat/internal/infrastructure/auth"
+	"github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/meilisearch"
+	"github.com/newt239/chat/internal/infrastructure/repository"
 	"github.com/newt239/chat/internal/infrastructure/seed"
+	"github.com/newt239/chat/internal/usecase/searchindex"
 )
 
 func main() {
@@ -29,8 +32,16 @@ func main() {
 	if err := database.Migrate(ctx, client, db); err != nil {
 		log.Fatalf("データベーススキーマの作成に失敗しました: %v", err)
 	}
-	if err := seed.CreateSeedData(ctx, client, auth.PasswordService{}); err != nil {
+	if err := seed.CreateSeedData(ctx, client); err != nil {
 		log.Fatalf("シードデータの投入に失敗しました: %v", err)
 	}
-	log.Println("データベースのリセットとシードが完了しました")
+	// 古いメッセージの検索インデックスを消し、シードしたメッセージで作り直す
+	mentionSvc := service.NewMentionService(repository.NewWorkspaceRepository(client), repository.NewUserRepository(client),
+		repository.NewUserGroupRepository(client), repository.NewChannelRepository(client))
+	indexer := searchindex.NewIndexer(repository.NewMessageRepository(client),
+		meilisearch.NewMessageIndex(cfg.Search.MeilisearchURL, cfg.Search.MeilisearchAPIKey), mentionSvc)
+	if _, err := indexer.Prepare(ctx, true); err != nil {
+		log.Fatalf("検索インデックスの作り直しに失敗しました: %v", err)
+	}
+	log.Println("データベースと検索インデックスのリセットとシードが完了しました")
 }

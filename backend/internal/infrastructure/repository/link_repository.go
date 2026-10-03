@@ -79,8 +79,6 @@ func (r *linkRepository) UpsertPreview(ctx context.Context, preview *entity.Link
 			SetNillableImageURL(ogp.ImageURL).
 			SetNillableSiteName(ogp.SiteName).
 			SetNillableCardType(ogp.CardType).
-			SetNillableImageWidth(ogp.ImageWidth).
-			SetNillableImageHeight(ogp.ImageHeight).
 			SetFetchedAt(preview.FetchedAt).
 			OnConflictColumns(linkpreview.FieldURL).
 			UpdateNewValues().

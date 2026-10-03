@@ -5,7 +5,6 @@ package ent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -25,10 +24,6 @@ type PushToken struct {
 	Token string `json:"token,omitempty"`
 	// Platform holds the value of the "platform" field.
 	Platform pushtoken.Platform `json:"platform,omitempty"`
-	// UserAgent holds the value of the "user_agent" field.
-	UserAgent string `json:"user_agent,omitempty"`
-	// LastSeenAt holds the value of the "last_seen_at" field.
-	LastSeenAt time.Time `json:"last_seen_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PushTokenQuery when eager-loading is set.
 	Edges        PushTokenEdges `json:"edges"`
@@ -60,10 +55,8 @@ func (*PushToken) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case pushtoken.FieldToken, pushtoken.FieldPlatform, pushtoken.FieldUserAgent:
+		case pushtoken.FieldToken, pushtoken.FieldPlatform:
 			values[i] = new(sql.NullString)
-		case pushtoken.FieldLastSeenAt:
-			values[i] = new(sql.NullTime)
 		case pushtoken.FieldID, pushtoken.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -104,18 +97,6 @@ func (_m *PushToken) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field platform", values[i])
 			} else if value.Valid {
 				_m.Platform = pushtoken.Platform(value.String)
-			}
-		case pushtoken.FieldUserAgent:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field user_agent", values[i])
-			} else if value.Valid {
-				_m.UserAgent = value.String
-			}
-		case pushtoken.FieldLastSeenAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field last_seen_at", values[i])
-			} else if value.Valid {
-				_m.LastSeenAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -166,12 +147,6 @@ func (_m *PushToken) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("platform=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Platform))
-	builder.WriteString(", ")
-	builder.WriteString("user_agent=")
-	builder.WriteString(_m.UserAgent)
-	builder.WriteString(", ")
-	builder.WriteString("last_seen_at=")
-	builder.WriteString(_m.LastSeenAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

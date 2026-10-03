@@ -444,12 +444,7 @@ func (i *Interactor) issueTokens(user *entity.User, sessionID string) (*issuedTo
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
 			ExpiresAt:    time.Now().Add(i.settings.RefreshTokenTTL),
-			User: UserInfo{
-				ID:          user.ID,
-				Email:       user.Email,
-				DisplayName: user.DisplayName,
-				AvatarURL:   user.AvatarURL,
-			},
+			User:         user,
 		},
 		refreshTokenHash: refreshTokenHash,
 	}, nil

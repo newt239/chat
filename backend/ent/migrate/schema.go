@@ -619,8 +619,6 @@ var (
 		{Name: "image_url", Type: field.TypeString, Nullable: true},
 		{Name: "site_name", Type: field.TypeString, Nullable: true},
 		{Name: "card_type", Type: field.TypeString, Nullable: true},
-		{Name: "image_width", Type: field.TypeInt32, Nullable: true},
-		{Name: "image_height", Type: field.TypeInt32, Nullable: true},
 		{Name: "fetched_at", Type: field.TypeTime},
 	}
 	// LinkPreviewTable holds the schema information for the "link_preview" table.
@@ -1069,8 +1067,6 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "token", Type: field.TypeString, Unique: true, Size: 2147483647},
 		{Name: "platform", Type: field.TypeEnum, Enums: []string{"web", "ios", "android"}},
-		{Name: "user_agent", Type: field.TypeString, Default: ""},
-		{Name: "last_seen_at", Type: field.TypeTime},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// PushTokenTable holds the schema information for the "push_token" table.
@@ -1081,7 +1077,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "push_token_user_user",
-				Columns:    []*schema.Column{PushTokenColumns[5]},
+				Columns:    []*schema.Column{PushTokenColumns[3]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -1090,7 +1086,7 @@ var (
 			{
 				Name:    "pushtoken_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{PushTokenColumns[5]},
+				Columns: []*schema.Column{PushTokenColumns[3]},
 			},
 		},
 	}

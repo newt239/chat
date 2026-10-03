@@ -7,13 +7,11 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/lib/pq"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
-	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -41,15 +39,6 @@ func (r *channelRepository) all(ctx context.Context, query *ent.ChannelQuery) ([
 
 var namedChannelTypes = channel.ChannelTypeIn(string(entity.ChannelTypePublic), string(entity.ChannelTypePrivate))
 
-// browsable は参加の有無を問わず閲覧できる公開チャンネルと参加中の非公開チャンネルに一致します
-func browsable(workspaceID string, userID uuid.UUID) predicate.Channel {
-	return channel.And(
-		channel.WorkspaceID(workspaceID),
-		namedChannelTypes,
-		channel.Or(channel.ChannelType(string(entity.ChannelTypePublic)), channel.HasMembersWith(channelmember.UserID(userID))),
-	)
-}
-
 func (r *channelRepository) FindByID(ctx context.Context, id string) (*entity.Channel, error) {
 	channelID, err := parseUUID(id, "channel ID")
 	if err != nil {
@@ -62,16 +51,12 @@ func (r *channelRepository) FindByID(ctx context.Context, id string) (*entity.Ch
 	return channelToEntity(c), nil
 }
 
-func (r *channelRepository) FindByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.Channel, error) {
-	return r.all(ctx, r.query(ctx).Where(channel.WorkspaceID(workspaceID)).Order(ent.Asc(channel.FieldCreatedAt)))
-}
-
 func (r *channelRepository) FindBrowsableChannels(ctx context.Context, workspaceID, userID string) ([]*entity.Channel, error) {
 	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
-	return r.all(ctx, r.query(ctx).Where(browsable(workspaceID, uid)).Order(ent.Asc(channel.FieldName)))
+	return r.all(ctx, r.query(ctx).Where(viewableChannel(workspaceID, uid), namedChannelTypes).Order(ent.Asc(channel.FieldName)))
 }
 
 func (r *channelRepository) SearchBrowsableChannels(ctx context.Context, workspaceID, userID string, filter domainrepository.BrowsableChannelFilter) ([]*entity.Channel, int, error) {
@@ -80,7 +65,7 @@ func (r *channelRepository) SearchBrowsableChannels(ctx context.Context, workspa
 		return nil, 0, err
 	}
 	isMember := channel.HasMembersWith(channelmember.UserID(uid))
-	query := r.query(ctx).Where(browsable(workspaceID, uid))
+	query := r.query(ctx).Where(viewableChannel(workspaceID, uid), namedChannelTypes)
 	if keyword := strings.TrimSpace(filter.Query); keyword != "" {
 		query.Where(channel.Or(channel.NameContainsFold(keyword), channel.DescriptionContainsFold(keyword)))
 	}

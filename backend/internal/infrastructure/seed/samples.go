@@ -12,7 +12,6 @@ import (
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/newt239/chat/internal/infrastructure/repository"
-	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
 const scrollTestMessages = 2000
@@ -41,13 +40,13 @@ var sampleUserNames = []string{
 func createRichSamples(
 	ctx context.Context,
 	client *ent.Client,
-	passwordService authuc.PasswordService,
+	passwordHash string,
 	users []*entity.User,
 	channels []*entity.Channel,
 	messages []*entity.Message,
 ) error {
 	alice := users[0]
-	members, err := createSampleUsers(ctx, passwordService, client, users)
+	members, err := createSampleUsers(ctx, passwordHash, client, users)
 	if err != nil {
 		return err
 	}
@@ -123,7 +122,7 @@ func createRichSamples(
 }
 
 // createSampleUsers は既存のユーザーに確認用のユーザーを足して返します。日本語だけの名前はメンションできない例です
-func createSampleUsers(ctx context.Context, passwordService authuc.PasswordService, client *ent.Client, users []*entity.User) ([]*entity.User, error) {
+func createSampleUsers(ctx context.Context, passwordHash string, client *ent.Client, users []*entity.User) ([]*entity.User, error) {
 	workspaceRepo := repository.NewWorkspaceRepository(client)
 	userRepo := repository.NewUserRepository(client)
 	members := append([]*entity.User{}, users...)
@@ -135,7 +134,7 @@ func createSampleUsers(ctx context.Context, passwordService authuc.PasswordServi
 		user := &entity.User{
 			ID:           uuid.NewString(),
 			Email:        seed + "@example.com",
-			PasswordHash: mustHashPassword(passwordService, "password123"),
+			PasswordHash: passwordHash,
 			DisplayName:  name,
 			AvatarURL:    new("https://api.dicebear.com/7.x/avataaars/svg?seed=" + seed),
 		}
@@ -146,7 +145,6 @@ func createSampleUsers(ctx context.Context, passwordService authuc.PasswordServi
 			WorkspaceID: "general",
 			UserID:      user.ID,
 			Role:        entity.WorkspaceRoleMember,
-			JoinedAt:    time.Now(),
 		}); err != nil {
 			return nil, fmt.Errorf("failed to add %s to workspace: %w", name, err)
 		}
@@ -160,7 +158,7 @@ func addSampleMember(ctx context.Context, client *ent.Client, ch *entity.Channel
 	if err := repository.NewChannelMemberRepository(client).AddMember(ctx, &entity.ChannelMember{ChannelID: ch.ID, UserID: user.ID}); err != nil {
 		return fmt.Errorf("failed to add %s to %s: %w", user.DisplayName, ch.Name, err)
 	}
-	return createSystemMessage(ctx, client, ch, entity.SystemMessageKindMemberJoined, user.ID, map[string]any{"actorId": user.ID, "userId": user.ID}, at)
+	return createSystemMessage(ctx, client, ch, entity.SystemMessageKindMemberJoined, user.ID, map[string]any{"userId": user.ID}, at)
 }
 
 func createSystemMessage(ctx context.Context, client *ent.Client, ch *entity.Channel, kind entity.SystemMessageKind, actorID string, payload map[string]any, at time.Time) error {
@@ -223,7 +221,7 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 	if err := createSystemMessage(ctx, client, ch, entity.SystemMessageKindChannelDescriptionChanged, users[1].ID, map[string]any{}, next()); err != nil {
 		return err
 	}
-	if err := createSystemMessage(ctx, client, ch, entity.SystemMessageKindMemberAdded, users[1].ID, map[string]any{"addedBy": users[1].ID, "userId": users[3].ID}, next()); err != nil {
+	if err := createSystemMessage(ctx, client, ch, entity.SystemMessageKindMemberAdded, users[1].ID, map[string]any{"userId": users[3].ID}, next()); err != nil {
 		return err
 	}
 
@@ -280,7 +278,7 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 			if err := client.MessagePin.Create().SetChannelID(channelID).SetMessageID(msg.ID).SetPinnedByID(uuid.MustParse(users[1].ID)).Exec(ctx); err != nil {
 				return fmt.Errorf("failed to pin message: %w", err)
 			}
-			if err := createSystemMessage(ctx, client, ch, entity.SystemMessageKindMessagePinned, users[1].ID, map[string]any{"messageId": msg.ID.String(), "pinnedBy": users[1].ID}, next()); err != nil {
+			if err := createSystemMessage(ctx, client, ch, entity.SystemMessageKindMessagePinned, users[1].ID, map[string]any{"messageId": msg.ID.String()}, next()); err != nil {
 				return err
 			}
 		}

@@ -20,14 +20,13 @@ func DirectMessage(dm *dmuc.DMOutput) *chatv1.DirectMessage {
 		Name:        dm.Name,
 		Description: dm.Description,
 		Type:        directMessageTypes[dm.Type],
-		Members: ConvertAll(dm.Members, func(m dmuc.DMMemberOutput) *chatv1.DirectMessageMember {
-			return &chatv1.DirectMessageMember{UserId: m.UserID, DisplayName: m.DisplayName, AvatarUrl: m.AvatarURL}
+		Members: ConvertAll(dm.Members, func(u *entity.User) *chatv1.DirectMessageMember {
+			return &chatv1.DirectMessageMember{UserId: u.ID, DisplayName: u.DisplayName, AvatarUrl: u.AvatarURL}
 		}),
 		CreatedAt:   timestamppb.New(dm.CreatedAt),
 		UpdatedAt:   timestamppb.New(dm.UpdatedAt),
 		IsStarred:   dm.IsStarred,
 		IsMuted:     dm.IsMuted,
 		UnreadCount: int32(dm.UnreadCount),
-		HasMention:  dm.HasMention,
 	}
 }

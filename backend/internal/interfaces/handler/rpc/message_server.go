@@ -3,8 +3,6 @@ package rpc
 import (
 	"context"
 
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
@@ -14,42 +12,20 @@ type MessageServer struct {
 	UC *messageuc.Interactor
 }
 
-// listMessagesRequest は ListMessages と ListMessagesWithThread のリクエストに共通する項目です
-type listMessagesRequest interface {
-	GetChannelId() string
-	GetLimit() int32
-	GetSince() *timestamppb.Timestamp
-	GetUntil() *timestamppb.Timestamp
-	GetIncludeDescendants() bool
-}
-
-func listMessagesInput(ctx context.Context, req listMessagesRequest) messageuc.ListMessagesInput {
-	return messageuc.ListMessagesInput{
-		ChannelID:          req.GetChannelId(),
-		UserID:             userIDFrom(ctx),
-		Limit:              int(req.GetLimit()),
-		Since:              optionalTime(req.GetSince()),
-		Until:              optionalTime(req.GetUntil()),
-		IncludeDescendants: req.GetIncludeDescendants(),
-	}
-}
-
 func (s *MessageServer) ListMessages(ctx context.Context, req *chatv1.ListMessagesRequest) (*chatv1.ListMessagesResponse, error) {
-	input := listMessagesInput(ctx, req)
-	input.Around = optionalTime(req.GetAround())
-	out, err := s.UC.ListMessages(ctx, input)
+	out, err := s.UC.ListMessages(ctx, messageuc.ListMessagesInput{
+		ChannelID:          req.ChannelId,
+		UserID:             userIDFrom(ctx),
+		Limit:              int(req.Limit),
+		Since:              optionalTime(req.Since),
+		Until:              optionalTime(req.Until),
+		Around:             optionalTime(req.Around),
+		IncludeDescendants: req.IncludeDescendants,
+	})
 	if err != nil {
 		return nil, err
 	}
 	return &chatv1.ListMessagesResponse{Messages: presenter.ConvertAll(out.Messages, presenter.TimelineItem), HasMore: out.HasMore, HasNewer: out.HasNewer}, nil
-}
-
-func (s *MessageServer) ListMessagesWithThread(ctx context.Context, req *chatv1.ListMessagesWithThreadRequest) (*chatv1.ListMessagesWithThreadResponse, error) {
-	out, err := s.UC.ListMessagesWithThread(ctx, listMessagesInput(ctx, req))
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.ListMessagesWithThreadResponse{Messages: presenter.ConvertAll(out.Messages, presenter.MessageWithThread), HasMore: out.HasMore}, nil
 }
 
 func (s *MessageServer) CreateMessage(ctx context.Context, req *chatv1.CreateMessageRequest) (*chatv1.CreateMessageResponse, error) {

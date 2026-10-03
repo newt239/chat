@@ -18,7 +18,6 @@ import { ChannelList } from "./ChannelList";
 const channels = [
   create(ChannelSchema, { id: "dev", isMember: true, name: "dev" }),
   create(ChannelSchema, {
-    hasMention: true,
     id: "fe",
     isMember: true,
     mentionCount: 2,

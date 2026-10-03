@@ -3,8 +3,6 @@
 package pushtoken
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -64,16 +62,6 @@ func UserID(v uuid.UUID) predicate.PushToken {
 // Token applies equality check predicate on the "token" field. It's identical to TokenEQ.
 func Token(v string) predicate.PushToken {
 	return predicate.PushToken(sql.FieldEQ(FieldToken, v))
-}
-
-// UserAgent applies equality check predicate on the "user_agent" field. It's identical to UserAgentEQ.
-func UserAgent(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldEQ(FieldUserAgent, v))
-}
-
-// LastSeenAt applies equality check predicate on the "last_seen_at" field. It's identical to LastSeenAtEQ.
-func LastSeenAt(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldEQ(FieldLastSeenAt, v))
 }
 
 // UserIDEQ applies the EQ predicate on the "user_id" field.
@@ -179,111 +167,6 @@ func PlatformIn(vs ...Platform) predicate.PushToken {
 // PlatformNotIn applies the NotIn predicate on the "platform" field.
 func PlatformNotIn(vs ...Platform) predicate.PushToken {
 	return predicate.PushToken(sql.FieldNotIn(FieldPlatform, vs...))
-}
-
-// UserAgentEQ applies the EQ predicate on the "user_agent" field.
-func UserAgentEQ(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldEQ(FieldUserAgent, v))
-}
-
-// UserAgentNEQ applies the NEQ predicate on the "user_agent" field.
-func UserAgentNEQ(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldNEQ(FieldUserAgent, v))
-}
-
-// UserAgentIn applies the In predicate on the "user_agent" field.
-func UserAgentIn(vs ...string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldIn(FieldUserAgent, vs...))
-}
-
-// UserAgentNotIn applies the NotIn predicate on the "user_agent" field.
-func UserAgentNotIn(vs ...string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldNotIn(FieldUserAgent, vs...))
-}
-
-// UserAgentGT applies the GT predicate on the "user_agent" field.
-func UserAgentGT(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldGT(FieldUserAgent, v))
-}
-
-// UserAgentGTE applies the GTE predicate on the "user_agent" field.
-func UserAgentGTE(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldGTE(FieldUserAgent, v))
-}
-
-// UserAgentLT applies the LT predicate on the "user_agent" field.
-func UserAgentLT(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldLT(FieldUserAgent, v))
-}
-
-// UserAgentLTE applies the LTE predicate on the "user_agent" field.
-func UserAgentLTE(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldLTE(FieldUserAgent, v))
-}
-
-// UserAgentContains applies the Contains predicate on the "user_agent" field.
-func UserAgentContains(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldContains(FieldUserAgent, v))
-}
-
-// UserAgentHasPrefix applies the HasPrefix predicate on the "user_agent" field.
-func UserAgentHasPrefix(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldHasPrefix(FieldUserAgent, v))
-}
-
-// UserAgentHasSuffix applies the HasSuffix predicate on the "user_agent" field.
-func UserAgentHasSuffix(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldHasSuffix(FieldUserAgent, v))
-}
-
-// UserAgentEqualFold applies the EqualFold predicate on the "user_agent" field.
-func UserAgentEqualFold(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldEqualFold(FieldUserAgent, v))
-}
-
-// UserAgentContainsFold applies the ContainsFold predicate on the "user_agent" field.
-func UserAgentContainsFold(v string) predicate.PushToken {
-	return predicate.PushToken(sql.FieldContainsFold(FieldUserAgent, v))
-}
-
-// LastSeenAtEQ applies the EQ predicate on the "last_seen_at" field.
-func LastSeenAtEQ(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldEQ(FieldLastSeenAt, v))
-}
-
-// LastSeenAtNEQ applies the NEQ predicate on the "last_seen_at" field.
-func LastSeenAtNEQ(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldNEQ(FieldLastSeenAt, v))
-}
-
-// LastSeenAtIn applies the In predicate on the "last_seen_at" field.
-func LastSeenAtIn(vs ...time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldIn(FieldLastSeenAt, vs...))
-}
-
-// LastSeenAtNotIn applies the NotIn predicate on the "last_seen_at" field.
-func LastSeenAtNotIn(vs ...time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldNotIn(FieldLastSeenAt, vs...))
-}
-
-// LastSeenAtGT applies the GT predicate on the "last_seen_at" field.
-func LastSeenAtGT(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldGT(FieldLastSeenAt, v))
-}
-
-// LastSeenAtGTE applies the GTE predicate on the "last_seen_at" field.
-func LastSeenAtGTE(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldGTE(FieldLastSeenAt, v))
-}
-
-// LastSeenAtLT applies the LT predicate on the "last_seen_at" field.
-func LastSeenAtLT(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldLT(FieldLastSeenAt, v))
-}
-
-// LastSeenAtLTE applies the LTE predicate on the "last_seen_at" field.
-func LastSeenAtLTE(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldLTE(FieldLastSeenAt, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

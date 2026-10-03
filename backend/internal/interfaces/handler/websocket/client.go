@@ -122,69 +122,35 @@ func (c *Client) writePump() {
 	}
 }
 
-// handleMessage はクライアントからのメッセージを処理します
+// handleMessage はクライアントからのメッセージを処理します。不正なイベントは無視する
 func (c *Client) handleMessage(data []byte) {
 	var event chatv1.ClientEvent
 	if err := protojson.Unmarshal(data, &event); err != nil {
-		c.sendError("PARSE_ERROR", "メッセージのパースに失敗しました")
 		return
 	}
 
 	switch e := event.Event.(type) {
 	case *chatv1.ClientEvent_JoinChannel:
-		c.handleJoinChannel(e.JoinChannel.GetChannelId())
+		if id := e.JoinChannel.GetChannelId(); id != "" && c.hub.canAccess(c, id) {
+			c.hub.subscribe(c, id)
+		}
 	case *chatv1.ClientEvent_LeaveChannel:
-		c.handleLeaveChannel(e.LeaveChannel.GetChannelId())
+		c.hub.unsubscribe(c, e.LeaveChannel.GetChannelId())
 	case *chatv1.ClientEvent_Typing:
 		c.notifyTyping(e.Typing.GetChannelId(), true)
 	case *chatv1.ClientEvent_StopTyping:
 		c.notifyTyping(e.StopTyping.GetChannelId(), false)
 	case *chatv1.ClientEvent_ViewChannel:
-		c.handleViewChannel(e.ViewChannel.GetChannelId())
-	default:
-		c.sendError("UNKNOWN_EVENT", "未知のイベントです")
+		// 空文字は閲覧をやめたことを表す
+		if id := e.ViewChannel.GetChannelId(); id == "" || c.hub.canAccess(c, id) {
+			c.hub.SetViewingChannel(c, id)
+		}
 	}
-}
-
-// handleJoinChannel はチャンネルの購読を開始します
-func (c *Client) handleJoinChannel(channelID string) {
-	if channelID == "" {
-		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
-		return
-	}
-	if !c.hub.canAccess(c, channelID) {
-		c.sendError("FORBIDDEN", "チャンネルにアクセスできません")
-		return
-	}
-	if c.hub.subscribe(c, channelID) {
-		c.sendAck("join_channel")
-	}
-}
-
-// handleLeaveChannel はチャンネルの購読を解除します
-func (c *Client) handleLeaveChannel(channelID string) {
-	if channelID == "" {
-		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
-		return
-	}
-	c.hub.unsubscribe(c, channelID)
-	c.sendAck("leave_channel")
-}
-
-// handleViewChannel は閲覧中のチャンネルを更新します。空文字は閲覧をやめたことを表します
-func (c *Client) handleViewChannel(channelID string) {
-	if channelID != "" && !c.hub.canAccess(c, channelID) {
-		c.sendError("FORBIDDEN", "チャンネルにアクセスできません")
-		return
-	}
-	c.hub.SetViewingChannel(c, channelID)
-	c.sendAck("view_channel")
 }
 
 // notifyTyping は購読中のチャンネルでだけ、入力中状態の開始・停止を他の購読者に通知します
 func (c *Client) notifyTyping(channelID string, typing bool) {
 	if !c.hub.isSubscribed(c, channelID) {
-		c.sendError("FORBIDDEN", "購読していないチャンネルです")
 		return
 	}
 	payload := &chatv1.TypingEvent{ChannelId: channelID, UserId: c.userID}
@@ -193,25 +159,4 @@ func (c *Client) notifyTyping(channelID string, typing bool) {
 		event.Event = &chatv1.ServerEvent_Typing{Typing: payload}
 	}
 	c.hub.broadcast(envelope{Target: targetChannel, WorkspaceID: c.workspaceID, ChannelID: channelID, ExcludeUserID: c.userID}, event)
-}
-
-// sendEvent は接続中のクライアントにだけイベントを送信します
-func (c *Client) sendEvent(event *chatv1.ServerEvent) {
-	data := encodeServerEvent(event)
-	if data == nil {
-		return
-	}
-	c.hub.mu.RLock()
-	defer c.hub.mu.RUnlock()
-	if c.hub.isRegistered(c) {
-		c.hub.trySend(c, data)
-	}
-}
-
-func (c *Client) sendAck(eventName string) {
-	c.sendEvent(&chatv1.ServerEvent{Event: &chatv1.ServerEvent_Ack{Ack: &chatv1.AckEvent{Event: eventName, Success: true}}})
-}
-
-func (c *Client) sendError(code string, message string) {
-	c.sendEvent(&chatv1.ServerEvent{Event: &chatv1.ServerEvent_Error{Error: &chatv1.ErrorEvent{Code: code, Message: message}}})
 }

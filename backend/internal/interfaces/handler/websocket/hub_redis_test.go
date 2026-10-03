@@ -33,7 +33,7 @@ func startReplicas(t *testing.T) (*websocket.Hub, *websocket.Hub) {
 	return hubs[0], hubs[1]
 }
 
-var testEvent = &chatv1.ServerEvent{Event: &chatv1.ServerEvent_Ack{Ack: &chatv1.AckEvent{Event: "test"}}}
+var testEvent = &chatv1.ServerEvent{Event: &chatv1.ServerEvent_Typing{Typing: &chatv1.TypingEvent{ChannelId: "test"}}}
 
 func receive(t *testing.T, c *websocket.Client) []byte {
 	t.Helper()
@@ -64,7 +64,7 @@ func TestBroadcastReachesClientsOnOtherReplicas(t *testing.T) {
 	h1.BroadcastToChannel("ws", "general", testEvent)
 	for _, c := range []*websocket.Client{alice, bob} {
 		var got chatv1.ServerEvent
-		if err := protojson.Unmarshal(receive(t, c), &got); err != nil || got.GetAck().GetEvent() != "test" {
+		if err := protojson.Unmarshal(receive(t, c), &got); err != nil || got.GetTyping().GetChannelId() != "test" {
 			t.Fatalf("配信内容が変わっています: %v %v", &got, err)
 		}
 	}

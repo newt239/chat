@@ -2,7 +2,6 @@ package message
 
 import (
 	"context"
-	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 )
@@ -30,5 +29,4 @@ type MessageDeletion struct {
 	MessageID string
 	// 親メッセージと一緒に削除されたスレッド返信も含む
 	DeletedIDs []string
-	DeletedAt  time.Time
 }

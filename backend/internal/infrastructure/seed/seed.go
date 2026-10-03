@@ -14,7 +14,6 @@ import (
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/repository"
-	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
 // developersGroupID はサンプルの本文からも参照する developers グループの ID
@@ -30,7 +29,7 @@ func AutoSeed(ctx context.Context, client *ent.Client) error {
 		return nil
 	}
 	slog.Info("データベースが空のため初期データを作成します")
-	return CreateSeedData(ctx, client, auth.PasswordService{})
+	return CreateSeedData(ctx, client)
 }
 
 type seedMessage struct {
@@ -60,7 +59,11 @@ func createReaction(ctx context.Context, client *ent.Client, messageID, userID, 
 }
 
 // CreateSeedData は空のデータベースに確認用のユーザー・ワークスペース・チャンネル・メッセージを作ります
-func CreateSeedData(ctx context.Context, client *ent.Client, passwordService authuc.PasswordService) error {
+func CreateSeedData(ctx context.Context, client *ent.Client) error {
+	passwordHash, err := auth.PasswordService{}.HashPassword("password123")
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
 	userRepo := repository.NewUserRepository(client)
 	workspaceRepo := repository.NewWorkspaceRepository(client)
 	channelRepo := repository.NewChannelRepository(client)
@@ -73,7 +76,7 @@ func CreateSeedData(ctx context.Context, client *ent.Client, passwordService aut
 		{ID: "44444444-4444-4444-4444-444444444444", Email: "diana@example.com", DisplayName: "Diana Prince"},
 	}
 	for _, user := range users {
-		user.PasswordHash = mustHashPassword(passwordService, "password123")
+		user.PasswordHash = passwordHash
 		user.AvatarURL = new("https://api.dicebear.com/7.x/avataaars/svg?seed=" + user.Email[:len(user.Email)-len("@example.com")])
 		if err := userRepo.Create(ctx, user); err != nil {
 			return fmt.Errorf("failed to create user %s: %w", user.Email, err)
@@ -99,7 +102,6 @@ func CreateSeedData(ctx context.Context, client *ent.Client, passwordService aut
 		members = append(members, entity.WorkspaceMember{WorkspaceID: ws.ID, UserID: ws.CreatedBy, Role: entity.WorkspaceRoleOwner})
 	}
 	for _, member := range members {
-		member.JoinedAt = time.Now()
 		if err := workspaceRepo.AddMember(ctx, &member); err != nil {
 			return fmt.Errorf("failed to add member to workspace %s: %w", member.WorkspaceID, err)
 		}
@@ -150,7 +152,7 @@ func CreateSeedData(ctx context.Context, client *ent.Client, passwordService aut
 		}
 	}
 	for _, m := range []struct{ group, user int }{{0, 0}, {0, 1}, {0, 3}, {1, 1}, {1, 2}, {2, 3}} {
-		member := &entity.UserGroupMember{GroupID: groups[m.group].ID, UserID: users[m.user].ID, JoinedAt: time.Now()}
+		member := &entity.UserGroupMember{GroupID: groups[m.group].ID, UserID: users[m.user].ID}
 		if err := userGroupRepo.AddMember(ctx, member); err != nil {
 			return fmt.Errorf("failed to add member to group: %w", err)
 		}
@@ -205,16 +207,13 @@ func CreateSeedData(ctx context.Context, client *ent.Client, passwordService aut
 		{MessageID: mentionMessages[2].ID, UserID: users[1].ID, ViaGroupID: developers},
 		{MessageID: mentionMessages[2].ID, UserID: users[3].ID, ViaGroupID: developers},
 	}
-	if err := repository.NewMessageUserMentionRepository(client).CreateBulk(ctx, userMentions); err != nil {
-		return fmt.Errorf("failed to create user mentions: %w", err)
-	}
 	groupMentions := []*entity.MessageGroupMention{
 		{MessageID: mentionMessages[1].ID, GroupID: groups[0].ID},
 		{MessageID: mentionMessages[2].ID, GroupID: groups[0].ID},
 		{MessageID: mentionMessages[2].ID, GroupID: groups[2].ID},
 	}
-	if err := repository.NewMessageGroupMentionRepository(client).CreateBulk(ctx, groupMentions); err != nil {
-		return fmt.Errorf("failed to create group mentions: %w", err)
+	if err := repository.NewMessageMentionRepository(client).Create(ctx, userMentions, groupMentions); err != nil {
+		return fmt.Errorf("failed to create mentions: %w", err)
 	}
 
 	linkRepo := repository.NewLinkRepository(client)
@@ -246,7 +245,7 @@ func CreateSeedData(ctx context.Context, client *ent.Client, passwordService aut
 	if err := createDisplaySamples(ctx, client, users, channels, messages, baseTime.Add(time.Duration(len(messages))*30*time.Minute)); err != nil {
 		return err
 	}
-	return createRichSamples(ctx, client, passwordService, users, channels, messages)
+	return createRichSamples(ctx, client, passwordHash, users, channels, messages)
 }
 
 // createDisplaySamples は YouTube・メッセージリンク・ピン・多数のリアクションの表示確認用データを作ります
@@ -256,7 +255,6 @@ func createDisplaySamples(ctx context.Context, client *ent.Client, users []*enti
 	}
 	youtubeURL := "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 	durationSeconds := int32(213)
-	thumbnailWidth, thumbnailHeight := int32(1280), int32(720)
 
 	samples := []struct {
 		message *entity.Message
@@ -265,12 +263,10 @@ func createDisplaySamples(ctx context.Context, client *ent.Client, users []*enti
 		{
 			message: &entity.Message{ID: "f0c00001-0000-4000-8000-000000000001", ChannelID: channels[1].ID, UserID: users[2].ID, Body: "この動画がおすすめです " + youtubeURL},
 			link: &entity.MessageLink{URL: youtubeURL, OGP: entity.OGPData{
-				Title:       new("Rick Astley - Never Gonna Give You Up (Official Video)"),
-				SiteName:    new("YouTube"),
-				ImageURL:    new("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"),
-				ImageWidth:  &thumbnailWidth,
-				ImageHeight: &thumbnailHeight,
-				YouTube:     &entity.YouTubeVideo{VideoID: "dQw4w9WgXcQ", ChannelName: new("Rick Astley"), DurationSeconds: &durationSeconds},
+				Title:    new("Rick Astley - Never Gonna Give You Up (Official Video)"),
+				SiteName: new("YouTube"),
+				ImageURL: new("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"),
+				YouTube:  &entity.YouTubeVideo{VideoID: "dQw4w9WgXcQ", ChannelName: new("Rick Astley"), DurationSeconds: &durationSeconds},
 			}},
 		},
 		{
@@ -324,14 +320,6 @@ func samplePermalink(channelID, messageID string) string {
 		appURL = "https://chat.localhost"
 	}
 	return fmt.Sprintf("%s/app/general/%s?message=%s", appURL, channelID, messageID)
-}
-
-func mustHashPassword(service authuc.PasswordService, password string) string {
-	hash, err := service.HashPassword(password)
-	if err != nil {
-		panic(fmt.Sprintf("failed to hash password: %v", err))
-	}
-	return hash
 }
 
 // createLink はメッセージへのリンクでなければプレビューを先に保存してからリンクを作ります

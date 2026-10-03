@@ -32,36 +32,14 @@ type SetFlagInput struct {
 }
 
 type ChannelOutput struct {
-	ID           string
-	WorkspaceID  string
-	Name         string
-	Description  *string
-	IsPrivate    bool
-	CreatedBy    string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	*entity.Channel
 	UnreadCount  int
 	MentionCount int
-	ParentID     *string
 	IsStarred    bool
 	IsMuted      bool
 	IsMember     bool
 	// ListChannels でだけ設定する
 	LastMessageAt *time.Time
-}
-
-func NewChannelOutput(ch *entity.Channel) ChannelOutput {
-	return ChannelOutput{
-		ID:          ch.ID,
-		WorkspaceID: ch.WorkspaceID,
-		Name:        ch.Name,
-		Description: ch.Description,
-		IsPrivate:   ch.IsPrivate(),
-		CreatedBy:   ch.CreatedBy,
-		CreatedAt:   ch.CreatedAt,
-		UpdatedAt:   ch.UpdatedAt,
-		ParentID:    ch.ParentID,
-	}
 }
 
 type BrowsableChannelOutput struct {

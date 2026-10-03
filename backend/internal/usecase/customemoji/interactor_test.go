@@ -74,7 +74,7 @@ func (r *fakeEmojiRepo) FindByWorkspaceID(_ context.Context, wsID string) ([]*en
 func (r *fakeEmojiRepo) Create(_ context.Context, e *entity.CustomEmoji) error {
 	for _, existing := range r.emojis {
 		if existing.WorkspaceID == e.WorkspaceID && existing.Name == e.Name {
-			return domerr.ErrConflict
+			return domerr.ErrCustomEmojiNameExists
 		}
 	}
 	r.emojis[e.ID] = e
@@ -122,11 +122,11 @@ type fakeNotifier struct {
 	created, deleted []string
 }
 
-func (n *fakeNotifier) NotifyCustomEmojiCreated(_ string, e Notification) {
+func (n *fakeNotifier) NotifyCustomEmojiCreated(e *entity.CustomEmoji) {
 	n.created = append(n.created, e.Name)
 }
 
-func (n *fakeNotifier) NotifyCustomEmojiDeleted(_ string, e Notification) {
+func (n *fakeNotifier) NotifyCustomEmojiDeleted(e *entity.CustomEmoji) {
 	n.deleted = append(n.deleted, e.Name)
 }
 
@@ -218,7 +218,7 @@ func TestCreate(t *testing.T) {
 		input CreateInput
 		want  error
 	}{
-		{name: "同じ名前は登録できない", input: CreateInput{WorkspaceID: workspaceID, UserID: otherID, Name: "party", UploadID: uploadID}, want: ErrNameExists},
+		{name: "同じ名前は登録できない", input: CreateInput{WorkspaceID: workspaceID, UserID: otherID, Name: "party", UploadID: uploadID}, want: domerr.ErrCustomEmojiNameExists},
 		{name: "名前の形式が不正", input: CreateInput{WorkspaceID: workspaceID, UserID: otherID, Name: "Party!", UploadID: uploadID}, want: domerr.ErrValidation},
 		{name: "ゲストは既定で登録できない", input: CreateInput{WorkspaceID: workspaceID, UserID: guestID, Name: "tada", UploadID: uploadID}, want: domerr.ErrUnauthorized},
 	}

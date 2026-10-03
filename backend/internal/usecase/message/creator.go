@@ -44,7 +44,7 @@ func (i *Interactor) CreateMessage(ctx context.Context, input CreateMessageInput
 		// スレッド返信は親メッセージの投稿者と返信者を自動フォローする
 		if parent != nil {
 			for _, userID := range []string{parent.UserID, input.UserID} {
-				if err := i.threadRepo.FollowThread(txCtx, userID, parent.ID); err != nil {
+				if err := i.threadRepo.SetFollowing(txCtx, userID, parent.ID, true); err != nil {
 					return fmt.Errorf("failed to follow thread: %w", err)
 				}
 			}

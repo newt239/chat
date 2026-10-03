@@ -40,8 +40,6 @@ type OGPData struct {
 	ImageURL    *string
 	SiteName    *string
 	CardType    *string
-	ImageWidth  *int32
-	ImageHeight *int32
 	YouTube     *YouTubeVideo
 	XPost       *XPost
 }

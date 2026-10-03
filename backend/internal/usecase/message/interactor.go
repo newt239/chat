@@ -15,11 +15,11 @@ type Interactor struct {
 	messageRepo      domainrepository.MessageRepository
 	systemMsgRepo    domainrepository.SystemMessageRepository
 	userRepo         domainrepository.UserRepository
+	workspaceRepo    domainrepository.WorkspaceRepository
 	threadRepo       domainrepository.ThreadRepository
 	attachmentRepo   domainrepository.AttachmentRepository
 	pollRepo         domainrepository.PollRepository
-	userMentionRepo  domainrepository.MessageUserMentionRepository
-	groupMentionRepo domainrepository.MessageGroupMentionRepository
+	mentionRepo      domainrepository.MessageMentionRepository
 	linkRepo         domainrepository.MessageLinkRepository
 	mentionSvc       service.MentionService
 	linkSvc          *service.LinkProcessingService
@@ -37,11 +37,11 @@ func New(
 	messageRepo domainrepository.MessageRepository,
 	systemMsgRepo domainrepository.SystemMessageRepository,
 	userRepo domainrepository.UserRepository,
+	workspaceRepo domainrepository.WorkspaceRepository,
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
 	pollRepo domainrepository.PollRepository,
-	userMentionRepo domainrepository.MessageUserMentionRepository,
-	groupMentionRepo domainrepository.MessageGroupMentionRepository,
+	mentionRepo domainrepository.MessageMentionRepository,
 	linkRepo domainrepository.MessageLinkRepository,
 	mentionSvc service.MentionService,
 	linkSvc *service.LinkProcessingService,
@@ -58,11 +58,11 @@ func New(
 		messageRepo:      messageRepo,
 		systemMsgRepo:    systemMsgRepo,
 		userRepo:         userRepo,
+		workspaceRepo:    workspaceRepo,
 		threadRepo:       threadRepo,
 		attachmentRepo:   attachmentRepo,
 		pollRepo:         pollRepo,
-		userMentionRepo:  userMentionRepo,
-		groupMentionRepo: groupMentionRepo,
+		mentionRepo:      mentionRepo,
 		linkRepo:         linkRepo,
 		mentionSvc:       mentionSvc,
 		linkSvc:          linkSvc,

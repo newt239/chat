@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/event.proto.
  */
 export const file_chat_v1_event: GenFile = /*@__PURE__*/
-  fileDesc("ChNjaGF0L3YxL2V2ZW50LnByb3RvEgdjaGF0LnYxIvsBCgtDbGllbnRFdmVudBItCgxqb2luX2NoYW5uZWwYASABKAsyFS5jaGF0LnYxLkNoYW5uZWxFdmVudEgAEi4KDWxlYXZlX2NoYW5uZWwYAiABKAsyFS5jaGF0LnYxLkNoYW5uZWxFdmVudEgAEicKBnR5cGluZxgDIAEoCzIVLmNoYXQudjEuQ2hhbm5lbEV2ZW50SAASLAoLc3RvcF90eXBpbmcYBCABKAsyFS5jaGF0LnYxLkNoYW5uZWxFdmVudEgAEi0KDHZpZXdfY2hhbm5lbBgFIAEoCzIVLmNoYXQudjEuQ2hhbm5lbEV2ZW50SABCBwoFZXZlbnQiIgoMQ2hhbm5lbEV2ZW50EhIKCmNoYW5uZWxfaWQYASABKAkipwYKC1NlcnZlckV2ZW50EiwKC25ld19tZXNzYWdlGAEgASgLMhUuY2hhdC52MS5NZXNzYWdlRXZlbnRIABIwCg9tZXNzYWdlX3VwZGF0ZWQYAiABKAsyFS5jaGF0LnYxLk1lc3NhZ2VFdmVudEgAEjcKD21lc3NhZ2VfZGVsZXRlZBgDIAEoCzIcLmNoYXQudjEuTWVzc2FnZURlbGV0ZWRFdmVudEgAEjEKDHVucmVhZF9jb3VudBgEIAEoCzIZLmNoYXQudjEuVW5yZWFkQ291bnRFdmVudEgAEigKC3Bpbl9jcmVhdGVkGAUgASgLMhEuY2hhdC52MS5QaW5FdmVudEgAEigKC3Bpbl9kZWxldGVkGAYgASgLMhEuY2hhdC52MS5QaW5FdmVudEgAEj0KFnN5c3RlbV9tZXNzYWdlX2NyZWF0ZWQYByABKAsyGy5jaGF0LnYxLlN5c3RlbU1lc3NhZ2VFdmVudEgAEjAKDnJlYWN0aW9uX2FkZGVkGAggASgLMhYuY2hhdC52MS5SZWFjdGlvbkV2ZW50SAASMgoQcmVhY3Rpb25fcmVtb3ZlZBgJIAEoCzIWLmNoYXQudjEuUmVhY3Rpb25FdmVudEgAEiYKBnR5cGluZxgKIAEoCzIULmNoYXQudjEuVHlwaW5nRXZlbnRIABIrCgtzdG9wX3R5cGluZxgLIAEoCzIULmNoYXQudjEuVHlwaW5nRXZlbnRIABIgCgNhY2sYDCABKAsyES5jaGF0LnYxLkFja0V2ZW50SAASJAoFZXJyb3IYDSABKAsyEy5jaGF0LnYxLkVycm9yRXZlbnRIABI3Cg9jaGFubmVsX3ZpZXdlcnMYDiABKAsyHC5jaGF0LnYxLkNoYW5uZWxWaWV3ZXJzRXZlbnRIABI5ChRjdXN0b21fZW1vamlfY3JlYXRlZBgPIAEoCzIZLmNoYXQudjEuQ3VzdG9tRW1vamlFdmVudEgAEjkKFGN1c3RvbV9lbW9qaV9kZWxldGVkGBAgASgLMhkuY2hhdC52MS5DdXN0b21FbW9qaUV2ZW50SABCBwoFZXZlbnQiRQoMTWVzc2FnZUV2ZW50EhIKCmNoYW5uZWxfaWQYASABKAkSIQoHbWVzc2FnZRgCIAEoCzIQLmNoYXQudjEuTWVzc2FnZSKKAQoTTWVzc2FnZURlbGV0ZWRFdmVudBISCgpjaGFubmVsX2lkGAEgASgJEhIKCm1lc3NhZ2VfaWQYAiABKAkSGwoTZGVsZXRlZF9tZXNzYWdlX2lkcxgDIAMoCRIuCgpkZWxldGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJoChBVbnJlYWRDb3VudEV2ZW50EhIKCmNoYW5uZWxfaWQYASABKAkSFAoMdW5yZWFkX2NvdW50GAIgASgFEhMKC2hhc19tZW50aW9uGAMgASgIEhUKDW1lbnRpb25fY291bnQYBCABKAUiogEKCFBpbkV2ZW50EhIKCmNoYW5uZWxfaWQYASABKAkSEgoKbWVzc2FnZV9pZBgCIAEoCRIRCglwaW5uZWRfYnkYAyABKAkSLQoJcGlubmVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCg5waW5uZWRfYnlfdXNlchgFIAEoCzIULmNoYXQudjEuVXNlclN1bW1hcnkiUQoSU3lzdGVtTWVzc2FnZUV2ZW50EhIKCmNoYW5uZWxfaWQYASABKAkSJwoHbWVzc2FnZRgCIAEoCzIWLmNoYXQudjEuU3lzdGVtTWVzc2FnZSKrAQoNUmVhY3Rpb25FdmVudBISCgpjaGFubmVsX2lkGAEgASgJEhIKCm1lc3NhZ2VfaWQYAiABKAkSDwoHdXNlcl9pZBgDIAEoCRINCgVlbW9qaRgEIAEoCRIiCgR1c2VyGAUgASgLMhQuY2hhdC52MS5Vc2VyU3VtbWFyeRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIyCgtUeXBpbmdFdmVudBISCgpjaGFubmVsX2lkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkiOwoIQWNrRXZlbnQSDQoFZXZlbnQYASABKAkSDwoHc3VjY2VzcxgCIAEoCBIPCgdtZXNzYWdlGAMgASgJIisKCkVycm9yRXZlbnQSDAoEY29kZRgBIAEoCRIPCgdtZXNzYWdlGAIgASgJIjsKE0NoYW5uZWxWaWV3ZXJzRXZlbnQSEgoKY2hhbm5lbF9pZBgBIAEoCRIQCgh1c2VyX2lkcxgCIAMoCSJIChBDdXN0b21FbW9qaUV2ZW50EhQKDHdvcmtzcGFjZV9pZBgBIAEoCRIQCghlbW9qaV9pZBgCIAEoCRIMCgRuYW1lGAMgASgJQosBCgtjb20uY2hhdC52MUIKRXZlbnRQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_chat_v1_message, file_chat_v1_user, file_google_protobuf_timestamp]);
+  fileDesc("ChNjaGF0L3YxL2V2ZW50LnByb3RvEgdjaGF0LnYxIvsBCgtDbGllbnRFdmVudBItCgxqb2luX2NoYW5uZWwYASABKAsyFS5jaGF0LnYxLkNoYW5uZWxFdmVudEgAEi4KDWxlYXZlX2NoYW5uZWwYAiABKAsyFS5jaGF0LnYxLkNoYW5uZWxFdmVudEgAEicKBnR5cGluZxgDIAEoCzIVLmNoYXQudjEuQ2hhbm5lbEV2ZW50SAASLAoLc3RvcF90eXBpbmcYBCABKAsyFS5jaGF0LnYxLkNoYW5uZWxFdmVudEgAEi0KDHZpZXdfY2hhbm5lbBgFIAEoCzIVLmNoYXQudjEuQ2hhbm5lbEV2ZW50SABCBwoFZXZlbnQiIgoMQ2hhbm5lbEV2ZW50EhIKCmNoYW5uZWxfaWQYASABKAki3wUKC1NlcnZlckV2ZW50EiwKC25ld19tZXNzYWdlGAEgASgLMhUuY2hhdC52MS5NZXNzYWdlRXZlbnRIABIwCg9tZXNzYWdlX3VwZGF0ZWQYAiABKAsyFS5jaGF0LnYxLk1lc3NhZ2VFdmVudEgAEjcKD21lc3NhZ2VfZGVsZXRlZBgDIAEoCzIcLmNoYXQudjEuTWVzc2FnZURlbGV0ZWRFdmVudEgAEjEKDHVucmVhZF9jb3VudBgEIAEoCzIZLmNoYXQudjEuVW5yZWFkQ291bnRFdmVudEgAEigKC3Bpbl9jcmVhdGVkGAUgASgLMhEuY2hhdC52MS5QaW5FdmVudEgAEigKC3Bpbl9kZWxldGVkGAYgASgLMhEuY2hhdC52MS5QaW5FdmVudEgAEj0KFnN5c3RlbV9tZXNzYWdlX2NyZWF0ZWQYByABKAsyGy5jaGF0LnYxLlN5c3RlbU1lc3NhZ2VFdmVudEgAEjAKDnJlYWN0aW9uX2FkZGVkGAggASgLMhYuY2hhdC52MS5SZWFjdGlvbkV2ZW50SAASMgoQcmVhY3Rpb25fcmVtb3ZlZBgJIAEoCzIWLmNoYXQudjEuUmVhY3Rpb25FdmVudEgAEiYKBnR5cGluZxgKIAEoCzIULmNoYXQudjEuVHlwaW5nRXZlbnRIABIrCgtzdG9wX3R5cGluZxgLIAEoCzIULmNoYXQudjEuVHlwaW5nRXZlbnRIABI3Cg9jaGFubmVsX3ZpZXdlcnMYDiABKAsyHC5jaGF0LnYxLkNoYW5uZWxWaWV3ZXJzRXZlbnRIABI5ChRjdXN0b21fZW1vamlfY3JlYXRlZBgPIAEoCzIZLmNoYXQudjEuQ3VzdG9tRW1vamlFdmVudEgAEjkKFGN1c3RvbV9lbW9qaV9kZWxldGVkGBAgASgLMhkuY2hhdC52MS5DdXN0b21FbW9qaUV2ZW50SABCBwoFZXZlbnQiRQoMTWVzc2FnZUV2ZW50EhIKCmNoYW5uZWxfaWQYASABKAkSIQoHbWVzc2FnZRgCIAEoCzIQLmNoYXQudjEuTWVzc2FnZSJaChNNZXNzYWdlRGVsZXRlZEV2ZW50EhIKCmNoYW5uZWxfaWQYASABKAkSEgoKbWVzc2FnZV9pZBgCIAEoCRIbChNkZWxldGVkX21lc3NhZ2VfaWRzGAMgAygJIlMKEFVucmVhZENvdW50RXZlbnQSEgoKY2hhbm5lbF9pZBgBIAEoCRIUCgx1bnJlYWRfY291bnQYAiABKAUSFQoNbWVudGlvbl9jb3VudBgEIAEoBSKiAQoIUGluRXZlbnQSEgoKY2hhbm5lbF9pZBgBIAEoCRISCgptZXNzYWdlX2lkGAIgASgJEhEKCXBpbm5lZF9ieRgDIAEoCRItCglwaW5uZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiwKDnBpbm5lZF9ieV91c2VyGAUgASgLMhQuY2hhdC52MS5Vc2VyU3VtbWFyeSJRChJTeXN0ZW1NZXNzYWdlRXZlbnQSEgoKY2hhbm5lbF9pZBgBIAEoCRInCgdtZXNzYWdlGAIgASgLMhYuY2hhdC52MS5TeXN0ZW1NZXNzYWdlIqsBCg1SZWFjdGlvbkV2ZW50EhIKCmNoYW5uZWxfaWQYASABKAkSEgoKbWVzc2FnZV9pZBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJEg0KBWVtb2ppGAQgASgJEiIKBHVzZXIYBSABKAsyFC5jaGF0LnYxLlVzZXJTdW1tYXJ5Ei4KCmNyZWF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjIKC1R5cGluZ0V2ZW50EhIKCmNoYW5uZWxfaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCSI7ChNDaGFubmVsVmlld2Vyc0V2ZW50EhIKCmNoYW5uZWxfaWQYASABKAkSEAoIdXNlcl9pZHMYAiADKAkiSAoQQ3VzdG9tRW1vamlFdmVudBIUCgx3b3Jrc3BhY2VfaWQYASABKAkSEAoIZW1vamlfaWQYAiABKAkSDAoEbmFtZRgDIAEoCUKLAQoLY29tLmNoYXQudjFCCkV2ZW50UHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_chat_v1_message, file_chat_v1_user, file_google_protobuf_timestamp]);
 
 /**
  * WebSocket でクライアントからサーバーへ送るイベント
@@ -163,18 +163,6 @@ export type ServerEvent = Message<"chat.v1.ServerEvent"> & {
     case: "stopTyping";
   } | {
     /**
-     * @generated from field: chat.v1.AckEvent ack = 12;
-     */
-    value: AckEvent;
-    case: "ack";
-  } | {
-    /**
-     * @generated from field: chat.v1.ErrorEvent error = 13;
-     */
-    value: ErrorEvent;
-    case: "error";
-  } | {
-    /**
      * @generated from field: chat.v1.ChannelViewersEvent channel_viewers = 14;
      */
     value: ChannelViewersEvent;
@@ -245,11 +233,6 @@ export type MessageDeletedEvent = Message<"chat.v1.MessageDeletedEvent"> & {
    * @generated from field: repeated string deleted_message_ids = 3;
    */
   deletedMessageIds: string[];
-
-  /**
-   * @generated from field: google.protobuf.Timestamp deleted_at = 4;
-   */
-  deletedAt?: Timestamp | undefined;
 };
 
 /**
@@ -272,11 +255,6 @@ export type UnreadCountEvent = Message<"chat.v1.UnreadCountEvent"> & {
    * @generated from field: int32 unread_count = 2;
    */
   unreadCount: number;
-
-  /**
-   * @generated from field: bool has_mention = 3;
-   */
-  hasMention: boolean;
 
   /**
    * @generated from field: int32 mention_count = 4;
@@ -419,57 +397,6 @@ export const TypingEventSchema: GenMessage<TypingEvent> = /*@__PURE__*/
   messageDesc(file_chat_v1_event, 9);
 
 /**
- * @generated from message chat.v1.AckEvent
- */
-export type AckEvent = Message<"chat.v1.AckEvent"> & {
-  /**
-   * 応答対象のクライアントイベント名 (join_channel など)
-   *
-   * @generated from field: string event = 1;
-   */
-  event: string;
-
-  /**
-   * @generated from field: bool success = 2;
-   */
-  success: boolean;
-
-  /**
-   * @generated from field: string message = 3;
-   */
-  message: string;
-};
-
-/**
- * Describes the message chat.v1.AckEvent.
- * Use `create(AckEventSchema)` to create a new message.
- */
-export const AckEventSchema: GenMessage<AckEvent> = /*@__PURE__*/
-  messageDesc(file_chat_v1_event, 10);
-
-/**
- * @generated from message chat.v1.ErrorEvent
- */
-export type ErrorEvent = Message<"chat.v1.ErrorEvent"> & {
-  /**
-   * @generated from field: string code = 1;
-   */
-  code: string;
-
-  /**
-   * @generated from field: string message = 2;
-   */
-  message: string;
-};
-
-/**
- * Describes the message chat.v1.ErrorEvent.
- * Use `create(ErrorEventSchema)` to create a new message.
- */
-export const ErrorEventSchema: GenMessage<ErrorEvent> = /*@__PURE__*/
-  messageDesc(file_chat_v1_event, 11);
-
-/**
  * チャンネルを閲覧中のユーザー一覧
  *
  * @generated from message chat.v1.ChannelViewersEvent
@@ -491,7 +418,7 @@ export type ChannelViewersEvent = Message<"chat.v1.ChannelViewersEvent"> & {
  * Use `create(ChannelViewersEventSchema)` to create a new message.
  */
 export const ChannelViewersEventSchema: GenMessage<ChannelViewersEvent> = /*@__PURE__*/
-  messageDesc(file_chat_v1_event, 12);
+  messageDesc(file_chat_v1_event, 10);
 
 /**
  * カスタム絵文字の登録・削除
@@ -520,5 +447,5 @@ export type CustomEmojiEvent = Message<"chat.v1.CustomEmojiEvent"> & {
  * Use `create(CustomEmojiEventSchema)` to create a new message.
  */
 export const CustomEmojiEventSchema: GenMessage<CustomEmojiEvent> = /*@__PURE__*/
-  messageDesc(file_chat_v1_event, 13);
+  messageDesc(file_chat_v1_event, 11);
 

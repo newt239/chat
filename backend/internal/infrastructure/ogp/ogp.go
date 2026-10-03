@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -147,8 +146,6 @@ func buildOGPData(meta map[string]string, baseURL *url.URL) *entity.OGPData {
 		ImageURL:    resolveURL(firstOf(meta, "og:image", "og:image:url", "twitter:image"), baseURL),
 		SiteName:    firstOf(meta, "og:site_name"),
 		CardType:    firstOf(meta, "twitter:card"),
-		ImageWidth:  parseInt32(meta["og:image:width"]),
-		ImageHeight: parseInt32(meta["og:image:height"]),
 	}
 }
 
@@ -166,15 +163,6 @@ func nonEmpty(s string) *string {
 		return nil
 	}
 	return &s
-}
-
-func parseInt32(s string) *int32 {
-	v, err := strconv.ParseInt(s, 10, 32)
-	if err != nil || v <= 0 {
-		return nil
-	}
-	n := int32(v)
-	return &n
 }
 
 func resolveURL(urlStr *string, baseURL *url.URL) *string {

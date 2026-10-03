@@ -21,7 +21,6 @@ var errorCodes = []struct {
 	{domerr.ErrAlreadyExists, connect.CodeAlreadyExists},
 	{domerr.ErrValidation, connect.CodeInvalidArgument},
 	{domerr.ErrFailedPrecondition, connect.CodeFailedPrecondition},
-	{domerr.ErrConflict, connect.CodeAborted},
 }
 
 func toConnectError(ctx context.Context, procedure string, err error) *connect.Error {

@@ -14,17 +14,19 @@ import (
 )
 
 var (
-	ErrMemberNotFound       = domerr.New(domerr.ErrNotFound, "メンバーが見つかりません")
-	ErrCannotSuspendOwner   = domerr.New(domerr.ErrFailedPrecondition, "オーナーは停止できません")
-	ErrCannotSuspendSelf    = domerr.New(domerr.ErrFailedPrecondition, "自分自身は停止できません")
-	ErrInvalidPermission    = domerr.New(domerr.ErrValidation, "無効な権限の指定です")
-	ErrOwnerOnlyPermissions = domerr.New(domerr.ErrUnauthorized, "管理者の権限はオーナーだけが変更できます")
+	ErrMemberNotFound        = domerr.New(domerr.ErrNotFound, "メンバーが見つかりません")
+	ErrCannotSuspendOwner    = domerr.New(domerr.ErrFailedPrecondition, "オーナーは停止できません")
+	ErrCannotSuspendSelf     = domerr.New(domerr.ErrFailedPrecondition, "自分自身は停止できません")
+	ErrInvalidPermission     = domerr.New(domerr.ErrValidation, "無効な権限の指定です")
+	ErrOwnerOnlyPermissions  = domerr.New(domerr.ErrUnauthorized, "管理者の権限はオーナーだけが変更できます")
+	ErrCannotRemoveOwner     = domerr.New(domerr.ErrFailedPrecondition, "ワークスペースのオーナーは削除できません")
+	ErrCannotChangeOwnerRole = domerr.New(domerr.ErrFailedPrecondition, "オーナーのロールは変更できません")
 )
 
 // activityPeriod は管理画面に出すメンバーの投稿数を数える期間です
 const activityPeriod = 30 * 24 * time.Hour
 
-// MemberCloser は停止したメンバーのリアルタイム接続を切ります
+// MemberCloser は停止したり外したりしたメンバーのリアルタイム接続を切ります
 type MemberCloser interface {
 	CloseWorkspaceUser(workspaceID, userID string)
 }
@@ -95,7 +97,6 @@ func (i *Interactor) ListMembers(ctx context.Context, input WorkspaceInput) ([]M
 		out := MemberOutput{
 			UserID:      m.UserID,
 			Role:        m.Role,
-			JoinedAt:    m.JoinedAt,
 			SuspendedAt: m.SuspendedAt,
 			LastLogin:   sessions[m.UserID],
 			Activity:    activities[m.UserID],
@@ -128,7 +129,7 @@ func (i *Interactor) SuspendMember(ctx context.Context, input MemberActionInput)
 	// 他のワークスペースでは使い続けられるようセッションは失効させず、このワークスペースの接続だけを切る
 	i.memberCloser.CloseWorkspaceUser(input.WorkspaceID, input.TargetUserID)
 
-	i.recordMemberAction(ctx, input, target.label, entity.AuditActionMemberSuspended)
+	i.recordMemberAction(ctx, input, target.label, entity.AuditActionMemberSuspended, nil)
 	return nil
 }
 
@@ -141,17 +142,56 @@ func (i *Interactor) ResumeMember(ctx context.Context, input MemberActionInput) 
 		return fmt.Errorf("failed to resume member: %w", err)
 	}
 
-	i.recordMemberAction(ctx, input, target.label, entity.AuditActionMemberResumed)
+	i.recordMemberAction(ctx, input, target.label, entity.AuditActionMemberResumed, nil)
+	return nil
+}
+
+func (i *Interactor) UpdateMemberRole(ctx context.Context, input UpdateMemberRoleInput) error {
+	switch input.Role {
+	case entity.WorkspaceRoleOwner, entity.WorkspaceRoleAdmin, entity.WorkspaceRoleMember, entity.WorkspaceRoleGuest:
+	default:
+		return domerr.ErrInvalidRole
+	}
+	target, err := i.findTarget(ctx, input.MemberActionInput)
+	if err != nil {
+		return err
+	}
+	// owner の降格と owner への昇格は owner 本人にのみ許可する
+	isOwnerChange := target.member.Role == entity.WorkspaceRoleOwner || input.Role == entity.WorkspaceRoleOwner
+	if (isOwnerChange && target.operator.Role != entity.WorkspaceRoleOwner) || input.TargetUserID == input.OperatorID {
+		return ErrCannotChangeOwnerRole
+	}
+	if err := i.workspaceRepo.UpdateMemberRole(ctx, input.WorkspaceID, input.TargetUserID, input.Role); err != nil {
+		return fmt.Errorf("failed to update member role: %w", err)
+	}
+	i.recordMemberAction(ctx, input.MemberActionInput, target.label, entity.AuditActionMemberRoleChanged, map[string]string{"from": string(target.member.Role), "to": string(input.Role)})
+	return nil
+}
+
+func (i *Interactor) RemoveMember(ctx context.Context, input MemberActionInput) error {
+	target, err := i.findTarget(ctx, input)
+	if err != nil {
+		return err
+	}
+	if target.member.Role == entity.WorkspaceRoleOwner {
+		return ErrCannotRemoveOwner
+	}
+	if err := i.workspaceRepo.RemoveMember(ctx, input.WorkspaceID, input.TargetUserID); err != nil {
+		return fmt.Errorf("failed to remove member: %w", err)
+	}
+	i.memberCloser.CloseWorkspaceUser(input.WorkspaceID, input.TargetUserID)
 	return nil
 }
 
 type memberTarget struct {
-	member *entity.WorkspaceMember
-	label  string
+	operator *entity.WorkspaceMember
+	member   *entity.WorkspaceMember
+	label    string
 }
 
 func (i *Interactor) findTarget(ctx context.Context, input MemberActionInput) (*memberTarget, error) {
-	if _, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.OperatorID); err != nil {
+	operator, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.OperatorID)
+	if err != nil {
 		return nil, err
 	}
 	member, err := i.workspaceRepo.FindMemberIncludingSuspended(ctx, input.WorkspaceID, input.TargetUserID)
@@ -169,10 +209,10 @@ func (i *Interactor) findTarget(ctx context.Context, input MemberActionInput) (*
 	if user != nil {
 		label = user.DisplayName
 	}
-	return &memberTarget{member: member, label: label}, nil
+	return &memberTarget{operator: operator, member: member, label: label}, nil
 }
 
-func (i *Interactor) recordMemberAction(ctx context.Context, input MemberActionInput, label string, action entity.AuditAction) {
+func (i *Interactor) recordMemberAction(ctx context.Context, input MemberActionInput, label string, action entity.AuditAction, metadata map[string]string) {
 	i.recorder.Record(ctx, entity.AuditLog{
 		WorkspaceID: input.WorkspaceID,
 		ActorID:     &input.OperatorID,
@@ -180,5 +220,6 @@ func (i *Interactor) recordMemberAction(ctx context.Context, input MemberActionI
 		TargetType:  entity.AuditTargetUser,
 		TargetID:    input.TargetUserID,
 		TargetLabel: label,
+		Metadata:    metadata,
 	})
 }

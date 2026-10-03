@@ -5,11 +5,10 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
-	authuc "github.com/newt239/chat/internal/usecase/auth"
 	usergroupuc "github.com/newt239/chat/internal/usecase/usergroup"
 )
 
-func AuthUser(u authuc.UserInfo) *chatv1.User {
+func AuthUser(u *entity.User) *chatv1.User {
 	return &chatv1.User{Id: u.ID, Email: u.Email, DisplayName: u.DisplayName, AvatarUrl: u.AvatarURL}
 }
 
@@ -77,5 +76,5 @@ func UserGroup(g *entity.UserGroup) *chatv1.UserGroup {
 }
 
 func UserGroupMember(m usergroupuc.MemberOutput) *chatv1.UserGroupMember {
-	return &chatv1.UserGroupMember{UserId: m.UserID, DisplayName: m.DisplayName, AvatarUrl: m.AvatarURL, JoinedAt: timestamppb.New(m.JoinedAt)}
+	return &chatv1.UserGroupMember{UserId: m.UserID, DisplayName: m.DisplayName, AvatarUrl: m.AvatarURL}
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
@@ -31,7 +30,6 @@ type MemberInput struct {
 type MemberOutput struct {
 	UserID      string
 	Role        entity.ChannelRole
-	JoinedAt    time.Time
 	DisplayName string
 	Email       string
 	AvatarURL   *string
@@ -76,7 +74,7 @@ func New(
 }
 
 func (i *Interactor) recordSystemMessage(ctx context.Context, ch *entity.Channel, kind entity.SystemMessageKind, actorID, targetUserID string) {
-	i.systemMessages.Record(ctx, ch, kind, actorID, map[string]any{"actorId": actorID, "userId": targetUserID})
+	i.systemMessages.Record(ctx, ch, kind, actorID, map[string]any{"userId": targetUserID})
 }
 
 // ensureCanManageMembers は招待・削除・ロール変更を行えるのがワークスペースの管理者とチャンネルの作成者だけであることを確かめます
@@ -143,7 +141,6 @@ func (i *Interactor) ListMembers(ctx context.Context, channelID, userID string) 
 			outputs = append(outputs, MemberOutput{
 				UserID:      m.UserID,
 				Role:        m.Role,
-				JoinedAt:    m.JoinedAt,
 				DisplayName: user.DisplayName,
 				Email:       user.Email,
 				AvatarURL:   user.AvatarURL,

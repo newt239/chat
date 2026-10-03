@@ -24,12 +24,7 @@ type ThreadPanelProps = {
 };
 
 const renderMessage = (message: Message, isHighlighted: boolean) => (
-  <MessageItem
-    message={message}
-    threadMetadata={undefined}
-    isHighlighted={isHighlighted}
-    channelChip={null}
-  />
+  <MessageItem message={message} isHighlighted={isHighlighted} channelChip={null} />
 );
 
 export const ThreadPanel = ({ channelId, threadId }: ThreadPanelProps) => {

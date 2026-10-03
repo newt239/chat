@@ -6,8 +6,7 @@ import "buf/validate/validate.proto";
 import "chat/v1/user.proto";
 import "google/protobuf/timestamp.proto";
 
-// ワークスペースのカスタム絵文字。メンバー全員が参照でき、登録は権限の設定に従う。削除は登録者と管理者だけができる。
-// 登録は PresignCustomEmojiUpload で得た URL に画像を PUT してから CreateCustomEmoji を呼ぶ
+// カスタム絵文字。PresignCustomEmojiUpload の URL に画像を PUT してから CreateCustomEmoji で登録する
 service CustomEmojiService {
   rpc ListCustomEmojis(ListCustomEmojisRequest) returns (ListCustomEmojisResponse);
   rpc PresignCustomEmojiUpload(PresignCustomEmojiUploadRequest) returns (PresignCustomEmojiUploadResponse);

@@ -1,4 +1,4 @@
-package thread
+package message
 
 import (
 	"cmp"
@@ -8,20 +8,16 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	domainservice "github.com/newt239/chat/internal/domain/service"
-	"github.com/newt239/chat/internal/usecase/message"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
-const (
-	defaultLimit = 20
-	maxLimit     = 100
-)
+const defaultThreadLimit = 20
 
 type ParticipatingThreadOutput struct {
 	ThreadID       string
 	ChannelID      string
-	FirstMessage   message.MessageOutput
-	LatestReplies  []message.MessageOutput
+	FirstMessage   MessageOutput
+	LatestReplies  []MessageOutput
 	ReplyCount     int
 	LastActivityAt time.Time
 	UnreadCount    int
@@ -33,33 +29,12 @@ type ListParticipatingThreadsOutput struct {
 	NextCursor *domainrepository.ThreadCursor
 }
 
-type Interactor struct {
-	threadRepo           domainrepository.ThreadRepository
-	workspaceRepo        domainrepository.WorkspaceRepository
-	channelAccessSvc     domainservice.ChannelAccessService
-	messageOutputBuilder *message.MessageOutputBuilder
-}
-
-func New(
-	threadRepo domainrepository.ThreadRepository,
-	workspaceRepo domainrepository.WorkspaceRepository,
-	channelAccessSvc domainservice.ChannelAccessService,
-	messageOutputBuilder *message.MessageOutputBuilder,
-) *Interactor {
-	return &Interactor{
-		threadRepo:           threadRepo,
-		workspaceRepo:        workspaceRepo,
-		channelAccessSvc:     channelAccessSvc,
-		messageOutputBuilder: messageOutputBuilder,
-	}
-}
-
 // ListParticipatingThreads はフォロー中・返信した・返信でメンションされたスレッドを最終アクティビティの新しい順に返します
 func (i *Interactor) ListParticipatingThreads(ctx context.Context, input domainrepository.FindParticipatingThreadsInput) (*ListParticipatingThreadsOutput, error) {
-	if _, err := domainservice.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID); err != nil {
+	if _, err := service.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID); err != nil {
 		return nil, err
 	}
-	input.Limit = min(cmp.Or(input.Limit, defaultLimit), maxLimit)
+	input.Limit = min(cmp.Or(input.Limit, defaultThreadLimit), maxMessageLimit)
 	result, err := i.threadRepo.FindParticipatingThreads(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find participating threads: %w", err)
@@ -77,7 +52,7 @@ func (i *Interactor) ListParticipatingThreads(ctx context.Context, input domainr
 	if err != nil {
 		return nil, fmt.Errorf("failed to find followed threads: %w", err)
 	}
-	outputs, err := i.messageOutputBuilder.Build(ctx, input.UserID, messages)
+	outputs, err := i.outputBuilder.Build(ctx, input.UserID, messages)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build message outputs: %w", err)
 	}
@@ -115,11 +90,7 @@ func (i *Interactor) SetFollowing(ctx context.Context, threadID, userID string, 
 	if _, _, err := i.channelAccessSvc.EnsureMessageAccess(ctx, threadID, userID); err != nil {
 		return err
 	}
-	update := i.threadRepo.UnfollowThread
-	if following {
-		update = i.threadRepo.FollowThread
-	}
-	if err := update(ctx, userID, threadID); err != nil {
+	if err := i.threadRepo.SetFollowing(ctx, userID, threadID, following); err != nil {
 		return fmt.Errorf("failed to update thread follow: %w", err)
 	}
 	return nil

@@ -4,11 +4,12 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
+	messageuc "github.com/newt239/chat/internal/usecase/message"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 )
 
-func PinnedMessage(p pinuc.PinnedMessageOutput) *chatv1.PinnedMessage {
-	return &chatv1.PinnedMessage{Message: Message(p.Message), PinnedBy: p.PinnedBy, PinnedAt: timestamppb.New(p.PinnedAt)}
+func PinnedMessage(m messageuc.MessageOutput) *chatv1.PinnedMessage {
+	return &chatv1.PinnedMessage{Message: Message(m), PinnedBy: m.Pin.PinnedBy.ID, PinnedAt: timestamppb.New(m.Pin.PinnedAt)}
 }
 
 func PinEvent(channelID string, p pinuc.PinNotification) *chatv1.PinEvent {

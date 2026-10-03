@@ -10,7 +10,6 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -79,7 +78,6 @@ type ChannelMember struct {
 	DisplayName   string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	AvatarUrl     *string                `protobuf:"bytes,4,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
 	Role          ChannelRole            `protobuf:"varint,5,opt,name=role,proto3,enum=chat.v1.ChannelRole" json:"role,omitempty"`
-	JoinedAt      *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -147,13 +145,6 @@ func (x *ChannelMember) GetRole() ChannelRole {
 		return x.Role
 	}
 	return ChannelRole_CHANNEL_ROLE_UNSPECIFIED
-}
-
-func (x *ChannelMember) GetJoinedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.JoinedAt
-	}
-	return nil
 }
 
 type ListChannelMembersRequest struct {
@@ -689,15 +680,14 @@ var File_chat_v1_channel_member_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_channel_member_service_proto_rawDesc = "" +
 	"\n" +
-	"$chat/v1/channel_member_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf7\x01\n" +
+	"$chat/v1/channel_member_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"\xbe\x01\n" +
 	"\rChannelMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
 	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\x12\"\n" +
 	"\n" +
 	"avatar_url\x18\x04 \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x12(\n" +
-	"\x04role\x18\x05 \x01(\x0e2\x14.chat.v1.ChannelRoleR\x04role\x127\n" +
-	"\tjoined_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\bjoinedAtB\r\n" +
+	"\x04role\x18\x05 \x01(\x0e2\x14.chat.v1.ChannelRoleR\x04roleB\r\n" +
 	"\v_avatar_url\"D\n" +
 	"\x19ListChannelMembersRequest\x12'\n" +
 	"\n" +
@@ -772,31 +762,29 @@ var file_chat_v1_channel_member_service_proto_goTypes = []any{
 	(*RemoveChannelMemberResponse)(nil),     // 11: chat.v1.RemoveChannelMemberResponse
 	(*UpdateChannelMemberRoleRequest)(nil),  // 12: chat.v1.UpdateChannelMemberRoleRequest
 	(*UpdateChannelMemberRoleResponse)(nil), // 13: chat.v1.UpdateChannelMemberRoleResponse
-	(*timestamppb.Timestamp)(nil),           // 14: google.protobuf.Timestamp
 }
 var file_chat_v1_channel_member_service_proto_depIdxs = []int32{
 	0,  // 0: chat.v1.ChannelMember.role:type_name -> chat.v1.ChannelRole
-	14, // 1: chat.v1.ChannelMember.joined_at:type_name -> google.protobuf.Timestamp
-	1,  // 2: chat.v1.ListChannelMembersResponse.members:type_name -> chat.v1.ChannelMember
-	0,  // 3: chat.v1.InviteChannelMemberRequest.role:type_name -> chat.v1.ChannelRole
-	0,  // 4: chat.v1.UpdateChannelMemberRoleRequest.role:type_name -> chat.v1.ChannelRole
-	2,  // 5: chat.v1.ChannelMemberService.ListChannelMembers:input_type -> chat.v1.ListChannelMembersRequest
-	4,  // 6: chat.v1.ChannelMemberService.InviteChannelMember:input_type -> chat.v1.InviteChannelMemberRequest
-	6,  // 7: chat.v1.ChannelMemberService.JoinChannel:input_type -> chat.v1.JoinChannelRequest
-	8,  // 8: chat.v1.ChannelMemberService.LeaveChannel:input_type -> chat.v1.LeaveChannelRequest
-	10, // 9: chat.v1.ChannelMemberService.RemoveChannelMember:input_type -> chat.v1.RemoveChannelMemberRequest
-	12, // 10: chat.v1.ChannelMemberService.UpdateChannelMemberRole:input_type -> chat.v1.UpdateChannelMemberRoleRequest
-	3,  // 11: chat.v1.ChannelMemberService.ListChannelMembers:output_type -> chat.v1.ListChannelMembersResponse
-	5,  // 12: chat.v1.ChannelMemberService.InviteChannelMember:output_type -> chat.v1.InviteChannelMemberResponse
-	7,  // 13: chat.v1.ChannelMemberService.JoinChannel:output_type -> chat.v1.JoinChannelResponse
-	9,  // 14: chat.v1.ChannelMemberService.LeaveChannel:output_type -> chat.v1.LeaveChannelResponse
-	11, // 15: chat.v1.ChannelMemberService.RemoveChannelMember:output_type -> chat.v1.RemoveChannelMemberResponse
-	13, // 16: chat.v1.ChannelMemberService.UpdateChannelMemberRole:output_type -> chat.v1.UpdateChannelMemberRoleResponse
-	11, // [11:17] is the sub-list for method output_type
-	5,  // [5:11] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	1,  // 1: chat.v1.ListChannelMembersResponse.members:type_name -> chat.v1.ChannelMember
+	0,  // 2: chat.v1.InviteChannelMemberRequest.role:type_name -> chat.v1.ChannelRole
+	0,  // 3: chat.v1.UpdateChannelMemberRoleRequest.role:type_name -> chat.v1.ChannelRole
+	2,  // 4: chat.v1.ChannelMemberService.ListChannelMembers:input_type -> chat.v1.ListChannelMembersRequest
+	4,  // 5: chat.v1.ChannelMemberService.InviteChannelMember:input_type -> chat.v1.InviteChannelMemberRequest
+	6,  // 6: chat.v1.ChannelMemberService.JoinChannel:input_type -> chat.v1.JoinChannelRequest
+	8,  // 7: chat.v1.ChannelMemberService.LeaveChannel:input_type -> chat.v1.LeaveChannelRequest
+	10, // 8: chat.v1.ChannelMemberService.RemoveChannelMember:input_type -> chat.v1.RemoveChannelMemberRequest
+	12, // 9: chat.v1.ChannelMemberService.UpdateChannelMemberRole:input_type -> chat.v1.UpdateChannelMemberRoleRequest
+	3,  // 10: chat.v1.ChannelMemberService.ListChannelMembers:output_type -> chat.v1.ListChannelMembersResponse
+	5,  // 11: chat.v1.ChannelMemberService.InviteChannelMember:output_type -> chat.v1.InviteChannelMemberResponse
+	7,  // 12: chat.v1.ChannelMemberService.JoinChannel:output_type -> chat.v1.JoinChannelResponse
+	9,  // 13: chat.v1.ChannelMemberService.LeaveChannel:output_type -> chat.v1.LeaveChannelResponse
+	11, // 14: chat.v1.ChannelMemberService.RemoveChannelMember:output_type -> chat.v1.RemoveChannelMemberResponse
+	13, // 15: chat.v1.ChannelMemberService.UpdateChannelMemberRole:output_type -> chat.v1.UpdateChannelMemberRoleResponse
+	10, // [10:16] is the sub-list for method output_type
+	4,  // [4:10] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_channel_member_service_proto_init() }

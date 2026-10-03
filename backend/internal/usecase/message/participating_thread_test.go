@@ -1,4 +1,4 @@
-package thread
+package message
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
-	"github.com/newt239/chat/internal/usecase/message"
 )
 
 type stubListThreadRepo struct {
@@ -27,72 +26,12 @@ func (r *stubListThreadRepo) FindParticipatingThreads(_ context.Context, _ domai
 	return r.output, nil
 }
 
-type stubReactionRepo struct {
-	domainrepository.MessageRepository
-}
-
-func (stubReactionRepo) FindReactionsByMessageIDs(_ context.Context, _ []string) (map[string][]*entity.MessageReaction, error) {
-	return map[string][]*entity.MessageReaction{}, nil
-}
-
-type stubUserRepo struct {
-	domainrepository.UserRepository
-}
-
-func (stubUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*entity.User, error) {
-	users := make(map[string]*entity.User, len(ids))
-	for _, id := range ids {
-		users[id] = &entity.User{ID: id, DisplayName: "name-" + id}
-	}
-	return users, nil
-}
-
 type stubWorkspaceRepo struct {
 	domainrepository.WorkspaceRepository
 }
 
 func (stubWorkspaceRepo) FindMember(_ context.Context, workspaceID, userID string) (*entity.WorkspaceMember, error) {
 	return &entity.WorkspaceMember{WorkspaceID: workspaceID, UserID: userID}, nil
-}
-
-type stubUserMentionRepo struct {
-	domainrepository.MessageUserMentionRepository
-}
-
-func (stubUserMentionRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.MessageUserMention, error) {
-	return nil, nil
-}
-
-type stubGroupMentionRepo struct {
-	domainrepository.MessageGroupMentionRepository
-}
-
-func (stubGroupMentionRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.MessageGroupMention, error) {
-	return nil, nil
-}
-
-type stubLinkRepo struct {
-	domainrepository.MessageLinkRepository
-}
-
-func (stubLinkRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.MessageLink, error) {
-	return nil, nil
-}
-
-type stubPinRepo struct {
-	domainrepository.PinRepository
-}
-
-func (stubPinRepo) FindByMessageIDs(_ context.Context, _ []string) (map[string]*entity.MessagePin, error) {
-	return map[string]*entity.MessagePin{}, nil
-}
-
-type stubAttachmentRepo struct {
-	domainrepository.AttachmentRepository
-}
-
-func (stubAttachmentRepo) FindByMessageIDs(_ context.Context, _ []string) (map[string][]*entity.Attachment, error) {
-	return map[string][]*entity.Attachment{}, nil
 }
 
 func TestListParticipatingThreadsBuildsMessages(t *testing.T) {
@@ -102,12 +41,11 @@ func TestListParticipatingThreadsBuildsMessages(t *testing.T) {
 		{ThreadID: "t2", FirstMessage: msg("t2", "u2"), LatestReplies: []*entity.Message{}},
 		{ThreadID: "t3", FirstMessage: msg("t3", "u3"), LatestReplies: []*entity.Message{msg("r3", "u1")}},
 	}}}
-	builder := message.NewMessageOutputBuilder(
-		stubReactionRepo{}, stubUserRepo{}, nil, stubUserMentionRepo{}, stubGroupMentionRepo{}, stubLinkRepo{}, stubAttachmentRepo{},
-		stubPinRepo{}, stubPollRepo{}, nil,
-	)
+	users := &builderUserRepo{users: []*entity.User{{ID: "u1", DisplayName: "u1"}, {ID: "u2", DisplayName: "u2"}, {ID: "u3", DisplayName: "u3"}}}
+	builder := NewMessageOutputBuilder(&builderMessageRepo{}, users, nil, builderMentionRepo{}, &builderLinkRepo{}, &builderAttachmentRepo{}, &builderPinRepo{}, builderPollRepo{}, nil)
+	uc := &Interactor{threadRepo: threadRepo, workspaceRepo: stubWorkspaceRepo{}, outputBuilder: builder}
 
-	out, err := New(threadRepo, stubWorkspaceRepo{}, nil, builder).ListParticipatingThreads(context.Background(), domainrepository.FindParticipatingThreadsInput{})
+	out, err := uc.ListParticipatingThreads(context.Background(), domainrepository.FindParticipatingThreadsInput{})
 	if err != nil {
 		t.Fatalf("取得に失敗しました: %v", err)
 	}
@@ -133,18 +71,6 @@ func TestListParticipatingThreadsBuildsMessages(t *testing.T) {
 	}
 }
 
-type stubPollRepo struct {
-	domainrepository.PollRepository
-}
-
-func (stubPollRepo) FindByMessageIDs(context.Context, []string) (map[string]*entity.Poll, error) {
-	return map[string]*entity.Poll{}, nil
-}
-
-func (stubPollRepo) FindVotesByPollIDs(context.Context, []string) ([]*entity.PollVote, error) {
-	return []*entity.PollVote{}, nil
-}
-
 type stubChannelAccessService struct {
 	service.ChannelAccessService
 	err error
@@ -168,7 +94,7 @@ func (r *stubThreadRepo) UpsertReadState(context.Context, string, string, time.T
 	return nil
 }
 
-func (r *stubThreadRepo) FollowThread(context.Context, string, string) error {
+func (r *stubThreadRepo) SetFollowing(context.Context, string, string, bool) error {
 	r.followCalls++
 	return nil
 }
@@ -176,7 +102,7 @@ func (r *stubThreadRepo) FollowThread(context.Context, string, string) error {
 func TestThreadOperationsRequireMessageAccess(t *testing.T) {
 	for _, accessErr := range []error{domerr.ErrMessageNotFound, domerr.ErrUnauthorized} {
 		threadRepo := &stubThreadRepo{}
-		uc := New(threadRepo, nil, &stubChannelAccessService{err: accessErr}, nil)
+		uc := &Interactor{threadRepo: threadRepo, channelAccessSvc: &stubChannelAccessService{err: accessErr}}
 
 		if err := uc.MarkThreadRead(context.Background(), "t1", "u1"); !errors.Is(err, accessErr) {
 			t.Errorf("見られないスレッドの既読が拒否されていません: %v", err)
@@ -192,7 +118,7 @@ func TestThreadOperationsRequireMessageAccess(t *testing.T) {
 
 func TestMarkThreadReadSucceeds(t *testing.T) {
 	threadRepo := &stubThreadRepo{}
-	uc := New(threadRepo, nil, &stubChannelAccessService{}, nil)
+	uc := &Interactor{threadRepo: threadRepo, channelAccessSvc: &stubChannelAccessService{}}
 
 	if err := uc.MarkThreadRead(context.Background(), "t1", "u1"); err != nil {
 		t.Fatalf("既読更新に失敗しました: %v", err)

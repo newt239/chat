@@ -17,7 +17,7 @@ func TestFollowThreadIsIdempotent(t *testing.T) {
 	alice, thread, other := f.alice.ID.String(), f.messages["mention"].ID.String(), f.messages["link"].ID.String()
 
 	for range 2 {
-		if err := repo.FollowThread(ctx, alice, thread); err != nil {
+		if err := repo.SetFollowing(ctx, alice, thread, true); err != nil {
 			t.Fatalf("フォローを繰り返すと失敗しました: %v", err)
 		}
 	}
@@ -30,7 +30,7 @@ func TestFollowThreadIsIdempotent(t *testing.T) {
 	}
 
 	for range 2 {
-		if err := repo.UnfollowThread(ctx, alice, thread); err != nil {
+		if err := repo.SetFollowing(ctx, alice, thread, false); err != nil {
 			t.Fatalf("フォロー解除を繰り返すと失敗しました: %v", err)
 		}
 	}

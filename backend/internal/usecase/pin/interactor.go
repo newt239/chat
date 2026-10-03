@@ -29,14 +29,9 @@ type ListPinsInput struct {
 	Cursor    *string
 }
 
-type PinnedMessageOutput struct {
-	Message  message.MessageOutput
-	PinnedBy string
-	PinnedAt time.Time
-}
-
 type ListPinsOutput struct {
-	Pins       []PinnedMessageOutput
+	// ピン留めの情報は MessageOutput.Pin に入る
+	Pins       []message.MessageOutput
 	NextCursor *string
 }
 
@@ -102,7 +97,7 @@ func (i *Interactor) PinMessage(ctx context.Context, input PinInput) error {
 	}
 	i.searchIndexer.Sync(ctx, input.MessageID)
 
-	payload := map[string]any{"messageId": input.MessageID, "pinnedBy": input.UserID}
+	payload := map[string]any{"messageId": input.MessageID}
 	// スレッドの返信はスレッドを開いて表示するため、親メッセージも渡す
 	if msg.ParentID != nil {
 		payload["parentId"] = *msg.ParentID
@@ -160,13 +155,9 @@ func (i *Interactor) ListPins(ctx context.Context, input ListPinsInput) (*ListPi
 	for idx, p := range pins {
 		messages[idx] = p.Message
 	}
-	messageOutputs, err := i.outputBuilder.Build(ctx, input.UserID, messages)
+	outputs, err := i.outputBuilder.Build(ctx, input.UserID, messages)
 	if err != nil {
 		return nil, err
-	}
-	outputs := make([]PinnedMessageOutput, len(pins))
-	for idx, p := range pins {
-		outputs[idx] = PinnedMessageOutput{Message: messageOutputs[idx], PinnedBy: p.PinnedBy, PinnedAt: p.PinnedAt}
 	}
 	return &ListPinsOutput{Pins: outputs, NextCursor: next}, nil
 }

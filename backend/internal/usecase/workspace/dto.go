@@ -26,14 +26,6 @@ type UpdateWorkspaceInput struct {
 	UserID             string
 }
 
-// MemberInput は OperatorID のユーザーが UserID のメンバーのロールを変えたり外したりします。Role は削除では使わない
-type MemberInput struct {
-	WorkspaceID string
-	UserID      string
-	OperatorID  string
-	Role        entity.WorkspaceRole
-}
-
 type WorkspaceOutput struct {
 	*entity.Workspace
 	Role entity.WorkspaceRole
@@ -46,7 +38,6 @@ type MemberInfo struct {
 	AvatarURL   *string
 	Bio         *string
 	Role        entity.WorkspaceRole
-	JoinedAt    time.Time
 	SuspendedAt *time.Time
 	// 取得したユーザーだけに見えるニックネーム
 	Nickname *string
@@ -58,7 +49,7 @@ type MemberInfo struct {
 func NewMemberInfos(members []*entity.WorkspaceMember, users map[string]*entity.User) []MemberInfo {
 	infos := make([]MemberInfo, 0, len(members))
 	for _, m := range members {
-		info := MemberInfo{UserID: m.UserID, Role: m.Role, JoinedAt: m.JoinedAt, SuspendedAt: m.SuspendedAt}
+		info := MemberInfo{UserID: m.UserID, Role: m.Role, SuspendedAt: m.SuspendedAt}
 		if user := users[m.UserID]; user != nil {
 			info.Email = user.Email
 			info.DisplayName = user.DisplayName

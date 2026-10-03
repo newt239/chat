@@ -15,7 +15,6 @@ import {
 
 const dev = create(ChannelSchema, { id: "dev", name: "dev", unreadCount: 1 });
 const frontend = create(ChannelSchema, {
-  hasMention: true,
   id: "fe",
   mentionCount: 1,
   name: "dev/frontend",
@@ -23,7 +22,6 @@ const frontend = create(ChannelSchema, {
   unreadCount: 2,
 });
 const backend = create(ChannelSchema, {
-  hasMention: true,
   id: "be",
   isMuted: true,
   mentionCount: 2,

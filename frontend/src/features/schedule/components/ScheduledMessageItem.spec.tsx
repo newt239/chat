@@ -48,11 +48,11 @@ const render = (message: ScheduledMessage, handlers: Handlers) =>
     (routes) => {
       routes.rpc(ScheduledMessageService.method.updateScheduledMessage, (req) => {
         handlers.update(req);
-        return { scheduledMessage: message };
+        return {};
       });
       routes.rpc(ScheduledMessageService.method.sendScheduledMessageNow, (req) => {
         handlers.sendNow(req);
-        return { scheduledMessage: message };
+        return {};
       });
       routes.rpc(ScheduledMessageService.method.listScheduledMessages, () => ({
         scheduledMessages: [],

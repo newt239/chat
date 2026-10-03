@@ -32,10 +32,6 @@ type LinkPreview struct {
 	SiteName *string `json:"site_name,omitempty"`
 	// CardType holds the value of the "card_type" field.
 	CardType *string `json:"card_type,omitempty"`
-	// ImageWidth holds the value of the "image_width" field.
-	ImageWidth *int32 `json:"image_width,omitempty"`
-	// ImageHeight holds the value of the "image_height" field.
-	ImageHeight *int32 `json:"image_height,omitempty"`
 	// FetchedAt holds the value of the "fetched_at" field.
 	FetchedAt time.Time `json:"fetched_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -82,8 +78,6 @@ func (*LinkPreview) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case linkpreview.FieldImageWidth, linkpreview.FieldImageHeight:
-			values[i] = new(sql.NullInt64)
 		case linkpreview.FieldURL, linkpreview.FieldTitle, linkpreview.FieldDescription, linkpreview.FieldImageURL, linkpreview.FieldSiteName, linkpreview.FieldCardType:
 			values[i] = new(sql.NullString)
 		case linkpreview.FieldFetchedAt:
@@ -151,20 +145,6 @@ func (_m *LinkPreview) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.CardType = new(string)
 				*_m.CardType = value.String
-			}
-		case linkpreview.FieldImageWidth:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field image_width", values[i])
-			} else if value.Valid {
-				_m.ImageWidth = new(int32)
-				*_m.ImageWidth = int32(value.Int64)
-			}
-		case linkpreview.FieldImageHeight:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field image_height", values[i])
-			} else if value.Valid {
-				_m.ImageHeight = new(int32)
-				*_m.ImageHeight = int32(value.Int64)
 			}
 		case linkpreview.FieldFetchedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -244,16 +224,6 @@ func (_m *LinkPreview) String() string {
 	if v := _m.CardType; v != nil {
 		builder.WriteString("card_type=")
 		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := _m.ImageWidth; v != nil {
-		builder.WriteString("image_width=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := _m.ImageHeight; v != nil {
-		builder.WriteString("image_height=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("fetched_at=")

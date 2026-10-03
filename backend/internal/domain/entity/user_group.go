@@ -13,7 +13,6 @@ type UserGroup struct {
 }
 
 type UserGroupMember struct {
-	GroupID  string
-	UserID   string
-	JoinedAt time.Time
+	GroupID string
+	UserID  string
 }

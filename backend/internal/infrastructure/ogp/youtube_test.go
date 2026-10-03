@@ -70,7 +70,7 @@ func TestBuildOGPDataFromYouTubePage(t *testing.T) {
 
 	data := buildOGPData(meta, base)
 
-	if *data.Title != "動画のタイトル" || *data.CardType != "player" || *data.ImageWidth != 1280 || *data.ImageHeight != 720 {
+	if *data.Title != "動画のタイトル" || *data.CardType != "player" {
 		t.Errorf("OGP が期待と異なります: title=%s card=%s", *data.Title, *data.CardType)
 	}
 	if meta["author:name"] != "チャンネル名" {
@@ -92,7 +92,7 @@ func TestBuildOGPDataFallsBackToTitleAndResolvesRelativeImage(t *testing.T) {
 	if *data.Title != "ページ" || *data.Description != "説明" || *data.ImageURL != "https://example.com/ogp.png" {
 		t.Errorf("OGP が期待と異なります: %s %s %s", *data.Title, *data.Description, *data.ImageURL)
 	}
-	if data.YouTube != nil || data.ImageWidth != nil {
+	if data.YouTube != nil {
 		t.Error("YouTube 以外のページに動画情報や寸法が入っています")
 	}
 }

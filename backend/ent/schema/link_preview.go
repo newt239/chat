@@ -41,12 +41,6 @@ func (LinkPreview) Fields() []ent.Field {
 		field.String("card_type").
 			Optional().
 			Nillable(),
-		field.Int32("image_width").
-			Optional().
-			Nillable(),
-		field.Int32("image_height").
-			Optional().
-			Nillable(),
 		field.Time("fetched_at"),
 	}
 }

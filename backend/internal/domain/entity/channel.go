@@ -144,5 +144,4 @@ type ChannelMember struct {
 	ChannelID string
 	UserID    string
 	Role      ChannelRole
-	JoinedAt  time.Time
 }

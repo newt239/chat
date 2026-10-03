@@ -11,7 +11,6 @@ COPY pnpm-lock.yaml ./
 
 # Copy all workspace package.json files to satisfy pnpm workspace
 COPY frontend/package.json ./frontend/
-COPY backend/package.json ./backend/
 COPY packages/design-tokens/package.json ./packages/design-tokens/
 COPY packages/i18n/package.json ./packages/i18n/
 

@@ -12,6 +12,7 @@ import (
 
 	"connectrpc.com/connect"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/gen/chat/v1/chatv1connect"
@@ -44,12 +45,12 @@ type stubAuthUseCase struct {
 }
 
 func (u *stubAuthUseCase) Login(context.Context, authuc.LoginInput) (*authuc.AuthOutput, error) {
-	return &authuc.AuthOutput{AccessToken: validToken, RefreshToken: "rt", ExpiresAt: time.Now().Add(time.Hour)}, nil
+	return &authuc.AuthOutput{AccessToken: validToken, RefreshToken: "rt", ExpiresAt: time.Now().Add(time.Hour), User: &entity.User{}}, nil
 }
 
 func (u *stubAuthUseCase) RefreshToken(_ context.Context, input authuc.RefreshTokenInput) (*authuc.AuthOutput, error) {
 	u.refreshed = append(u.refreshed, input.RefreshToken)
-	return &authuc.AuthOutput{AccessToken: validToken, RefreshToken: "rotated", ExpiresAt: time.Now().Add(time.Hour)}, nil
+	return &authuc.AuthOutput{AccessToken: validToken, RefreshToken: "rotated", ExpiresAt: time.Now().Add(time.Hour), User: &entity.User{}}, nil
 }
 
 func (u *stubAuthUseCase) Logout(_ context.Context, input authuc.LogoutInput) error {

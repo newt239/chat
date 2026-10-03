@@ -59,14 +59,6 @@ func (i *Interactor) CreateDM(ctx context.Context, input CreateDMInput) (*DMOutp
 		return nil, err
 	}
 
-	targetUser, err := i.userRepo.FindByID(ctx, input.TargetUserID)
-	if err != nil {
-		return nil, err
-	}
-	if targetUser == nil {
-		return nil, domerr.ErrUserNotFound
-	}
-
 	channel, err := i.channelRepo.FindOrCreateDM(ctx, input.WorkspaceID, input.UserID, input.TargetUserID)
 	if err != nil {
 		return nil, err
@@ -98,15 +90,6 @@ func (i *Interactor) CreateGroupDM(ctx context.Context, input CreateGroupDMInput
 
 	if err := i.ensureWorkspaceMembers(ctx, input.WorkspaceID, input.MemberIDs...); err != nil {
 		return nil, err
-	}
-
-	users, err := i.userRepo.FindByIDs(ctx, input.MemberIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(users) != len(input.MemberIDs) {
-		return nil, domerr.ErrUserNotFound
 	}
 
 	channel, err := i.channelRepo.FindOrCreateGroupDM(ctx, input.WorkspaceID, input.CreatorID, input.MemberIDs, input.Name)
@@ -153,10 +136,6 @@ func (i *Interactor) ListDMs(ctx context.Context, input ListDMsInput) ([]*DMOutp
 	if err != nil {
 		return nil, err
 	}
-	mentionCounts, err := i.readStateRepo.GetUnreadMentionCountBatch(ctx, channelIDs, input.UserID)
-	if err != nil {
-		return nil, err
-	}
 
 	result, err := i.buildDMOutputs(ctx, channels, input.UserID)
 	if err != nil {
@@ -166,7 +145,6 @@ func (i *Interactor) ListDMs(ctx context.Context, input ListDMsInput) ([]*DMOutp
 		output.IsStarred = starred[output.ID]
 		output.IsMuted = muted[output.ID]
 		output.UnreadCount = unreadCounts[output.ID]
-		output.HasMention = mentionCounts[output.ID] > 0
 	}
 	return result, nil
 }
@@ -195,23 +173,14 @@ func (i *Interactor) buildDMOutputs(ctx context.Context, channels []*entity.Chan
 	outputs := make([]*DMOutput, 0, len(channels))
 	byID := make(map[string]*DMOutput, len(channels))
 	for _, ch := range channels {
-		output := &DMOutput{
-			ID:          ch.ID,
-			WorkspaceID: ch.WorkspaceID,
-			Name:        ch.Name,
-			Description: ch.Description,
-			Type:        ch.Type,
-			Members:     []DMMemberOutput{},
-			CreatedAt:   ch.CreatedAt,
-			UpdatedAt:   ch.UpdatedAt,
-		}
+		output := &DMOutput{Channel: ch}
 		outputs = append(outputs, output)
 		byID[ch.ID] = output
 	}
 	for _, m := range members {
 		if u := users[m.UserID]; u != nil && m.UserID != requestUserID {
 			output := byID[m.ChannelID]
-			output.Members = append(output.Members, DMMemberOutput{UserID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL})
+			output.Members = append(output.Members, u)
 		}
 	}
 	return outputs, nil

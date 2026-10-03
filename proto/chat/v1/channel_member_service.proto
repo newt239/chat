@@ -3,7 +3,6 @@ syntax = "proto3";
 package chat.v1;
 
 import "buf/validate/validate.proto";
-import "google/protobuf/timestamp.proto";
 
 service ChannelMemberService {
   rpc ListChannelMembers(ListChannelMembersRequest) returns (ListChannelMembersResponse);
@@ -26,7 +25,6 @@ message ChannelMember {
   string display_name = 3;
   optional string avatar_url = 4;
   ChannelRole role = 5;
-  google.protobuf.Timestamp joined_at = 6;
 }
 
 message ListChannelMembersRequest {

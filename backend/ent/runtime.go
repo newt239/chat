@@ -470,14 +470,6 @@ func init() {
 	pushtokenDescToken := pushtokenFields[2].Descriptor()
 	// pushtoken.TokenValidator is a validator for the "token" field. It is called by the builders before save.
 	pushtoken.TokenValidator = pushtokenDescToken.Validators[0].(func(string) error)
-	// pushtokenDescUserAgent is the schema descriptor for user_agent field.
-	pushtokenDescUserAgent := pushtokenFields[4].Descriptor()
-	// pushtoken.DefaultUserAgent holds the default value on creation for the user_agent field.
-	pushtoken.DefaultUserAgent = pushtokenDescUserAgent.Default.(string)
-	// pushtokenDescLastSeenAt is the schema descriptor for last_seen_at field.
-	pushtokenDescLastSeenAt := pushtokenFields[5].Descriptor()
-	// pushtoken.DefaultLastSeenAt holds the default value on creation for the last_seen_at field.
-	pushtoken.DefaultLastSeenAt = pushtokenDescLastSeenAt.Default.(func() time.Time)
 	// pushtokenDescID is the schema descriptor for id field.
 	pushtokenDescID := pushtokenFields[0].Descriptor()
 	// pushtoken.DefaultID holds the default value on creation for the id field.

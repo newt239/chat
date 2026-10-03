@@ -48,20 +48,12 @@ func (stubUserRepo) FindByIDs(_ context.Context, _ []string) (map[string]*entity
 	return map[string]*entity.User{}, nil
 }
 
-type stubUserMentionRepo struct {
-	domainrepository.MessageUserMentionRepository
+type stubMentionRepo struct {
+	domainrepository.MessageMentionRepository
 }
 
-func (stubUserMentionRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.MessageUserMention, error) {
-	return nil, nil
-}
-
-type stubGroupMentionRepo struct {
-	domainrepository.MessageGroupMentionRepository
-}
-
-func (stubGroupMentionRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.MessageGroupMention, error) {
-	return nil, nil
+func (stubMentionRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.MessageUserMention, []*entity.MessageGroupMention, error) {
+	return nil, nil, nil
 }
 
 type stubLinkRepo struct {
@@ -91,7 +83,7 @@ func (stubAttachmentRepo) FindByMessageIDs(_ context.Context, _ []string) (map[s
 func newInteractor(isMember bool, messages []*entity.Message) (*Interactor, *stubMessageRepo) {
 	messageRepo := &stubMessageRepo{messages: messages}
 	builder := messageuc.NewMessageOutputBuilder(
-		messageRepo, stubUserRepo{}, nil, stubUserMentionRepo{}, stubGroupMentionRepo{}, stubLinkRepo{}, stubAttachmentRepo{},
+		messageRepo, stubUserRepo{}, nil, stubMentionRepo{}, stubLinkRepo{}, stubAttachmentRepo{},
 		stubPinRepo{}, stubPollRepo{}, nil,
 	)
 	return New(&stubWorkspaceRepo{isMember: isMember}, messageRepo, builder), messageRepo

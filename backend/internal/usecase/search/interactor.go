@@ -12,7 +12,6 @@ import (
 	domainservice "github.com/newt239/chat/internal/domain/service"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
-
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -61,7 +60,6 @@ func (s *Interactor) SearchWorkspace(ctx context.Context, input WorkspaceSearchI
 		return nil, ErrInvalidDateRange
 	}
 
-	target := input.Target.Normalize()
 	page := max(input.Page, 1)
 	perPage := min(cmp.Or(input.PerPage, defaultPerPage), maxPerPage)
 	offset := (page - 1) * perPage
@@ -78,7 +76,7 @@ func (s *Interactor) SearchWorkspace(ctx context.Context, input WorkspaceSearchI
 		Groups:   Paginated[*entity.UserGroup]{Items: []*entity.UserGroup{}, Page: page, PerPage: perPage},
 	}
 
-	if target.includesMessages() {
+	if input.Target.includes(SearchTargetMessages) {
 		if out.Messages, err = s.searchMessages(ctx, input, terms, page, perPage, offset); err != nil {
 			return nil, err
 		}
@@ -89,17 +87,17 @@ func (s *Interactor) SearchWorkspace(ctx context.Context, input WorkspaceSearchI
 	if keyword == "" {
 		return out, nil
 	}
-	if target.includesChannels() {
+	if input.Target.includes(SearchTargetChannels) {
 		if out.Channels, err = s.searchChannels(ctx, keyword, input.WorkspaceID, input.RequesterID, page, perPage, offset); err != nil {
 			return nil, err
 		}
 	}
-	if target.includesUsers() {
+	if input.Target.includes(SearchTargetUsers) {
 		if out.Users, err = s.searchUsers(ctx, keyword, input.WorkspaceID, page, perPage, offset); err != nil {
 			return nil, err
 		}
 	}
-	if target.includesGroups() {
+	if input.Target.includes(SearchTargetGroups) {
 		if out.Groups, err = s.searchUserGroups(ctx, keyword, input.WorkspaceID, page, perPage, offset); err != nil {
 			return nil, err
 		}
@@ -120,11 +118,10 @@ func (s *Interactor) searchMessages(
 
 	channelIDs := f.ChannelIDs
 	if len(channelIDs) > 0 && f.IncludeDescendantChannels {
-		channels, err := s.channelRepo.FindByWorkspaceID(ctx, input.WorkspaceID)
-		if err != nil {
-			return Paginated[MessageHit]{}, fmt.Errorf("failed to load channels: %w", err)
+		var err error
+		if channelIDs, err = s.withDescendantChannelIDs(ctx, channelIDs); err != nil {
+			return Paginated[MessageHit]{}, err
 		}
-		channelIDs = withDescendantChannelIDs(channels, channelIDs)
 	}
 
 	scope, err := s.messageRepo.FindSearchScope(ctx, input.WorkspaceID, input.RequesterID)
@@ -230,31 +227,23 @@ func splitTerms(query string) []string {
 	return terms
 }
 
-// withDescendantChannelIDs は指定したチャンネルと、名前が "<親の名前>/" で始まる下階層のチャンネルの ID を返します
-func withDescendantChannelIDs(channels []*entity.Channel, ids []string) []string {
-	selected := map[string]bool{}
-	for _, id := range ids {
-		selected[id] = true
+// withDescendantChannelIDs は指定したチャンネルに下階層のチャンネルの ID を加えます
+func (s *Interactor) withDescendantChannelIDs(ctx context.Context, ids []string) ([]string, error) {
+	selected, err := s.channelRepo.FindByIDs(ctx, ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load channels: %w", err)
 	}
-	prefixes := []string{}
-	for _, ch := range channels {
-		if selected[ch.ID] {
-			prefixes = append(prefixes, ch.Name+"/")
+	result := slices.Clone(ids)
+	for _, ch := range selected {
+		descendants, err := s.channelRepo.FindDescendants(ctx, ch)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load descendant channels: %w", err)
+		}
+		for _, d := range descendants {
+			result = append(result, d.ID)
 		}
 	}
-	result := append([]string{}, ids...)
-	for _, ch := range channels {
-		if selected[ch.ID] {
-			continue
-		}
-		for _, prefix := range prefixes {
-			if strings.HasPrefix(ch.Name, prefix) {
-				result = append(result, ch.ID)
-				break
-			}
-		}
-	}
-	return result
+	return result, nil
 }
 
 func (s *Interactor) searchChannels(
@@ -273,7 +262,7 @@ func (s *Interactor) searchChannels(
 
 	items := make([]channeluc.ChannelOutput, 0, len(channels))
 	for _, ch := range channels {
-		items = append(items, channeluc.NewChannelOutput(ch))
+		items = append(items, channeluc.ChannelOutput{Channel: ch})
 	}
 
 	return Paginated[channeluc.ChannelOutput]{

@@ -1,12 +1,9 @@
 package websocket
 
 import (
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
-	customemojiuc "github.com/newt239/chat/internal/usecase/customemoji"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
@@ -35,7 +32,6 @@ func (n Notifier) NotifyDeletedMessage(workspaceID, channelID string, deletion m
 			ChannelId:         channelID,
 			MessageId:         deletion.MessageID,
 			DeletedMessageIds: deletion.DeletedIDs,
-			DeletedAt:         timestamppb.New(deletion.DeletedAt),
 		},
 	}})
 }
@@ -60,7 +56,7 @@ func (n Notifier) NotifyReactionRemoved(workspaceID, channelID string, reaction 
 
 func (n Notifier) NotifyUnreadCount(workspaceID, userID, channelID string, unreadCount, mentionCount int) {
 	n.BroadcastToUsers(workspaceID, []string{userID}, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_UnreadCount{
-		UnreadCount: &chatv1.UnreadCountEvent{ChannelId: channelID, UnreadCount: int32(unreadCount), HasMention: mentionCount > 0, MentionCount: int32(mentionCount)},
+		UnreadCount: &chatv1.UnreadCountEvent{ChannelId: channelID, UnreadCount: int32(unreadCount), MentionCount: int32(mentionCount)},
 	}})
 }
 
@@ -80,14 +76,14 @@ func (n Notifier) NotifyPinDeleted(workspaceID, channelID string, memberIDs []st
 
 // 絵文字はどのチャンネルでも使うため、ワークスペースの全員に送る
 
-func (n Notifier) NotifyCustomEmojiCreated(workspaceID string, emoji customemojiuc.Notification) {
-	n.BroadcastToWorkspace(workspaceID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_CustomEmojiCreated{
-		CustomEmojiCreated: &chatv1.CustomEmojiEvent{WorkspaceId: workspaceID, EmojiId: emoji.ID, Name: emoji.Name},
+func (n Notifier) NotifyCustomEmojiCreated(emoji *entity.CustomEmoji) {
+	n.BroadcastToWorkspace(emoji.WorkspaceID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_CustomEmojiCreated{
+		CustomEmojiCreated: &chatv1.CustomEmojiEvent{WorkspaceId: emoji.WorkspaceID, EmojiId: emoji.ID, Name: emoji.Name},
 	}})
 }
 
-func (n Notifier) NotifyCustomEmojiDeleted(workspaceID string, emoji customemojiuc.Notification) {
-	n.BroadcastToWorkspace(workspaceID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_CustomEmojiDeleted{
-		CustomEmojiDeleted: &chatv1.CustomEmojiEvent{WorkspaceId: workspaceID, EmojiId: emoji.ID, Name: emoji.Name},
+func (n Notifier) NotifyCustomEmojiDeleted(emoji *entity.CustomEmoji) {
+	n.BroadcastToWorkspace(emoji.WorkspaceID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_CustomEmojiDeleted{
+		CustomEmojiDeleted: &chatv1.CustomEmojiEvent{WorkspaceId: emoji.WorkspaceID, EmojiId: emoji.ID, Name: emoji.Name},
 	}})
 }

@@ -30,7 +30,6 @@ message Channel {
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp updated_at = 8;
   int32 unread_count = 9;
-  bool has_mention = 10;
   optional string parent_id = 11;
   bool is_starred = 12;
   // false の場合はツリーを組み立てるために返している未参加の祖先チャンネル

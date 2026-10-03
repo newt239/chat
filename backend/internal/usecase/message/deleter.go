@@ -3,7 +3,6 @@ package message
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 )
@@ -54,7 +53,6 @@ func (i *Interactor) DeleteMessage(ctx context.Context, input MessageInput) erro
 	i.notifier.NotifyDeletedMessage(channel.WorkspaceID, channel.ID, MessageDeletion{
 		MessageID:  message.ID,
 		DeletedIDs: deleteIDs,
-		DeletedAt:  time.Now(),
 	})
 	return nil
 }

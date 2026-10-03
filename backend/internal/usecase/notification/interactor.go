@@ -3,7 +3,6 @@ package notification
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -17,9 +16,8 @@ func New(pushTokenRepo domainrepository.PushTokenRepository) *Interactor {
 	return &Interactor{pushTokenRepo: pushTokenRepo}
 }
 
-// RegisterPushToken は端末のトークンを登録します。起動のたびに呼ばれ、最終利用日時を更新します
+// RegisterPushToken は端末のトークンを登録します。起動のたびに呼ばれる
 func (i *Interactor) RegisterPushToken(ctx context.Context, token entity.PushToken) error {
-	token.LastSeenAt = time.Now()
 	if err := i.pushTokenRepo.Upsert(ctx, &token); err != nil {
 		return fmt.Errorf("failed to register push token: %w", err)
 	}

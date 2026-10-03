@@ -35,22 +35,16 @@ import { MessageTime } from "./MessageTime";
 import { MessageToolbar } from "./MessageToolbar";
 import { ThreadMetadataPreview } from "./ThreadMetadataPreview";
 
-import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
+import type { Message } from "#/gen/chat/v1/message_pb";
 
 type MessageItemProps = {
   message: Message;
-  threadMetadata: ThreadMetadata | undefined;
   isHighlighted: boolean;
   // 親チャンネルの集約表示で、子孫チャンネルのメッセージに付けるチップ
   channelChip: ReactNode;
 };
 
-export const MessageItem = ({
-  message,
-  threadMetadata,
-  isHighlighted,
-  channelChip,
-}: MessageItemProps) => {
+export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItemProps) => {
   const { t } = useTranslation();
   const myId = useAtomValue(myUserIdAtom);
   const navigate = useNavigate();
@@ -121,7 +115,6 @@ export const MessageItem = ({
     onViewReactions: () => {
       setReactionTab(ALL_REACTIONS_TAB);
     },
-    threadMetadata,
   });
 
   const openProfile = () => {
@@ -252,8 +245,8 @@ export const MessageItem = ({
 
         <ReactionList message={message} onOpenList={setReactionTab} />
 
-        {threadMetadata && threadMetadata.replyCount > 0 && (
-          <ThreadMetadataPreview metadata={threadMetadata} onPress={openThread} />
+        {message.threadMetadata && message.threadMetadata.replyCount > 0 && (
+          <ThreadMetadataPreview metadata={message.threadMetadata} onPress={openThread} />
         )}
       </div>
 
@@ -289,7 +282,7 @@ export const MessageItem = ({
         tone="danger"
         isPending={isDeleting}
         onConfirm={() => {
-          void handleDelete(message).then(() => {
+          void handleDelete(message.id).then(() => {
             setIsDeleteOpen(false);
           });
         }}

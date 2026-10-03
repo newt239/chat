@@ -28,8 +28,6 @@ func (r *pushTokenRepository) Upsert(ctx context.Context, token *entity.PushToke
 		SetUserID(uid).
 		SetToken(token.Token).
 		SetPlatform(pushtoken.Platform(token.Platform)).
-		SetUserAgent(token.UserAgent).
-		SetLastSeenAt(token.LastSeenAt).
 		OnConflictColumns(pushtoken.FieldToken).
 		UpdateNewValues().
 		Exec(ctx)
@@ -66,12 +64,6 @@ func (r *pushTokenRepository) FindByUserIDs(ctx context.Context, userIDs []strin
 		return nil, err
 	}
 	return convertAll(rows, func(row *ent.PushToken) *entity.PushToken {
-		return &entity.PushToken{
-			UserID:     row.UserID.String(),
-			Token:      row.Token,
-			Platform:   entity.PushPlatform(row.Platform),
-			UserAgent:  row.UserAgent,
-			LastSeenAt: row.LastSeenAt,
-		}
+		return &entity.PushToken{UserID: row.UserID.String(), Token: row.Token, Platform: entity.PushPlatform(row.Platform)}
 	}), nil
 }

@@ -155,7 +155,7 @@ func TestDispatchChannelMessage(t *testing.T) {
 		ParentID: &parentID,
 		Body:     "hello <@u1>",
 		// グループへのメンションは投稿時点のメンバーに展開済み
-		Mentions: []messageuc.UserMention{{UserID: "mentioned"}, {UserID: "muted"}, {UserID: "outsider"}, {UserID: "grouped", ViaGroupID: new("g1")}, {UserID: "silent", ViaGroupID: new("g1")}},
+		Mentions: []messageuc.UserMention{{UserID: "mentioned"}, {UserID: "muted"}, {UserID: "outsider"}, {UserID: "grouped"}, {UserID: "silent"}},
 	}
 	f := fixture{
 		levels: map[string]entity.NotificationLevel{

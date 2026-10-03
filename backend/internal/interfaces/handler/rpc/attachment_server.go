@@ -6,7 +6,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	"github.com/newt239/chat/internal/domain/service"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	attachmentuc "github.com/newt239/chat/internal/usecase/attachment"
 )
@@ -44,5 +43,5 @@ func (s *AttachmentServer) GetDownloadUrl(ctx context.Context, req *chatv1.GetDo
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.GetDownloadUrlResponse{Url: url, ExpiresIn: int32(service.DownloadURLExpires.Seconds())}, nil
+	return &chatv1.GetDownloadUrlResponse{Url: url}, nil
 }

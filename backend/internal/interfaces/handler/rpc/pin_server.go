@@ -3,8 +3,6 @@ package rpc
 import (
 	"context"
 
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
@@ -19,12 +17,7 @@ func (s *PinServer) ListPins(ctx context.Context, req *chatv1.ListPinsRequest) (
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.ListPinsResponse{
-		Pins: presenter.ConvertAll(out.Pins, func(p pinuc.PinnedMessageOutput) *chatv1.PinnedMessage {
-			return &chatv1.PinnedMessage{Message: presenter.Message(p.Message), PinnedBy: p.PinnedBy, PinnedAt: timestamppb.New(p.PinnedAt)}
-		}),
-		NextCursor: out.NextCursor,
-	}, nil
+	return &chatv1.ListPinsResponse{Pins: presenter.ConvertAll(out.Pins, presenter.PinnedMessage), NextCursor: out.NextCursor}, nil
 }
 
 func (s *PinServer) CreatePin(ctx context.Context, req *chatv1.CreatePinRequest) (*chatv1.CreatePinResponse, error) {

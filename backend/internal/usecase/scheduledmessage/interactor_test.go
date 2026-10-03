@@ -81,11 +81,11 @@ func TestScheduleRejectsPastAndEmpty(t *testing.T) {
 	uc := New(nil, nil, nil, nil, nil)
 	ctx := context.Background()
 
-	_, err := uc.Schedule(ctx, ScheduleInput{UserID: "u1", ChannelID: "ch1", Body: "x", ScheduledAt: time.Now().Add(-time.Minute)})
+	err := uc.Schedule(ctx, ScheduleInput{UserID: "u1", ChannelID: "ch1", Body: "x", ScheduledAt: time.Now().Add(-time.Minute)})
 	if !errors.Is(err, ErrScheduleInPast) {
 		t.Errorf("過去の日時を拒否していません: %v", err)
 	}
-	_, err = uc.Schedule(ctx, ScheduleInput{UserID: "u1", ChannelID: "ch1", Body: " ", ScheduledAt: time.Now().Add(time.Hour)})
+	err = uc.Schedule(ctx, ScheduleInput{UserID: "u1", ChannelID: "ch1", Body: " ", ScheduledAt: time.Now().Add(time.Hour)})
 	if !errors.Is(err, messageuc.ErrEmptyMessage) {
 		t.Errorf("空の予約を拒否していません: %v", err)
 	}

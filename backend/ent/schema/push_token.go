@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
@@ -33,10 +31,6 @@ func (PushToken) Fields() []ent.Field {
 			NotEmpty(),
 		field.Enum("platform").
 			Values("web", "ios", "android"),
-		field.String("user_agent").
-			Default(""),
-		field.Time("last_seen_at").
-			Default(time.Now),
 	}
 }
 

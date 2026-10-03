@@ -94,10 +94,10 @@ export const useThreadReplies = (threadId: string, aroundReplyId: string | null)
           updateReplies((reply) => (reply.id === message.id ? message : reply));
         }
       }),
-      wsClient.on("messageDeleted", ({ deletedMessageIds, deletedAt }) => {
+      wsClient.on("messageDeleted", ({ deletedMessageIds }) => {
         const deletedIds = new Set(deletedMessageIds);
         updateReplies((reply) =>
-          deletedIds.has(reply.id) ? { ...reply, deletedAt, isDeleted: true } : reply,
+          deletedIds.has(reply.id) ? { ...reply, isDeleted: true } : reply,
         );
       }),
     ];

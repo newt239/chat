@@ -6,7 +6,8 @@ export const useUnreadSummary = (workspaceId: string) => {
   const { data: dms = [] } = useDMs(workspaceId);
   const { data: channels = [] } = useChannels(workspaceId);
   return {
-    activityUnread: channels.filter((channel) => channel.hasMention && !channel.isMuted).length,
+    activityUnread: channels.filter((channel) => channel.mentionCount > 0 && !channel.isMuted)
+      .length,
     dmUnread: dms.reduce((sum, dm) => sum + (dm.isMuted ? 0 : dm.unreadCount), 0),
   };
 };

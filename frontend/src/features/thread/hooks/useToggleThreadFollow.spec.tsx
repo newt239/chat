@@ -8,10 +8,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, test, vi } from "vite-plus/test";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
-import {
-  ListMessagesWithThreadResponseSchema,
-  MessageService,
-} from "#/gen/chat/v1/message_service_pb";
+import { ListMessagesResponseSchema, MessageService } from "#/gen/chat/v1/message_service_pb";
 import {
   GetThreadMetadataResponseSchema,
   ListParticipatingThreadsResponseSchema,
@@ -20,7 +17,7 @@ import {
 
 import { useToggleThreadFollow } from "./useToggleThreadFollow";
 
-import type { ListMessagesWithThreadResponse } from "#/gen/chat/v1/message_service_pb";
+import type { ListMessagesResponse } from "#/gen/chat/v1/message_service_pb";
 import type {
   GetThreadMetadataResponse,
   ListParticipatingThreadsResponse,
@@ -36,14 +33,21 @@ const metadataKey = createConnectQueryKey({
   schema: ThreadService.method.getThreadMetadata,
 });
 const timelineKey = createConnectQueryKey({
-  cardinality: "finite",
+  cardinality: "infinite",
   input: { channelId: "c1" },
-  schema: MessageService.method.listMessagesWithThread,
+  schema: MessageService.method.listMessages,
 });
 const threadListKey = createConnectQueryKey({
   cardinality: "infinite",
   input: { workspaceId: "ws1" },
   schema: ThreadService.method.listParticipatingThreads,
+});
+
+const userMessage = (id: string) => ({
+  content: {
+    case: "userMessage" as const,
+    value: { id, threadMetadata: { messageId: id, replyCount: 1 } },
+  },
 });
 
 const setup = () => {
@@ -53,15 +57,12 @@ const setup = () => {
     metadataKey,
     create(GetThreadMetadataResponseSchema, { metadata: { messageId: "t1", replyCount: 2 } }),
   );
-  queryClient.setQueryData(
-    timelineKey,
-    create(ListMessagesWithThreadResponseSchema, {
-      messages: [
-        { id: "t1", threadMetadata: { messageId: "t1", replyCount: 2 } },
-        { id: "m2", threadMetadata: { messageId: "m2", replyCount: 1 } },
-      ],
-    }),
-  );
+  queryClient.setQueryData(timelineKey, {
+    pageParams: [null],
+    pages: [
+      create(ListMessagesResponseSchema, { messages: [userMessage("t1"), userMessage("m2")] }),
+    ],
+  });
   queryClient.setQueryData(threadListKey, {
     pageParams: [undefined],
     pages: [create(ListParticipatingThreadsResponseSchema, { threads: [{ threadId: "t1" }] })],
@@ -95,8 +96,12 @@ describe("useToggleThreadFollow", () => {
     ).toBe(true);
     expect(
       queryClient
-        .getQueryData<ListMessagesWithThreadResponse>(timelineKey)
-        ?.messages.map((message) => message.threadMetadata?.isFollowing),
+        .getQueryData<InfiniteData<ListMessagesResponse>>(timelineKey)
+        ?.pages[0]?.messages.map((item) =>
+          item.content.case === "userMessage"
+            ? item.content.value.threadMetadata?.isFollowing
+            : null,
+        ),
     ).toEqual([true, false]);
     expect(
       queryClient.getQueryData<InfiniteData<ListParticipatingThreadsResponse>>(threadListKey)

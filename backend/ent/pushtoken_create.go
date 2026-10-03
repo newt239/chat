@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -40,34 +39,6 @@ func (_c *PushTokenCreate) SetToken(v string) *PushTokenCreate {
 // SetPlatform sets the "platform" field.
 func (_c *PushTokenCreate) SetPlatform(v pushtoken.Platform) *PushTokenCreate {
 	_c.mutation.SetPlatform(v)
-	return _c
-}
-
-// SetUserAgent sets the "user_agent" field.
-func (_c *PushTokenCreate) SetUserAgent(v string) *PushTokenCreate {
-	_c.mutation.SetUserAgent(v)
-	return _c
-}
-
-// SetNillableUserAgent sets the "user_agent" field if the given value is not nil.
-func (_c *PushTokenCreate) SetNillableUserAgent(v *string) *PushTokenCreate {
-	if v != nil {
-		_c.SetUserAgent(*v)
-	}
-	return _c
-}
-
-// SetLastSeenAt sets the "last_seen_at" field.
-func (_c *PushTokenCreate) SetLastSeenAt(v time.Time) *PushTokenCreate {
-	_c.mutation.SetLastSeenAt(v)
-	return _c
-}
-
-// SetNillableLastSeenAt sets the "last_seen_at" field if the given value is not nil.
-func (_c *PushTokenCreate) SetNillableLastSeenAt(v *time.Time) *PushTokenCreate {
-	if v != nil {
-		_c.SetLastSeenAt(*v)
-	}
 	return _c
 }
 
@@ -125,14 +96,6 @@ func (_c *PushTokenCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *PushTokenCreate) defaults() {
-	if _, ok := _c.mutation.UserAgent(); !ok {
-		v := pushtoken.DefaultUserAgent
-		_c.mutation.SetUserAgent(v)
-	}
-	if _, ok := _c.mutation.LastSeenAt(); !ok {
-		v := pushtoken.DefaultLastSeenAt()
-		_c.mutation.SetLastSeenAt(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := pushtoken.DefaultID()
 		_c.mutation.SetID(v)
@@ -159,12 +122,6 @@ func (_c *PushTokenCreate) check() error {
 		if err := pushtoken.PlatformValidator(v); err != nil {
 			return &ValidationError{Name: "platform", err: fmt.Errorf(`ent: validator failed for field "PushToken.platform": %w`, err)}
 		}
-	}
-	if _, ok := _c.mutation.UserAgent(); !ok {
-		return &ValidationError{Name: "user_agent", err: errors.New(`ent: missing required field "PushToken.user_agent"`)}
-	}
-	if _, ok := _c.mutation.LastSeenAt(); !ok {
-		return &ValidationError{Name: "last_seen_at", err: errors.New(`ent: missing required field "PushToken.last_seen_at"`)}
 	}
 	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "PushToken.user"`)}
@@ -212,14 +169,6 @@ func (_c *PushTokenCreate) createSpec() (*PushToken, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Platform(); ok {
 		_spec.SetField(pushtoken.FieldPlatform, field.TypeEnum, value)
 		_node.Platform = value
-	}
-	if value, ok := _c.mutation.UserAgent(); ok {
-		_spec.SetField(pushtoken.FieldUserAgent, field.TypeString, value)
-		_node.UserAgent = value
-	}
-	if value, ok := _c.mutation.LastSeenAt(); ok {
-		_spec.SetField(pushtoken.FieldLastSeenAt, field.TypeTime, value)
-		_node.LastSeenAt = value
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -326,30 +275,6 @@ func (u *PushTokenUpsert) UpdatePlatform() *PushTokenUpsert {
 	return u
 }
 
-// SetUserAgent sets the "user_agent" field.
-func (u *PushTokenUpsert) SetUserAgent(v string) *PushTokenUpsert {
-	u.Set(pushtoken.FieldUserAgent, v)
-	return u
-}
-
-// UpdateUserAgent sets the "user_agent" field to the value that was provided on create.
-func (u *PushTokenUpsert) UpdateUserAgent() *PushTokenUpsert {
-	u.SetExcluded(pushtoken.FieldUserAgent)
-	return u
-}
-
-// SetLastSeenAt sets the "last_seen_at" field.
-func (u *PushTokenUpsert) SetLastSeenAt(v time.Time) *PushTokenUpsert {
-	u.Set(pushtoken.FieldLastSeenAt, v)
-	return u
-}
-
-// UpdateLastSeenAt sets the "last_seen_at" field to the value that was provided on create.
-func (u *PushTokenUpsert) UpdateLastSeenAt() *PushTokenUpsert {
-	u.SetExcluded(pushtoken.FieldLastSeenAt)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -437,34 +362,6 @@ func (u *PushTokenUpsertOne) SetPlatform(v pushtoken.Platform) *PushTokenUpsertO
 func (u *PushTokenUpsertOne) UpdatePlatform() *PushTokenUpsertOne {
 	return u.Update(func(s *PushTokenUpsert) {
 		s.UpdatePlatform()
-	})
-}
-
-// SetUserAgent sets the "user_agent" field.
-func (u *PushTokenUpsertOne) SetUserAgent(v string) *PushTokenUpsertOne {
-	return u.Update(func(s *PushTokenUpsert) {
-		s.SetUserAgent(v)
-	})
-}
-
-// UpdateUserAgent sets the "user_agent" field to the value that was provided on create.
-func (u *PushTokenUpsertOne) UpdateUserAgent() *PushTokenUpsertOne {
-	return u.Update(func(s *PushTokenUpsert) {
-		s.UpdateUserAgent()
-	})
-}
-
-// SetLastSeenAt sets the "last_seen_at" field.
-func (u *PushTokenUpsertOne) SetLastSeenAt(v time.Time) *PushTokenUpsertOne {
-	return u.Update(func(s *PushTokenUpsert) {
-		s.SetLastSeenAt(v)
-	})
-}
-
-// UpdateLastSeenAt sets the "last_seen_at" field to the value that was provided on create.
-func (u *PushTokenUpsertOne) UpdateLastSeenAt() *PushTokenUpsertOne {
-	return u.Update(func(s *PushTokenUpsert) {
-		s.UpdateLastSeenAt()
 	})
 }
 
@@ -722,34 +619,6 @@ func (u *PushTokenUpsertBulk) SetPlatform(v pushtoken.Platform) *PushTokenUpsert
 func (u *PushTokenUpsertBulk) UpdatePlatform() *PushTokenUpsertBulk {
 	return u.Update(func(s *PushTokenUpsert) {
 		s.UpdatePlatform()
-	})
-}
-
-// SetUserAgent sets the "user_agent" field.
-func (u *PushTokenUpsertBulk) SetUserAgent(v string) *PushTokenUpsertBulk {
-	return u.Update(func(s *PushTokenUpsert) {
-		s.SetUserAgent(v)
-	})
-}
-
-// UpdateUserAgent sets the "user_agent" field to the value that was provided on create.
-func (u *PushTokenUpsertBulk) UpdateUserAgent() *PushTokenUpsertBulk {
-	return u.Update(func(s *PushTokenUpsert) {
-		s.UpdateUserAgent()
-	})
-}
-
-// SetLastSeenAt sets the "last_seen_at" field.
-func (u *PushTokenUpsertBulk) SetLastSeenAt(v time.Time) *PushTokenUpsertBulk {
-	return u.Update(func(s *PushTokenUpsert) {
-		s.SetLastSeenAt(v)
-	})
-}
-
-// UpdateLastSeenAt sets the "last_seen_at" field to the value that was provided on create.
-func (u *PushTokenUpsertBulk) UpdateLastSeenAt() *PushTokenUpsertBulk {
-	return u.Update(func(s *PushTokenUpsert) {
-		s.UpdateLastSeenAt()
 	})
 }
 

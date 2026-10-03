@@ -197,7 +197,6 @@ func workspaceMemberToEntity(wm *ent.WorkspaceMember) *entity.WorkspaceMember {
 		WorkspaceID: wm.WorkspaceID,
 		UserID:      wm.UserID.String(),
 		Role:        entity.WorkspaceRole(wm.Role),
-		JoinedAt:    wm.JoinedAt,
 		SuspendedAt: wm.SuspendedAt,
 	}
 }
@@ -221,7 +220,6 @@ func channelMemberToEntity(cm *ent.ChannelMember) *entity.ChannelMember {
 		ChannelID: cm.ChannelID.String(),
 		UserID:    cm.UserID.String(),
 		Role:      entity.ChannelRole(cm.Role),
-		JoinedAt:  cm.JoinedAt,
 	}
 }
 
@@ -297,8 +295,6 @@ func linkPreviewToOGP(lp *ent.LinkPreview) entity.OGPData {
 		ImageURL:    lp.ImageURL,
 		SiteName:    lp.SiteName,
 		CardType:    lp.CardType,
-		ImageWidth:  lp.ImageWidth,
-		ImageHeight: lp.ImageHeight,
 	}
 	if yt := lp.Edges.Youtube; yt != nil {
 		ogp.YouTube = &entity.YouTubeVideo{VideoID: yt.VideoID, ChannelName: yt.ChannelName, DurationSeconds: yt.DurationSeconds}

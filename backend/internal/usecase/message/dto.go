@@ -60,8 +60,7 @@ type UserInfo struct {
 }
 
 type UserMention struct {
-	UserID     string
-	ViaGroupID *string
+	UserID string
 }
 
 type GroupMention struct {
@@ -131,6 +130,8 @@ type MessageOutput struct {
 	// 公式アプリの投稿。誰も編集・削除できない
 	IsOfficial bool
 	Poll       *PollOutput
+	// 返信のあるメッセージを ListMessages で返すときのみ設定される
+	ThreadMetadata *ThreadMetadataOutput
 }
 
 // ForBroadcast は閲覧者ごとに変わる内容（引用カードと自分の投票）を除き、他の購読者へ配信できるコピーを返します
@@ -180,16 +181,6 @@ type GetThreadRepliesOutput struct {
 	HasMore    bool
 	HasNewer   bool
 	ReplyCount int
-}
-
-type MessageWithThreadOutput struct {
-	MessageOutput
-	ThreadMetadata *ThreadMetadataOutput
-}
-
-type ListMessagesWithThreadOutput struct {
-	Messages []MessageWithThreadOutput
-	HasMore  bool
 }
 
 // TimelineItem はユーザーのメッセージかシステムメッセージのどちらか一方を持ちます

@@ -139,7 +139,7 @@ func TestListDMsLoadsMembersAtOnce(t *testing.T) {
 	if users.calls != 1 {
 		t.Errorf("参加者をまとめて読み込んでいません: %d 回", users.calls)
 	}
-	if len(dms[0].Members) != 1 || dms[0].Members[0].UserID != "bob" || dms[0].UnreadCount != 2 {
+	if len(dms[0].Members) != 1 || dms[0].Members[0].ID != "bob" || dms[0].UnreadCount != 2 {
 		t.Errorf("DM の内容が期待と異なります: %+v", dms[0])
 	}
 	if len(dms[1].Members) != 2 || !dms[1].IsStarred {

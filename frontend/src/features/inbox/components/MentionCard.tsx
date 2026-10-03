@@ -26,13 +26,7 @@ export const MentionCard = ({ workspaceId, message }: MentionCardProps) => {
   return (
     <MessageListCard workspaceId={workspaceId} message={message}>
       {[message, ...replies].map((item) => (
-        <MessageItem
-          key={item.id}
-          message={item}
-          threadMetadata={undefined}
-          isHighlighted={false}
-          channelChip={null}
-        />
+        <MessageItem key={item.id} message={item} isHighlighted={false} channelChip={null} />
       ))}
       <div className="pt-1">
         <BaseMessageInput

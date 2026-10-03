@@ -11558,28 +11558,24 @@ func (m *InvitationMutation) ResetEdge(name string) error {
 // LinkPreviewMutation represents an operation that mutates the LinkPreview nodes in the graph.
 type LinkPreviewMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	url             *string
-	title           *string
-	description     *string
-	image_url       *string
-	site_name       *string
-	card_type       *string
-	image_width     *int32
-	addimage_width  *int32
-	image_height    *int32
-	addimage_height *int32
-	fetched_at      *time.Time
-	clearedFields   map[string]struct{}
-	youtube         *uuid.UUID
-	clearedyoutube  bool
-	x_post          *uuid.UUID
-	clearedx_post   bool
-	done            bool
-	oldValue        func(context.Context) (*LinkPreview, error)
-	predicates      []predicate.LinkPreview
+	op             Op
+	typ            string
+	id             *uuid.UUID
+	url            *string
+	title          *string
+	description    *string
+	image_url      *string
+	site_name      *string
+	card_type      *string
+	fetched_at     *time.Time
+	clearedFields  map[string]struct{}
+	youtube        *uuid.UUID
+	clearedyoutube bool
+	x_post         *uuid.UUID
+	clearedx_post  bool
+	done           bool
+	oldValue       func(context.Context) (*LinkPreview, error)
+	predicates     []predicate.LinkPreview
 }
 
 var _ ent.Mutation = (*LinkPreviewMutation)(nil)
@@ -11967,146 +11963,6 @@ func (m *LinkPreviewMutation) ResetCardType() {
 	delete(m.clearedFields, linkpreview.FieldCardType)
 }
 
-// SetImageWidth sets the "image_width" field.
-func (m *LinkPreviewMutation) SetImageWidth(i int32) {
-	m.image_width = &i
-	m.addimage_width = nil
-}
-
-// ImageWidth returns the value of the "image_width" field in the mutation.
-func (m *LinkPreviewMutation) ImageWidth() (r int32, exists bool) {
-	v := m.image_width
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldImageWidth returns the old "image_width" field's value of the LinkPreview entity.
-// If the LinkPreview object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LinkPreviewMutation) OldImageWidth(ctx context.Context) (v *int32, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldImageWidth is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldImageWidth requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldImageWidth: %w", err)
-	}
-	return oldValue.ImageWidth, nil
-}
-
-// AddImageWidth adds i to the "image_width" field.
-func (m *LinkPreviewMutation) AddImageWidth(i int32) {
-	if m.addimage_width != nil {
-		*m.addimage_width += i
-	} else {
-		m.addimage_width = &i
-	}
-}
-
-// AddedImageWidth returns the value that was added to the "image_width" field in this mutation.
-func (m *LinkPreviewMutation) AddedImageWidth() (r int32, exists bool) {
-	v := m.addimage_width
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearImageWidth clears the value of the "image_width" field.
-func (m *LinkPreviewMutation) ClearImageWidth() {
-	m.image_width = nil
-	m.addimage_width = nil
-	m.clearedFields[linkpreview.FieldImageWidth] = struct{}{}
-}
-
-// ImageWidthCleared returns if the "image_width" field was cleared in this mutation.
-func (m *LinkPreviewMutation) ImageWidthCleared() bool {
-	_, ok := m.clearedFields[linkpreview.FieldImageWidth]
-	return ok
-}
-
-// ResetImageWidth resets all changes to the "image_width" field.
-func (m *LinkPreviewMutation) ResetImageWidth() {
-	m.image_width = nil
-	m.addimage_width = nil
-	delete(m.clearedFields, linkpreview.FieldImageWidth)
-}
-
-// SetImageHeight sets the "image_height" field.
-func (m *LinkPreviewMutation) SetImageHeight(i int32) {
-	m.image_height = &i
-	m.addimage_height = nil
-}
-
-// ImageHeight returns the value of the "image_height" field in the mutation.
-func (m *LinkPreviewMutation) ImageHeight() (r int32, exists bool) {
-	v := m.image_height
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldImageHeight returns the old "image_height" field's value of the LinkPreview entity.
-// If the LinkPreview object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LinkPreviewMutation) OldImageHeight(ctx context.Context) (v *int32, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldImageHeight is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldImageHeight requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldImageHeight: %w", err)
-	}
-	return oldValue.ImageHeight, nil
-}
-
-// AddImageHeight adds i to the "image_height" field.
-func (m *LinkPreviewMutation) AddImageHeight(i int32) {
-	if m.addimage_height != nil {
-		*m.addimage_height += i
-	} else {
-		m.addimage_height = &i
-	}
-}
-
-// AddedImageHeight returns the value that was added to the "image_height" field in this mutation.
-func (m *LinkPreviewMutation) AddedImageHeight() (r int32, exists bool) {
-	v := m.addimage_height
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearImageHeight clears the value of the "image_height" field.
-func (m *LinkPreviewMutation) ClearImageHeight() {
-	m.image_height = nil
-	m.addimage_height = nil
-	m.clearedFields[linkpreview.FieldImageHeight] = struct{}{}
-}
-
-// ImageHeightCleared returns if the "image_height" field was cleared in this mutation.
-func (m *LinkPreviewMutation) ImageHeightCleared() bool {
-	_, ok := m.clearedFields[linkpreview.FieldImageHeight]
-	return ok
-}
-
-// ResetImageHeight resets all changes to the "image_height" field.
-func (m *LinkPreviewMutation) ResetImageHeight() {
-	m.image_height = nil
-	m.addimage_height = nil
-	delete(m.clearedFields, linkpreview.FieldImageHeight)
-}
-
 // SetFetchedAt sets the "fetched_at" field.
 func (m *LinkPreviewMutation) SetFetchedAt(t time.Time) {
 	m.fetched_at = &t
@@ -12255,7 +12111,7 @@ func (m *LinkPreviewMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LinkPreviewMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 7)
 	if m.url != nil {
 		fields = append(fields, linkpreview.FieldURL)
 	}
@@ -12273,12 +12129,6 @@ func (m *LinkPreviewMutation) Fields() []string {
 	}
 	if m.card_type != nil {
 		fields = append(fields, linkpreview.FieldCardType)
-	}
-	if m.image_width != nil {
-		fields = append(fields, linkpreview.FieldImageWidth)
-	}
-	if m.image_height != nil {
-		fields = append(fields, linkpreview.FieldImageHeight)
 	}
 	if m.fetched_at != nil {
 		fields = append(fields, linkpreview.FieldFetchedAt)
@@ -12303,10 +12153,6 @@ func (m *LinkPreviewMutation) Field(name string) (ent.Value, bool) {
 		return m.SiteName()
 	case linkpreview.FieldCardType:
 		return m.CardType()
-	case linkpreview.FieldImageWidth:
-		return m.ImageWidth()
-	case linkpreview.FieldImageHeight:
-		return m.ImageHeight()
 	case linkpreview.FieldFetchedAt:
 		return m.FetchedAt()
 	}
@@ -12330,10 +12176,6 @@ func (m *LinkPreviewMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldSiteName(ctx)
 	case linkpreview.FieldCardType:
 		return m.OldCardType(ctx)
-	case linkpreview.FieldImageWidth:
-		return m.OldImageWidth(ctx)
-	case linkpreview.FieldImageHeight:
-		return m.OldImageHeight(ctx)
 	case linkpreview.FieldFetchedAt:
 		return m.OldFetchedAt(ctx)
 	}
@@ -12387,20 +12229,6 @@ func (m *LinkPreviewMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCardType(v)
 		return nil
-	case linkpreview.FieldImageWidth:
-		v, ok := value.(int32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetImageWidth(v)
-		return nil
-	case linkpreview.FieldImageHeight:
-		v, ok := value.(int32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetImageHeight(v)
-		return nil
 	case linkpreview.FieldFetchedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -12415,26 +12243,13 @@ func (m *LinkPreviewMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *LinkPreviewMutation) AddedFields() []string {
-	var fields []string
-	if m.addimage_width != nil {
-		fields = append(fields, linkpreview.FieldImageWidth)
-	}
-	if m.addimage_height != nil {
-		fields = append(fields, linkpreview.FieldImageHeight)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *LinkPreviewMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case linkpreview.FieldImageWidth:
-		return m.AddedImageWidth()
-	case linkpreview.FieldImageHeight:
-		return m.AddedImageHeight()
-	}
 	return nil, false
 }
 
@@ -12443,20 +12258,6 @@ func (m *LinkPreviewMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *LinkPreviewMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case linkpreview.FieldImageWidth:
-		v, ok := value.(int32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddImageWidth(v)
-		return nil
-	case linkpreview.FieldImageHeight:
-		v, ok := value.(int32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddImageHeight(v)
-		return nil
 	}
 	return fmt.Errorf("unknown LinkPreview numeric field %s", name)
 }
@@ -12479,12 +12280,6 @@ func (m *LinkPreviewMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(linkpreview.FieldCardType) {
 		fields = append(fields, linkpreview.FieldCardType)
-	}
-	if m.FieldCleared(linkpreview.FieldImageWidth) {
-		fields = append(fields, linkpreview.FieldImageWidth)
-	}
-	if m.FieldCleared(linkpreview.FieldImageHeight) {
-		fields = append(fields, linkpreview.FieldImageHeight)
 	}
 	return fields
 }
@@ -12515,12 +12310,6 @@ func (m *LinkPreviewMutation) ClearField(name string) error {
 	case linkpreview.FieldCardType:
 		m.ClearCardType()
 		return nil
-	case linkpreview.FieldImageWidth:
-		m.ClearImageWidth()
-		return nil
-	case linkpreview.FieldImageHeight:
-		m.ClearImageHeight()
-		return nil
 	}
 	return fmt.Errorf("unknown LinkPreview nullable field %s", name)
 }
@@ -12546,12 +12335,6 @@ func (m *LinkPreviewMutation) ResetField(name string) error {
 		return nil
 	case linkpreview.FieldCardType:
 		m.ResetCardType()
-		return nil
-	case linkpreview.FieldImageWidth:
-		m.ResetImageWidth()
-		return nil
-	case linkpreview.FieldImageHeight:
-		m.ResetImageHeight()
 		return nil
 	case linkpreview.FieldFetchedAt:
 		m.ResetFetchedAt()
@@ -21072,8 +20855,6 @@ type PushTokenMutation struct {
 	id            *uuid.UUID
 	token         *string
 	platform      *pushtoken.Platform
-	user_agent    *string
-	last_seen_at  *time.Time
 	clearedFields map[string]struct{}
 	user          *uuid.UUID
 	cleareduser   bool
@@ -21294,78 +21075,6 @@ func (m *PushTokenMutation) ResetPlatform() {
 	m.platform = nil
 }
 
-// SetUserAgent sets the "user_agent" field.
-func (m *PushTokenMutation) SetUserAgent(s string) {
-	m.user_agent = &s
-}
-
-// UserAgent returns the value of the "user_agent" field in the mutation.
-func (m *PushTokenMutation) UserAgent() (r string, exists bool) {
-	v := m.user_agent
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUserAgent returns the old "user_agent" field's value of the PushToken entity.
-// If the PushToken object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PushTokenMutation) OldUserAgent(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserAgent is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserAgent requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserAgent: %w", err)
-	}
-	return oldValue.UserAgent, nil
-}
-
-// ResetUserAgent resets all changes to the "user_agent" field.
-func (m *PushTokenMutation) ResetUserAgent() {
-	m.user_agent = nil
-}
-
-// SetLastSeenAt sets the "last_seen_at" field.
-func (m *PushTokenMutation) SetLastSeenAt(t time.Time) {
-	m.last_seen_at = &t
-}
-
-// LastSeenAt returns the value of the "last_seen_at" field in the mutation.
-func (m *PushTokenMutation) LastSeenAt() (r time.Time, exists bool) {
-	v := m.last_seen_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLastSeenAt returns the old "last_seen_at" field's value of the PushToken entity.
-// If the PushToken object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PushTokenMutation) OldLastSeenAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLastSeenAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLastSeenAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLastSeenAt: %w", err)
-	}
-	return oldValue.LastSeenAt, nil
-}
-
-// ResetLastSeenAt resets all changes to the "last_seen_at" field.
-func (m *PushTokenMutation) ResetLastSeenAt() {
-	m.last_seen_at = nil
-}
-
 // ClearUser clears the "user" edge to the User entity.
 func (m *PushTokenMutation) ClearUser() {
 	m.cleareduser = true
@@ -21427,7 +21136,7 @@ func (m *PushTokenMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PushTokenMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 3)
 	if m.user != nil {
 		fields = append(fields, pushtoken.FieldUserID)
 	}
@@ -21436,12 +21145,6 @@ func (m *PushTokenMutation) Fields() []string {
 	}
 	if m.platform != nil {
 		fields = append(fields, pushtoken.FieldPlatform)
-	}
-	if m.user_agent != nil {
-		fields = append(fields, pushtoken.FieldUserAgent)
-	}
-	if m.last_seen_at != nil {
-		fields = append(fields, pushtoken.FieldLastSeenAt)
 	}
 	return fields
 }
@@ -21457,10 +21160,6 @@ func (m *PushTokenMutation) Field(name string) (ent.Value, bool) {
 		return m.Token()
 	case pushtoken.FieldPlatform:
 		return m.Platform()
-	case pushtoken.FieldUserAgent:
-		return m.UserAgent()
-	case pushtoken.FieldLastSeenAt:
-		return m.LastSeenAt()
 	}
 	return nil, false
 }
@@ -21476,10 +21175,6 @@ func (m *PushTokenMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldToken(ctx)
 	case pushtoken.FieldPlatform:
 		return m.OldPlatform(ctx)
-	case pushtoken.FieldUserAgent:
-		return m.OldUserAgent(ctx)
-	case pushtoken.FieldLastSeenAt:
-		return m.OldLastSeenAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown PushToken field %s", name)
 }
@@ -21509,20 +21204,6 @@ func (m *PushTokenMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPlatform(v)
-		return nil
-	case pushtoken.FieldUserAgent:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUserAgent(v)
-		return nil
-	case pushtoken.FieldLastSeenAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLastSeenAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown PushToken field %s", name)
@@ -21581,12 +21262,6 @@ func (m *PushTokenMutation) ResetField(name string) error {
 		return nil
 	case pushtoken.FieldPlatform:
 		m.ResetPlatform()
-		return nil
-	case pushtoken.FieldUserAgent:
-		m.ResetUserAgent()
-		return nil
-	case pushtoken.FieldLastSeenAt:
-		m.ResetLastSeenAt()
 		return nil
 	}
 	return fmt.Errorf("unknown PushToken field %s", name)

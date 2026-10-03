@@ -96,7 +96,6 @@ type App struct {
 	// 管理できる人にだけ返す
 	OutgoingSecret *string                `protobuf:"bytes,9,opt,name=outgoing_secret,json=outgoingSecret,proto3,oneof" json:"outgoing_secret,omitempty"`
 	IsOfficial     bool                   `protobuf:"varint,10,opt,name=is_official,json=isOfficial,proto3" json:"is_official,omitempty"`
-	BotUserId      string                 `protobuf:"bytes,11,opt,name=bot_user_id,json=botUserId,proto3" json:"bot_user_id,omitempty"`
 	CreatedBy      *UserSummary           `protobuf:"bytes,12,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
 	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	LastUsedAt     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=last_used_at,json=lastUsedAt,proto3" json:"last_used_at,omitempty"`
@@ -204,13 +203,6 @@ func (x *App) GetIsOfficial() bool {
 		return x.IsOfficial
 	}
 	return false
-}
-
-func (x *App) GetBotUserId() string {
-	if x != nil {
-		return x.BotUserId
-	}
-	return ""
 }
 
 func (x *App) GetCreatedBy() *UserSummary {
@@ -1052,7 +1044,7 @@ var File_chat_v1_app_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_app_service_proto_rawDesc = "" +
 	"\n" +
-	"\x19chat/v1/app_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc3\x05\n" +
+	"\x19chat/v1/app_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa3\x05\n" +
 	"\x03App\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
@@ -1066,8 +1058,7 @@ const file_chat_v1_app_service_proto_rawDesc = "" +
 	"\x0foutgoing_secret\x18\t \x01(\tH\x04R\x0eoutgoingSecret\x88\x01\x01\x12\x1f\n" +
 	"\vis_official\x18\n" +
 	" \x01(\bR\n" +
-	"isOfficial\x12\x1e\n" +
-	"\vbot_user_id\x18\v \x01(\tR\tbotUserId\x123\n" +
+	"isOfficial\x123\n" +
 	"\n" +
 	"created_by\x18\f \x01(\v2\x14.chat.v1.UserSummaryR\tcreatedBy\x129\n" +
 	"\n" +

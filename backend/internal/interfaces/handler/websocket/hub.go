@@ -143,11 +143,11 @@ func (h *Hub) disconnect(c *Client, code int, reason string) {
 	h.unregister(c, websocket.FormatCloseMessage(code, reason))
 }
 
-func (h *Hub) subscribe(c *Client, channelID string) bool {
+func (h *Hub) subscribe(c *Client, channelID string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	if !h.isRegistered(c) {
-		return false
+		return
 	}
 	channels := h.subscribers[c.workspaceID]
 	if channels == nil {
@@ -159,7 +159,6 @@ func (h *Hub) subscribe(c *Client, channelID string) bool {
 	}
 	channels[channelID][c] = struct{}{}
 	c.subscribedChannels[channelID] = struct{}{}
-	return true
 }
 
 func (h *Hub) unsubscribe(c *Client, channelID string) {

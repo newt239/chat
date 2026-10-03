@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { ChannelChip } from "#/features/channel/components/ChannelChip";
 import { useChannelAggregation } from "#/features/channel/hooks/useChannelAggregation";
-import { useChannelThreadMetadata } from "#/features/message/hooks/useChannelThreadMetadata";
 import { useChannelTimeline } from "#/features/message/hooks/useChannelTimeline";
 import { useMessagePages } from "#/features/message/hooks/useMessagePages";
 import { useMessageViewportDetection } from "#/features/message/hooks/useMessageViewportDetection";
@@ -61,10 +60,6 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     includeDescendants: includesDescendants,
   });
   const isLoading = !isResolved || isLoadingMessages;
-  const threadMetadataById = useChannelThreadMetadata(
-    isResolved ? channelId : null,
-    includesDescendants,
-  );
 
   // 一覧にない未参加の公開子孫も、届いたメッセージから購読する
   const descendantIds = includesDescendants
@@ -109,7 +104,6 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     <div ref={msg.id === latestUserMessageId ? latestMessageRef : undefined}>
       <MessageItem
         message={msg}
-        threadMetadata={threadMetadataById.get(msg.id)}
         isHighlighted={isHighlighted}
         channelChip={
           channel && msg.channelId !== channel.id ? (

@@ -2,7 +2,6 @@ package customemoji
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -22,7 +21,6 @@ const imageURLExpires = 12 * time.Hour
 
 var (
 	ErrEmojiNotFound = domerr.New(domerr.ErrNotFound, "指定されたカスタム絵文字が見つかりません")
-	ErrNameExists    = domerr.New(domerr.ErrAlreadyExists, "同じ名前のカスタム絵文字がすでにあります")
 	ErrInvalidName   = domerr.New(domerr.ErrValidation, "名前は英小文字・数字・_・- の 32 文字以内で指定してください")
 	errInvalidUpload = domerr.New(domerr.ErrValidation, "upload_id が不正です")
 )
@@ -106,14 +104,12 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*Output, er
 		StorageKey:  storageKey(input.WorkspaceID, input.UploadID),
 		CreatedBy:   input.UserID,
 	}
+	// 同じ名前があれば ErrCustomEmojiNameExists をそのまま返す
 	if err := i.emojiRepo.Create(ctx, emoji); err != nil {
-		if errors.Is(err, domerr.ErrConflict) {
-			return nil, ErrNameExists
-		}
-		return nil, fmt.Errorf("failed to create custom emoji: %w", err)
+		return nil, err
 	}
 	i.record(ctx, emoji, input.UserID, entity.AuditActionCustomEmojiCreated)
-	i.notifier.NotifyCustomEmojiCreated(emoji.WorkspaceID, Notification{ID: emoji.ID, Name: emoji.Name})
+	i.notifier.NotifyCustomEmojiCreated(emoji)
 
 	outputs, err := i.toOutputs(ctx, []*entity.CustomEmoji{emoji}, member)
 	if err != nil {
@@ -145,7 +141,7 @@ func (i *Interactor) Delete(ctx context.Context, input DeleteInput) error {
 		slog.WarnContext(ctx, "カスタム絵文字の画像の削除に失敗しました", "storageKey", emoji.StorageKey, "error", err)
 	}
 	i.record(ctx, emoji, input.UserID, entity.AuditActionCustomEmojiDeleted)
-	i.notifier.NotifyCustomEmojiDeleted(emoji.WorkspaceID, Notification{ID: emoji.ID, Name: emoji.Name})
+	i.notifier.NotifyCustomEmojiDeleted(emoji)
 	return nil
 }
 

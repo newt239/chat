@@ -73,11 +73,8 @@ func (i *Interactor) saveContent(ctx context.Context, messageID string, content 
 	for _, l := range content.links {
 		l.MessageID = messageID
 	}
-	if err := i.userMentionRepo.CreateBulk(ctx, content.userMentions); err != nil {
-		return fmt.Errorf("failed to create user mentions: %w", err)
-	}
-	if err := i.groupMentionRepo.CreateBulk(ctx, content.groupMentions); err != nil {
-		return fmt.Errorf("failed to create group mentions: %w", err)
+	if err := i.mentionRepo.Create(ctx, content.userMentions, content.groupMentions); err != nil {
+		return fmt.Errorf("failed to create mentions: %w", err)
 	}
 	if err := i.linkRepo.CreateBulk(ctx, content.links); err != nil {
 		return fmt.Errorf("failed to create links: %w", err)
@@ -87,11 +84,8 @@ func (i *Interactor) saveContent(ctx context.Context, messageID string, content 
 
 // replaceContent は編集で本文が変わったメッセージのメンションとリンクを入れ替えます
 func (i *Interactor) replaceContent(ctx context.Context, messageID string, content *preparedContent) error {
-	if err := i.userMentionRepo.DeleteByMessageID(ctx, messageID); err != nil {
-		return fmt.Errorf("failed to delete user mentions: %w", err)
-	}
-	if err := i.groupMentionRepo.DeleteByMessageID(ctx, messageID); err != nil {
-		return fmt.Errorf("failed to delete group mentions: %w", err)
+	if err := i.mentionRepo.DeleteByMessageID(ctx, messageID); err != nil {
+		return fmt.Errorf("failed to delete mentions: %w", err)
 	}
 	if err := i.linkRepo.DeleteByMessageID(ctx, messageID); err != nil {
 		return fmt.Errorf("failed to delete links: %w", err)

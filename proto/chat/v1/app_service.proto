@@ -6,11 +6,7 @@ import "buf/validate/validate.proto";
 import "chat/v1/user.proto";
 import "google/protobuf/timestamp.proto";
 
-// ワークスペースの連携アプリ。メンバーなら誰でも作成でき、編集・削除は作成者とワークスペースの管理者だけができる。
-// 公式アプリはワークスペースごとに 1 つあり、誰も編集・削除できない。
-// 着信 Webhook は POST /webhooks/{app_id}/{token} に JSON（text と、任意で channel_id・thread_id）を送る。
-// 送信 Webhook は参加しているチャンネルの投稿を outgoing_url に POST し、
-// X-Chat-Signature に「X-Chat-Timestamp の値.本文」を outgoing_secret で署名した HMAC-SHA256 を付ける
+// 連携アプリ。着信 Webhook は POST /webhooks/{app_id}/{token}、送信 Webhook は outgoing_url へ outgoing_secret の HMAC-SHA256 署名付きで POST する
 service AppService {
   rpc ListApps(ListAppsRequest) returns (ListAppsResponse);
   // チャンネルに参加しているアプリ
@@ -50,7 +46,6 @@ message App {
   // 管理できる人にだけ返す
   optional string outgoing_secret = 9;
   bool is_official = 10;
-  string bot_user_id = 11;
   UserSummary created_by = 12;
   google.protobuf.Timestamp created_at = 13;
   google.protobuf.Timestamp last_used_at = 14;

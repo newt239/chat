@@ -317,7 +317,6 @@ func (x *GetDownloadUrlRequest) GetThumbnail() bool {
 type GetDownloadUrlResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
-	ExpiresIn     int32                  `protobuf:"varint,2,opt,name=expires_in,json=expiresIn,proto3" json:"expires_in,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -359,13 +358,6 @@ func (x *GetDownloadUrlResponse) GetUrl() string {
 	return ""
 }
 
-func (x *GetDownloadUrlResponse) GetExpiresIn() int32 {
-	if x != nil {
-		return x.ExpiresIn
-	}
-	return 0
-}
-
 var File_chat_v1_attachment_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_attachment_service_proto_rawDesc = "" +
@@ -405,11 +397,9 @@ const file_chat_v1_attachment_service_proto_rawDesc = "" +
 	"\x15_thumbnail_upload_url\"d\n" +
 	"\x15GetDownloadUrlRequest\x12-\n" +
 	"\rattachment_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\fattachmentId\x12\x1c\n" +
-	"\tthumbnail\x18\x02 \x01(\bR\tthumbnail\"I\n" +
+	"\tthumbnail\x18\x02 \x01(\bR\tthumbnail\"*\n" +
 	"\x16GetDownloadUrlResponse\x12\x10\n" +
-	"\x03url\x18\x01 \x01(\tR\x03url\x12\x1d\n" +
-	"\n" +
-	"expires_in\x18\x02 \x01(\x05R\texpiresIn2\xb6\x01\n" +
+	"\x03url\x18\x01 \x01(\tR\x03url2\xb6\x01\n" +
 	"\x11AttachmentService\x12N\n" +
 	"\rPresignUpload\x12\x1d.chat.v1.PresignUploadRequest\x1a\x1e.chat.v1.PresignUploadResponse\x12Q\n" +
 	"\x0eGetDownloadUrl\x12\x1e.chat.v1.GetDownloadUrlRequest\x1a\x1f.chat.v1.GetDownloadUrlResponseB\x97\x01\n" +

@@ -101,7 +101,6 @@ message AdminMember {
   string display_name = 3;
   optional string avatar_url = 4;
   WorkspaceRole role = 5;
-  google.protobuf.Timestamp joined_at = 6;
   // 停止中の場合だけ設定される
   optional google.protobuf.Timestamp suspended_at = 7;
   optional google.protobuf.Timestamp last_login_at = 8;

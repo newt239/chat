@@ -291,10 +291,9 @@ func (x *CreateScheduledMessageRequest) GetScheduledAt() *timestamppb.Timestamp 
 }
 
 type CreateScheduledMessageResponse struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	ScheduledMessage *ScheduledMessage      `protobuf:"bytes,1,opt,name=scheduled_message,json=scheduledMessage,proto3" json:"scheduled_message,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateScheduledMessageResponse) Reset() {
@@ -325,13 +324,6 @@ func (x *CreateScheduledMessageResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateScheduledMessageResponse.ProtoReflect.Descriptor instead.
 func (*CreateScheduledMessageResponse) Descriptor() ([]byte, []int) {
 	return file_chat_v1_scheduled_message_service_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *CreateScheduledMessageResponse) GetScheduledMessage() *ScheduledMessage {
-	if x != nil {
-		return x.ScheduledMessage
-	}
-	return nil
 }
 
 type ListScheduledMessagesRequest struct {
@@ -483,10 +475,9 @@ func (x *UpdateScheduledMessageRequest) GetScheduledAt() *timestamppb.Timestamp 
 }
 
 type UpdateScheduledMessageResponse struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	ScheduledMessage *ScheduledMessage      `protobuf:"bytes,1,opt,name=scheduled_message,json=scheduledMessage,proto3" json:"scheduled_message,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateScheduledMessageResponse) Reset() {
@@ -517,13 +508,6 @@ func (x *UpdateScheduledMessageResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use UpdateScheduledMessageResponse.ProtoReflect.Descriptor instead.
 func (*UpdateScheduledMessageResponse) Descriptor() ([]byte, []int) {
 	return file_chat_v1_scheduled_message_service_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *UpdateScheduledMessageResponse) GetScheduledMessage() *ScheduledMessage {
-	if x != nil {
-		return x.ScheduledMessage
-	}
-	return nil
 }
 
 type DeleteScheduledMessageRequest struct {
@@ -651,10 +635,9 @@ func (x *SendScheduledMessageNowRequest) GetId() string {
 }
 
 type SendScheduledMessageNowResponse struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	ScheduledMessage *ScheduledMessage      `protobuf:"bytes,1,opt,name=scheduled_message,json=scheduledMessage,proto3" json:"scheduled_message,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SendScheduledMessageNowResponse) Reset() {
@@ -685,13 +668,6 @@ func (x *SendScheduledMessageNowResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use SendScheduledMessageNowResponse.ProtoReflect.Descriptor instead.
 func (*SendScheduledMessageNowResponse) Descriptor() ([]byte, []int) {
 	return file_chat_v1_scheduled_message_service_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *SendScheduledMessageNowResponse) GetScheduledMessage() *ScheduledMessage {
-	if x != nil {
-		return x.ScheduledMessage
-	}
-	return nil
 }
 
 var File_chat_v1_scheduled_message_service_proto protoreflect.FileDescriptor
@@ -729,9 +705,8 @@ const file_chat_v1_scheduled_message_service_proto_rawDesc = "" +
 	"\fscheduled_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\vscheduledAt:\xaf\x01\xbaH\xab\x01\x1a\xa8\x01\n" +
 	" create_scheduled_message.content\x12<本文・添付・位置情報のいずれかが必要です\x1aFthis.body != '' || size(this.attachment_ids) > 0 || has(this.location)B\f\n" +
 	"\n" +
-	"_parent_id\"h\n" +
-	"\x1eCreateScheduledMessageResponse\x12F\n" +
-	"\x11scheduled_message\x18\x01 \x01(\v2\x19.chat.v1.ScheduledMessageR\x10scheduledMessage\"J\n" +
+	"_parent_id\" \n" +
+	"\x1eCreateScheduledMessageResponse\"J\n" +
 	"\x1cListScheduledMessagesRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"i\n" +
 	"\x1dListScheduledMessagesResponse\x12H\n" +
@@ -739,16 +714,14 @@ const file_chat_v1_scheduled_message_service_proto_rawDesc = "" +
 	"\x1dUpdateScheduledMessageRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x1c\n" +
 	"\x04body\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\x90NR\x04body\x12E\n" +
-	"\fscheduled_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\vscheduledAt\"h\n" +
-	"\x1eUpdateScheduledMessageResponse\x12F\n" +
-	"\x11scheduled_message\x18\x01 \x01(\v2\x19.chat.v1.ScheduledMessageR\x10scheduledMessage\"9\n" +
+	"\fscheduled_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\vscheduledAt\" \n" +
+	"\x1eUpdateScheduledMessageResponse\"9\n" +
 	"\x1dDeleteScheduledMessageRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\" \n" +
 	"\x1eDeleteScheduledMessageResponse\":\n" +
 	"\x1eSendScheduledMessageNowRequest\x12\x18\n" +
-	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"i\n" +
-	"\x1fSendScheduledMessageNowResponse\x12F\n" +
-	"\x11scheduled_message\x18\x01 \x01(\v2\x19.chat.v1.ScheduledMessageR\x10scheduledMessage*\xd8\x01\n" +
+	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"!\n" +
+	"\x1fSendScheduledMessageNowResponse*\xd8\x01\n" +
 	"\x16ScheduledMessageStatus\x12(\n" +
 	"$SCHEDULED_MESSAGE_STATUS_UNSPECIFIED\x10\x00\x12&\n" +
 	"\"SCHEDULED_MESSAGE_STATUS_SCHEDULED\x10\x01\x12$\n" +
@@ -800,26 +773,23 @@ var file_chat_v1_scheduled_message_service_proto_depIdxs = []int32{
 	13, // 3: chat.v1.ScheduledMessage.updated_at:type_name -> google.protobuf.Timestamp
 	12, // 4: chat.v1.CreateScheduledMessageRequest.location:type_name -> chat.v1.MessageLocation
 	13, // 5: chat.v1.CreateScheduledMessageRequest.scheduled_at:type_name -> google.protobuf.Timestamp
-	1,  // 6: chat.v1.CreateScheduledMessageResponse.scheduled_message:type_name -> chat.v1.ScheduledMessage
-	1,  // 7: chat.v1.ListScheduledMessagesResponse.scheduled_messages:type_name -> chat.v1.ScheduledMessage
-	13, // 8: chat.v1.UpdateScheduledMessageRequest.scheduled_at:type_name -> google.protobuf.Timestamp
-	1,  // 9: chat.v1.UpdateScheduledMessageResponse.scheduled_message:type_name -> chat.v1.ScheduledMessage
-	1,  // 10: chat.v1.SendScheduledMessageNowResponse.scheduled_message:type_name -> chat.v1.ScheduledMessage
-	2,  // 11: chat.v1.ScheduledMessageService.CreateScheduledMessage:input_type -> chat.v1.CreateScheduledMessageRequest
-	4,  // 12: chat.v1.ScheduledMessageService.ListScheduledMessages:input_type -> chat.v1.ListScheduledMessagesRequest
-	6,  // 13: chat.v1.ScheduledMessageService.UpdateScheduledMessage:input_type -> chat.v1.UpdateScheduledMessageRequest
-	8,  // 14: chat.v1.ScheduledMessageService.DeleteScheduledMessage:input_type -> chat.v1.DeleteScheduledMessageRequest
-	10, // 15: chat.v1.ScheduledMessageService.SendScheduledMessageNow:input_type -> chat.v1.SendScheduledMessageNowRequest
-	3,  // 16: chat.v1.ScheduledMessageService.CreateScheduledMessage:output_type -> chat.v1.CreateScheduledMessageResponse
-	5,  // 17: chat.v1.ScheduledMessageService.ListScheduledMessages:output_type -> chat.v1.ListScheduledMessagesResponse
-	7,  // 18: chat.v1.ScheduledMessageService.UpdateScheduledMessage:output_type -> chat.v1.UpdateScheduledMessageResponse
-	9,  // 19: chat.v1.ScheduledMessageService.DeleteScheduledMessage:output_type -> chat.v1.DeleteScheduledMessageResponse
-	11, // 20: chat.v1.ScheduledMessageService.SendScheduledMessageNow:output_type -> chat.v1.SendScheduledMessageNowResponse
-	16, // [16:21] is the sub-list for method output_type
-	11, // [11:16] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	1,  // 6: chat.v1.ListScheduledMessagesResponse.scheduled_messages:type_name -> chat.v1.ScheduledMessage
+	13, // 7: chat.v1.UpdateScheduledMessageRequest.scheduled_at:type_name -> google.protobuf.Timestamp
+	2,  // 8: chat.v1.ScheduledMessageService.CreateScheduledMessage:input_type -> chat.v1.CreateScheduledMessageRequest
+	4,  // 9: chat.v1.ScheduledMessageService.ListScheduledMessages:input_type -> chat.v1.ListScheduledMessagesRequest
+	6,  // 10: chat.v1.ScheduledMessageService.UpdateScheduledMessage:input_type -> chat.v1.UpdateScheduledMessageRequest
+	8,  // 11: chat.v1.ScheduledMessageService.DeleteScheduledMessage:input_type -> chat.v1.DeleteScheduledMessageRequest
+	10, // 12: chat.v1.ScheduledMessageService.SendScheduledMessageNow:input_type -> chat.v1.SendScheduledMessageNowRequest
+	3,  // 13: chat.v1.ScheduledMessageService.CreateScheduledMessage:output_type -> chat.v1.CreateScheduledMessageResponse
+	5,  // 14: chat.v1.ScheduledMessageService.ListScheduledMessages:output_type -> chat.v1.ListScheduledMessagesResponse
+	7,  // 15: chat.v1.ScheduledMessageService.UpdateScheduledMessage:output_type -> chat.v1.UpdateScheduledMessageResponse
+	9,  // 16: chat.v1.ScheduledMessageService.DeleteScheduledMessage:output_type -> chat.v1.DeleteScheduledMessageResponse
+	11, // 17: chat.v1.ScheduledMessageService.SendScheduledMessageNow:output_type -> chat.v1.SendScheduledMessageNowResponse
+	13, // [13:18] is the sub-list for method output_type
+	8,  // [8:13] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_scheduled_message_service_proto_init() }

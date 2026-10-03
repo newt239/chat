@@ -21,10 +21,9 @@ message Message {
   repeated MessageAttachment attachments = 11;
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp edited_at = 13;
-  google.protobuf.Timestamp deleted_at = 14;
   bool is_deleted = 15;
   UserSummary deleted_by = 16;
-  // スレッド付きの一覧取得でのみ設定される
+  // ListMessages で返信のあるメッセージにのみ設定される
   ThreadMetadata thread_metadata = 17;
   // ピン留めされている場合のみ設定される
   MessagePin pin = 18;
@@ -124,11 +123,7 @@ message MessagePin {
 
 // 投稿時点でメンションの宛先になったユーザー。グループへのメンションは投稿時点のメンバーに展開する
 message UserMention {
-  reserved 2;
-  reserved "display_name";
   string user_id = 1;
-  // グループ経由のときの展開元
-  optional string via_group_id = 3;
 }
 
 message GroupMention {
@@ -153,8 +148,6 @@ message OgpData {
   optional string image_url = 3;
   optional string site_name = 4;
   optional string card_type = 5;
-  optional int32 image_width = 6;
-  optional int32 image_height = 7;
   // YouTube の動画 URL のときのみ設定される
   YouTubeVideo youtube = 8;
   // X(Twitter) の投稿 URL のときのみ設定される

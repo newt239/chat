@@ -59,7 +59,7 @@ func (r *customEmojiRepository) Create(ctx context.Context, e *entity.CustomEmoj
 		SetCreatedBy(creatorID).
 		Save(ctx)
 	if ent.IsConstraintError(err) {
-		return domerr.ErrConflict
+		return domerr.ErrCustomEmojiNameExists
 	}
 	if err != nil {
 		return err

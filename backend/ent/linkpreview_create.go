@@ -102,34 +102,6 @@ func (_c *LinkPreviewCreate) SetNillableCardType(v *string) *LinkPreviewCreate {
 	return _c
 }
 
-// SetImageWidth sets the "image_width" field.
-func (_c *LinkPreviewCreate) SetImageWidth(v int32) *LinkPreviewCreate {
-	_c.mutation.SetImageWidth(v)
-	return _c
-}
-
-// SetNillableImageWidth sets the "image_width" field if the given value is not nil.
-func (_c *LinkPreviewCreate) SetNillableImageWidth(v *int32) *LinkPreviewCreate {
-	if v != nil {
-		_c.SetImageWidth(*v)
-	}
-	return _c
-}
-
-// SetImageHeight sets the "image_height" field.
-func (_c *LinkPreviewCreate) SetImageHeight(v int32) *LinkPreviewCreate {
-	_c.mutation.SetImageHeight(v)
-	return _c
-}
-
-// SetNillableImageHeight sets the "image_height" field if the given value is not nil.
-func (_c *LinkPreviewCreate) SetNillableImageHeight(v *int32) *LinkPreviewCreate {
-	if v != nil {
-		_c.SetImageHeight(*v)
-	}
-	return _c
-}
-
 // SetFetchedAt sets the "fetched_at" field.
 func (_c *LinkPreviewCreate) SetFetchedAt(v time.Time) *LinkPreviewCreate {
 	_c.mutation.SetFetchedAt(v)
@@ -301,14 +273,6 @@ func (_c *LinkPreviewCreate) createSpec() (*LinkPreview, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CardType(); ok {
 		_spec.SetField(linkpreview.FieldCardType, field.TypeString, value)
 		_node.CardType = &value
-	}
-	if value, ok := _c.mutation.ImageWidth(); ok {
-		_spec.SetField(linkpreview.FieldImageWidth, field.TypeInt32, value)
-		_node.ImageWidth = &value
-	}
-	if value, ok := _c.mutation.ImageHeight(); ok {
-		_spec.SetField(linkpreview.FieldImageHeight, field.TypeInt32, value)
-		_node.ImageHeight = &value
 	}
 	if value, ok := _c.mutation.FetchedAt(); ok {
 		_spec.SetField(linkpreview.FieldFetchedAt, field.TypeTime, value)
@@ -500,54 +464,6 @@ func (u *LinkPreviewUpsert) ClearCardType() *LinkPreviewUpsert {
 	return u
 }
 
-// SetImageWidth sets the "image_width" field.
-func (u *LinkPreviewUpsert) SetImageWidth(v int32) *LinkPreviewUpsert {
-	u.Set(linkpreview.FieldImageWidth, v)
-	return u
-}
-
-// UpdateImageWidth sets the "image_width" field to the value that was provided on create.
-func (u *LinkPreviewUpsert) UpdateImageWidth() *LinkPreviewUpsert {
-	u.SetExcluded(linkpreview.FieldImageWidth)
-	return u
-}
-
-// AddImageWidth adds v to the "image_width" field.
-func (u *LinkPreviewUpsert) AddImageWidth(v int32) *LinkPreviewUpsert {
-	u.Add(linkpreview.FieldImageWidth, v)
-	return u
-}
-
-// ClearImageWidth clears the value of the "image_width" field.
-func (u *LinkPreviewUpsert) ClearImageWidth() *LinkPreviewUpsert {
-	u.SetNull(linkpreview.FieldImageWidth)
-	return u
-}
-
-// SetImageHeight sets the "image_height" field.
-func (u *LinkPreviewUpsert) SetImageHeight(v int32) *LinkPreviewUpsert {
-	u.Set(linkpreview.FieldImageHeight, v)
-	return u
-}
-
-// UpdateImageHeight sets the "image_height" field to the value that was provided on create.
-func (u *LinkPreviewUpsert) UpdateImageHeight() *LinkPreviewUpsert {
-	u.SetExcluded(linkpreview.FieldImageHeight)
-	return u
-}
-
-// AddImageHeight adds v to the "image_height" field.
-func (u *LinkPreviewUpsert) AddImageHeight(v int32) *LinkPreviewUpsert {
-	u.Add(linkpreview.FieldImageHeight, v)
-	return u
-}
-
-// ClearImageHeight clears the value of the "image_height" field.
-func (u *LinkPreviewUpsert) ClearImageHeight() *LinkPreviewUpsert {
-	u.SetNull(linkpreview.FieldImageHeight)
-	return u
-}
-
 // SetFetchedAt sets the "fetched_at" field.
 func (u *LinkPreviewUpsert) SetFetchedAt(v time.Time) *LinkPreviewUpsert {
 	u.Set(linkpreview.FieldFetchedAt, v)
@@ -724,62 +640,6 @@ func (u *LinkPreviewUpsertOne) UpdateCardType() *LinkPreviewUpsertOne {
 func (u *LinkPreviewUpsertOne) ClearCardType() *LinkPreviewUpsertOne {
 	return u.Update(func(s *LinkPreviewUpsert) {
 		s.ClearCardType()
-	})
-}
-
-// SetImageWidth sets the "image_width" field.
-func (u *LinkPreviewUpsertOne) SetImageWidth(v int32) *LinkPreviewUpsertOne {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.SetImageWidth(v)
-	})
-}
-
-// AddImageWidth adds v to the "image_width" field.
-func (u *LinkPreviewUpsertOne) AddImageWidth(v int32) *LinkPreviewUpsertOne {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.AddImageWidth(v)
-	})
-}
-
-// UpdateImageWidth sets the "image_width" field to the value that was provided on create.
-func (u *LinkPreviewUpsertOne) UpdateImageWidth() *LinkPreviewUpsertOne {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.UpdateImageWidth()
-	})
-}
-
-// ClearImageWidth clears the value of the "image_width" field.
-func (u *LinkPreviewUpsertOne) ClearImageWidth() *LinkPreviewUpsertOne {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.ClearImageWidth()
-	})
-}
-
-// SetImageHeight sets the "image_height" field.
-func (u *LinkPreviewUpsertOne) SetImageHeight(v int32) *LinkPreviewUpsertOne {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.SetImageHeight(v)
-	})
-}
-
-// AddImageHeight adds v to the "image_height" field.
-func (u *LinkPreviewUpsertOne) AddImageHeight(v int32) *LinkPreviewUpsertOne {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.AddImageHeight(v)
-	})
-}
-
-// UpdateImageHeight sets the "image_height" field to the value that was provided on create.
-func (u *LinkPreviewUpsertOne) UpdateImageHeight() *LinkPreviewUpsertOne {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.UpdateImageHeight()
-	})
-}
-
-// ClearImageHeight clears the value of the "image_height" field.
-func (u *LinkPreviewUpsertOne) ClearImageHeight() *LinkPreviewUpsertOne {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.ClearImageHeight()
 	})
 }
 
@@ -1128,62 +988,6 @@ func (u *LinkPreviewUpsertBulk) UpdateCardType() *LinkPreviewUpsertBulk {
 func (u *LinkPreviewUpsertBulk) ClearCardType() *LinkPreviewUpsertBulk {
 	return u.Update(func(s *LinkPreviewUpsert) {
 		s.ClearCardType()
-	})
-}
-
-// SetImageWidth sets the "image_width" field.
-func (u *LinkPreviewUpsertBulk) SetImageWidth(v int32) *LinkPreviewUpsertBulk {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.SetImageWidth(v)
-	})
-}
-
-// AddImageWidth adds v to the "image_width" field.
-func (u *LinkPreviewUpsertBulk) AddImageWidth(v int32) *LinkPreviewUpsertBulk {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.AddImageWidth(v)
-	})
-}
-
-// UpdateImageWidth sets the "image_width" field to the value that was provided on create.
-func (u *LinkPreviewUpsertBulk) UpdateImageWidth() *LinkPreviewUpsertBulk {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.UpdateImageWidth()
-	})
-}
-
-// ClearImageWidth clears the value of the "image_width" field.
-func (u *LinkPreviewUpsertBulk) ClearImageWidth() *LinkPreviewUpsertBulk {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.ClearImageWidth()
-	})
-}
-
-// SetImageHeight sets the "image_height" field.
-func (u *LinkPreviewUpsertBulk) SetImageHeight(v int32) *LinkPreviewUpsertBulk {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.SetImageHeight(v)
-	})
-}
-
-// AddImageHeight adds v to the "image_height" field.
-func (u *LinkPreviewUpsertBulk) AddImageHeight(v int32) *LinkPreviewUpsertBulk {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.AddImageHeight(v)
-	})
-}
-
-// UpdateImageHeight sets the "image_height" field to the value that was provided on create.
-func (u *LinkPreviewUpsertBulk) UpdateImageHeight() *LinkPreviewUpsertBulk {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.UpdateImageHeight()
-	})
-}
-
-// ClearImageHeight clears the value of the "image_height" field.
-func (u *LinkPreviewUpsertBulk) ClearImageHeight() *LinkPreviewUpsertBulk {
-	return u.Update(func(s *LinkPreviewUpsert) {
-		s.ClearImageHeight()
 	})
 }
 

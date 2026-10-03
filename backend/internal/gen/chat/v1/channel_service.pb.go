@@ -133,7 +133,6 @@ type Channel struct {
 	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	UnreadCount int32                  `protobuf:"varint,9,opt,name=unread_count,json=unreadCount,proto3" json:"unread_count,omitempty"`
-	HasMention  bool                   `protobuf:"varint,10,opt,name=has_mention,json=hasMention,proto3" json:"has_mention,omitempty"`
 	ParentId    *string                `protobuf:"bytes,11,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
 	IsStarred   bool                   `protobuf:"varint,12,opt,name=is_starred,json=isStarred,proto3" json:"is_starred,omitempty"`
 	// false の場合はツリーを組み立てるために返している未参加の祖先チャンネル
@@ -238,13 +237,6 @@ func (x *Channel) GetUnreadCount() int32 {
 		return x.UnreadCount
 	}
 	return 0
-}
-
-func (x *Channel) GetHasMention() bool {
-	if x != nil {
-		return x.HasMention
-	}
-	return false
 }
 
 func (x *Channel) GetParentId() string {
@@ -1158,7 +1150,7 @@ var File_chat_v1_channel_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1dchat/v1/channel_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x88\x05\n" +
+	"\x1dchat/v1/channel_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe7\x04\n" +
 	"\aChannel\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
@@ -1172,10 +1164,7 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12!\n" +
-	"\funread_count\x18\t \x01(\x05R\vunreadCount\x12\x1f\n" +
-	"\vhas_mention\x18\n" +
-	" \x01(\bR\n" +
-	"hasMention\x12 \n" +
+	"\funread_count\x18\t \x01(\x05R\vunreadCount\x12 \n" +
 	"\tparent_id\x18\v \x01(\tH\x01R\bparentId\x88\x01\x01\x12\x1d\n" +
 	"\n" +
 	"is_starred\x18\f \x01(\bR\tisStarred\x12\x1b\n" +

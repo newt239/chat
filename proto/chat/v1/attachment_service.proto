@@ -69,5 +69,4 @@ message GetDownloadUrlRequest {
 
 message GetDownloadUrlResponse {
   string url = 1;
-  int32 expires_in = 2;
 }

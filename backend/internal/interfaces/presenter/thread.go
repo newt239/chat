@@ -4,12 +4,12 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
-	threaduc "github.com/newt239/chat/internal/usecase/thread"
+	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
-func ParticipatingThreads(out *threaduc.ListParticipatingThreadsOutput) *chatv1.ListParticipatingThreadsResponse {
+func ParticipatingThreads(out *messageuc.ListParticipatingThreadsOutput) *chatv1.ListParticipatingThreadsResponse {
 	res := &chatv1.ListParticipatingThreadsResponse{
-		Threads: ConvertAll(out.Items, func(t threaduc.ParticipatingThreadOutput) *chatv1.ParticipatingThread {
+		Threads: ConvertAll(out.Items, func(t messageuc.ParticipatingThreadOutput) *chatv1.ParticipatingThread {
 			return &chatv1.ParticipatingThread{
 				ThreadId:       t.ThreadID,
 				ChannelId:      &t.ChannelID,

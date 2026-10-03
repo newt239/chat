@@ -86,16 +86,6 @@ func CardType(v string) predicate.LinkPreview {
 	return predicate.LinkPreview(sql.FieldEQ(FieldCardType, v))
 }
 
-// ImageWidth applies equality check predicate on the "image_width" field. It's identical to ImageWidthEQ.
-func ImageWidth(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldEQ(FieldImageWidth, v))
-}
-
-// ImageHeight applies equality check predicate on the "image_height" field. It's identical to ImageHeightEQ.
-func ImageHeight(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldEQ(FieldImageHeight, v))
-}
-
 // FetchedAt applies equality check predicate on the "fetched_at" field. It's identical to FetchedAtEQ.
 func FetchedAt(v time.Time) predicate.LinkPreview {
 	return predicate.LinkPreview(sql.FieldEQ(FieldFetchedAt, v))
@@ -539,106 +529,6 @@ func CardTypeEqualFold(v string) predicate.LinkPreview {
 // CardTypeContainsFold applies the ContainsFold predicate on the "card_type" field.
 func CardTypeContainsFold(v string) predicate.LinkPreview {
 	return predicate.LinkPreview(sql.FieldContainsFold(FieldCardType, v))
-}
-
-// ImageWidthEQ applies the EQ predicate on the "image_width" field.
-func ImageWidthEQ(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldEQ(FieldImageWidth, v))
-}
-
-// ImageWidthNEQ applies the NEQ predicate on the "image_width" field.
-func ImageWidthNEQ(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldNEQ(FieldImageWidth, v))
-}
-
-// ImageWidthIn applies the In predicate on the "image_width" field.
-func ImageWidthIn(vs ...int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldIn(FieldImageWidth, vs...))
-}
-
-// ImageWidthNotIn applies the NotIn predicate on the "image_width" field.
-func ImageWidthNotIn(vs ...int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldNotIn(FieldImageWidth, vs...))
-}
-
-// ImageWidthGT applies the GT predicate on the "image_width" field.
-func ImageWidthGT(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldGT(FieldImageWidth, v))
-}
-
-// ImageWidthGTE applies the GTE predicate on the "image_width" field.
-func ImageWidthGTE(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldGTE(FieldImageWidth, v))
-}
-
-// ImageWidthLT applies the LT predicate on the "image_width" field.
-func ImageWidthLT(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldLT(FieldImageWidth, v))
-}
-
-// ImageWidthLTE applies the LTE predicate on the "image_width" field.
-func ImageWidthLTE(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldLTE(FieldImageWidth, v))
-}
-
-// ImageWidthIsNil applies the IsNil predicate on the "image_width" field.
-func ImageWidthIsNil() predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldIsNull(FieldImageWidth))
-}
-
-// ImageWidthNotNil applies the NotNil predicate on the "image_width" field.
-func ImageWidthNotNil() predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldNotNull(FieldImageWidth))
-}
-
-// ImageHeightEQ applies the EQ predicate on the "image_height" field.
-func ImageHeightEQ(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldEQ(FieldImageHeight, v))
-}
-
-// ImageHeightNEQ applies the NEQ predicate on the "image_height" field.
-func ImageHeightNEQ(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldNEQ(FieldImageHeight, v))
-}
-
-// ImageHeightIn applies the In predicate on the "image_height" field.
-func ImageHeightIn(vs ...int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldIn(FieldImageHeight, vs...))
-}
-
-// ImageHeightNotIn applies the NotIn predicate on the "image_height" field.
-func ImageHeightNotIn(vs ...int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldNotIn(FieldImageHeight, vs...))
-}
-
-// ImageHeightGT applies the GT predicate on the "image_height" field.
-func ImageHeightGT(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldGT(FieldImageHeight, v))
-}
-
-// ImageHeightGTE applies the GTE predicate on the "image_height" field.
-func ImageHeightGTE(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldGTE(FieldImageHeight, v))
-}
-
-// ImageHeightLT applies the LT predicate on the "image_height" field.
-func ImageHeightLT(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldLT(FieldImageHeight, v))
-}
-
-// ImageHeightLTE applies the LTE predicate on the "image_height" field.
-func ImageHeightLTE(v int32) predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldLTE(FieldImageHeight, v))
-}
-
-// ImageHeightIsNil applies the IsNil predicate on the "image_height" field.
-func ImageHeightIsNil() predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldIsNull(FieldImageHeight))
-}
-
-// ImageHeightNotNil applies the NotNil predicate on the "image_height" field.
-func ImageHeightNotNil() predicate.LinkPreview {
-	return predicate.LinkPreview(sql.FieldNotNull(FieldImageHeight))
 }
 
 // FetchedAtEQ applies the EQ predicate on the "fetched_at" field.

@@ -30,12 +30,7 @@ export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
 
   return (
     <MessageListCard workspaceId={workspaceId} message={firstMessage}>
-      <MessageItem
-        message={firstMessage}
-        threadMetadata={undefined}
-        isHighlighted={false}
-        channelChip={null}
-      />
+      <MessageItem message={firstMessage} isHighlighted={false} channelChip={null} />
       <div className="flex items-center gap-2 pr-3 pl-15 max-md:pl-3">
         <Link
           to="/app/$workspaceId/$channelId/thread/$messageId"
@@ -65,13 +60,7 @@ export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
         </span>
       </div>
       {thread.latestReplies.map((reply) => (
-        <MessageItem
-          key={reply.id}
-          message={reply}
-          threadMetadata={undefined}
-          isHighlighted={false}
-          channelChip={null}
-        />
+        <MessageItem key={reply.id} message={reply} isHighlighted={false} channelChip={null} />
       ))}
       <div className="pt-1">
         <BaseMessageInput

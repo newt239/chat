@@ -12,7 +12,6 @@ COPY pnpm-lock.yaml ./
 
 # 全ワークスペースのpackage.jsonをコピー
 COPY frontend/package.json ./frontend/
-COPY backend/package.json ./backend/
 COPY packages/design-tokens/package.json ./packages/design-tokens/
 COPY packages/i18n/package.json ./packages/i18n/
 

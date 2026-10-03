@@ -70,14 +70,9 @@ export const useChannelRealtimeSync = (workspaceId: string, currentChannelId: st
         updateDM(channelId, (dm) => ({ ...dm, unreadCount: dm.unreadCount + unread }));
       }),
 
-      wsClient.on("unreadCount", ({ channelId, hasMention, mentionCount, unreadCount }) => {
-        updateChannel(channelId, (channel) => ({
-          ...channel,
-          hasMention,
-          mentionCount,
-          unreadCount,
-        }));
-        updateDM(channelId, (dm) => ({ ...dm, hasMention, unreadCount }));
+      wsClient.on("unreadCount", ({ channelId, mentionCount, unreadCount }) => {
+        updateChannel(channelId, (channel) => ({ ...channel, mentionCount, unreadCount }));
+        updateDM(channelId, (dm) => ({ ...dm, unreadCount }));
       }),
     ];
 

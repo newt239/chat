@@ -91,8 +91,7 @@ export const ClosePollResponseSchema: GenMessage<ClosePollResponse> = /*@__PURE_
   messageDesc(file_chat_v1_poll_service, 3);
 
 /**
- * メッセージに付けた投票。チャンネルの参加者が投票でき、締め切りは作成者と管理者だけができる。
- * 集計の変化は投票を付けたメッセージの message_updated として配信する
+ * メッセージに付けた投票。集計の変化は投票を付けたメッセージの message_updated として配信する
  *
  * @generated from service chat.v1.PollService
  */

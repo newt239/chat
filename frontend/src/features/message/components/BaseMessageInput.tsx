@@ -17,10 +17,10 @@ import { PollComposerDialog } from "#/features/poll/components/PollComposerDialo
 import { VoiceRecorder } from "#/features/recorder/components/VoiceRecorder";
 import { useScheduleMessage } from "#/features/schedule/hooks/useScheduledMessages";
 import { CommandService } from "#/gen/chat/v1/command_service_pb";
+import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 
 import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
-import { useSendMessage } from "../hooks/useMessage";
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
 import { findCommand, unescapeCommand } from "../utils/commands";
 import { detectActiveFormats, handleEnterKey, insertEmoji, toggleFormat } from "../utils/format";
@@ -85,7 +85,7 @@ export const BaseMessageInput = ({
     getCompletedAttachmentIds,
     isUploading,
   } = useFileUpload();
-  const sendMessage = useSendMessage();
+  const sendMessage = useMutation(MessageService.method.createMessage);
   const scheduleMessage = useScheduleMessage();
   // 応答は公式アプリの投稿として WebSocket で届く
   const executeCommand = useMutation(CommandService.method.executeCommand);

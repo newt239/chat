@@ -23,6 +23,18 @@ func (stubAccess) AccessibleDescendants(_ context.Context, _ *entity.Channel, _ 
 	return []*entity.Channel{{ID: "child"}}, nil
 }
 
+type emptyThreadRepo struct {
+	domainrepository.ThreadRepository
+}
+
+func (emptyThreadRepo) CalculateMetadataByMessageIDs(context.Context, []string) (map[string]*domainrepository.ThreadMetadata, error) {
+	return map[string]*domainrepository.ThreadMetadata{}, nil
+}
+
+func (emptyThreadRepo) FindFollowedThreadIDs(context.Context, string, []string) (map[string]bool, error) {
+	return map[string]bool{}, nil
+}
+
 type recordingMessageRepo struct {
 	domainrepository.MessageRepository
 	channelIDs []string
@@ -61,6 +73,8 @@ func TestListMessagesIncludeDescendants(t *testing.T) {
 				systemMsgRepo:    systemMessages,
 				channelAccessSvc: stubAccess{},
 				outputBuilder:    &MessageOutputBuilder{},
+				threadRepo:       emptyThreadRepo{},
+				userRepo:         &builderUserRepo{},
 			}
 
 			if _, err := lister.ListMessages(context.Background(), ListMessagesInput{ChannelID: "parent", UserID: "u", IncludeDescendants: tt.includeDescendants}); err != nil {
@@ -106,6 +120,8 @@ func TestListMessagesAround(t *testing.T) {
 		systemMsgRepo:    systemMessages,
 		channelAccessSvc: stubAccess{},
 		outputBuilder:    &MessageOutputBuilder{},
+		threadRepo:       emptyThreadRepo{},
+		userRepo:         &builderUserRepo{},
 	}
 	ids := func(out *ListMessagesOutput) []string {
 		got := make([]string, 0, len(out.Messages))

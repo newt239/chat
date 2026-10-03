@@ -33,7 +33,6 @@ type BrowsableChannelFilter struct {
 
 type ChannelRepository interface {
 	FindByID(ctx context.Context, id string) (*entity.Channel, error)
-	FindByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.Channel, error)
 	FindAccessibleChannels(ctx context.Context, workspaceID string, userID string) ([]*entity.Channel, error)
 	// FindBrowsableChannels は参加の有無を問わず閲覧できるチャンネル（公開と参加中の非公開）を返します
 	FindBrowsableChannels(ctx context.Context, workspaceID string, userID string) ([]*entity.Channel, error)

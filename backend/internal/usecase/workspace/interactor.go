@@ -9,27 +9,17 @@ import (
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
-	"github.com/newt239/chat/internal/usecase/audit"
 )
 
 var (
-	ErrCannotRemoveOwner     = domerr.New(domerr.ErrFailedPrecondition, "ワークスペースのオーナーは削除できません")
-	ErrCannotChangeOwnerRole = domerr.New(domerr.ErrFailedPrecondition, "オーナーのロールは変更できません")
-	ErrWorkspaceNotPublic    = domerr.New(domerr.ErrUnauthorized, "このワークスペースは公開されていません")
+	ErrWorkspaceNotPublic = domerr.New(domerr.ErrUnauthorized, "このワークスペースは公開されていません")
 )
-
-// MemberCloser はワークスペースから外したメンバーのリアルタイム接続を切ります
-type MemberCloser interface {
-	CloseWorkspaceUser(workspaceID, userID string)
-}
 
 type Interactor struct {
 	workspaceRepo domainrepository.WorkspaceRepository
 	userRepo      domainrepository.UserRepository
 	userNoteRepo  domainrepository.UserNoteRepository
 	txManager     domaintransaction.Manager
-	recorder      audit.Recorder
-	memberCloser  MemberCloser
 }
 
 func New(
@@ -37,16 +27,12 @@ func New(
 	userRepo domainrepository.UserRepository,
 	userNoteRepo domainrepository.UserNoteRepository,
 	txManager domaintransaction.Manager,
-	recorder audit.Recorder,
-	memberCloser MemberCloser,
 ) *Interactor {
 	return &Interactor{
 		workspaceRepo: workspaceRepo,
 		userRepo:      userRepo,
 		userNoteRepo:  userNoteRepo,
 		txManager:     txManager,
-		recorder:      recorder,
-		memberCloser:  memberCloser,
 	}
 }
 
@@ -199,72 +185,6 @@ func (i *Interactor) ListMembers(ctx context.Context, workspaceID, requesterID s
 		}
 	}
 	return infos, nil
-}
-
-// findTargetForAdmin は管理者が停止中も含めたメンバーを操作するときに対象を読みます
-func (i *Interactor) findTargetForAdmin(ctx context.Context, input MemberInput) (*entity.WorkspaceMember, *entity.WorkspaceMember, error) {
-	operator, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.OperatorID)
-	if err != nil {
-		return nil, nil, err
-	}
-	target, err := i.workspaceRepo.FindMemberIncludingSuspended(ctx, input.WorkspaceID, input.UserID)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get target member: %w", err)
-	}
-	if target == nil {
-		return nil, nil, domerr.ErrUserNotFound
-	}
-	return operator, target, nil
-}
-
-func (i *Interactor) UpdateMemberRole(ctx context.Context, input MemberInput) error {
-	switch input.Role {
-	case entity.WorkspaceRoleOwner, entity.WorkspaceRoleAdmin, entity.WorkspaceRoleMember, entity.WorkspaceRoleGuest:
-	default:
-		return domerr.ErrInvalidRole
-	}
-	operator, target, err := i.findTargetForAdmin(ctx, input)
-	if err != nil {
-		return err
-	}
-	// owner の降格と owner への昇格は owner 本人にのみ許可する
-	isOwnerChange := target.Role == entity.WorkspaceRoleOwner || input.Role == entity.WorkspaceRoleOwner
-	if (isOwnerChange && operator.Role != entity.WorkspaceRoleOwner) || input.UserID == input.OperatorID {
-		return ErrCannotChangeOwnerRole
-	}
-	if err := i.workspaceRepo.UpdateMemberRole(ctx, input.WorkspaceID, input.UserID, input.Role); err != nil {
-		return fmt.Errorf("failed to update member role: %w", err)
-	}
-
-	label := input.UserID
-	if user, err := i.userRepo.FindByID(ctx, input.UserID); err == nil && user != nil {
-		label = user.DisplayName
-	}
-	i.recorder.Record(ctx, entity.AuditLog{
-		WorkspaceID: input.WorkspaceID,
-		ActorID:     &input.OperatorID,
-		Action:      entity.AuditActionMemberRoleChanged,
-		TargetType:  entity.AuditTargetUser,
-		TargetID:    input.UserID,
-		TargetLabel: label,
-		Metadata:    map[string]string{"from": string(target.Role), "to": string(input.Role)},
-	})
-	return nil
-}
-
-func (i *Interactor) RemoveMember(ctx context.Context, input MemberInput) error {
-	_, target, err := i.findTargetForAdmin(ctx, input)
-	if err != nil {
-		return err
-	}
-	if target.Role == entity.WorkspaceRoleOwner {
-		return ErrCannotRemoveOwner
-	}
-	if err := i.workspaceRepo.RemoveMember(ctx, input.WorkspaceID, input.UserID); err != nil {
-		return fmt.Errorf("failed to remove member: %w", err)
-	}
-	i.memberCloser.CloseWorkspaceUser(input.WorkspaceID, input.UserID)
-	return nil
 }
 
 // ListPublicWorkspaces は公開ワークスペースをメンバー数と参加済みかを付けて返します

@@ -16,10 +16,10 @@ const (
 )
 
 var (
-	ErrPollQuestionRequired = fmt.Errorf("%w: 投票の質問を入力してください", domerr.ErrValidation)
-	ErrPollOptionCount      = fmt.Errorf("%w: 選択肢は %d〜%d 個にしてください", domerr.ErrValidation, entity.MinPollOptions, entity.MaxPollOptions)
-	ErrPollOptionInvalid    = fmt.Errorf("%w: 選択肢の内容が正しくありません", domerr.ErrValidation)
-	ErrPollClosesInPast     = fmt.Errorf("%w: 締切は今より後にしてください", domerr.ErrValidation)
+	ErrPollQuestionRequired = domerr.New(domerr.ErrValidation, "投票の質問を入力してください")
+	ErrPollOptionCount      = domerr.New(domerr.ErrValidation, fmt.Sprintf("選択肢は %d〜%d 個にしてください", entity.MinPollOptions, entity.MaxPollOptions))
+	ErrPollOptionInvalid    = domerr.New(domerr.ErrValidation, "選択肢の内容が正しくありません")
+	ErrPollClosesInPast     = domerr.New(domerr.ErrValidation, "締切は今より後にしてください")
 )
 
 type PollInput struct {

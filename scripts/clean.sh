@@ -15,7 +15,6 @@ cd "$(dirname "$0")/.."
 TARGETS=(
     ".turbo"
     "frontend/.turbo"
-    "backend/.turbo"
     "node_modules"
     "frontend/node_modules"
     "pnpm-lock.yaml"

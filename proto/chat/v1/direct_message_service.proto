@@ -30,7 +30,6 @@ message DirectMessage {
   bool is_muted = 10;
   // ListDirectMessages でのみ設定される
   int32 unread_count = 11;
-  bool has_mention = 12;
 }
 
 message DirectMessageMember {

@@ -8,7 +8,6 @@ import "google/protobuf/timestamp.proto";
 
 service MessageService {
   rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
-  rpc ListMessagesWithThread(ListMessagesWithThreadRequest) returns (ListMessagesWithThreadResponse);
   rpc CreateMessage(CreateMessageRequest) returns (CreateMessageResponse);
   rpc UpdateMessage(UpdateMessageRequest) returns (UpdateMessageResponse);
   rpc DeleteMessage(DeleteMessageRequest) returns (DeleteMessageResponse);
@@ -37,24 +36,6 @@ message ListMessagesResponse {
   bool has_more = 2;
   // 返した範囲より後にメッセージがある。around または since だけを指定したときに求める
   bool has_newer = 3;
-}
-
-message ListMessagesWithThreadRequest {
-  string channel_id = 1 [(buf.validate.field).string.uuid = true];
-  // 0 の場合はサーバーの既定値を使う
-  int32 limit = 2 [(buf.validate.field).int32 = {
-    gte: 0
-    lte: 100
-  }];
-  google.protobuf.Timestamp since = 3;
-  google.protobuf.Timestamp until = 4;
-  // 閲覧できる子孫チャンネルのメッセージもまとめて返す
-  bool include_descendants = 5;
-}
-
-message ListMessagesWithThreadResponse {
-  repeated Message messages = 1;
-  bool has_more = 2;
 }
 
 message CreateMessageRequest {

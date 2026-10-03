@@ -5,11 +5,13 @@ import (
 
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
+	adminuc "github.com/newt239/chat/internal/usecase/admin"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
 type WorkspaceServer struct {
-	UC *workspaceuc.Interactor
+	UC      *workspaceuc.Interactor
+	AdminUC *adminuc.Interactor
 }
 
 func (s *WorkspaceServer) ListWorkspaces(ctx context.Context, _ *chatv1.ListWorkspacesRequest) (*chatv1.ListWorkspacesResponse, error) {
@@ -85,13 +87,16 @@ func (s *WorkspaceServer) ListMembers(ctx context.Context, req *chatv1.ListMembe
 }
 
 func (s *WorkspaceServer) UpdateMemberRole(ctx context.Context, req *chatv1.UpdateMemberRoleRequest) (*chatv1.UpdateMemberRoleResponse, error) {
-	input := workspaceuc.MemberInput{WorkspaceID: req.WorkspaceId, UserID: req.UserId, OperatorID: userIDFrom(ctx), Role: fromProto(presenter.WorkspaceRoles, req.Role)}
-	return &chatv1.UpdateMemberRoleResponse{}, s.UC.UpdateMemberRole(ctx, input)
+	input := adminuc.UpdateMemberRoleInput{
+		MemberActionInput: adminuc.MemberActionInput{WorkspaceID: req.WorkspaceId, TargetUserID: req.UserId, OperatorID: userIDFrom(ctx)},
+		Role:              fromProto(presenter.WorkspaceRoles, req.Role),
+	}
+	return &chatv1.UpdateMemberRoleResponse{}, s.AdminUC.UpdateMemberRole(ctx, input)
 }
 
 func (s *WorkspaceServer) RemoveMember(ctx context.Context, req *chatv1.RemoveMemberRequest) (*chatv1.RemoveMemberResponse, error) {
-	input := workspaceuc.MemberInput{WorkspaceID: req.WorkspaceId, UserID: req.UserId, OperatorID: userIDFrom(ctx)}
-	return &chatv1.RemoveMemberResponse{}, s.UC.RemoveMember(ctx, input)
+	input := adminuc.MemberActionInput{WorkspaceID: req.WorkspaceId, TargetUserID: req.UserId, OperatorID: userIDFrom(ctx)}
+	return &chatv1.RemoveMemberResponse{}, s.AdminUC.RemoveMember(ctx, input)
 }
 
 func (s *WorkspaceServer) GetWorkspaceSignupInfo(ctx context.Context, req *chatv1.GetWorkspaceSignupInfoRequest) (*chatv1.GetWorkspaceSignupInfoResponse, error) {

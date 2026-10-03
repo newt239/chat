@@ -81,9 +81,20 @@ func (i *Interactor) fetchTimeline(ctx context.Context, userID string, channelID
 	if err != nil {
 		return nil, false, err
 	}
+	messageIDs := make([]string, len(messages))
+	for idx, m := range messages {
+		messageIDs[idx] = m.ID
+	}
+	threads, err := i.buildThreadMetadata(ctx, userID, messageIDs)
+	if err != nil {
+		return nil, false, err
+	}
 
 	timeline := make([]TimelineItem, 0, len(userOutputs)+len(systemMessages))
 	for _, m := range userOutputs {
+		if t := threads[m.ID]; t.ReplyCount > 0 {
+			m.ThreadMetadata = t
+		}
 		timeline = append(timeline, TimelineItem{UserMessage: &m, CreatedAt: m.CreatedAt})
 	}
 	for _, sm := range systemMessages {
@@ -100,33 +111,6 @@ func (i *Interactor) fetchTimeline(ctx context.Context, userID string, channelID
 		timeline = timeline[:limit]
 	}
 	return timeline, hasMore, nil
-}
-
-// ListMessagesWithThread はユーザーのメッセージだけを、閲覧者から見たスレッドの情報付きで返します
-func (i *Interactor) ListMessagesWithThread(ctx context.Context, input ListMessagesInput) (*ListMessagesWithThreadOutput, error) {
-	list, err := i.ListMessages(ctx, input)
-	if err != nil {
-		return nil, err
-	}
-
-	messages := make([]MessageOutput, 0, len(list.Messages))
-	messageIDs := make([]string, 0, len(list.Messages))
-	for _, item := range list.Messages {
-		if item.UserMessage != nil {
-			messages = append(messages, *item.UserMessage)
-			messageIDs = append(messageIDs, item.UserMessage.ID)
-		}
-	}
-	metadata, err := i.buildThreadMetadata(ctx, input.UserID, messageIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	outputs := make([]MessageWithThreadOutput, 0, len(messages))
-	for _, msg := range messages {
-		outputs = append(outputs, MessageWithThreadOutput{MessageOutput: msg, ThreadMetadata: metadata[msg.ID]})
-	}
-	return &ListMessagesWithThreadOutput{Messages: outputs, HasMore: list.HasMore}, nil
 }
 
 // buildThreadMetadata はメッセージごとのスレッドの返信数・最新の返信者・閲覧者のフォロー状態をまとめて求めます

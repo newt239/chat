@@ -3,13 +3,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { updateTimelineMessage } from "#/features/message/utils/updateTimelineMessage";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
 
 import { useUpdateListedThread } from "./useParticipatingThreads";
 
-import type { ListMessagesWithThreadResponse } from "#/gen/chat/v1/message_service_pb";
+import type { ListMessagesResponse } from "#/gen/chat/v1/message_service_pb";
 import type { GetThreadMetadataResponse } from "#/gen/chat/v1/thread_service_pb";
+
+import type { InfiniteData } from "@tanstack/react-query";
 
 /** スレッドのフォローを切り替え、メタデータ・タイムライン・参加中の一覧のキャッシュに反映する */
 export const useToggleThreadFollow = (threadId: string) => {
@@ -34,21 +37,24 @@ export const useToggleThreadFollow = (threadId: string) => {
             },
             (res) => res?.metadata && { ...res, metadata: { ...res.metadata, isFollowing } },
           );
-          queryClient.setQueriesData<ListMessagesWithThreadResponse>(
+          queryClient.setQueriesData<InfiniteData<ListMessagesResponse>>(
             {
               queryKey: createConnectQueryKey({
-                cardinality: "finite",
-                schema: MessageService.method.listMessagesWithThread,
+                cardinality: "infinite",
+                schema: MessageService.method.listMessages,
               }),
             },
-            (res) =>
-              res && {
-                ...res,
-                messages: res.messages.map((message) =>
-                  message.id === threadId && message.threadMetadata
-                    ? { ...message, threadMetadata: { ...message.threadMetadata, isFollowing } }
-                    : message,
-                ),
+            (data) =>
+              data && {
+                ...data,
+                pages: data.pages.map((page) => ({
+                  ...page,
+                  messages: updateTimelineMessage(page.messages, threadId, (message) =>
+                    message.threadMetadata
+                      ? { ...message, threadMetadata: { ...message.threadMetadata, isFollowing } }
+                      : message,
+                  ),
+                })),
               },
           );
           updateListedThread(threadId, (thread) => ({ ...thread, isFollowing }));

@@ -25,10 +25,6 @@ const (
 	FieldSiteName = "site_name"
 	// FieldCardType holds the string denoting the card_type field in the database.
 	FieldCardType = "card_type"
-	// FieldImageWidth holds the string denoting the image_width field in the database.
-	FieldImageWidth = "image_width"
-	// FieldImageHeight holds the string denoting the image_height field in the database.
-	FieldImageHeight = "image_height"
 	// FieldFetchedAt holds the string denoting the fetched_at field in the database.
 	FieldFetchedAt = "fetched_at"
 	// EdgeYoutube holds the string denoting the youtube edge name in mutations.
@@ -62,8 +58,6 @@ var Columns = []string{
 	FieldImageURL,
 	FieldSiteName,
 	FieldCardType,
-	FieldImageWidth,
-	FieldImageHeight,
 	FieldFetchedAt,
 }
 
@@ -120,16 +114,6 @@ func BySiteName(opts ...sql.OrderTermOption) OrderOption {
 // ByCardType orders the results by the card_type field.
 func ByCardType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCardType, opts...).ToFunc()
-}
-
-// ByImageWidth orders the results by the image_width field.
-func ByImageWidth(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldImageWidth, opts...).ToFunc()
-}
-
-// ByImageHeight orders the results by the image_height field.
-func ByImageHeight(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldImageHeight, opts...).ToFunc()
 }
 
 // ByFetchedAt orders the results by the fetched_at field.
