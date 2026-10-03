@@ -1,22 +1,18 @@
-import { useState } from "react";
-
 import { IconCheck, IconDots, IconUserMinus } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
-import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Badge } from "#/components/ui/Badge/Badge";
 import { Button } from "#/components/ui/Button/Button";
-import { ComboBox } from "#/components/ui/ComboBox/ComboBox";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { useChannelMemberActions } from "#/features/channel/hooks/useChannelMemberActions";
 import { useChannelMembers } from "#/features/channel/hooks/useChannelMembers";
+import { MemberPickerForm } from "#/features/member/components/MemberPickerForm";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
-import { useMembers } from "#/features/member/hooks/useMembers";
 import { ChannelRole } from "#/gen/chat/v1/channel_member_service_pb";
 import { myUserIdAtom } from "#/providers/store/auth";
 
@@ -31,16 +27,11 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
   const { t } = useTranslation();
   const myId = useAtomValue(myUserIdAtom);
   const { data: channelMembers } = useChannelMembers(channelId);
-  const { data: workspaceMembers } = useMembers(workspaceId);
   const { invite, join, leave, remove, updateRole } = useChannelMemberActions(workspaceId);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const displayName = useDisplayName();
 
   const memberIds = new Set(channelMembers?.map((member) => member.userId));
   const isJoined = myId !== null && memberIds.has(myId);
-  const inviteOptions = (workspaceMembers ?? [])
-    .filter((member) => !memberIds.has(member.userId))
-    .map((member) => ({ label: member.nickname ?? member.displayName, value: member.userId }));
   const failedAction = [remove, updateRole, leave, join].find((action) => action.isError);
 
   return (
@@ -125,28 +116,17 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
         <p className="m-0 text-caption text-muted">{t("channel.members.empty")}</p>
       )}
 
-      <Form
-        className="flex items-end gap-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (selectedUserId !== null) {
-            invite.mutate({ channelId, role: ChannelRole.MEMBER, userId: selectedUserId });
-            setSelectedUserId(null);
-          }
+      <MemberPickerForm
+        workspaceId={workspaceId}
+        memberIds={memberIds}
+        label={t("channel.members.invite")}
+        placeholder={t("channel.members.invitePlaceholder")}
+        submitLabel={t("channel.members.inviteSubmit")}
+        isPending={invite.isPending}
+        onSubmit={(userId) => {
+          invite.mutate({ channelId, role: ChannelRole.MEMBER, userId });
         }}
-      >
-        <ComboBox
-          label={t("channel.members.invite")}
-          placeholder={t("channel.members.invitePlaceholder")}
-          options={inviteOptions}
-          value={selectedUserId}
-          onChange={setSelectedUserId}
-          className="flex-1"
-        />
-        <Button type="submit" isDisabled={selectedUserId === null} isPending={invite.isPending}>
-          {t("channel.members.inviteSubmit")}
-        </Button>
-      </Form>
+      />
 
       {invite.isError && <p className="m-0 text-caption text-danger">{invite.error.message}</p>}
       {failedAction && (

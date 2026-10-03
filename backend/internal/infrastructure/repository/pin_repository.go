@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
@@ -68,7 +69,7 @@ func (r *pinRepository) List(ctx context.Context, channelID string, limit int) (
 		return nil, err
 	}
 	rows, err := transaction.ResolveClient(ctx, r.client).MessagePin.Query().
-		Where(messagepin.ChannelID(chID)).
+		Where(messagepin.ChannelID(chID), messagepin.HasMessageWith(message.DeletedAtIsNil())).
 		WithMessage().
 		Order(ent.Desc(messagepin.FieldCreatedAt)).
 		Limit(limit).

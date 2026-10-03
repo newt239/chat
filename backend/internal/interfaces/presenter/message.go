@@ -38,7 +38,7 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 			}
 		}),
 		Reactions: ConvertAll(m.Reactions, func(r messageuc.ReactionInfo) *chatv1.Reaction {
-			return &chatv1.Reaction{MessageId: m.ID, User: UserSummary(r.User), Emoji: r.Emoji, CreatedAt: timestamppb.New(r.CreatedAt)}
+			return &chatv1.Reaction{User: UserSummary(r.User), Emoji: r.Emoji, CreatedAt: timestamppb.New(r.CreatedAt)}
 		}),
 		Attachments: ConvertAll(m.Attachments, func(a messageuc.AttachmentInfo) *chatv1.MessageAttachment {
 			return &chatv1.MessageAttachment{Id: a.ID, FileName: a.FileName, MimeType: a.MimeType, SizeBytes: a.SizeBytes, Media: MediaMetadata(a.Media)}
@@ -115,7 +115,6 @@ func ThreadMetadata(t *messageuc.ThreadMetadataOutput) *chatv1.ThreadMetadata {
 		return nil
 	}
 	metadata := &chatv1.ThreadMetadata{
-		MessageId:   t.MessageID,
 		ReplyCount:  int32(t.ReplyCount),
 		LastReplyAt: optionalTimestamp(t.LastReplyAt),
 		IsFollowing: t.IsFollowing,

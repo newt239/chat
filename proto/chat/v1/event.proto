@@ -49,7 +49,6 @@ message MessageEvent {
 
 message MessageDeletedEvent {
   string channel_id = 1;
-  string message_id = 2;
   // 親メッセージと一緒に削除されたスレッド返信も含む
   repeated string deleted_message_ids = 3;
 }

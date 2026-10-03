@@ -1304,7 +1304,6 @@ func (x *MessagePreview) GetCreatedAt() *timestamppb.Timestamp {
 
 type Reaction struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	User          *UserSummary           `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
 	Emoji         string                 `protobuf:"bytes,3,opt,name=emoji,proto3" json:"emoji,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
@@ -1340,13 +1339,6 @@ func (x *Reaction) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Reaction.ProtoReflect.Descriptor instead.
 func (*Reaction) Descriptor() ([]byte, []int) {
 	return file_chat_v1_message_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *Reaction) GetMessageId() string {
-	if x != nil {
-		return x.MessageId
-	}
-	return ""
 }
 
 func (x *Reaction) GetUser() *UserSummary {
@@ -1570,7 +1562,6 @@ func (x *MediaThumbnail) GetHeight() int32 {
 
 type ThreadMetadata struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	ReplyCount    int32                  `protobuf:"varint,2,opt,name=reply_count,json=replyCount,proto3" json:"reply_count,omitempty"`
 	LastReplyAt   *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=last_reply_at,json=lastReplyAt,proto3" json:"last_reply_at,omitempty"`
 	LastReplyUser *UserSummary           `protobuf:"bytes,4,opt,name=last_reply_user,json=lastReplyUser,proto3" json:"last_reply_user,omitempty"`
@@ -1608,13 +1599,6 @@ func (x *ThreadMetadata) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ThreadMetadata.ProtoReflect.Descriptor instead.
 func (*ThreadMetadata) Descriptor() ([]byte, []int) {
 	return file_chat_v1_message_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *ThreadMetadata) GetMessageId() string {
-	if x != nil {
-		return x.MessageId
-	}
-	return ""
 }
 
 func (x *ThreadMetadata) GetReplyCount() int32 {
@@ -1954,10 +1938,8 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\f\n" +
 	"\n" +
-	"_parent_id\"\xa4\x01\n" +
-	"\bReaction\x12\x1d\n" +
-	"\n" +
-	"message_id\x18\x01 \x01(\tR\tmessageId\x12(\n" +
+	"_parent_id\"\x85\x01\n" +
+	"\bReaction\x12(\n" +
 	"\x04user\x18\x02 \x01(\v2\x14.chat.v1.UserSummaryR\x04user\x12\x14\n" +
 	"\x05emoji\x18\x03 \x01(\tR\x05emoji\x129\n" +
 	"\n" +
@@ -1979,10 +1961,8 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\x11_duration_seconds\">\n" +
 	"\x0eMediaThumbnail\x12\x14\n" +
 	"\x05width\x18\x01 \x01(\x05R\x05width\x12\x16\n" +
-	"\x06height\x18\x02 \x01(\x05R\x06height\"\xf1\x01\n" +
-	"\x0eThreadMetadata\x12\x1d\n" +
-	"\n" +
-	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x1f\n" +
+	"\x06height\x18\x02 \x01(\x05R\x06height\"\xd2\x01\n" +
+	"\x0eThreadMetadata\x12\x1f\n" +
 	"\vreply_count\x18\x02 \x01(\x05R\n" +
 	"replyCount\x12>\n" +
 	"\rlast_reply_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\vlastReplyAt\x12<\n" +

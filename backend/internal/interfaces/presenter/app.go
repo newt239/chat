@@ -16,7 +16,6 @@ var AppPermissions = map[entity.AppPermission]chatv1.AppPermission{
 func App(a appuc.Output) *chatv1.App {
 	return &chatv1.App{
 		Id:               a.ID,
-		WorkspaceId:      a.WorkspaceID,
 		Name:             a.Name,
 		Description:      a.Description,
 		AvatarUrl:        a.AvatarURL,

@@ -17,7 +17,6 @@ var ChannelRoles = map[entity.ChannelRole]chatv1.ChannelRole{
 func Channel(c channeluc.ChannelOutput) *chatv1.Channel {
 	return &chatv1.Channel{
 		Id:            c.ID,
-		WorkspaceId:   c.WorkspaceID,
 		Name:          c.Name,
 		Description:   c.Description,
 		IsPrivate:     c.IsPrivate(),
@@ -48,10 +47,9 @@ func ChannelMember(m channelmemberuc.MemberOutput) *chatv1.ChannelMember {
 
 func ChannelLink(l *entity.ChannelLink) *chatv1.ChannelLink {
 	return &chatv1.ChannelLink{
-		Id:        l.ID,
-		ChannelId: l.ChannelID,
-		Title:     l.Title,
-		Url:       l.URL,
+		Id:    l.ID,
+		Title: l.Title,
+		Url:   l.URL,
 	}
 }
 

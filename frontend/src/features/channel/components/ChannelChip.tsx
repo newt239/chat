@@ -15,7 +15,7 @@ type ChannelChipProps = {
 // 集約表示でメッセージの投稿先を示すチップ。押すとそのチャンネルを開く
 export const ChannelChip = ({ workspaceId, parentName, channelId }: ChannelChipProps) => {
   const { t } = useTranslation();
-  const name = useChannelById(workspaceId, channelId)?.name;
+  const name = useChannelById(workspaceId, channelId).channel?.name;
   if (name === undefined) {
     return null;
   }

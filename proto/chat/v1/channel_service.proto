@@ -21,7 +21,6 @@ service ChannelService {
 
 message Channel {
   string id = 1;
-  string workspace_id = 2;
   // スラッシュ区切りのフルパス (例: dev/frontend)
   string name = 3;
   optional string description = 4;

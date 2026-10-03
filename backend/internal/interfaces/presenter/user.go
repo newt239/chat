@@ -59,13 +59,12 @@ func UserNote(n *entity.UserNote) *chatv1.UserNote {
 	if n == nil {
 		return nil
 	}
-	return &chatv1.UserNote{TargetUserId: n.TargetID, Nickname: n.Nickname, Memo: n.Memo, UpdatedAt: timestamppb.New(n.UpdatedAt)}
+	return &chatv1.UserNote{Nickname: n.Nickname, Memo: n.Memo, UpdatedAt: timestamppb.New(n.UpdatedAt)}
 }
 
 func UserGroup(g *entity.UserGroup) *chatv1.UserGroup {
 	return &chatv1.UserGroup{
 		Id:          g.ID,
-		WorkspaceId: g.WorkspaceID,
 		Name:        g.Name,
 		Description: g.Description,
 	}

@@ -120,19 +120,14 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "attachment_status",
-				Unique:  false,
-				Columns: []*schema.Column{AttachmentColumns[11]},
-			},
-			{
 				Name:    "attachment_message_id",
 				Unique:  false,
 				Columns: []*schema.Column{AttachmentColumns[13]},
 			},
 			{
-				Name:    "attachment_channel_id",
+				Name:    "attachment_uploader_id",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentColumns[15]},
+				Columns: []*schema.Column{AttachmentColumns[14]},
 			},
 		},
 	}
@@ -920,11 +915,6 @@ var (
 				Name:    "messagereaction_message_id_user_id_emoji",
 				Unique:  true,
 				Columns: []*schema.Column{MessageReactionColumns[3], MessageReactionColumns[4], MessageReactionColumns[1]},
-			},
-			{
-				Name:    "messagereaction_message_id",
-				Unique:  false,
-				Columns: []*schema.Column{MessageReactionColumns[3]},
 			},
 		},
 	}

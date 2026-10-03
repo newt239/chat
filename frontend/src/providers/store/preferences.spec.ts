@@ -13,6 +13,8 @@ import { preferencesFromProto, preferencesToProto } from "./preferences";
 
 import type { Preferences } from "./preferences";
 
+const defaults = preferencesFromProto(create(UserPreferencesSchema));
+
 describe("preferences と proto の変換", () => {
   test("往復しても値が変わらない", () => {
     const preferences: Preferences = {
@@ -30,16 +32,7 @@ describe("preferences と proto の変換", () => {
   });
 
   test("proto の列挙値に変換する", () => {
-    const proto = preferencesToProto({
-      channelSortOrder: "default",
-      hideJoinMessages: false,
-      locale: "ja",
-      mode: "system",
-      notificationLevel: "none",
-      theme: themePresets.jade,
-      timezone: "",
-      timezoneAutoUpdate: false,
-    });
+    const proto = preferencesToProto({ ...defaults, notificationLevel: "none" });
 
     expect(proto.colorMode).toBe(ColorMode.SYSTEM);
     expect(proto.notificationLevel).toBe(NotificationLevel.NONE);
@@ -48,14 +41,8 @@ describe("preferences と proto の変換", () => {
 
   test("色相は整数に丸めて 0〜359 に収める", () => {
     const proto = preferencesToProto({
-      channelSortOrder: "default",
-      hideJoinMessages: false,
-      locale: "ja",
-      mode: "light",
-      notificationLevel: "mentions",
+      ...defaults,
       theme: { chroma: 0.1, hue: 359.6, sidebar: "light" },
-      timezone: "",
-      timezoneAutoUpdate: false,
     });
 
     expect(proto.theme?.hue).toBe(0);

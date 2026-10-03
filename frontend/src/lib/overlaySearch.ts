@@ -73,8 +73,7 @@ const noDialog = {
   sheet: undefined,
 } satisfies Record<keyof DialogSearch, undefined>;
 
-// Link / navigate の search に渡す。今のルートの search（?message= など）は残す
-// 右パネルはひとつだけ開く。パネルを開くとダイアログも閉じる
+// 右パネルはひとつだけ開き、ダイアログは閉じる。今のルートの search（?message= など）は残す
 export const openPanel =
   (panel: PanelSearch) =>
   <T extends object>(prev: T) => ({ ...prev, ...noPanel, ...noDialog, ...panel });

@@ -50,9 +50,6 @@ func (i *Interactor) DeleteMessage(ctx context.Context, input MessageInput) erro
 	}
 	i.searchIndexer.Sync(ctx, indexIDs...)
 
-	i.notifier.NotifyDeletedMessage(channel.WorkspaceID, channel.ID, MessageDeletion{
-		MessageID:  message.ID,
-		DeletedIDs: deleteIDs,
-	})
+	i.notifier.NotifyDeletedMessage(channel.WorkspaceID, channel.ID, deleteIDs)
 	return nil
 }

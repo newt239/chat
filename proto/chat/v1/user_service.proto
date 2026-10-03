@@ -63,7 +63,6 @@ message DeleteMeResponse {}
 
 // 自分だけに見える相手ユーザーのニックネームとメモ
 message UserNote {
-  string target_user_id = 1;
   optional string nickname = 2;
   optional string memo = 3;
   google.protobuf.Timestamp updated_at = 4;

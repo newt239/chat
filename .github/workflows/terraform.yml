@@ -41,8 +41,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-  # 認証情報（リポジトリ変数）が設定されているときだけ plan する
-  # 各ディレクトリの tfvars はリポジトリ変数 TFVARS_SHARED / TFVARS_DEV / TFVARS_PROD / TFVARS_MINI に中身を入れておく
+  # 認証情報のリポジトリ変数があるときだけ plan する。tfvars は TFVARS_SHARED / _DEV / _PROD / _MINI に入れる
   plan:
     runs-on: ubuntu-latest
     if: vars.GCP_TERRAFORM_SERVICE_ACCOUNT != ''

@@ -43,7 +43,7 @@ const render = (userId: string) =>
         ],
       }));
       routes.rpc(UserService.method.getUserNote, () => ({
-        note: create(UserNoteSchema, { memo: "朝型", targetUserId: "u-bob" }),
+        note: create(UserNoteSchema, { memo: "朝型" }),
       }));
       routes.rpc(UserService.method.updateUserNote, (req) => {
         updateNote(req);

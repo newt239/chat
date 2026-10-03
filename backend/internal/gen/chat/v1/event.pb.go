@@ -513,7 +513,6 @@ func (x *MessageEvent) GetMessage() *Message {
 type MessageDeletedEvent struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	ChannelId string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	MessageId string                 `protobuf:"bytes,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	// 親メッセージと一緒に削除されたスレッド返信も含む
 	DeletedMessageIds []string `protobuf:"bytes,3,rep,name=deleted_message_ids,json=deletedMessageIds,proto3" json:"deleted_message_ids,omitempty"`
 	unknownFields     protoimpl.UnknownFields
@@ -553,13 +552,6 @@ func (*MessageDeletedEvent) Descriptor() ([]byte, []int) {
 func (x *MessageDeletedEvent) GetChannelId() string {
 	if x != nil {
 		return x.ChannelId
-	}
-	return ""
-}
-
-func (x *MessageDeletedEvent) GetMessageId() string {
-	if x != nil {
-		return x.MessageId
 	}
 	return ""
 }
@@ -1025,12 +1017,10 @@ const file_chat_v1_event_proto_rawDesc = "" +
 	"\fMessageEvent\x12\x1d\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tR\tchannelId\x12*\n" +
-	"\amessage\x18\x02 \x01(\v2\x10.chat.v1.MessageR\amessage\"\x83\x01\n" +
+	"\amessage\x18\x02 \x01(\v2\x10.chat.v1.MessageR\amessage\"d\n" +
 	"\x13MessageDeletedEvent\x12\x1d\n" +
 	"\n" +
-	"channel_id\x18\x01 \x01(\tR\tchannelId\x12\x1d\n" +
-	"\n" +
-	"message_id\x18\x02 \x01(\tR\tmessageId\x12.\n" +
+	"channel_id\x18\x01 \x01(\tR\tchannelId\x12.\n" +
 	"\x13deleted_message_ids\x18\x03 \x03(\tR\x11deletedMessageIds\"y\n" +
 	"\x10UnreadCountEvent\x12\x1d\n" +
 	"\n" +

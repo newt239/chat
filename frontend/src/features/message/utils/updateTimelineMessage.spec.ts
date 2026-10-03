@@ -41,5 +41,5 @@ test("ピン留めした人を付ける", () => {
     create(PinEventSchema, { messageId: "m1", pinnedByUser: { displayName: "Bob", id: "u2" } }),
   );
 
-  expect(pinned.pin?.pinnedBy?.id).toBe("u2");
+  expect(pinned.pin.pinnedBy?.id).toBe("u2");
 });

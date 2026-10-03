@@ -135,7 +135,6 @@ func (i *Interactor) buildThreadMetadata(ctx context.Context, userID string, mes
 	result := make(map[string]*ThreadMetadataOutput, len(metadataMap))
 	for id, metadata := range metadataMap {
 		out := &ThreadMetadataOutput{
-			MessageID:   id,
 			ReplyCount:  metadata.ReplyCount,
 			LastReplyAt: metadata.LastReplyAt,
 			IsFollowing: followed[id],

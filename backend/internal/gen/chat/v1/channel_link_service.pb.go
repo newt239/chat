@@ -25,7 +25,6 @@ const (
 type ChannelLink struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ChannelId     string                 `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	Url           string                 `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -65,13 +64,6 @@ func (*ChannelLink) Descriptor() ([]byte, []int) {
 func (x *ChannelLink) GetId() string {
 	if x != nil {
 		return x.Id
-	}
-	return ""
-}
-
-func (x *ChannelLink) GetChannelId() string {
-	if x != nil {
-		return x.ChannelId
 	}
 	return ""
 }
@@ -568,11 +560,9 @@ var File_chat_v1_channel_link_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_channel_link_service_proto_rawDesc = "" +
 	"\n" +
-	"\"chat/v1/channel_link_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"d\n" +
+	"\"chat/v1/channel_link_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"E\n" +
 	"\vChannelLink\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
-	"\n" +
-	"channel_id\x18\x02 \x01(\tR\tchannelId\x12\x14\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x10\n" +
 	"\x03url\x18\x04 \x01(\tR\x03url\"B\n" +
 	"\x17ListChannelLinksRequest\x12'\n" +

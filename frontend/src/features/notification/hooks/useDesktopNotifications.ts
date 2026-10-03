@@ -9,6 +9,7 @@ import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirector
 import { notificationPreferencesAtom } from "#/features/notification/atoms";
 import { isNotificationSupported, showNotification } from "#/features/notification/utils/notify";
 import { usePreferences } from "#/hooks/usePreferences";
+import { messageLocation } from "#/lib/messageLocation";
 import { navigateTo } from "#/lib/navigation";
 import { myUserIdAtom } from "#/providers/store/auth";
 import { useWsClient } from "#/providers/ws/useWsClient";
@@ -39,7 +40,8 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
     }
     const channel = channels?.find((candidate) => candidate.id === channelId);
     const dm = dms?.find((candidate) => candidate.id === channelId);
-    if ((!channel && !dm) || channel?.isMuted || dm?.isMuted) {
+    // 一覧にはツリーをつなぐ未参加の祖先も入るので、参加中のものだけ通知する
+    if ((!channel?.isMember && !dm) || channel?.isMuted || dm?.isMuted) {
       return;
     }
     const isMention =
@@ -53,11 +55,14 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
     void showNotification({
       body: toText(message.body),
       onClick: () => {
-        navigateTo({
-          params: { channelId, workspaceId },
-          search: { message: message.id },
-          to: "/app/$workspaceId/$channelId",
-        });
+        navigateTo(
+          messageLocation({
+            channelId,
+            messageId: message.id,
+            parentId: message.parentId,
+            workspaceId,
+          }),
+        );
       },
       tag: message.id,
       title: channel ? `${author} · #${channel.name}` : author,

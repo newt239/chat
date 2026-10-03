@@ -46,7 +46,7 @@ const threadListKey = createConnectQueryKey({
 const userMessage = (id: string) => ({
   content: {
     case: "userMessage" as const,
-    value: { id, threadMetadata: { messageId: id, replyCount: 1 } },
+    value: { id, threadMetadata: { replyCount: 1 } },
   },
 });
 
@@ -55,7 +55,7 @@ const setup = () => {
   const queryClient = new QueryClient();
   queryClient.setQueryData(
     metadataKey,
-    create(GetThreadMetadataResponseSchema, { metadata: { messageId: "t1", replyCount: 2 } }),
+    create(GetThreadMetadataResponseSchema, { metadata: { replyCount: 2 } }),
   );
   queryClient.setQueryData(timelineKey, {
     pageParams: [null],

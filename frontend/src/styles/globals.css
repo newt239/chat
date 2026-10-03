@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
-/* ThemeProvider が @chat/design-tokens から計算した値を :root の --c-* などに書き込む。
-   inline にすることでユーティリティが変数を直接参照し、テーマ切り替えが即座に反映される */
+/* inline にしてユーティリティが ThemeProvider の書き込む :root の変数を直接参照し、テーマ切り替えを即座に反映する */
 @theme inline {
   --color-*: initial;
 

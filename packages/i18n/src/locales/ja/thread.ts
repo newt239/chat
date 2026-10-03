@@ -14,6 +14,7 @@ export const thread = {
   list: {
     emptyDescription: "投稿や返信をしたスレッドがここに並びます",
     emptyTitle: "参加中のスレッドはありません",
+    failed: "スレッドを読み込めませんでした",
   },
   notFound: "スレッドが見つかりません",
 } as const;

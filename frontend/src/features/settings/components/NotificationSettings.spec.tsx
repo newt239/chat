@@ -67,6 +67,13 @@ describe("NotificationSettings", () => {
     expect(screen.queryByRole("switch", { name: "プッシュ通知" })).not.toBeInTheDocument();
   });
 
+  test("Notification API がないときはデスクトップ通知の項目を出さない", async () => {
+    Reflect.deleteProperty(globalThis, "Notification");
+    setup();
+    await screen.findByRole("radio", { name: "すべて" });
+    expect(screen.queryByRole("switch", { name: "デスクトップ通知" })).not.toBeInTheDocument();
+  });
+
   test("プッシュ通知をオンにするとトークンを登録して端末に覚える", async () => {
     push.supported = true;
     const { registered, rendered } = setup();

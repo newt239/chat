@@ -12,6 +12,7 @@ import { canHaveChildChannel } from "#/features/channel/utils/channelPath";
 import { openDialog } from "#/lib/overlaySearch";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
+import { useChannelById } from "../hooks/useChannelById";
 import { useChannelListActions } from "../hooks/useChannelListActions";
 import { relativePath } from "../utils/channelTree";
 import { ChannelLinksSection } from "./ChannelLinksSection";
@@ -24,15 +25,11 @@ type ChannelInfoPanelProps = {
 
 export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelProps) => {
   const { t } = useTranslation();
-  const {
-    channel: activeChannel,
-    descendants,
-    isError,
-    isResolved,
-  } = useChannelAggregation(workspaceId, channelId);
+  const { channel: activeChannel, isError, isPending } = useChannelById(workspaceId, channelId);
+  const { descendants } = useChannelAggregation(workspaceId, channelId);
   const { setMuted, setStarred } = useChannelListActions(workspaceId);
 
-  if (!isResolved) {
+  if (isPending && !isError) {
     return (
       <div className="flex flex-col gap-2 p-4">
         <Skeleton className="h-4 w-32" />

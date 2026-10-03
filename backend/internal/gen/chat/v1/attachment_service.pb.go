@@ -10,7 +10,6 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -197,7 +196,6 @@ type PresignUploadResponse struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	AttachmentId       string                 `protobuf:"bytes,1,opt,name=attachment_id,json=attachmentId,proto3" json:"attachment_id,omitempty"`
 	UploadUrl          string                 `protobuf:"bytes,2,opt,name=upload_url,json=uploadUrl,proto3" json:"upload_url,omitempty"`
-	ExpiresAt          *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
 	ThumbnailUploadUrl *string                `protobuf:"bytes,4,opt,name=thumbnail_upload_url,json=thumbnailUploadUrl,proto3,oneof" json:"thumbnail_upload_url,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
@@ -245,13 +243,6 @@ func (x *PresignUploadResponse) GetUploadUrl() string {
 		return x.UploadUrl
 	}
 	return ""
-}
-
-func (x *PresignUploadResponse) GetExpiresAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.ExpiresAt
-	}
-	return nil
 }
 
 func (x *PresignUploadResponse) GetThumbnailUploadUrl() string {
@@ -362,7 +353,7 @@ var File_chat_v1_attachment_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_attachment_service_proto_rawDesc = "" +
 	"\n" +
-	" chat/v1/attachment_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb6\x03\n" +
+	" chat/v1/attachment_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"\xb6\x03\n" +
 	"\x14PresignUploadRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12$\n" +
@@ -386,13 +377,11 @@ const file_chat_v1_attachment_service_proto_rawDesc = "" +
 	"\x05width\x18\x03 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\x80  \x00R\x05width\x12\"\n" +
 	"\x06height\x18\x04 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\x80  \x00R\x06height\"\xe6\x01\n" +
+	"\xbaH\a\x1a\x05\x18\x80  \x00R\x06height\"\xab\x01\n" +
 	"\x15PresignUploadResponse\x12#\n" +
 	"\rattachment_id\x18\x01 \x01(\tR\fattachmentId\x12\x1d\n" +
 	"\n" +
-	"upload_url\x18\x02 \x01(\tR\tuploadUrl\x129\n" +
-	"\n" +
-	"expires_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x125\n" +
+	"upload_url\x18\x02 \x01(\tR\tuploadUrl\x125\n" +
 	"\x14thumbnail_upload_url\x18\x04 \x01(\tH\x00R\x12thumbnailUploadUrl\x88\x01\x01B\x17\n" +
 	"\x15_thumbnail_upload_url\"d\n" +
 	"\x15GetDownloadUrlRequest\x12-\n" +
@@ -424,20 +413,18 @@ var file_chat_v1_attachment_service_proto_goTypes = []any{
 	(*PresignUploadResponse)(nil),  // 2: chat.v1.PresignUploadResponse
 	(*GetDownloadUrlRequest)(nil),  // 3: chat.v1.GetDownloadUrlRequest
 	(*GetDownloadUrlResponse)(nil), // 4: chat.v1.GetDownloadUrlResponse
-	(*timestamppb.Timestamp)(nil),  // 5: google.protobuf.Timestamp
 }
 var file_chat_v1_attachment_service_proto_depIdxs = []int32{
 	1, // 0: chat.v1.PresignUploadRequest.thumbnail:type_name -> chat.v1.ThumbnailUpload
-	5, // 1: chat.v1.PresignUploadResponse.expires_at:type_name -> google.protobuf.Timestamp
-	0, // 2: chat.v1.AttachmentService.PresignUpload:input_type -> chat.v1.PresignUploadRequest
-	3, // 3: chat.v1.AttachmentService.GetDownloadUrl:input_type -> chat.v1.GetDownloadUrlRequest
-	2, // 4: chat.v1.AttachmentService.PresignUpload:output_type -> chat.v1.PresignUploadResponse
-	4, // 5: chat.v1.AttachmentService.GetDownloadUrl:output_type -> chat.v1.GetDownloadUrlResponse
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0, // 1: chat.v1.AttachmentService.PresignUpload:input_type -> chat.v1.PresignUploadRequest
+	3, // 2: chat.v1.AttachmentService.GetDownloadUrl:input_type -> chat.v1.GetDownloadUrlRequest
+	2, // 3: chat.v1.AttachmentService.PresignUpload:output_type -> chat.v1.PresignUploadResponse
+	4, // 4: chat.v1.AttachmentService.GetDownloadUrl:output_type -> chat.v1.GetDownloadUrlResponse
+	3, // [3:5] is the sub-list for method output_type
+	1, // [1:3] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_attachment_service_proto_init() }

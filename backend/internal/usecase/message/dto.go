@@ -152,7 +152,6 @@ type ListMessagesOutput struct {
 }
 
 type ThreadMetadataOutput struct {
-	MessageID     string
 	ReplyCount    int
 	LastReplyAt   *time.Time
 	LastReplyUser *UserInfo

@@ -3,8 +3,6 @@ package rpc
 import (
 	"context"
 
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	attachmentuc "github.com/newt239/chat/internal/usecase/attachment"
@@ -34,7 +32,6 @@ func (s *AttachmentServer) PresignUpload(ctx context.Context, req *chatv1.Presig
 		AttachmentId:       out.AttachmentID,
 		UploadUrl:          out.UploadURL,
 		ThumbnailUploadUrl: out.ThumbnailUploadURL,
-		ExpiresAt:          timestamppb.New(out.ExpiresAt),
 	}, nil
 }
 

@@ -6,6 +6,7 @@ import { MessagePinSchema, ReactionSchema } from "#/gen/chat/v1/message_pb";
 import type { PinEvent, ReactionEvent } from "#/gen/chat/v1/event_pb";
 import type { Message, TimelineItem } from "#/gen/chat/v1/message_pb";
 import type { ListMessagesResponse } from "#/gen/chat/v1/message_service_pb";
+import type { WsClient } from "#/lib/ws";
 
 import type { InfiniteData, QueryClient, QueryKey } from "@tanstack/react-query";
 
@@ -46,10 +47,7 @@ export const updateMessagePages = (
   );
 };
 
-export const addReaction = (
-  message: Message,
-  { createdAt, emoji, messageId, user, userId }: ReactionEvent,
-) =>
+export const addReaction = (message: Message, { createdAt, emoji, user, userId }: ReactionEvent) =>
   message.reactions.some((r) => r.emoji === emoji && r.user?.id === userId)
     ? message
     : {
@@ -59,7 +57,6 @@ export const addReaction = (
           create(ReactionSchema, {
             createdAt: createdAt ?? timestampNow(),
             emoji,
-            messageId,
             user: user ?? { id: userId },
           }),
         ],
@@ -74,3 +71,47 @@ export const addPin = (message: Message, { pinnedAt, pinnedByUser }: PinEvent) =
   ...message,
   pin: create(MessagePinSchema, { pinnedAt, pinnedBy: pinnedByUser }),
 });
+
+/** メッセージの更新・削除・リアクション・ピンの差分を購読し、patch で読み込み済みのデータへ当てる。戻り値を呼ぶと解除する */
+export const subscribeMessagePatches = (
+  wsClient: WsClient,
+  patch: (
+    channelId: string,
+    messageIds: ReadonlySet<string>,
+    update: (message: Message) => Message,
+  ) => void,
+) => {
+  const unsubscribes = [
+    wsClient.on("messageUpdated", ({ channelId, message }) => {
+      if (message !== undefined) {
+        // スレッドの情報は取得時にだけ付くため引き継ぐ
+        patch(channelId, new Set([message.id]), (prev) => ({
+          ...message,
+          threadMetadata: prev.threadMetadata,
+        }));
+      }
+    }),
+    wsClient.on("messageDeleted", ({ channelId, deletedMessageIds }) => {
+      patch(channelId, new Set(deletedMessageIds), (message) => ({ ...message, isDeleted: true }));
+    }),
+    wsClient.on("reactionAdded", (event) => {
+      patch(event.channelId, new Set([event.messageId]), (message) => addReaction(message, event));
+    }),
+    wsClient.on("reactionRemoved", (event) => {
+      patch(event.channelId, new Set([event.messageId]), (message) =>
+        removeReaction(message, event),
+      );
+    }),
+    wsClient.on("pinCreated", (event) => {
+      patch(event.channelId, new Set([event.messageId]), (message) => addPin(message, event));
+    }),
+    wsClient.on("pinDeleted", ({ channelId, messageId }) => {
+      patch(channelId, new Set([messageId]), (message) => ({ ...message, pin: undefined }));
+    }),
+  ];
+  return () => {
+    for (const unsubscribe of unsubscribes) {
+      unsubscribe();
+    }
+  };
+};

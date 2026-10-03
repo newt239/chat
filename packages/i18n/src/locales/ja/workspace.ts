@@ -13,7 +13,6 @@ export const workspace = {
     join: "参加する",
     loadFailed: "ワークスペースを読み込めませんでした",
     memberCount: "{{count}} 人",
-    open: "開く",
     public: "参加できる公開ワークスペース",
     title: "ワークスペース",
   },

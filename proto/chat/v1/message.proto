@@ -178,7 +178,6 @@ message MessagePreview {
 }
 
 message Reaction {
-  string message_id = 1;
   UserSummary user = 2;
   string emoji = 3;
   google.protobuf.Timestamp created_at = 4;
@@ -207,7 +206,6 @@ message MediaThumbnail {
 }
 
 message ThreadMetadata {
-  string message_id = 1;
   int32 reply_count = 2;
   google.protobuf.Timestamp last_reply_at = 3;
   UserSummary last_reply_user = 4;

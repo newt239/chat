@@ -26,12 +26,11 @@ func (n Notifier) NotifyUpdatedMessage(workspaceID, channelID string, message me
 	}})
 }
 
-func (n Notifier) NotifyDeletedMessage(workspaceID, channelID string, deletion messageuc.MessageDeletion) {
+func (n Notifier) NotifyDeletedMessage(workspaceID, channelID string, deletedIDs []string) {
 	n.BroadcastToChannel(workspaceID, channelID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_MessageDeleted{
 		MessageDeleted: &chatv1.MessageDeletedEvent{
 			ChannelId:         channelID,
-			MessageId:         deletion.MessageID,
-			DeletedMessageIds: deletion.DeletedIDs,
+			DeletedMessageIds: deletedIDs,
 		},
 	}})
 }

@@ -52,6 +52,5 @@ func (MessageReaction) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("message_id", "user_id", "emoji").
 			Unique(),
-		index.Fields("message_id"),
 	}
 }

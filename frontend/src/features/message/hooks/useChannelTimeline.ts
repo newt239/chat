@@ -5,9 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 
 import {
-  addPin,
-  addReaction,
-  removeReaction,
+  subscribeMessagePatches,
   updateMessagePages,
   updateTimelineMessage,
   updateUserMessages,
@@ -95,7 +93,6 @@ export const useChannelTimeline = ({
                   parent.userId === myId,
                 lastReplyAt: message.createdAt,
                 lastReplyUser: message.user,
-                messageId: parentId,
                 replyCount: (parent.threadMetadata?.replyCount ?? 0) + 1,
               }),
             })),
@@ -123,54 +120,15 @@ export const useChannelTimeline = ({
         }
       }),
 
-      wsClient.on("messageUpdated", ({ channelId: eventChannelId, message }) => {
-        if (message !== undefined) {
-          // スレッドの情報は一覧の取得時にだけ付くため引き継ぐ
-          updatePages(eventChannelId, (current) =>
-            updateTimelineMessage(current, message.id, (prev) => ({
-              ...message,
-              threadMetadata: prev.threadMetadata,
-            })),
-          );
-        }
-      }),
-
-      wsClient.on("messageDeleted", ({ channelId: eventChannelId, deletedMessageIds }) => {
-        const deletedIds = new Set(deletedMessageIds);
-        updatePages(eventChannelId, (current) =>
-          updateUserMessages(
-            current,
-            (message) => deletedIds.has(message.id),
-            (message) => ({ ...message, isDeleted: true }),
-          ),
-        );
-      }),
-
-      wsClient.on("reactionAdded", (event) => {
-        updatePages(event.channelId, (current) =>
-          updateTimelineMessage(current, event.messageId, (message) => addReaction(message, event)),
-        );
-      }),
-
-      wsClient.on("reactionRemoved", (event) => {
-        updatePages(event.channelId, (current) =>
-          updateTimelineMessage(current, event.messageId, (message) =>
-            removeReaction(message, event),
-          ),
-        );
-      }),
-
-      wsClient.on("pinCreated", (event) => {
-        invalidatePins(event.channelId, event.pinnedBy);
-        updatePages(event.channelId, (current) =>
-          updateTimelineMessage(current, event.messageId, (message) => addPin(message, event)),
-        );
-      }),
-
-      wsClient.on("pinDeleted", ({ channelId: eventChannelId, messageId, pinnedBy }) => {
+      wsClient.on("pinCreated", ({ channelId: eventChannelId, pinnedBy }) => {
         invalidatePins(eventChannelId, pinnedBy);
+      }),
+      wsClient.on("pinDeleted", ({ channelId: eventChannelId, pinnedBy }) => {
+        invalidatePins(eventChannelId, pinnedBy);
+      }),
+      subscribeMessagePatches(wsClient, (eventChannelId, messageIds, update) => {
         updatePages(eventChannelId, (current) =>
-          updateTimelineMessage(current, messageId, (message) => ({ ...message, pin: undefined })),
+          updateUserMessages(current, (message) => messageIds.has(message.id), update),
         );
       }),
     ];

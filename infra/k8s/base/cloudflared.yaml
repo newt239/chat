@@ -1,5 +1,4 @@
-# Cloudflare Tunnel でクラスタから外へ接続し、ホスト名ごとに frontend / backend の Service へ振り分ける
-# 振り分けの設定は Terraform（modules/cloudflare_tunnel）で Cloudflare 側に持つ
+# Cloudflare Tunnel で外へ接続し、ホスト名ごとに Service へ振り分ける。振り分けは Terraform（modules/cloudflare_tunnel）で持つ
 apiVersion: apps/v1
 kind: Deployment
 metadata:

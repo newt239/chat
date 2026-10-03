@@ -1,10 +1,16 @@
+import { create } from "@bufbuild/protobuf";
 import { buildTokens, themePresets } from "@chat/design-tokens/theme";
 import { render, screen } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
 import { useTranslation } from "react-i18next";
 import { afterEach, describe, expect, test } from "vite-plus/test";
 
-import { preferencesToProto, storedPreferencesAtom } from "#/providers/store/preferences";
+import { UserPreferencesSchema } from "#/gen/chat/v1/user_pb";
+import {
+  preferencesFromProto,
+  preferencesToProto,
+  storedPreferencesAtom,
+} from "#/providers/store/preferences";
 import { QueryWrapper } from "#/test/QueryWrapper";
 
 import { useColorMode } from "./colorMode";
@@ -21,9 +27,11 @@ const Probe = () => {
   );
 };
 
-const renderWithPreferences = (preferences: Preferences) => {
+const defaults = preferencesFromProto(create(UserPreferencesSchema));
+
+const renderWithPreferences = (preferences: Partial<Preferences>) => {
   const store = createStore();
-  store.set(storedPreferencesAtom, preferencesToProto(preferences));
+  store.set(storedPreferencesAtom, preferencesToProto({ ...defaults, ...preferences }));
   render(
     <Provider store={store}>
       <ThemeProvider>
@@ -42,16 +50,7 @@ describe("ThemeProvider", () => {
   });
 
   test("テーマのトークンを CSS 変数として書き込む", () => {
-    renderWithPreferences({
-      channelSortOrder: "default",
-      hideJoinMessages: false,
-      locale: "ja",
-      mode: "light",
-      notificationLevel: "mentions",
-      theme: themePresets.cobalt,
-      timezone: "",
-      timezoneAutoUpdate: false,
-    });
+    renderWithPreferences({ mode: "light", theme: themePresets.cobalt });
 
     const tokens = buildTokens(themePresets.cobalt, "light");
     expect(root.style.getPropertyValue("--c-accent")).toBe(tokens.accent);
@@ -64,16 +63,7 @@ describe("ThemeProvider", () => {
     const themeColor = document.createElement("meta");
     themeColor.name = "theme-color";
     document.head.append(themeColor);
-    renderWithPreferences({
-      channelSortOrder: "default",
-      hideJoinMessages: false,
-      locale: "ja",
-      mode: "dark",
-      notificationLevel: "mentions",
-      theme: themePresets.jade,
-      timezone: "",
-      timezoneAutoUpdate: false,
-    });
+    renderWithPreferences({ mode: "dark" });
 
     const { surface } = buildTokens(themePresets.jade, "dark");
     expect(root.dataset.mode).toBe("dark");
@@ -83,31 +73,13 @@ describe("ThemeProvider", () => {
   });
 
   test("system はOSの設定に従う（テストではライト）", () => {
-    renderWithPreferences({
-      channelSortOrder: "default",
-      hideJoinMessages: false,
-      locale: "ja",
-      mode: "system",
-      notificationLevel: "mentions",
-      theme: themePresets.jade,
-      timezone: "",
-      timezoneAutoUpdate: false,
-    });
+    renderWithPreferences({ mode: "system" });
 
     expect(root.dataset.mode).toBe("light");
   });
 
   test("言語を切り替える", () => {
-    renderWithPreferences({
-      channelSortOrder: "default",
-      hideJoinMessages: false,
-      locale: "en",
-      mode: "light",
-      notificationLevel: "mentions",
-      theme: themePresets.jade,
-      timezone: "",
-      timezoneAutoUpdate: false,
-    });
+    renderWithPreferences({ locale: "en", mode: "light" });
 
     expect(root.lang).toBe("en");
     expect(screen.getByText(/Cancel/)).toBeInTheDocument();

@@ -6,7 +6,6 @@ import (
 	"mime"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -44,7 +43,6 @@ type PresignOutput struct {
 	UploadURL    string
 	// サムネイルを指定したときだけ返します
 	ThumbnailUploadURL *string
-	ExpiresAt          time.Time
 }
 
 type Interactor struct {
@@ -115,7 +113,6 @@ func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignO
 		AttachmentID:       attachmentID,
 		UploadURL:          uploadURL,
 		ThumbnailUploadURL: thumbnailUploadURL,
-		ExpiresAt:          time.Now().Add(service.UploadURLExpires),
 	}, nil
 }
 

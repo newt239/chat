@@ -14,7 +14,6 @@ export const workspace: Messages["workspace"] = {
     join: "Join",
     loadFailed: "Couldn't load workspaces",
     memberCount: "Members: {{count}}",
-    open: "Open",
     public: "Public workspaces you can join",
     title: "Workspaces",
   },

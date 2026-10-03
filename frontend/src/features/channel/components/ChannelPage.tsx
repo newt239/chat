@@ -14,7 +14,7 @@ export const ChannelPage = () => {
   useViewChannel(channelId);
   const { data: dms } = useDMs(workspaceId);
   const dm = dms?.find((candidate) => candidate.id === channelId);
-  const channel = useChannelById(workspaceId, dms === undefined || dm ? null : channelId);
+  const { channel } = useChannelById(workspaceId, dms === undefined || dm ? null : channelId);
   // 一覧にない公開チャンネルや、ツリーをつなぐための未参加の祖先はプレビューとして開く
   const isPreview = channel !== undefined && !channel.isMember;
 

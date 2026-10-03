@@ -4,16 +4,11 @@ import { callUnaryMethod, createConnectQueryKey, useTransport } from "@connectrp
 import { useQueryClient } from "@tanstack/react-query";
 
 import { toRange, useBidirectionalPages } from "#/features/message/hooks/useBidirectionalPages";
-import {
-  addPin,
-  addReaction,
-  removeReaction,
-} from "#/features/message/utils/updateTimelineMessage";
+import { subscribeMessagePatches } from "#/features/message/utils/updateTimelineMessage";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
 import type { PageCursor } from "#/features/message/hooks/useBidirectionalPages";
-import type { Message } from "#/gen/chat/v1/message_pb";
 import type { GetThreadRepliesResponse } from "#/gen/chat/v1/thread_service_pb";
 
 import type { InfiniteData } from "@tanstack/react-query";
@@ -75,16 +70,6 @@ export const useThreadReplies = (threadId: string, aroundReplyId: string | null)
           },
       );
     };
-    // 親メッセージはパネルの先頭に出るので返信と同じく更新する
-    const updateMessage = (messageId: string, update: (message: Message) => Message) => {
-      updatePages((page) => ({
-        ...page,
-        parentMessage:
-          page.parentMessage?.id === messageId ? update(page.parentMessage) : page.parentMessage,
-        replies: page.replies.map((reply) => (reply.id === messageId ? update(reply) : reply)),
-      }));
-    };
-
     const unsubscribes = [
       wsClient.on("newMessage", ({ message }) => {
         if (message?.parentId !== threadId) {
@@ -100,31 +85,16 @@ export const useThreadReplies = (threadId: string, aroundReplyId: string | null)
           replyCount: page.replyCount + 1,
         }));
       }),
-      wsClient.on("messageUpdated", ({ message }) => {
-        if (message !== undefined) {
-          // スレッドの情報は取得時にだけ付くため引き継ぐ
-          updateMessage(message.id, (prev) => ({
-            ...message,
-            threadMetadata: prev.threadMetadata,
-          }));
-        }
-      }),
-      wsClient.on("messageDeleted", ({ deletedMessageIds }) => {
-        for (const id of deletedMessageIds) {
-          updateMessage(id, (message) => ({ ...message, isDeleted: true }));
-        }
-      }),
-      wsClient.on("reactionAdded", (event) => {
-        updateMessage(event.messageId, (message) => addReaction(message, event));
-      }),
-      wsClient.on("reactionRemoved", (event) => {
-        updateMessage(event.messageId, (message) => removeReaction(message, event));
-      }),
-      wsClient.on("pinCreated", (event) => {
-        updateMessage(event.messageId, (message) => addPin(message, event));
-      }),
-      wsClient.on("pinDeleted", ({ messageId }) => {
-        updateMessage(messageId, (message) => ({ ...message, pin: undefined }));
+      // 親メッセージはパネルの先頭に出るので返信と同じく更新する
+      subscribeMessagePatches(wsClient, (_channelId, messageIds, update) => {
+        updatePages((page) => ({
+          ...page,
+          parentMessage:
+            page.parentMessage && messageIds.has(page.parentMessage.id)
+              ? update(page.parentMessage)
+              : page.parentMessage,
+          replies: page.replies.map((reply) => (messageIds.has(reply.id) ? update(reply) : reply)),
+        }));
       }),
     ];
     return () => {

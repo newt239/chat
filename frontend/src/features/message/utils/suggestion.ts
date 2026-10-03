@@ -22,14 +22,10 @@ const tokenPattern = /(?:^|\s)(?<trigger>[@#])(?<query>[^\s@#]*)$/;
 // コマンドは入力欄の先頭で打ったものだけ
 const commandPattern = /^\/(?<query>[a-z]*)$/;
 
-export const findSuggestionQuery = (
-  text: string,
-  cursor: number,
-  allowsCommands: boolean,
-): SuggestionQuery | null => {
+export const findSuggestionQuery = (text: string, cursor: number, allowsCommands: boolean) => {
   const command = allowsCommands ? commandPattern.exec(text.slice(0, cursor)) : null;
   if (command !== null) {
-    return { query: command.groups?.query ?? "", start: 0, trigger: "/" };
+    return { query: command.groups?.query ?? "", start: 0, trigger: "/" } satisfies SuggestionQuery;
   }
   const match = tokenPattern.exec(text.slice(0, cursor));
   if (match === null) {
@@ -40,7 +36,7 @@ export const findSuggestionQuery = (
     query,
     start: cursor - query.length - 1,
     trigger: match.groups?.trigger === "#" ? "#" : "@",
-  };
+  } satisfies SuggestionQuery;
 };
 
 // 検索語を候補に置き換え、続けて打てるよう空白を足す

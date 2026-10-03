@@ -3,7 +3,6 @@ syntax = "proto3";
 package chat.v1;
 
 import "buf/validate/validate.proto";
-import "google/protobuf/timestamp.proto";
 
 service AttachmentService {
   rpc PresignUpload(PresignUploadRequest) returns (PresignUploadResponse);
@@ -57,7 +56,6 @@ message ThumbnailUpload {
 message PresignUploadResponse {
   string attachment_id = 1;
   string upload_url = 2;
-  google.protobuf.Timestamp expires_at = 3;
   optional string thumbnail_upload_url = 4;
 }
 

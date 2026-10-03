@@ -16,6 +16,7 @@ export const thread: Messages["thread"] = {
   list: {
     emptyDescription: "Threads you post or reply in appear here",
     emptyTitle: "No threads",
+    failed: "Couldn't load threads",
   },
   notFound: "Thread not found",
 };

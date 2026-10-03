@@ -15,7 +15,6 @@ service ChannelLinkService {
 
 message ChannelLink {
   string id = 1;
-  string channel_id = 2;
   string title = 3;
   string url = 4;
 }
