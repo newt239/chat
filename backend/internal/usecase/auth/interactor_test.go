@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/usecase/audit"
 	"github.com/newt239/chat/internal/usecase/audit/audittest"
@@ -54,6 +55,7 @@ type stubSessionRepo struct {
 	created []*entity.Session
 	active  []*entity.Session
 	rotated []string
+	revoked []string
 }
 
 func (r *stubSessionRepo) Create(_ context.Context, s *entity.Session) error {
@@ -68,6 +70,11 @@ func (r *stubSessionRepo) FindActiveByTokenHash(_ context.Context, hash string) 
 		}
 	}
 	return nil, nil
+}
+
+func (r *stubSessionRepo) Revoke(_ context.Context, id string) error {
+	r.revoked = append(r.revoked, id)
+	return nil
 }
 
 func (r *stubSessionRepo) Rotate(_ context.Context, id string, _ string, _ time.Time) error {
@@ -97,7 +104,7 @@ func (stubWorkspaceRepo) FindByID(_ context.Context, id string) (*entity.Workspa
 	return nil, nil
 }
 
-func (r *stubWorkspaceRepo) FindMember(_ context.Context, workspaceID, userID string) (*entity.WorkspaceMember, error) {
+func (r *stubWorkspaceRepo) FindMemberIncludingSuspended(_ context.Context, workspaceID, userID string) (*entity.WorkspaceMember, error) {
 	for _, m := range r.added {
 		if m.WorkspaceID == workspaceID && m.UserID == userID {
 			return m, nil
@@ -143,8 +150,8 @@ func (r *stubInvitationRepo) MarkAccepted(_ context.Context, id string, _ time.T
 
 type stubJWT struct{}
 
-func (stubJWT) GenerateToken(userID string, _ time.Duration) (string, error) {
-	return "token-" + userID, nil
+func (stubJWT) GenerateToken(claims TokenClaims, _ time.Duration) (string, error) {
+	return "token-" + claims.UserID + "-" + claims.SessionID, nil
 }
 func (stubJWT) VerifyToken(string) (*TokenClaims, error) { return &TokenClaims{UserID: "alice"}, nil }
 
@@ -166,7 +173,7 @@ func (g stubGoogle) Verify(_ context.Context, token string) (*GoogleIdentity, er
 	if identity, ok := g[token]; ok {
 		return identity, nil
 	}
-	return nil, ErrInvalidToken
+	return nil, domerr.ErrInvalidToken
 }
 
 // "コード:code_verifier" に対応する ID トークンを返す
@@ -176,7 +183,7 @@ func (g stubGoogleCode) Exchange(_ context.Context, code, codeVerifier string) (
 	if token, ok := g[code+":"+codeVerifier]; ok {
 		return token, nil
 	}
-	return "", ErrInvalidToken
+	return "", domerr.ErrInvalidToken
 }
 
 var googleCode = stubGoogleCode{"code-alice:verifier": "alice-nonce"}
@@ -192,7 +199,12 @@ type fixture struct {
 	workspaces  *stubWorkspaceRepo
 	invitations *stubInvitationRepo
 	recorder    *audittest.Recorder
+	closer      *stubCloser
 }
+
+type stubCloser struct{ closed []string }
+
+func (c *stubCloser) CloseSession(sessionID string) { c.closed = append(c.closed, sessionID) }
 
 var google = stubGoogle{
 	"alice":    {Sub: "sub-alice", Email: "alice@example.com", EmailVerified: true},
@@ -219,9 +231,10 @@ func newFixture(passwordAuthEnabled bool) fixture {
 			{ID: "expired", WorkspaceID: "ws3", Email: "new@example.com", Role: entity.WorkspaceRoleMember, TokenHash: entity.HashSecretToken("expired-token"), ExpiresAt: time.Now().Add(-time.Hour)},
 		}},
 		recorder: &audittest.Recorder{},
+		closer:   &stubCloser{},
 	}
 	settings := Settings{AccessTokenTTL: time.Minute, RefreshTokenTTL: time.Hour, PasswordAuthEnabled: passwordAuthEnabled}
-	f.uc = NewAuthInteractor(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, googleCode, stubTx{}, f.recorder, settings)
+	f.uc = NewAuthInteractor(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, googleCode, stubTx{}, f.recorder, f.closer, settings)
 	return f
 }
 
@@ -246,7 +259,7 @@ func TestLoginRecordsAuditLogInEveryWorkspace(t *testing.T) {
 func TestLoginFailureRecordsAuditLogWithoutActor(t *testing.T) {
 	f := newFixture(true)
 
-	if _, err := f.uc.Login(context.Background(), LoginInput{Email: "alice@example.com", Password: "wrong"}); !errors.Is(err, ErrInvalidCredentials) {
+	if _, err := f.uc.Login(context.Background(), LoginInput{Email: "alice@example.com", Password: "wrong"}); !errors.Is(err, domerr.ErrInvalidCredentials) {
 		t.Fatalf("エラーが期待と異なります: %v", err)
 	}
 	if len(f.sessions.created) != 0 {
@@ -263,10 +276,10 @@ func TestLoginFailureRecordsAuditLogWithoutActor(t *testing.T) {
 func TestPasswordAuthCanBeDisabled(t *testing.T) {
 	f := newFixture(false)
 
-	if _, err := f.uc.Login(context.Background(), LoginInput{Email: "alice@example.com", Password: "password123"}); !errors.Is(err, ErrPasswordAuthDisabled) {
+	if _, err := f.uc.Login(context.Background(), LoginInput{Email: "alice@example.com", Password: "password123"}); !errors.Is(err, domerr.ErrPasswordAuthDisabled) {
 		t.Errorf("パスワード認証が無効なのにログインできました: %v", err)
 	}
-	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "invite-token", DisplayName: "New", Password: "password123"}); !errors.Is(err, ErrPasswordAuthDisabled) {
+	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "invite-token", DisplayName: "New", Password: "password123"}); !errors.Is(err, domerr.ErrPasswordAuthDisabled) {
 		t.Errorf("パスワード認証が無効なのに招待からパスワードで登録できました: %v", err)
 	}
 	if len(f.sessions.created) != 0 || len(f.users.created) != 0 {
@@ -288,7 +301,7 @@ func TestRefreshRotatesSessionFoundByTokenHash(t *testing.T) {
 	if out.User.ID != "alice" || !slices.Equal(f.sessions.rotated, []string{"s2"}) || len(f.sessions.created) != 0 {
 		t.Errorf("一致したセッションのトークンだけを差し替えるはず: rotated=%v created=%d", f.sessions.rotated, len(f.sessions.created))
 	}
-	if _, err := f.uc.RefreshToken(context.Background(), RefreshTokenInput{RefreshToken: "unknown"}); !errors.Is(err, ErrInvalidToken) {
+	if _, err := f.uc.RefreshToken(context.Background(), RefreshTokenInput{RefreshToken: "unknown"}); !errors.Is(err, domerr.ErrInvalidToken) {
 		t.Errorf("未知のトークンは拒否するはず: %v", err)
 	}
 }
@@ -302,9 +315,9 @@ func TestLoginWithGoogle(t *testing.T) {
 	}{
 		{name: "sub が紐付いたユーザーはメールアドレスが変わってもログインできる", token: "linked", wantUser: "linked"},
 		{name: "未紐付けの既存ユーザーはメールアドレスで紐付く", token: "alice", wantUser: "alice"},
-		{name: "招待のない未登録のメールアドレスは拒否する", token: "stranger", wantErr: ErrInvitationRequired},
-		{name: "確認されていないメールアドレスは拒否する", token: "bob", wantErr: ErrEmailNotVerified},
-		{name: "不正な ID トークンは拒否する", token: "forged", wantErr: ErrInvalidToken},
+		{name: "招待のない未登録のメールアドレスは拒否する", token: "stranger", wantErr: domerr.ErrInvitationRequired},
+		{name: "確認されていないメールアドレスは拒否する", token: "bob", wantErr: domerr.ErrEmailNotVerified},
+		{name: "不正な ID トークンは拒否する", token: "forged", wantErr: domerr.ErrInvalidToken},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -334,8 +347,8 @@ func TestLoginWithGoogleCode(t *testing.T) {
 		wantErr  error
 	}{
 		{name: "交換した ID トークンの nonce が一致すればログインできる", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "verifier", Nonce: "nonce-1"}, wantUser: "alice"},
-		{name: "nonce が一致しなければ拒否する", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "verifier", Nonce: "other"}, wantErr: ErrInvalidToken},
-		{name: "code_verifier が違えば交換できない", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "wrong", Nonce: "nonce-1"}, wantErr: ErrInvalidToken},
+		{name: "nonce が一致しなければ拒否する", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "verifier", Nonce: "other"}, wantErr: domerr.ErrInvalidToken},
+		{name: "code_verifier が違えば交換できない", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "wrong", Nonce: "nonce-1"}, wantErr: domerr.ErrInvalidToken},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -391,7 +404,7 @@ func TestLoginWithGoogleCreatesInvitedUser(t *testing.T) {
 func TestSignUpWithInvitation(t *testing.T) {
 	f := newFixture(true)
 
-	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "expired-token", DisplayName: "New", Password: "password123"}); !errors.Is(err, ErrInvitationNotFound) {
+	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "expired-token", DisplayName: "New", Password: "password123"}); !errors.Is(err, domerr.ErrInvitationNotFound) {
 		t.Fatalf("期限切れの招待は拒否するはず: %v", err)
 	}
 	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "invite-token", DisplayName: "New", Password: "password123"}); err != nil {
@@ -425,8 +438,8 @@ func TestLoginWithGoogleCreatesUserFromSignupWorkspace(t *testing.T) {
 		wantErr     error
 	}{
 		{name: "登録を許可したワークスペースなら招待がなくても作る", workspaceID: "google-only"},
-		{name: "登録を許可していないワークスペースは拒否する", workspaceID: "closed", wantErr: ErrSignupDisabled},
-		{name: "存在しないワークスペースは拒否する", workspaceID: "missing", wantErr: ErrSignupDisabled},
+		{name: "登録を許可していないワークスペースは拒否する", workspaceID: "closed", wantErr: domerr.ErrSignupDisabled},
+		{name: "存在しないワークスペースは拒否する", workspaceID: "missing", wantErr: domerr.ErrSignupDisabled},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -455,10 +468,10 @@ func TestSignUp(t *testing.T) {
 		wantErr             error
 	}{
 		{name: "登録とメールでの登録を許可したワークスペースなら作る", passwordAuthEnabled: true, workspaceID: "open", email: "New@Example.com"},
-		{name: "メールでの登録を許可していなければ拒否する", passwordAuthEnabled: true, workspaceID: "google-only", email: "new@example.com", wantErr: ErrSignupDisabled},
-		{name: "登録を許可していなければ拒否する", passwordAuthEnabled: true, workspaceID: "closed", email: "new@example.com", wantErr: ErrSignupDisabled},
-		{name: "パスワード認証が無効なら拒否する", passwordAuthEnabled: false, workspaceID: "open", email: "new@example.com", wantErr: ErrPasswordAuthDisabled},
-		{name: "登録済みのメールアドレスは拒否する", passwordAuthEnabled: true, workspaceID: "open", email: "alice@example.com", wantErr: ErrUserAlreadyExists},
+		{name: "メールでの登録を許可していなければ拒否する", passwordAuthEnabled: true, workspaceID: "google-only", email: "new@example.com", wantErr: domerr.ErrSignupDisabled},
+		{name: "登録を許可していなければ拒否する", passwordAuthEnabled: true, workspaceID: "closed", email: "new@example.com", wantErr: domerr.ErrSignupDisabled},
+		{name: "パスワード認証が無効なら拒否する", passwordAuthEnabled: false, workspaceID: "open", email: "new@example.com", wantErr: domerr.ErrPasswordAuthDisabled},
+		{name: "登録済みのメールアドレスは拒否する", passwordAuthEnabled: true, workspaceID: "open", email: "alice@example.com", wantErr: domerr.ErrUserAlreadyExists},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -502,5 +515,42 @@ func TestLoginWithGoogleJoinsExistingUserToSignupWorkspace(t *testing.T) {
 	}
 	if len(f.users.created) != 0 || len(f.workspaces.added) != 1 || f.workspaces.added[0].UserID != "alice" || f.workspaces.added[0].WorkspaceID != workspaceID {
 		t.Errorf("既存ユーザーが一度だけメンバーとして参加するはず: %+v", f.workspaces.added)
+	}
+}
+
+func TestLoginNormalizesEmailAndEmbedsSessionID(t *testing.T) {
+	f := newFixture(true)
+
+	out, err := f.uc.Login(context.Background(), LoginInput{Email: " Alice@Example.COM ", Password: "password123"})
+	if err != nil {
+		t.Fatalf("大文字を含むメールアドレスでログインできません: %v", err)
+	}
+	sessionID := f.sessions.created[0].ID
+	if sessionID == "" || out.AccessToken != "token-alice-"+sessionID {
+		t.Errorf("アクセストークンに保存したセッションの ID が入っていません: token=%s session=%s", out.AccessToken, sessionID)
+	}
+}
+
+func TestLogoutRevokesOnlyCurrentSession(t *testing.T) {
+	tests := []struct {
+		name  string
+		input LogoutInput
+		want  []string
+	}{
+		{name: "Cookie のリフレッシュトークンのセッションを失効させる", input: LogoutInput{RefreshToken: "refresh", SessionID: "s1"}, want: []string{"s2"}},
+		{name: "リフレッシュトークンがなければアクセストークンのセッションを失効させる", input: LogoutInput{SessionID: "s1"}, want: []string{"s1"}},
+		{name: "どちらもなければ何もしない", input: LogoutInput{}, want: nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture(true)
+			f.sessions.active = []*entity.Session{{ID: "s2", UserID: "alice", RefreshTokenHash: entity.HashSecretToken("refresh")}}
+			if err := f.uc.Logout(context.Background(), tt.input); err != nil {
+				t.Fatalf("予期しないエラー: %v", err)
+			}
+			if !slices.Equal(f.sessions.revoked, tt.want) || !slices.Equal(f.closer.closed, tt.want) {
+				t.Errorf("失効と切断の対象が期待と異なります: revoked=%v closed=%v", f.sessions.revoked, f.closer.closed)
+			}
+		})
 	}
 }

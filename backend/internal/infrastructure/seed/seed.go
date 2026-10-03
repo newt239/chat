@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/newt239/chat/ent"
@@ -24,13 +23,8 @@ const developersGroupID = "0aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 func AutoSeed(client *ent.Client) error {
 	ctx := context.Background()
 
-	// Check if database is empty
 	userCount, err := client.User.Query().Count(ctx)
 	if err != nil {
-		// Check if the error is due to missing tables
-		if strings.Contains(err.Error(), "does not exist") {
-			return fmt.Errorf("database tables do not exist. Please run migration first: %w", err)
-		}
 		return fmt.Errorf("failed to check user count: %w", err)
 	}
 
@@ -189,7 +183,7 @@ func createSeedData(
 		id          string
 		name        string
 		description *string
-		isPrivate   bool
+		channelType entity.ChannelType
 		createdBy   string
 		parentID    *string
 	}{
@@ -197,28 +191,25 @@ func createSeedData(
 			id:          "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
 			name:        "general",
 			description: stringPtr("General discussion channel"),
-			isPrivate:   false,
 			createdBy:   users[0].ID,
 		},
 		{
 			id:          "cccccccc-cccc-cccc-cccc-cccccccccccc",
 			name:        "random",
 			description: stringPtr("Random thoughts and off-topic discussions"),
-			isPrivate:   false,
 			createdBy:   users[1].ID,
 		},
 		{
 			id:          "dddddddd-dddd-dddd-dddd-dddddddddddd",
 			name:        "development",
 			description: stringPtr("Development discussions and code reviews"),
-			isPrivate:   false,
 			createdBy:   users[0].ID,
 		},
 		{
 			id:          "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
 			name:        "private-team",
 			description: stringPtr("Private channel for team discussions"),
-			isPrivate:   true,
+			channelType: entity.ChannelTypePrivate,
 			createdBy:   users[0].ID,
 		},
 		// 階層チャンネルの例
@@ -252,7 +243,7 @@ func createSeedData(
 			WorkspaceID: "general",
 			Name:        def.name,
 			Description: def.description,
-			IsPrivate:   def.isPrivate,
+			Type:        def.channelType,
 			ParentID:    def.parentID,
 			CreatedBy:   def.createdBy,
 		})
@@ -267,7 +258,7 @@ func createSeedData(
 
 		// Add all users to public channels, only Alice and Bob to private channel
 		usersToAdd := users
-		if channel.IsPrivate {
+		if channel.IsPrivate() {
 			usersToAdd = users[:2] // Only Alice and Bob
 		}
 
@@ -509,23 +500,19 @@ func createSeedData(
 		{MessageID: mentionMessages[2].ID, UserID: users[3].ID, ViaGroupID: developers, CreatedAt: mentionMessages[2].CreatedAt},
 	}
 
-	for _, mention := range userMentions {
-		if err := messageRepo.AddUserMention(ctx, mention); err != nil {
-			return fmt.Errorf("failed to create user mention: %w", err)
-		}
+	if err := repository.NewMessageUserMentionRepository(client).CreateBulk(ctx, userMentions); err != nil {
+		return fmt.Errorf("failed to create user mentions: %w", err)
 	}
 
-	// Create group mentions using message repository
+	// Create group mentions
 	groupMentions := []*entity.MessageGroupMention{
 		{MessageID: mentionMessages[1].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[1].CreatedAt}, // Bob mentions developers
 		{MessageID: mentionMessages[2].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions developers
 		{MessageID: mentionMessages[2].ID, GroupID: groups[2].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions designers
 	}
 
-	for _, mention := range groupMentions {
-		if err := messageRepo.AddGroupMention(ctx, mention); err != nil {
-			return fmt.Errorf("failed to create group mention: %w", err)
-		}
+	if err := repository.NewMessageGroupMentionRepository(client).CreateBulk(ctx, groupMentions); err != nil {
+		return fmt.Errorf("failed to create group mentions: %w", err)
 	}
 
 	// Create message links (simplified OGP data)
@@ -565,7 +552,7 @@ func createSeedData(
 	}
 
 	for _, link := range links {
-		if err := linkRepo.Create(ctx, link); err != nil {
+		if err := createLink(ctx, linkRepo, link); err != nil {
 			return fmt.Errorf("failed to create message link: %w", err)
 		}
 	}
@@ -639,7 +626,7 @@ func createDisplaySamples(
 			return fmt.Errorf("failed to create sample message: %w", err)
 		}
 		sample.link.MessageID = sample.message.ID
-		if err := linkRepo.Create(ctx, sample.link); err != nil {
+		if err := createLink(ctx, linkRepo, sample.link); err != nil {
 			return fmt.Errorf("failed to create sample link: %w", err)
 		}
 	}
@@ -703,4 +690,16 @@ func mustHashPassword(service authuc.PasswordService, password string) string {
 // Helper function for string pointers
 func stringPtr(s string) *string {
 	return &s
+}
+
+// createLink はメッセージへのリンクでなければプレビューを先に保存してからリンクを作ります
+func createLink(ctx context.Context, linkRepo domainrepository.MessageLinkRepository, link *entity.MessageLink) error {
+	if link.LinkedMessageID == nil {
+		preview := &entity.LinkPreview{URL: link.URL, OGP: link.OGP, FetchedAt: time.Now()}
+		if err := linkRepo.UpsertPreview(ctx, preview); err != nil {
+			return err
+		}
+		link.LinkPreviewID = &preview.ID
+	}
+	return linkRepo.CreateBulk(ctx, []*entity.MessageLink{link})
 }

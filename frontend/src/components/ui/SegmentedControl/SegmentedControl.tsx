@@ -36,7 +36,7 @@ export const SegmentedControl = <T extends string>({
       <ToggleButton
         key={option.value}
         id={option.value}
-        className={`min-h-[26px] cursor-pointer rounded-[6px] px-2.5 text-[12.5px] text-muted data-hovered:text-text data-selected:bg-surface data-selected:font-semibold data-selected:text-text data-selected:shadow-sm ${focusRing}`}
+        className={`min-h-6.5 cursor-pointer rounded-md px-2.5 text-label font-normal text-muted data-hovered:text-text data-selected:bg-surface data-selected:font-semibold data-selected:text-text data-selected:shadow-sm ${focusRing}`}
       >
         {option.label}
       </ToggleButton>

@@ -1,21 +1,16 @@
 import { IconBookmark } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
+import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { MessageLinkCard } from "#/features/message/components/MessageLinkCard";
-import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
 import { useBookmarks } from "../hooks/useBookmarks";
 
 export const BookmarkList = () => {
   const { t } = useTranslation();
-  const workspaceId = useAtomValue(currentWorkspaceIdAtom);
+  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { data: bookmarks, isLoading, error } = useBookmarks();
-
-  if (!workspaceId) {
-    return null;
-  }
 
   if (isLoading) {
     return (

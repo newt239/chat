@@ -15,84 +15,52 @@ const (
 	Label = "message_link"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldMessageID holds the string denoting the message_id field in the database.
+	FieldMessageID = "message_id"
 	// FieldURL holds the string denoting the url field in the database.
 	FieldURL = "url"
-	// FieldTitle holds the string denoting the title field in the database.
-	FieldTitle = "title"
-	// FieldDescription holds the string denoting the description field in the database.
-	FieldDescription = "description"
-	// FieldImageURL holds the string denoting the image_url field in the database.
-	FieldImageURL = "image_url"
-	// FieldSiteName holds the string denoting the site_name field in the database.
-	FieldSiteName = "site_name"
-	// FieldCardType holds the string denoting the card_type field in the database.
-	FieldCardType = "card_type"
-	// FieldImageWidth holds the string denoting the image_width field in the database.
-	FieldImageWidth = "image_width"
-	// FieldImageHeight holds the string denoting the image_height field in the database.
-	FieldImageHeight = "image_height"
-	// FieldYoutubeVideoID holds the string denoting the youtube_video_id field in the database.
-	FieldYoutubeVideoID = "youtube_video_id"
-	// FieldYoutubeChannelName holds the string denoting the youtube_channel_name field in the database.
-	FieldYoutubeChannelName = "youtube_channel_name"
-	// FieldYoutubeDurationSeconds holds the string denoting the youtube_duration_seconds field in the database.
-	FieldYoutubeDurationSeconds = "youtube_duration_seconds"
-	// FieldXAuthorName holds the string denoting the x_author_name field in the database.
-	FieldXAuthorName = "x_author_name"
-	// FieldXAuthorHandle holds the string denoting the x_author_handle field in the database.
-	FieldXAuthorHandle = "x_author_handle"
+	// FieldLinkPreviewID holds the string denoting the link_preview_id field in the database.
+	FieldLinkPreviewID = "link_preview_id"
 	// FieldLinkedMessageID holds the string denoting the linked_message_id field in the database.
 	FieldLinkedMessageID = "linked_message_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeMessage holds the string denoting the message edge name in mutations.
 	EdgeMessage = "message"
+	// EdgeLinkPreview holds the string denoting the link_preview edge name in mutations.
+	EdgeLinkPreview = "link_preview"
 	// Table holds the table name of the messagelink in the database.
-	Table = "message_links"
+	Table = "message_link"
 	// MessageTable is the table that holds the message relation/edge.
-	MessageTable = "message_links"
+	MessageTable = "message_link"
 	// MessageInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	MessageInverseTable = "messages"
+	MessageInverseTable = "message"
 	// MessageColumn is the table column denoting the message relation/edge.
-	MessageColumn = "message_link_message"
+	MessageColumn = "message_id"
+	// LinkPreviewTable is the table that holds the link_preview relation/edge.
+	LinkPreviewTable = "message_link"
+	// LinkPreviewInverseTable is the table name for the LinkPreview entity.
+	// It exists in this package in order to avoid circular dependency with the "linkpreview" package.
+	LinkPreviewInverseTable = "link_preview"
+	// LinkPreviewColumn is the table column denoting the link_preview relation/edge.
+	LinkPreviewColumn = "link_preview_id"
 )
 
 // Columns holds all SQL columns for messagelink fields.
 var Columns = []string{
 	FieldID,
+	FieldMessageID,
 	FieldURL,
-	FieldTitle,
-	FieldDescription,
-	FieldImageURL,
-	FieldSiteName,
-	FieldCardType,
-	FieldImageWidth,
-	FieldImageHeight,
-	FieldYoutubeVideoID,
-	FieldYoutubeChannelName,
-	FieldYoutubeDurationSeconds,
-	FieldXAuthorName,
-	FieldXAuthorHandle,
+	FieldLinkPreviewID,
 	FieldLinkedMessageID,
 	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "message_links"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"message_link_message",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -116,69 +84,19 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByMessageID orders the results by the message_id field.
+func ByMessageID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMessageID, opts...).ToFunc()
+}
+
 // ByURL orders the results by the url field.
 func ByURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldURL, opts...).ToFunc()
 }
 
-// ByTitle orders the results by the title field.
-func ByTitle(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTitle, opts...).ToFunc()
-}
-
-// ByDescription orders the results by the description field.
-func ByDescription(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDescription, opts...).ToFunc()
-}
-
-// ByImageURL orders the results by the image_url field.
-func ByImageURL(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldImageURL, opts...).ToFunc()
-}
-
-// BySiteName orders the results by the site_name field.
-func BySiteName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSiteName, opts...).ToFunc()
-}
-
-// ByCardType orders the results by the card_type field.
-func ByCardType(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCardType, opts...).ToFunc()
-}
-
-// ByImageWidth orders the results by the image_width field.
-func ByImageWidth(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldImageWidth, opts...).ToFunc()
-}
-
-// ByImageHeight orders the results by the image_height field.
-func ByImageHeight(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldImageHeight, opts...).ToFunc()
-}
-
-// ByYoutubeVideoID orders the results by the youtube_video_id field.
-func ByYoutubeVideoID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldYoutubeVideoID, opts...).ToFunc()
-}
-
-// ByYoutubeChannelName orders the results by the youtube_channel_name field.
-func ByYoutubeChannelName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldYoutubeChannelName, opts...).ToFunc()
-}
-
-// ByYoutubeDurationSeconds orders the results by the youtube_duration_seconds field.
-func ByYoutubeDurationSeconds(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldYoutubeDurationSeconds, opts...).ToFunc()
-}
-
-// ByXAuthorName orders the results by the x_author_name field.
-func ByXAuthorName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldXAuthorName, opts...).ToFunc()
-}
-
-// ByXAuthorHandle orders the results by the x_author_handle field.
-func ByXAuthorHandle(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldXAuthorHandle, opts...).ToFunc()
+// ByLinkPreviewID orders the results by the link_preview_id field.
+func ByLinkPreviewID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLinkPreviewID, opts...).ToFunc()
 }
 
 // ByLinkedMessageID orders the results by the linked_message_id field.
@@ -197,10 +115,24 @@ func ByMessageField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newMessageStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByLinkPreviewField orders the results by link_preview field.
+func ByLinkPreviewField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLinkPreviewStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newMessageStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MessageInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, MessageTable, MessageColumn),
+	)
+}
+func newLinkPreviewStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LinkPreviewInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, LinkPreviewTable, LinkPreviewColumn),
 	)
 }

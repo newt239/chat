@@ -43,7 +43,7 @@ export const MessageToolbar = ({
   return (
     <Toolbar
       aria-label={t("message.actions.toolbar")}
-      className="absolute -top-7 right-[18px] z-[3] flex gap-px rounded-md border border-border bg-raised p-0.5 shadow-md"
+      className="absolute -top-7 right-4.5 z-3 flex gap-px rounded-md border border-border bg-raised p-0.5 shadow-md"
     >
       {quickReactions.slice(0, 3).map((emoji) => (
         <IconButton

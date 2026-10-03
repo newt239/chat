@@ -12,7 +12,7 @@ import { useMentionDirectory } from "#/features/message/hooks/useMentionDirector
 import { toPlainText } from "#/features/message/utils/markdown/plainText";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useToggleReaction } from "../hooks/useReactions";
 import { groupReactions } from "../utils/groupReactions";
@@ -33,7 +33,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
   const { t } = useTranslation();
   const { toText } = useMentionDirectory();
   const { formatDateTime } = useDateFormat();
-  const currentUserId = useAtomValue(userAtom)?.id ?? null;
+  const currentUserId = useAtomValue(myUserIdAtom);
   const toggleReaction = useToggleReaction(message.id);
   const groups = groupReactions(message.reactions, currentUserId);
   const rows = message.reactions.toSorted(
@@ -56,7 +56,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
       }}
       title={t("reaction.list.title")}
     >
-      <p className="-mt-1 mb-0 truncate text-[12.5px] text-muted">
+      <p className="-mt-1 mb-0 truncate text-label font-normal text-muted">
         {message.user?.displayName}:{" "}
         {toPlainText(toText(message.body)) || t("message.sheet.attachmentOnly")}
       </p>
@@ -65,15 +65,17 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
         onSelectionChange={(key) => {
           onTabChange(String(key));
         }}
-        className="-mx-[18px] min-h-[240px]"
+        className="-mx-4.5 min-h-60"
       >
         <TabList aria-label={t("reaction.list.title")}>
           {tabs.map(({ id, count }) => (
             <Tab key={id} id={id}>
-              <span className={id === ALL_REACTIONS_TAB ? "text-[13px]" : "text-base leading-none"}>
+              <span
+                className={id === ALL_REACTIONS_TAB ? "text-body-sm" : "text-base leading-none"}
+              >
                 {id === ALL_REACTIONS_TAB ? t("reaction.list.all") : <ReactionEmoji emoji={id} />}
               </span>
-              <small className="font-mono text-[11px] text-subtle tabular-nums">{count}</small>
+              <small className="font-mono text-caption text-subtle tabular-nums">{count}</small>
             </Tab>
           ))}
         </TabList>
@@ -94,11 +96,11 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
                         src={row.user?.avatarUrl}
                         size={30}
                       />
-                      <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
-                        <span className="truncate text-[13.5px] font-medium">
+                      <span className="flex min-w-0 flex-1 flex-col leading-snug">
+                        <span className="truncate text-body-sm font-medium">
                           {isMine ? t("reaction.names.you") : row.user?.displayName}
                         </span>
-                        <small className="font-mono text-[11.5px] text-subtle tabular-nums">
+                        <small className="font-mono text-caption text-subtle tabular-nums">
                           {formatDateTime(toDate(row.createdAt))}
                         </small>
                       </span>

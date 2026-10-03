@@ -9,16 +9,14 @@ import (
 	threaduc "github.com/newt239/chat/internal/usecase/thread"
 )
 
-const defaultThreadLimit = 20
-
 type ThreadServer struct {
-	MessageUC    messageuc.MessageUseCase
-	ThreadLister *threaduc.ThreadLister
-	ThreadReader *threaduc.ThreadReader
+	MessageLister *messageuc.MessageLister
+	ThreadLister  *threaduc.ThreadLister
+	ThreadReader  *threaduc.ThreadReader
 }
 
 func (s *ThreadServer) GetThreadReplies(ctx context.Context, req *chatv1.GetThreadRepliesRequest) (*chatv1.GetThreadRepliesResponse, error) {
-	out, err := s.MessageUC.GetThreadReplies(ctx, messageuc.GetThreadRepliesInput{
+	out, err := s.MessageLister.GetThreadReplies(ctx, messageuc.GetThreadRepliesInput{
 		MessageID:     req.MessageId,
 		UserID:        userIDFrom(ctx),
 		Limit:         int(req.Limit),
@@ -39,7 +37,7 @@ func (s *ThreadServer) GetThreadReplies(ctx context.Context, req *chatv1.GetThre
 }
 
 func (s *ThreadServer) GetThreadMetadata(ctx context.Context, req *chatv1.GetThreadMetadataRequest) (*chatv1.GetThreadMetadataResponse, error) {
-	out, err := s.MessageUC.GetThreadMetadata(ctx, messageuc.GetThreadMetadataInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
+	out, err := s.MessageLister.GetThreadMetadata(ctx, messageuc.GetThreadMetadataInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
 	if err != nil {
 		return nil, err
 	}
@@ -47,10 +45,7 @@ func (s *ThreadServer) GetThreadMetadata(ctx context.Context, req *chatv1.GetThr
 }
 
 func (s *ThreadServer) ListParticipatingThreads(ctx context.Context, req *chatv1.ListParticipatingThreadsRequest) (*chatv1.ListParticipatingThreadsResponse, error) {
-	input := threaduc.ListParticipatingThreadsInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), Limit: defaultThreadLimit}
-	if req.Limit > 0 {
-		input.Limit = int(req.Limit)
-	}
+	input := threaduc.ListParticipatingThreadsInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), Limit: int(req.Limit)}
 	if req.Cursor != nil {
 		input.CursorLastActivityAt = optionalTime(req.Cursor.LastActivityAt)
 		input.CursorThreadID = &req.Cursor.ThreadId

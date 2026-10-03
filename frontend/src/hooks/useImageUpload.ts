@@ -2,6 +2,7 @@ import { callUnaryMethod, useTransport } from "@connectrpc/connect-query";
 import { useMutation } from "@tanstack/react-query";
 
 import { ImageService } from "#/gen/chat/v1/image_service_pb";
+import { putToStorage } from "#/lib/storage";
 
 import type { ImagePurpose } from "#/gen/chat/v1/image_service_pb";
 
@@ -20,14 +21,7 @@ export const useImageUpload = (purpose: ImagePurpose, workspaceId: string | null
           workspaceId: workspaceId ?? "",
         },
       );
-      const res = await fetch(uploadUrl, {
-        body: image,
-        headers: { "Content-Type": image.type },
-        method: "PUT",
-      });
-      if (!res.ok) {
-        throw new Error(`upload failed: ${res.status}`);
-      }
+      await putToStorage(image, uploadUrl, () => {});
       return imageUrl;
     },
   });

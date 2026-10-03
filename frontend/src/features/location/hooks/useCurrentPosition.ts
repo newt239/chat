@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { create } from "@bufbuild/protobuf";
 
@@ -15,7 +15,7 @@ type PositionState =
 export const useCurrentPosition = () => {
   const [state, setState] = useState<PositionState>({ status: "locating" });
 
-  const locate = useCallback(() => {
+  const locate = () => {
     if (!("geolocation" in navigator)) {
       setState({ reason: "unavailable", status: "failed" });
       return;
@@ -40,7 +40,7 @@ export const useCurrentPosition = () => {
       },
       { enableHighAccuracy: true, maximumAge: 30_000, timeout: 15_000 },
     );
-  }, []);
+  };
 
   useEffect(locate, [locate]);
 

@@ -26,7 +26,7 @@ export const ChannelChip = ({ workspaceId, parentName, channelId }: ChannelChipP
       to="/app/$workspaceId/$channelId"
       params={{ channelId, workspaceId }}
       aria-label={t("channel.aggregate.open", { name: label })}
-      className="rounded-[5px] border border-border px-[5px] text-[11.5px] leading-[17px] font-medium text-muted no-underline data-hovered:border-accent data-hovered:text-accent-text"
+      className="rounded-sm border border-border px-1.25 text-caption leading-4.25 font-medium text-muted no-underline data-hovered:border-accent data-hovered:text-accent-text"
     >
       # {label}
     </Link>

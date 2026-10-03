@@ -1,8 +1,7 @@
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 
 import { useChannels } from "../hooks/useChannel";
 import { useChannelCategories } from "../hooks/useChannelCategories";
@@ -19,7 +18,7 @@ type ChannelListProps = {
 // カテゴリに入るチャンネルを、既定では階層のツリーで、新しいメッセージ順では階層を分けて並べる
 export const ChannelList = ({ workspaceId, categoryId }: ChannelListProps) => {
   const { t } = useTranslation();
-  const { channelSortOrder } = useAtomValue(preferencesAtom);
+  const { channelSortOrder } = usePreferences();
   const { data: channels, isLoading } = useChannels(workspaceId);
   const { data: categories } = useChannelCategories(workspaceId);
 

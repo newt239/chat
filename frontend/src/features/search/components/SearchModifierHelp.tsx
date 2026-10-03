@@ -23,7 +23,7 @@ type SearchModifierHelpProps = {
 export const SearchModifierHelp = ({ onInsert }: SearchModifierHelpProps) => {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-wrap items-center max-md:hidden gap-x-2.5 gap-y-1 text-[11.5px] text-subtle">
+    <div className="flex flex-wrap items-center max-md:hidden gap-x-2.5 gap-y-1 text-caption text-subtle">
       {modifiers.map(([modifier, key]) => (
         <Tooltip key={modifier} content={t(`search.help.${key}`)}>
           <Button
@@ -31,7 +31,7 @@ export const SearchModifierHelp = ({ onInsert }: SearchModifierHelpProps) => {
             onPress={() => {
               onInsert(modifier);
             }}
-            className={`cursor-pointer rounded-[4px] border border-border bg-sunken px-1 font-mono text-[11px] text-muted data-hovered:text-text ${focusRing}`}
+            className={`cursor-pointer rounded-sm border border-border bg-sunken px-1 font-mono text-caption text-muted data-hovered:text-text ${focusRing}`}
           >
             {modifier}
           </Button>

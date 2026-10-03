@@ -20,14 +20,16 @@ type MessageBookmark struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
+	// MessageID holds the value of the "message_id" field.
+	MessageID uuid.UUID `json:"message_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageBookmarkQuery when eager-loading is set.
-	Edges                    MessageBookmarkEdges `json:"edges"`
-	message_bookmark_user    *uuid.UUID
-	message_bookmark_message *uuid.UUID
-	selectValues             sql.SelectValues
+	Edges        MessageBookmarkEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // MessageBookmarkEdges holds the relations/edges for other nodes in the graph.
@@ -70,12 +72,8 @@ func (*MessageBookmark) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case messagebookmark.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case messagebookmark.FieldID:
+		case messagebookmark.FieldID, messagebookmark.FieldUserID, messagebookmark.FieldMessageID:
 			values[i] = new(uuid.UUID)
-		case messagebookmark.ForeignKeys[0]: // message_bookmark_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case messagebookmark.ForeignKeys[1]: // message_bookmark_message
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -97,25 +95,23 @@ func (_m *MessageBookmark) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case messagebookmark.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
+		case messagebookmark.FieldMessageID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field message_id", values[i])
+			} else if value != nil {
+				_m.MessageID = *value
+			}
 		case messagebookmark.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case messagebookmark.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_bookmark_user", values[i])
-			} else if value.Valid {
-				_m.message_bookmark_user = new(uuid.UUID)
-				*_m.message_bookmark_user = *value.S.(*uuid.UUID)
-			}
-		case messagebookmark.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_bookmark_message", values[i])
-			} else if value.Valid {
-				_m.message_bookmark_message = new(uuid.UUID)
-				*_m.message_bookmark_message = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -163,6 +159,12 @@ func (_m *MessageBookmark) String() string {
 	var builder strings.Builder
 	builder.WriteString("MessageBookmark(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
+	builder.WriteString("message_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MessageID))
+	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')

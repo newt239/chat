@@ -26,6 +26,18 @@ type ChannelMemberCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetChannelID sets the "channel_id" field.
+func (_c *ChannelMemberCreate) SetChannelID(v uuid.UUID) *ChannelMemberCreate {
+	_c.mutation.SetChannelID(v)
+	return _c
+}
+
+// SetUserID sets the "user_id" field.
+func (_c *ChannelMemberCreate) SetUserID(v uuid.UUID) *ChannelMemberCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
 // SetRole sets the "role" field.
 func (_c *ChannelMemberCreate) SetRole(v string) *ChannelMemberCreate {
 	_c.mutation.SetRole(v)
@@ -68,21 +80,9 @@ func (_c *ChannelMemberCreate) SetNillableID(v *uuid.UUID) *ChannelMemberCreate 
 	return _c
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_c *ChannelMemberCreate) SetChannelID(id uuid.UUID) *ChannelMemberCreate {
-	_c.mutation.SetChannelID(id)
-	return _c
-}
-
 // SetChannel sets the "channel" edge to the Channel entity.
 func (_c *ChannelMemberCreate) SetChannel(v *Channel) *ChannelMemberCreate {
 	return _c.SetChannelID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *ChannelMemberCreate) SetUserID(id uuid.UUID) *ChannelMemberCreate {
-	_c.mutation.SetUserID(id)
-	return _c
 }
 
 // SetUser sets the "user" edge to the User entity.
@@ -141,6 +141,12 @@ func (_c *ChannelMemberCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *ChannelMemberCreate) check() error {
+	if _, ok := _c.mutation.ChannelID(); !ok {
+		return &ValidationError{Name: "channel_id", err: errors.New(`ent: missing required field "ChannelMember.channel_id"`)}
+	}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "ChannelMember.user_id"`)}
+	}
 	if _, ok := _c.mutation.Role(); !ok {
 		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "ChannelMember.role"`)}
 	}
@@ -211,7 +217,7 @@ func (_c *ChannelMemberCreate) createSpec() (*ChannelMember, *sqlgraph.CreateSpe
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_member_channel = &nodes[0]
+		_node.ChannelID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
@@ -228,7 +234,7 @@ func (_c *ChannelMemberCreate) createSpec() (*ChannelMember, *sqlgraph.CreateSpe
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_member_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -238,7 +244,7 @@ func (_c *ChannelMemberCreate) createSpec() (*ChannelMember, *sqlgraph.CreateSpe
 // of the `INSERT` statement. For example:
 //
 //	client.ChannelMember.Create().
-//		SetRole(v).
+//		SetChannelID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -247,7 +253,7 @@ func (_c *ChannelMemberCreate) createSpec() (*ChannelMember, *sqlgraph.CreateSpe
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelMemberUpsert) {
-//			SetRole(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelMemberCreate) OnConflict(opts ...sql.ConflictOption) *ChannelMemberUpsertOne {
@@ -282,6 +288,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelMemberUpsert) SetChannelID(v uuid.UUID) *ChannelMemberUpsert {
+	u.Set(channelmember.FieldChannelID, v)
+	return u
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelMemberUpsert) UpdateChannelID() *ChannelMemberUpsert {
+	u.SetExcluded(channelmember.FieldChannelID)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelMemberUpsert) SetUserID(v uuid.UUID) *ChannelMemberUpsert {
+	u.Set(channelmember.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelMemberUpsert) UpdateUserID() *ChannelMemberUpsert {
+	u.SetExcluded(channelmember.FieldUserID)
+	return u
+}
 
 // SetRole sets the "role" field.
 func (u *ChannelMemberUpsert) SetRole(v string) *ChannelMemberUpsert {
@@ -344,6 +374,34 @@ func (u *ChannelMemberUpsertOne) Update(set func(*ChannelMemberUpsert)) *Channel
 		set(&ChannelMemberUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelMemberUpsertOne) SetChannelID(v uuid.UUID) *ChannelMemberUpsertOne {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelMemberUpsertOne) UpdateChannelID() *ChannelMemberUpsertOne {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.UpdateChannelID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelMemberUpsertOne) SetUserID(v uuid.UUID) *ChannelMemberUpsertOne {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelMemberUpsertOne) UpdateUserID() *ChannelMemberUpsertOne {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetRole sets the "role" field.
@@ -496,7 +554,7 @@ func (_c *ChannelMemberCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelMemberUpsert) {
-//			SetRole(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelMemberCreateBulk) OnConflict(opts ...sql.ConflictOption) *ChannelMemberUpsertBulk {
@@ -576,6 +634,34 @@ func (u *ChannelMemberUpsertBulk) Update(set func(*ChannelMemberUpsert)) *Channe
 		set(&ChannelMemberUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelMemberUpsertBulk) SetChannelID(v uuid.UUID) *ChannelMemberUpsertBulk {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelMemberUpsertBulk) UpdateChannelID() *ChannelMemberUpsertBulk {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.UpdateChannelID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelMemberUpsertBulk) SetUserID(v uuid.UUID) *ChannelMemberUpsertBulk {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelMemberUpsertBulk) UpdateUserID() *ChannelMemberUpsertBulk {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetRole sets the "role" field.

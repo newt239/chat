@@ -56,6 +56,21 @@ func IDLTE(id uuid.UUID) predicate.App {
 	return predicate.App(sql.FieldLTE(FieldID, id))
 }
 
+// CreatedByID applies equality check predicate on the "created_by_id" field. It's identical to CreatedByIDEQ.
+func CreatedByID(v uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldEQ(FieldCreatedByID, v))
+}
+
+// BotUserID applies equality check predicate on the "bot_user_id" field. It's identical to BotUserIDEQ.
+func BotUserID(v uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldEQ(FieldBotUserID, v))
+}
+
+// DefaultChannelID applies equality check predicate on the "default_channel_id" field. It's identical to DefaultChannelIDEQ.
+func DefaultChannelID(v uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldEQ(FieldDefaultChannelID, v))
+}
+
 // WorkspaceID applies equality check predicate on the "workspace_id" field. It's identical to WorkspaceIDEQ.
 func WorkspaceID(v string) predicate.App {
 	return predicate.App(sql.FieldEQ(FieldWorkspaceID, v))
@@ -109,6 +124,76 @@ func CreatedAt(v time.Time) predicate.App {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.App {
 	return predicate.App(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// CreatedByIDEQ applies the EQ predicate on the "created_by_id" field.
+func CreatedByIDEQ(v uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldEQ(FieldCreatedByID, v))
+}
+
+// CreatedByIDNEQ applies the NEQ predicate on the "created_by_id" field.
+func CreatedByIDNEQ(v uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldNEQ(FieldCreatedByID, v))
+}
+
+// CreatedByIDIn applies the In predicate on the "created_by_id" field.
+func CreatedByIDIn(vs ...uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldIn(FieldCreatedByID, vs...))
+}
+
+// CreatedByIDNotIn applies the NotIn predicate on the "created_by_id" field.
+func CreatedByIDNotIn(vs ...uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldNotIn(FieldCreatedByID, vs...))
+}
+
+// BotUserIDEQ applies the EQ predicate on the "bot_user_id" field.
+func BotUserIDEQ(v uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldEQ(FieldBotUserID, v))
+}
+
+// BotUserIDNEQ applies the NEQ predicate on the "bot_user_id" field.
+func BotUserIDNEQ(v uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldNEQ(FieldBotUserID, v))
+}
+
+// BotUserIDIn applies the In predicate on the "bot_user_id" field.
+func BotUserIDIn(vs ...uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldIn(FieldBotUserID, vs...))
+}
+
+// BotUserIDNotIn applies the NotIn predicate on the "bot_user_id" field.
+func BotUserIDNotIn(vs ...uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldNotIn(FieldBotUserID, vs...))
+}
+
+// DefaultChannelIDEQ applies the EQ predicate on the "default_channel_id" field.
+func DefaultChannelIDEQ(v uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldEQ(FieldDefaultChannelID, v))
+}
+
+// DefaultChannelIDNEQ applies the NEQ predicate on the "default_channel_id" field.
+func DefaultChannelIDNEQ(v uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldNEQ(FieldDefaultChannelID, v))
+}
+
+// DefaultChannelIDIn applies the In predicate on the "default_channel_id" field.
+func DefaultChannelIDIn(vs ...uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldIn(FieldDefaultChannelID, vs...))
+}
+
+// DefaultChannelIDNotIn applies the NotIn predicate on the "default_channel_id" field.
+func DefaultChannelIDNotIn(vs ...uuid.UUID) predicate.App {
+	return predicate.App(sql.FieldNotIn(FieldDefaultChannelID, vs...))
+}
+
+// DefaultChannelIDIsNil applies the IsNil predicate on the "default_channel_id" field.
+func DefaultChannelIDIsNil() predicate.App {
+	return predicate.App(sql.FieldIsNull(FieldDefaultChannelID))
+}
+
+// DefaultChannelIDNotNil applies the NotNil predicate on the "default_channel_id" field.
+func DefaultChannelIDNotNil() predicate.App {
+	return predicate.App(sql.FieldNotNull(FieldDefaultChannelID))
 }
 
 // WorkspaceIDEQ applies the EQ predicate on the "workspace_id" field.

@@ -20,6 +20,10 @@ type UserGroup struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// WorkspaceID holds the value of the "workspace_id" field.
+	WorkspaceID string `json:"workspace_id,omitempty"`
+	// CreatedByID holds the value of the "created_by_id" field.
+	CreatedByID uuid.UUID `json:"created_by_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
@@ -30,10 +34,8 @@ type UserGroup struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserGroupQuery when eager-loading is set.
-	Edges                 UserGroupEdges `json:"edges"`
-	user_group_workspace  *string
-	user_group_created_by *uuid.UUID
-	selectValues          sql.SelectValues
+	Edges        UserGroupEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // UserGroupEdges holds the relations/edges for other nodes in the graph.
@@ -96,16 +98,12 @@ func (*UserGroup) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case usergroup.FieldName, usergroup.FieldDescription:
+		case usergroup.FieldWorkspaceID, usergroup.FieldName, usergroup.FieldDescription:
 			values[i] = new(sql.NullString)
 		case usergroup.FieldCreatedAt, usergroup.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case usergroup.FieldID:
+		case usergroup.FieldID, usergroup.FieldCreatedByID:
 			values[i] = new(uuid.UUID)
-		case usergroup.ForeignKeys[0]: // user_group_workspace
-			values[i] = new(sql.NullString)
-		case usergroup.ForeignKeys[1]: // user_group_created_by
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -126,6 +124,18 @@ func (_m *UserGroup) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
+			}
+		case usergroup.FieldWorkspaceID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
+			} else if value.Valid {
+				_m.WorkspaceID = value.String
+			}
+		case usergroup.FieldCreatedByID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by_id", values[i])
+			} else if value != nil {
+				_m.CreatedByID = *value
 			}
 		case usergroup.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -150,20 +160,6 @@ func (_m *UserGroup) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
-			}
-		case usergroup.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field user_group_workspace", values[i])
-			} else if value.Valid {
-				_m.user_group_workspace = new(string)
-				*_m.user_group_workspace = value.String
-			}
-		case usergroup.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_group_created_by", values[i])
-			} else if value.Valid {
-				_m.user_group_created_by = new(uuid.UUID)
-				*_m.user_group_created_by = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -221,6 +217,12 @@ func (_m *UserGroup) String() string {
 	var builder strings.Builder
 	builder.WriteString("UserGroup(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("workspace_id=")
+	builder.WriteString(_m.WorkspaceID)
+	builder.WriteString(", ")
+	builder.WriteString("created_by_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CreatedByID))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")

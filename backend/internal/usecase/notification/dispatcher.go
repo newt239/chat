@@ -3,12 +3,16 @@ package notification
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
+
+// dispatchTimeout は投稿の処理が終わったあとも送り続けるプッシュ通知の上限時間
+const dispatchTimeout = 30 * time.Second
 
 const maxBodyRunes = 200
 
@@ -78,7 +82,9 @@ func (d *Dispatcher) NotifyNewMessage(ctx context.Context, channel *entity.Chann
 		return
 	}
 	go func() {
-		if err := d.dispatch(context.WithoutCancel(ctx), channel, message); err != nil {
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), dispatchTimeout)
+		defer cancel()
+		if err := d.dispatch(ctx, channel, message); err != nil {
 			d.logger.Warn("プッシュ通知の送信に失敗しました", service.LogField{Key: "messageID", Value: message.ID}, service.LogField{Key: "error", Value: err.Error()})
 		}
 	}()
@@ -142,7 +148,7 @@ func (d *Dispatcher) candidates(ctx context.Context, channel *entity.Channel, me
 	for _, m := range message.Mentions {
 		add(m.UserID, reasonMention)
 	}
-	if isDM(channel) {
+	if channel.IsDM() {
 		members, err := d.channelMemberRepo.FindMembers(ctx, channel.ID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load DM members: %w", err)
@@ -169,20 +175,18 @@ func (d *Dispatcher) filterRecipients(ctx context.Context, channel *entity.Chann
 	if err != nil {
 		return nil, fmt.Errorf("failed to load recipients: %w", err)
 	}
+	accessible, err := d.channelAccessSvc.FilterUsersWithAccess(ctx, channel, ids)
+	if err != nil {
+		return nil, err
+	}
+	muted, err := d.channelMuteRepo.FindMutedUserIDs(ctx, channel.ID, ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load mutes: %w", err)
+	}
 
 	recipients := []string{}
 	for _, u := range users {
-		if u.IsBot || !wants(u.Preferences.NotificationLevel, candidates[u.ID]) {
-			continue
-		}
-		if _, err := d.channelAccessSvc.EnsureChannelAccess(ctx, channel.ID, u.ID); err != nil {
-			continue
-		}
-		muted, err := d.channelMuteRepo.FindMutedChannelIDs(ctx, u.ID, []string{channel.ID})
-		if err != nil {
-			return nil, fmt.Errorf("failed to load mutes: %w", err)
-		}
-		if !muted[channel.ID] {
+		if !u.IsApp && wants(u.Preferences.NotificationLevel, candidates[u.ID]) && accessible[u.ID] && !muted[u.ID] {
 			recipients = append(recipients, u.ID)
 		}
 	}
@@ -201,14 +205,10 @@ func wants(level entity.NotificationLevel, r reason) bool {
 	}
 }
 
-func isDM(channel *entity.Channel) bool {
-	return channel.Type == entity.ChannelTypeDM || channel.Type == entity.ChannelTypeGroupDM
-}
-
 // content の body は ID 記法を名前に置き換えた本文です
 func content(channel *entity.Channel, message messageuc.MessageOutput, body string) (string, string, map[string]string) {
 	title := message.User.DisplayName
-	if !isDM(channel) {
+	if !channel.IsDM() {
 		title += " · #" + channel.Name
 	}
 	if runes := []rune(body); len(runes) > maxBodyRunes {

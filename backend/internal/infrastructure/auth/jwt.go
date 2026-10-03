@@ -15,8 +15,8 @@ var (
 )
 
 type Claims struct {
-	UserID string `json:"user_id"`
-	Email  string `json:"email"`
+	UserID    string `json:"user_id"`
+	SessionID string `json:"sid"`
 	jwt.RegisteredClaims
 }
 
@@ -30,21 +30,21 @@ func NewJWTService(secret string) authuc.JWTService {
 	}
 }
 
-func (s *jwtService) GenerateToken(userID string, duration time.Duration) (string, error) {
-	claims := Claims{
-		UserID: userID,
+func (s *jwtService) GenerateToken(claims authuc.TokenClaims, duration time.Duration) (string, error) {
+	now := time.Now()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
+		UserID:    claims.UserID,
+		SessionID: claims.SessionID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(now.Add(duration)),
+			IssuedAt:  jwt.NewNumericDate(now),
 		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	})
 	return token.SignedString([]byte(s.secret))
 }
 
 func (s *jwtService) VerifyToken(tokenString string) (*authuc.TokenClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrInvalidToken
 		}
@@ -63,8 +63,5 @@ func (s *jwtService) VerifyToken(tokenString string) (*authuc.TokenClaims, error
 		return nil, ErrInvalidToken
 	}
 
-	return &authuc.TokenClaims{
-		UserID: claims.UserID,
-		Email:  claims.Email,
-	}, nil
+	return &authuc.TokenClaims{UserID: claims.UserID, SessionID: claims.SessionID}, nil
 }

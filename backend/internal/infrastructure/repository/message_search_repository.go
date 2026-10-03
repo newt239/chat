@@ -14,8 +14,6 @@ import (
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/predicate"
-	"github.com/newt239/chat/ent/user"
-	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -24,17 +22,17 @@ import (
 
 // 検索用文書は関連テーブルを配列やフラグにまとめて 1 本の SQL で読む。WHERE 句は呼び出し側で足す
 const searchDocumentSQL = `
-	SELECT m.id, c.channel_workspace, m.message_channel, m.message_user, m.message_parent, m.body, m.created_at,
-		ARRAY(SELECT a.file_name FROM attachments a WHERE a.attachment_message = m.id ORDER BY a.created_at),
-		ARRAY(SELECT a.mime_type FROM attachments a WHERE a.attachment_message = m.id),
-		ARRAY(SELECT um.message_user_mention_user::text FROM message_user_mentions um WHERE um.message_user_mention_message = m.id),
-		ARRAY(SELECT gm.message_group_mention_group::text FROM message_group_mentions gm WHERE gm.message_group_mention_message = m.id),
+	SELECT m.id, c.workspace_id, m.channel_id, m.user_id, m.parent_id, m.body, m.created_at,
+		ARRAY(SELECT a.file_name FROM attachment a WHERE a.message_id = m.id ORDER BY a.created_at),
+		ARRAY(SELECT a.mime_type FROM attachment a WHERE a.message_id = m.id),
+		ARRAY(SELECT um.user_id::text FROM message_user_mention um WHERE um.message_id = m.id),
+		ARRAY(SELECT gm.group_id::text FROM message_group_mention gm WHERE gm.message_id = m.id),
 		m.mentions_channel OR m.mentions_here,
-		EXISTS (SELECT 1 FROM message_links l WHERE l.message_link_message = m.id),
-		EXISTS (SELECT 1 FROM message_pins p WHERE p.message_pin_message = m.id),
-		EXISTS (SELECT 1 FROM messages r WHERE r.message_parent = m.id AND r.deleted_at IS NULL),
+		EXISTS (SELECT 1 FROM message_link l WHERE l.message_id = m.id),
+		EXISTS (SELECT 1 FROM message_pin p WHERE p.message_id = m.id),
+		EXISTS (SELECT 1 FROM message r WHERE r.parent_id = m.id AND r.deleted_at IS NULL),
 		m.location_latitude IS NOT NULL
-	FROM messages m JOIN channels c ON c.id = m.message_channel
+	FROM message m JOIN channel c ON c.id = m.channel_id
 	WHERE m.deleted_at IS NULL AND `
 
 func (r *messageRepository) FindSearchScope(ctx context.Context, workspaceID string, userID string) (*domainrepository.MessageSearchScope, error) {
@@ -49,7 +47,7 @@ func (r *messageRepository) FindSearchScope(ctx context.Context, workspaceID str
 		return nil, err
 	}
 	joined, err := client.Channel.Query().
-		Where(channel.HasWorkspaceWith(workspace.ID(workspaceID)), channel.HasMembersWith(channelmember.HasUserWith(user.ID(uid)))).
+		Where(channel.WorkspaceID(workspaceID), channel.HasMembersWith(channelmember.UserID(uid))).
 		IDs(ctx)
 	if err != nil {
 		return nil, err
@@ -65,7 +63,7 @@ func (r *messageRepository) FindSearchDocuments(ctx context.Context, messageIDs 
 	if len(messageIDs) == 0 {
 		return []domainrepository.MessageSearchDocument{}, nil
 	}
-	if _, err := parseUUIDs(messageIDs, "message ID"); err != nil {
+	if _, err := utils.ParseUUIDs(messageIDs, "message ID"); err != nil {
 		return nil, err
 	}
 	return r.querySearchDocuments(ctx, "m.id = ANY($1::uuid[])", pq.Array(messageIDs))
@@ -205,10 +203,10 @@ func (r *messageRepository) FindMentions(ctx context.Context, input domainreposi
 // viewableChannel はワークスペース内の公開チャンネルと、参加している非公開チャンネル（DM を含む）に一致します
 func viewableChannel(workspaceID string, userID uuid.UUID) predicate.Channel {
 	return channel.And(
-		channel.HasWorkspaceWith(workspace.ID(workspaceID)),
+		channel.WorkspaceID(workspaceID),
 		channel.Or(
-			channel.IsPrivate(false),
-			channel.HasMembersWith(channelmember.HasUserWith(user.ID(userID))),
+			channel.ChannelType(string(entity.ChannelTypePublic)),
+			channel.HasMembersWith(channelmember.UserID(userID)),
 		),
 	)
 }
@@ -216,9 +214,9 @@ func viewableChannel(workspaceID string, userID uuid.UUID) predicate.Channel {
 // mentionsUser は本人へのメンション（グループ経由を含む）と、参加チャンネルでの @channel / @here に一致します
 func mentionsUser(userID uuid.UUID) predicate.Message {
 	return message.Or(
-		message.HasUserMentionsWith(messageusermention.HasUserWith(user.ID(userID))),
+		message.HasUserMentionsWith(messageusermention.UserID(userID)),
 		message.And(
-			message.HasChannelWith(channel.HasMembersWith(channelmember.HasUserWith(user.ID(userID)))),
+			message.HasChannelWith(channel.HasMembersWith(channelmember.UserID(userID))),
 			message.Or(message.MentionsChannel(true), message.MentionsHere(true)),
 		),
 	)

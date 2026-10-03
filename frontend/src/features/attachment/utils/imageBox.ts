@@ -5,7 +5,7 @@ const MIN_HEIGHT = 90;
 // 寸法が分からない画像は 4:3 の枠に収める
 const FALLBACK = { height: 300, width: 400 };
 
-export type ImageBox = {
+type ImageBox = {
   width: number;
   height: number;
   // 枠に収めるために切り取った向き

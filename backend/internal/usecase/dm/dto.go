@@ -1,5 +1,11 @@
 package dm
 
+import (
+	"time"
+
+	"github.com/newt239/chat/internal/domain/entity"
+)
+
 type CreateDMInput struct {
 	WorkspaceID  string
 	UserID       string
@@ -23,10 +29,10 @@ type DMOutput struct {
 	WorkspaceID string
 	Name        string
 	Description *string
-	Type        string
+	Type        entity.ChannelType
 	Members     []DMMemberOutput
-	CreatedAt   string
-	UpdatedAt   string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 	IsStarred   bool
 	IsMuted     bool
 	UnreadCount int

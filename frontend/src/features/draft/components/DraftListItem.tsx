@@ -26,7 +26,7 @@ export const DraftListItem = ({ workspaceId, draft, label, onDelete }: DraftList
   const { channelId, parentId } = draft;
 
   return (
-    <article className="flex items-start gap-2 rounded-[10px] border border-border bg-surface py-2.5 pr-2 pl-3 font-sans text-text">
+    <article className="flex items-start gap-2 rounded-lg border border-border bg-surface py-2.5 pr-2 pl-3 font-sans text-text">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <header className="flex min-w-0 items-center gap-1.5 text-xs text-muted">
           {label && <b className="truncate font-semibold text-text">{label}</b>}

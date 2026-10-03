@@ -33,7 +33,7 @@ const (
 	WorkspaceTable = "custom_emoji"
 	// WorkspaceInverseTable is the table name for the Workspace entity.
 	// It exists in this package in order to avoid circular dependency with the "workspace" package.
-	WorkspaceInverseTable = "workspaces"
+	WorkspaceInverseTable = "workspace"
 	// WorkspaceColumn is the table column denoting the workspace relation/edge.
 	WorkspaceColumn = "workspace_id"
 )

@@ -10,46 +10,30 @@ import (
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 )
 
-// Registry は分割されたRegistryを統合するメインのRegistryです
+// Registry は各層の Registry をまとめ、起動に必要なものを組み立てます
 type Registry struct {
-	domainRegistry         *DomainRegistry
 	infrastructureRegistry *InfrastructureRegistry
 	usecaseRegistry        *UseCaseRegistry
 	interfaceRegistry      *InterfaceRegistry
 }
 
-// NewRegistry は新しいRegistryを作成します。rdb が nil なら WebSocket の配信などをプロセス内で完結させます
+// NewRegistry は rdb が nil なら WebSocket の配信などをプロセス内で完結させます
 func NewRegistry(client *ent.Client, cfg *config.Config, rdb *goredis.Client) *Registry {
-	// ドメイン層のRegistryを作成
 	domainRegistry := NewDomainRegistry(client)
 
-	// WebSocketハブを作成
 	var hubOpts []websocket.HubOption
 	if rdb != nil {
 		hubOpts = append(hubOpts, websocket.WithBroker(redis.NewBroker(rdb)), websocket.WithPresenceStore(redis.NewPresenceStore(rdb)))
 	}
-	hub := websocket.NewHub(hubOpts...)
+	hub := websocket.NewHub(domainRegistry.NewChannelAccessService(), hubOpts...)
 
-	// インフラストラクチャ層のRegistryを作成
 	infrastructureRegistry := NewInfrastructureRegistry(client, cfg, hub, rdb, domainRegistry)
-
-	// ユースケース層のRegistryを作成
 	usecaseRegistry := NewUseCaseRegistry(domainRegistry, infrastructureRegistry)
-
-	// インターフェース層のRegistryを作成
-	interfaceRegistry := NewInterfaceRegistry(usecaseRegistry, infrastructureRegistry, domainRegistry)
-
 	return &Registry{
-		domainRegistry:         domainRegistry,
 		infrastructureRegistry: infrastructureRegistry,
 		usecaseRegistry:        usecaseRegistry,
-		interfaceRegistry:      interfaceRegistry,
+		interfaceRegistry:      NewInterfaceRegistry(usecaseRegistry, infrastructureRegistry, domainRegistry),
 	}
-}
-
-// 各層のRegistryへのアクセサー
-func (r *Registry) Domain() *DomainRegistry {
-	return r.domainRegistry
 }
 
 func (r *Registry) Infrastructure() *InfrastructureRegistry {
@@ -60,15 +44,11 @@ func (r *Registry) UseCase() *UseCaseRegistry {
 	return r.usecaseRegistry
 }
 
-func (r *Registry) Interface() *InterfaceRegistry {
-	return r.interfaceRegistry
-}
-
-// 便利メソッド - 既存のコードとの互換性のため
 func (r *Registry) NewRouter() *echo.Echo {
 	return r.interfaceRegistry.NewRouter()
 }
 
-func (r *Registry) NewWebSocketHub() *websocket.Hub {
-	return r.interfaceRegistry.NewWebSocketHub()
+// Hub は全接続を持つ WebSocket のハブです
+func (r *Registry) Hub() *websocket.Hub {
+	return r.infrastructureRegistry.hub
 }

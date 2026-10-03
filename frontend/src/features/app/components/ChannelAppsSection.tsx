@@ -70,7 +70,7 @@ export const ChannelAppsSection = ({ workspaceId, channelId }: ChannelAppsSectio
         </Menu>
       </h4>
       {joined.length === 0 && (
-        <p className="m-0 text-[12.5px] text-muted">{t("app.channelEmpty")}</p>
+        <p className="m-0 text-label font-normal text-muted">{t("app.channelEmpty")}</p>
       )}
       <ul className="m-0 -mx-2 flex list-none flex-col p-0">
         {joined.map((app) => (

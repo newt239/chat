@@ -21,7 +21,6 @@ const imageURLExpires = 12 * time.Hour
 
 var (
 	ErrEmojiNotFound = errors.New("指定されたカスタム絵文字が見つかりません")
-	ErrUnauthorized  = errors.New("このカスタム絵文字を削除できるのは登録者と管理者だけです")
 	ErrNameExists    = errors.New("同じ名前のカスタム絵文字がすでにあります")
 	ErrInvalidName   = fmt.Errorf("%w: 名前は英小文字・数字・_・- の 32 文字以内で指定してください", domerr.ErrValidation)
 )
@@ -32,7 +31,6 @@ type Interactor struct {
 	workspaceRepo domainrepository.WorkspaceRepository
 	permissionSvc domainservice.PermissionService
 	storage       domainservice.StorageService
-	storageConfig domainservice.StorageConfig
 	notifier      Notifier
 	recorder      audit.Recorder
 	logger        domainservice.Logger
@@ -44,7 +42,6 @@ func NewInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	permissionSvc domainservice.PermissionService,
 	storage domainservice.StorageService,
-	storageConfig domainservice.StorageConfig,
 	notifier Notifier,
 	recorder audit.Recorder,
 	logger domainservice.Logger,
@@ -55,7 +52,6 @@ func NewInteractor(
 		workspaceRepo: workspaceRepo,
 		permissionSvc: permissionSvc,
 		storage:       storage,
-		storageConfig: storageConfig,
 		notifier:      notifier,
 		recorder:      recorder,
 		logger:        logger,
@@ -85,7 +81,7 @@ func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignO
 		return nil, err
 	}
 	uploadID := uuid.NewString()
-	url, err := i.storage.GenerateUploadURL(storageKey(input.WorkspaceID, uploadID), input.ContentType, input.SizeBytes, i.storageConfig.GetUploadExpires())
+	url, err := i.storage.GenerateUploadURL(ctx, storageKey(input.WorkspaceID, uploadID), input.ContentType, input.SizeBytes, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to presign upload: %w", err)
 	}
@@ -140,13 +136,13 @@ func (i *Interactor) Delete(ctx context.Context, input DeleteInput) error {
 		return ErrEmojiNotFound
 	}
 	if !canDelete(emoji, member) {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 	if err := i.emojiRepo.Delete(ctx, emoji.ID); err != nil {
 		return fmt.Errorf("failed to delete custom emoji: %w", err)
 	}
 	// 画像が残っても表示されることはないため、削除の失敗は記録だけにとどめる
-	if err := i.storage.DeleteObject(emoji.StorageKey); err != nil {
+	if err := i.storage.DeleteObject(ctx, emoji.StorageKey); err != nil {
 		i.logger.Warn("カスタム絵文字の画像の削除に失敗しました",
 			domainservice.LogField{Key: "storageKey", Value: emoji.StorageKey},
 			domainservice.LogField{Key: "error", Value: err.Error()},
@@ -184,19 +180,15 @@ func (i *Interactor) toOutputs(ctx context.Context, emojis []*entity.CustomEmoji
 
 	outputs := make([]Output, 0, len(emojis))
 	for _, e := range emojis {
-		url, err := i.storage.GenerateDownloadURL(e.StorageKey, imageURLExpires)
+		url, err := i.storage.GenerateDownloadURL(ctx, e.StorageKey, imageURLExpires)
 		if err != nil {
 			return nil, fmt.Errorf("failed to presign download: %w", err)
-		}
-		creator := messageuc.UserInfo{ID: e.CreatedBy}
-		if u := byID[e.CreatedBy]; u != nil {
-			creator = messageuc.UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsBot: u.IsBot}
 		}
 		outputs = append(outputs, Output{
 			ID:        e.ID,
 			Name:      e.Name,
 			ImageURL:  url,
-			CreatedBy: creator,
+			CreatedBy: messageuc.UserInfoOf(e.CreatedBy, byID),
 			CreatedAt: e.CreatedAt,
 			CanDelete: canDelete(e, viewer),
 		})

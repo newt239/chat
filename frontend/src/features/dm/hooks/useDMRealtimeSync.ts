@@ -21,15 +21,14 @@ export const useDMRealtimeSync = (workspaceId: string, currentChannelId: string 
       return undefined;
     }
 
+    const queryKey = createConnectQueryKey({
+      cardinality: "finite",
+      input: { workspaceId },
+      schema: DirectMessageService.method.listDirectMessages,
+    });
     const updateDM = (channelId: string, update: (dm: DirectMessage) => DirectMessage) => {
       queryClient.setQueriesData<ListDirectMessagesResponse>(
-        {
-          queryKey: createConnectQueryKey({
-            cardinality: "finite",
-            input: { workspaceId },
-            schema: DirectMessageService.method.listDirectMessages,
-          }),
-        },
+        { queryKey },
         (res) =>
           res && {
             ...res,
@@ -46,6 +45,10 @@ export const useDMRealtimeSync = (workspaceId: string, currentChannelId: string 
       }),
       wsClient.on("unreadCount", ({ channelId, hasMention, unreadCount }) => {
         updateDM(channelId, (dm) => ({ ...dm, hasMention, unreadCount }));
+      }),
+      // 切断中に届いた DM の未読は差分で追えないため取り直す
+      wsClient.onReconnect(() => {
+        void queryClient.invalidateQueries({ queryKey });
       }),
     ];
     return () => {

@@ -20,28 +20,30 @@ type Channel struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// WorkspaceID holds the value of the "workspace_id" field.
+	WorkspaceID string `json:"workspace_id,omitempty"`
+	// CreatedByID holds the value of the "created_by_id" field.
+	CreatedByID uuid.UUID `json:"created_by_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
-	// IsPrivate holds the value of the "is_private" field.
-	IsPrivate bool `json:"is_private,omitempty"`
 	// ChannelType holds the value of the "channel_type" field.
 	ChannelType string `json:"channel_type,omitempty"`
 	// ArchivedAt holds the value of the "archived_at" field.
 	ArchivedAt *time.Time `json:"archived_at,omitempty"`
 	// ParentID holds the value of the "parent_id" field.
 	ParentID *uuid.UUID `json:"parent_id,omitempty"`
+	// DmKey holds the value of the "dm_key" field.
+	DmKey *string `json:"dm_key,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ChannelQuery when eager-loading is set.
-	Edges              ChannelEdges `json:"edges"`
-	channel_workspace  *string
-	channel_created_by *uuid.UUID
-	selectValues       sql.SelectValues
+	Edges        ChannelEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // ChannelEdges holds the relations/edges for other nodes in the graph.
@@ -152,18 +154,12 @@ func (*Channel) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case channel.FieldParentID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case channel.FieldIsPrivate:
-			values[i] = new(sql.NullBool)
-		case channel.FieldName, channel.FieldDescription, channel.FieldChannelType:
+		case channel.FieldWorkspaceID, channel.FieldName, channel.FieldDescription, channel.FieldChannelType, channel.FieldDmKey:
 			values[i] = new(sql.NullString)
 		case channel.FieldArchivedAt, channel.FieldCreatedAt, channel.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case channel.FieldID:
+		case channel.FieldID, channel.FieldCreatedByID:
 			values[i] = new(uuid.UUID)
-		case channel.ForeignKeys[0]: // channel_workspace
-			values[i] = new(sql.NullString)
-		case channel.ForeignKeys[1]: // channel_created_by
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -185,6 +181,18 @@ func (_m *Channel) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case channel.FieldWorkspaceID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
+			} else if value.Valid {
+				_m.WorkspaceID = value.String
+			}
+		case channel.FieldCreatedByID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by_id", values[i])
+			} else if value != nil {
+				_m.CreatedByID = *value
+			}
 		case channel.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -196,12 +204,6 @@ func (_m *Channel) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				_m.Description = value.String
-			}
-		case channel.FieldIsPrivate:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_private", values[i])
-			} else if value.Valid {
-				_m.IsPrivate = value.Bool
 			}
 		case channel.FieldChannelType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -223,6 +225,13 @@ func (_m *Channel) assignValues(columns []string, values []any) error {
 				_m.ParentID = new(uuid.UUID)
 				*_m.ParentID = *value.S.(*uuid.UUID)
 			}
+		case channel.FieldDmKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dm_key", values[i])
+			} else if value.Valid {
+				_m.DmKey = new(string)
+				*_m.DmKey = value.String
+			}
 		case channel.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -234,20 +243,6 @@ func (_m *Channel) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
-			}
-		case channel.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_workspace", values[i])
-			} else if value.Valid {
-				_m.channel_workspace = new(string)
-				*_m.channel_workspace = value.String
-			}
-		case channel.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_created_by", values[i])
-			} else if value.Valid {
-				_m.channel_created_by = new(uuid.UUID)
-				*_m.channel_created_by = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -325,14 +320,17 @@ func (_m *Channel) String() string {
 	var builder strings.Builder
 	builder.WriteString("Channel(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("workspace_id=")
+	builder.WriteString(_m.WorkspaceID)
+	builder.WriteString(", ")
+	builder.WriteString("created_by_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CreatedByID))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)
-	builder.WriteString(", ")
-	builder.WriteString("is_private=")
-	builder.WriteString(fmt.Sprintf("%v", _m.IsPrivate))
 	builder.WriteString(", ")
 	builder.WriteString("channel_type=")
 	builder.WriteString(_m.ChannelType)
@@ -345,6 +343,11 @@ func (_m *Channel) String() string {
 	if v := _m.ParentID; v != nil {
 		builder.WriteString("parent_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.DmKey; v != nil {
+		builder.WriteString("dm_key=")
+		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")

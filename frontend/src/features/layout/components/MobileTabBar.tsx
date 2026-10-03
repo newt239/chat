@@ -56,14 +56,16 @@ export const MobileTabBar = ({ workspaceId }: MobileTabBarProps) => {
           key={name}
           to={to}
           params={{ workspaceId }}
+          // ホームは他のタブの親のパスなので、完全一致のときだけ現在地にする
+          activeOptions={{ exact: name === "home" }}
           data-tab={tab === name ? "on" : "off"}
-          className="group flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[11px] text-subtle no-underline data-[tab=on]:font-semibold data-[tab=on]:text-accent-text"
+          className="group flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-caption text-subtle no-underline data-[tab=on]:font-semibold data-[tab=on]:text-accent-text"
         >
           {/* アクティブなタブはアイコンを薄い色のピルで囲む */}
-          <span className="relative grid h-8 w-14 place-items-center rounded-full transition-colors group-data-[tab=on]:bg-accent-soft [&_svg]:size-[22px]">
+          <span className="relative grid h-8 w-14 place-items-center rounded-full transition-colors group-data-[tab=on]:bg-accent-soft [&_svg]:size-5.5">
             <TabIcon aria-hidden />
             {unread > 0 && (
-              <span className="absolute -top-0.5 left-[calc(50%+6px)] box-content grid h-4 min-w-4 place-items-center rounded-full border-2 border-surface bg-danger px-[3px] text-[10px] leading-none font-bold text-danger-fg">
+              <span className="absolute -top-0.5 left-[calc(50%+6px)] box-content grid h-4 min-w-4 place-items-center rounded-full border-2 border-surface bg-danger px-0.75 text-caption leading-none font-bold text-danger-fg">
                 {unread > 99 ? "99+" : unread}
               </span>
             )}

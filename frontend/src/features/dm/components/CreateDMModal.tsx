@@ -1,60 +1,55 @@
 import { useId, useState } from "react";
 
-import { IconCheck, IconLock, IconSearch, IconX } from "@tabler/icons-react";
+import { IconCheck, IconLock, IconX } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
-import {
-  Button as AriaButton,
-  Form,
-  Input,
-  ListBox,
-  ListBoxItem,
-  SearchField,
-  Text,
-} from "react-aria-components";
+import { Button as AriaButton, Form, ListBox, ListBoxItem, Text } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Button } from "#/components/ui/Button/Button";
 import { Dialog } from "#/components/ui/Dialog/Dialog";
-import { cn, fieldStyles, focusRing } from "#/components/ui/styles/styles";
+import { SearchField } from "#/components/ui/SearchField/SearchField";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { ChannelNameField } from "#/features/channel/components/ChannelNameField";
 import { useChannels, useCreateChannel } from "#/features/channel/hooks/useChannel";
 import { channelPathErrorKeys, validateChannelPath } from "#/features/channel/utils/channelPath";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { transitions } from "#/lib/motion";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useCreateDM, useCreateGroupDM } from "../hooks/useDM";
+
+import type { DirectMessage } from "#/gen/chat/v1/direct_message_service_pb";
 
 // 自分を含めた DM の上限。超えると非公開チャンネルとして作る
 const DM_MAX = 10;
 
 type CreateDMModalProps = {
   workspaceId: string;
-  opened: boolean;
   onClose: () => void;
 };
 
-export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalProps) => {
+// 開くたびにマウントし直すため、選択や入力は閉じるときに戻さなくてよい
+export const CreateDMModal = ({ workspaceId, onClose }: CreateDMModalProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const formId = useId();
-  const currentUser = useAtomValue(userAtom);
+  const myId = useAtomValue(myUserIdAtom);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [channelName, setChannelName] = useState("");
   const [isTouched, setIsTouched] = useState(false);
 
-  const { data: members } = useMembers(opened ? workspaceId : null);
-  const { data: channels } = useChannels(opened ? workspaceId : null);
+  const { data: members } = useMembers(workspaceId);
+  const { data: channels } = useChannels(workspaceId);
   const createDM = useCreateDM();
   const createGroupDM = useCreateGroupDM();
   const createChannel = useCreateChannel();
 
-  const candidates = (members ?? []).filter((member) => member.userId !== currentUser?.id);
+  const candidates = (members ?? []).filter((member) => member.userId !== myId);
   const normalizedQuery = query.trim().toLowerCase();
   const visibleCandidates = candidates.filter(
     (member) =>
@@ -79,19 +74,12 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
   const isPending = mutations.some((mutation) => mutation.isPending);
   const mutationError = mutations.find((mutation) => mutation.error !== null)?.error;
 
-  const close = () => {
-    setSelectedIds([]);
-    setQuery("");
-    setChannelName("");
-    setIsTouched(false);
-    for (const mutation of mutations) {
-      mutation.reset();
+  // 移動先に ?dialog= がないため、移動するとダイアログも閉じる
+  const openChannel = (channelId: string | undefined) => {
+    if (channelId === undefined) {
+      onClose();
+      return;
     }
-    onClose();
-  };
-
-  const openChannel = (channelId: string) => {
-    close();
     void navigate({ params: { channelId, workspaceId }, to: "/app/$workspaceId/$channelId" });
   };
 
@@ -101,31 +89,31 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
     );
   };
 
-  const submit = async () => {
+  const submit = () => {
     setIsTouched(true);
     const [firstUserId] = selectedIds;
     if (firstUserId === undefined || nameError !== null) {
       return;
     }
     if (isOverLimit) {
-      const { channel } = await createChannel.mutateAsync({
-        isPrivate: true,
-        memberIds: selectedIds,
-        name: channelName,
-        workspaceId,
-      });
-      toast(t("channel.create.created", { name: channelName }), { tone: "success" });
-      if (channel !== undefined) {
-        openChannel(channel.id);
-      }
+      createChannel.mutate(
+        { isPrivate: true, memberIds: selectedIds, name: channelName, workspaceId },
+        {
+          onSuccess: ({ channel }) => {
+            toast(t("channel.create.created", { name: channelName }), { tone: "success" });
+            openChannel(channel?.id);
+          },
+        },
+      );
       return;
     }
-    const { directMessage } =
-      selectedIds.length > 1
-        ? await createGroupDM.mutateAsync({ userIds: selectedIds, workspaceId })
-        : await createDM.mutateAsync({ userId: firstUserId, workspaceId });
-    if (directMessage !== undefined) {
-      openChannel(directMessage.id);
+    const onSuccess = ({ directMessage }: { directMessage?: DirectMessage }) => {
+      openChannel(directMessage?.id);
+    };
+    if (selectedIds.length > 1) {
+      createGroupDM.mutate({ userIds: selectedIds, workspaceId }, { onSuccess });
+    } else {
+      createDM.mutate({ userId: firstUserId, workspaceId }, { onSuccess });
     }
   };
 
@@ -137,17 +125,17 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
 
   return (
     <Dialog
-      isOpen={opened}
+      isOpen
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          close();
+          onClose();
         }
       }}
       title={t("dm.create.title")}
       size="md"
       footer={
         <>
-          <Button variant="secondary" onPress={close}>
+          <Button variant="secondary" onPress={onClose}>
             {t("common.cancel")}
           </Button>
           <Button
@@ -166,25 +154,11 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
         className="flex flex-col gap-3"
         onSubmit={(event) => {
           event.preventDefault();
-          void submit();
+          submit();
         }}
       >
         <div className="flex flex-col gap-1.5">
-          <SearchField
-            value={query}
-            onChange={setQuery}
-            aria-label={t("dm.create.search")}
-            className={cn(
-              fieldStyles.input,
-              "flex items-center gap-2 px-2.5 data-focus-within:border-accent data-focus-within:ring-3 data-focus-within:ring-accent-soft",
-            )}
-          >
-            <IconSearch aria-hidden className="size-4 shrink-0 text-subtle" />
-            <Input
-              placeholder={t("dm.create.search")}
-              className="h-full min-w-0 flex-1 border-0 bg-transparent font-sans text-[13.5px] text-text outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden"
-            />
-          </SearchField>
+          <SearchField value={query} onChange={setQuery} label={t("dm.create.search")} />
           {selectedMembers.length > 0 && (
             <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
               {selectedMembers.map((member) => (
@@ -201,7 +175,7 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
                       toggle(member.userId);
                     }}
                     className={cn(
-                      "grid size-[18px] cursor-pointer place-items-center rounded-full data-hovered:bg-accent/20",
+                      "grid size-4.5 cursor-pointer place-items-center rounded-full data-hovered:bg-accent/20",
                       focusRing,
                     )}
                   >
@@ -268,19 +242,19 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
           renderEmptyState={() => (
             <p className="m-0 px-2.5 py-2 text-caption text-muted">{t("dm.create.noResults")}</p>
           )}
-          className="flex max-h-[210px] flex-col overflow-y-auto rounded-lg border border-border outline-none"
+          className="flex max-h-52.5 flex-col overflow-y-auto rounded-lg border border-border outline-none"
         >
           {(member) => (
             <ListBoxItem
               id={member.userId}
               textValue={member.nickname ?? member.displayName}
-              className="flex cursor-pointer items-center gap-2.5 px-2.5 py-1.5 text-[13px] text-text outline-none data-focus-visible:bg-hover data-hovered:bg-hover"
+              className="flex cursor-pointer items-center gap-2.5 px-2.5 py-1.5 text-body-sm text-text outline-none data-focus-visible:bg-hover data-hovered:bg-hover"
             >
               {({ isSelected }) => (
                 <>
                   <span
                     className={cn(
-                      "grid size-[15px] shrink-0 place-items-center rounded-sm border border-border-strong bg-surface text-accent-fg",
+                      "grid size-3.75 shrink-0 place-items-center rounded-sm border border-border-strong bg-surface text-accent-fg",
                       isSelected && "border-accent bg-accent",
                     )}
                   >
@@ -290,7 +264,7 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
                   <Text slot="label" className="min-w-0 flex-1 truncate">
                     {member.nickname ?? member.displayName}
                   </Text>
-                  <Text slot="description" className="truncate text-[11.5px] text-subtle">
+                  <Text slot="description" className="truncate text-caption text-subtle">
                     {member.email}
                   </Text>
                 </>

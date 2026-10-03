@@ -16,6 +16,7 @@ func ParticipatingThreads(out *threaduc.ListParticipatingThreadsOutput) *chatv1.
 				ReplyCount:     int32(t.ReplyCount),
 				LastActivityAt: timestamppb.New(t.LastActivityAt),
 				UnreadCount:    int32(t.UnreadCount),
+				IsFollowing:    t.IsFollowing,
 				LatestReplies:  ConvertAll(t.LatestReplies, Message),
 			}
 			if t.FirstMessage != nil {

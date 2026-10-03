@@ -32,6 +32,54 @@ func (_u *AppUpdate) Where(ps ...predicate.App) *AppUpdate {
 	return _u
 }
 
+// SetCreatedByID sets the "created_by_id" field.
+func (_u *AppUpdate) SetCreatedByID(v uuid.UUID) *AppUpdate {
+	_u.mutation.SetCreatedByID(v)
+	return _u
+}
+
+// SetNillableCreatedByID sets the "created_by_id" field if the given value is not nil.
+func (_u *AppUpdate) SetNillableCreatedByID(v *uuid.UUID) *AppUpdate {
+	if v != nil {
+		_u.SetCreatedByID(*v)
+	}
+	return _u
+}
+
+// SetBotUserID sets the "bot_user_id" field.
+func (_u *AppUpdate) SetBotUserID(v uuid.UUID) *AppUpdate {
+	_u.mutation.SetBotUserID(v)
+	return _u
+}
+
+// SetNillableBotUserID sets the "bot_user_id" field if the given value is not nil.
+func (_u *AppUpdate) SetNillableBotUserID(v *uuid.UUID) *AppUpdate {
+	if v != nil {
+		_u.SetBotUserID(*v)
+	}
+	return _u
+}
+
+// SetDefaultChannelID sets the "default_channel_id" field.
+func (_u *AppUpdate) SetDefaultChannelID(v uuid.UUID) *AppUpdate {
+	_u.mutation.SetDefaultChannelID(v)
+	return _u
+}
+
+// SetNillableDefaultChannelID sets the "default_channel_id" field if the given value is not nil.
+func (_u *AppUpdate) SetNillableDefaultChannelID(v *uuid.UUID) *AppUpdate {
+	if v != nil {
+		_u.SetDefaultChannelID(*v)
+	}
+	return _u
+}
+
+// ClearDefaultChannelID clears the value of the "default_channel_id" field.
+func (_u *AppUpdate) ClearDefaultChannelID() *AppUpdate {
+	_u.mutation.ClearDefaultChannelID()
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *AppUpdate) SetName(v string) *AppUpdate {
 	_u.mutation.SetName(v)
@@ -198,40 +246,14 @@ func (_u *AppUpdate) SetUpdatedAt(v time.Time) *AppUpdate {
 	return _u
 }
 
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_u *AppUpdate) SetCreatedByID(id uuid.UUID) *AppUpdate {
-	_u.mutation.SetCreatedByID(id)
-	return _u
-}
-
 // SetCreatedBy sets the "created_by" edge to the User entity.
 func (_u *AppUpdate) SetCreatedBy(v *User) *AppUpdate {
 	return _u.SetCreatedByID(v.ID)
 }
 
-// SetBotUserID sets the "bot_user" edge to the User entity by ID.
-func (_u *AppUpdate) SetBotUserID(id uuid.UUID) *AppUpdate {
-	_u.mutation.SetBotUserID(id)
-	return _u
-}
-
 // SetBotUser sets the "bot_user" edge to the User entity.
 func (_u *AppUpdate) SetBotUser(v *User) *AppUpdate {
 	return _u.SetBotUserID(v.ID)
-}
-
-// SetDefaultChannelID sets the "default_channel" edge to the Channel entity by ID.
-func (_u *AppUpdate) SetDefaultChannelID(id uuid.UUID) *AppUpdate {
-	_u.mutation.SetDefaultChannelID(id)
-	return _u
-}
-
-// SetNillableDefaultChannelID sets the "default_channel" edge to the Channel entity by ID if the given value is not nil.
-func (_u *AppUpdate) SetNillableDefaultChannelID(id *uuid.UUID) *AppUpdate {
-	if id != nil {
-		_u = _u.SetDefaultChannelID(*id)
-	}
-	return _u
 }
 
 // SetDefaultChannel sets the "default_channel" edge to the Channel entity.
@@ -489,6 +511,54 @@ type AppUpdateOne struct {
 	mutation *AppMutation
 }
 
+// SetCreatedByID sets the "created_by_id" field.
+func (_u *AppUpdateOne) SetCreatedByID(v uuid.UUID) *AppUpdateOne {
+	_u.mutation.SetCreatedByID(v)
+	return _u
+}
+
+// SetNillableCreatedByID sets the "created_by_id" field if the given value is not nil.
+func (_u *AppUpdateOne) SetNillableCreatedByID(v *uuid.UUID) *AppUpdateOne {
+	if v != nil {
+		_u.SetCreatedByID(*v)
+	}
+	return _u
+}
+
+// SetBotUserID sets the "bot_user_id" field.
+func (_u *AppUpdateOne) SetBotUserID(v uuid.UUID) *AppUpdateOne {
+	_u.mutation.SetBotUserID(v)
+	return _u
+}
+
+// SetNillableBotUserID sets the "bot_user_id" field if the given value is not nil.
+func (_u *AppUpdateOne) SetNillableBotUserID(v *uuid.UUID) *AppUpdateOne {
+	if v != nil {
+		_u.SetBotUserID(*v)
+	}
+	return _u
+}
+
+// SetDefaultChannelID sets the "default_channel_id" field.
+func (_u *AppUpdateOne) SetDefaultChannelID(v uuid.UUID) *AppUpdateOne {
+	_u.mutation.SetDefaultChannelID(v)
+	return _u
+}
+
+// SetNillableDefaultChannelID sets the "default_channel_id" field if the given value is not nil.
+func (_u *AppUpdateOne) SetNillableDefaultChannelID(v *uuid.UUID) *AppUpdateOne {
+	if v != nil {
+		_u.SetDefaultChannelID(*v)
+	}
+	return _u
+}
+
+// ClearDefaultChannelID clears the value of the "default_channel_id" field.
+func (_u *AppUpdateOne) ClearDefaultChannelID() *AppUpdateOne {
+	_u.mutation.ClearDefaultChannelID()
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *AppUpdateOne) SetName(v string) *AppUpdateOne {
 	_u.mutation.SetName(v)
@@ -655,40 +725,14 @@ func (_u *AppUpdateOne) SetUpdatedAt(v time.Time) *AppUpdateOne {
 	return _u
 }
 
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_u *AppUpdateOne) SetCreatedByID(id uuid.UUID) *AppUpdateOne {
-	_u.mutation.SetCreatedByID(id)
-	return _u
-}
-
 // SetCreatedBy sets the "created_by" edge to the User entity.
 func (_u *AppUpdateOne) SetCreatedBy(v *User) *AppUpdateOne {
 	return _u.SetCreatedByID(v.ID)
 }
 
-// SetBotUserID sets the "bot_user" edge to the User entity by ID.
-func (_u *AppUpdateOne) SetBotUserID(id uuid.UUID) *AppUpdateOne {
-	_u.mutation.SetBotUserID(id)
-	return _u
-}
-
 // SetBotUser sets the "bot_user" edge to the User entity.
 func (_u *AppUpdateOne) SetBotUser(v *User) *AppUpdateOne {
 	return _u.SetBotUserID(v.ID)
-}
-
-// SetDefaultChannelID sets the "default_channel" edge to the Channel entity by ID.
-func (_u *AppUpdateOne) SetDefaultChannelID(id uuid.UUID) *AppUpdateOne {
-	_u.mutation.SetDefaultChannelID(id)
-	return _u
-}
-
-// SetNillableDefaultChannelID sets the "default_channel" edge to the Channel entity by ID if the given value is not nil.
-func (_u *AppUpdateOne) SetNillableDefaultChannelID(id *uuid.UUID) *AppUpdateOne {
-	if id != nil {
-		_u = _u.SetDefaultChannelID(*id)
-	}
-	return _u
 }
 
 // SetDefaultChannel sets the "default_channel" edge to the Channel entity.

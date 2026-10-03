@@ -39,26 +39,26 @@ type stubStorage struct {
 	uploadedMimeType string
 }
 
-func (s *stubStorage) GenerateUploadURL(key string, mimeType string, _ int64, _ interface{}) (string, error) {
+func (s *stubStorage) GenerateUploadURL(_ context.Context, key string, mimeType string, _ int64, _ time.Duration) (string, error) {
 	if !strings.HasSuffix(key, "-thumbnail") {
 		s.uploadedMimeType = mimeType
 	}
 	return "https://storage.example.com/" + key, nil
 }
 
-func (s *stubStorage) GenerateDownloadURL(key string, _ interface{}) (string, error) {
+func (s *stubStorage) GenerateDownloadURL(_ context.Context, key string, _ time.Duration) (string, error) {
 	return "https://storage.example.com/" + key, nil
 }
 
-func (s *stubStorage) DeleteObject(_ string) error {
+func (s *stubStorage) DeleteObject(context.Context, string) error {
 	return nil
 }
 
 type stubStorageConfig struct{}
 
-func (stubStorageConfig) GetMaxFileSize() int64           { return 1 << 30 }
-func (stubStorageConfig) GetUploadExpires() interface{}   { return time.Minute }
-func (stubStorageConfig) GetDownloadExpires() interface{} { return time.Minute }
+func (stubStorageConfig) GetMaxFileSize() int64             { return 1 << 30 }
+func (stubStorageConfig) GetUploadExpires() time.Duration   { return time.Minute }
+func (stubStorageConfig) GetDownloadExpires() time.Duration { return time.Minute }
 
 func TestPresignStoresMediaMetadata(t *testing.T) {
 	repo := &stubAttachmentRepo{}

@@ -11,31 +11,33 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func TestShutdownClosesConnectionsWithGoingAway(t *testing.T) {
-	h := NewHub()
-	go h.Run(t.Context())
-
+// dialTestClient は実際の WebSocket 接続を 1 本張り、ハブに登録します
+func dialTestClient(t *testing.T, h *Hub, sessionID string) *websocket.Conn {
+	t.Helper()
 	upgrader := websocket.Upgrader{}
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			return
 		}
-		c := &Client{hub: h, conn: conn, id: "1", send: make(chan []byte, 8), userID: "alice", workspaceID: "ws", subscribedChannels: map[string]bool{}}
-		h.register <- c
-		go c.writePump()
-		go c.readPump()
+		newClient(h, conn, sessionID, "alice", sessionID, "ws").start()
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	conn, _, err := websocket.DefaultDialer.Dial("ws"+strings.TrimPrefix(srv.URL, "http"), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = conn.Close() }()
+	t.Cleanup(func() { _ = conn.Close() })
 	for len(h.clients()) == 0 {
 		time.Sleep(10 * time.Millisecond)
 	}
+	return conn
+}
+
+func TestShutdownClosesConnectionsWithGoingAway(t *testing.T) {
+	h := NewHub(nil)
+	conn := dialTestClient(t, h, "s1")
 
 	done := make(chan struct{})
 	go func() {
@@ -45,16 +47,59 @@ func TestShutdownClosesConnectionsWithGoingAway(t *testing.T) {
 		close(done)
 	}()
 
-	// クライアントは close フレームに応答し、1001 を見て他のレプリカへつなぎ直す
+	// クライアントは 1001 を見て他のレプリカへつなぎ直す
 	if _, _, err := conn.ReadMessage(); !websocket.IsCloseError(err, websocket.CloseGoingAway) {
 		t.Fatalf("Going Away で閉じられるはず: %v", err)
 	}
 	select {
 	case <-done:
 	case <-time.After(3 * time.Second):
-		t.Fatal("クライアントが切断しても Shutdown が終わりません")
+		t.Fatal("Shutdown が終わりません")
 	}
 	if n := len(h.clients()); n != 0 {
 		t.Fatalf("接続が残っています: %d", n)
+	}
+}
+
+func TestCloseSessionSendsUnauthenticatedCode(t *testing.T) {
+	h := NewHub(nil)
+	conn := dialTestClient(t, h, "s1")
+
+	h.CloseSession("s1")
+	if _, _, err := conn.ReadMessage(); !websocket.IsCloseError(err, CloseUnauthenticated) {
+		t.Fatalf("4401 で閉じられるはず: %v", err)
+	}
+}
+
+func TestSubscriptionsArePerConnection(t *testing.T) {
+	h := NewHub(nil)
+	tab1 := NewTestClient(h, "ws", "alice", "general")
+	tab2 := NewTestClient(h, "ws", "alice")
+
+	h.BroadcastToChannel("ws", "general", []byte("x"), "")
+	if len(tab1.send) != 1 || len(tab2.send) != 0 {
+		t.Fatalf("購読した接続にだけ届くはず: tab1=%d tab2=%d", len(tab1.send), len(tab2.send))
+	}
+
+	h.unsubscribe(tab1, "general")
+	h.BroadcastToChannel("ws", "general", []byte("x"), "")
+	if len(tab1.send) != 1 {
+		t.Fatalf("購読をやめた接続に届いています")
+	}
+}
+
+func TestTypingRequiresSubscription(t *testing.T) {
+	h := NewHub(nil)
+	alice := NewTestClient(h, "ws", "alice")
+	bob := NewTestClient(h, "ws", "bob", "general")
+
+	alice.notifyTyping("general", true)
+	if len(bob.send) != 0 {
+		t.Fatalf("購読していないチャンネルの入力中が配信されました")
+	}
+	h.subscribe(alice, "general")
+	alice.notifyTyping("general", true)
+	if len(bob.send) != 1 {
+		t.Fatalf("購読中のチャンネルの入力中が配信されていません")
 	}
 }

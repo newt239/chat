@@ -15,7 +15,7 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/infrastructure/safehttp"
 )
 
@@ -70,7 +70,7 @@ func (s *OGPService) get(ctx context.Context, urlStr string) (*http.Response, er
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
 		if errors.Is(err, safehttp.ErrBlockedAddress) {
-			return nil, fmt.Errorf("%w: %s", domainerrors.ErrValidation, safehttp.ErrBlockedAddress.Error())
+			return nil, fmt.Errorf("%w: %s", domerr.ErrValidation, safehttp.ErrBlockedAddress.Error())
 		}
 		return nil, fmt.Errorf("failed to fetch URL: %w", err)
 	}

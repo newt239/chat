@@ -1062,7 +1062,9 @@ func (_q *MessageQuery) loadReactions(ctx context.Context, query *MessageReactio
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(messagereaction.FieldMessageID)
+	}
 	query.Where(predicate.MessageReaction(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(message.ReactionsColumn), fks...))
 	}))
@@ -1071,13 +1073,10 @@ func (_q *MessageQuery) loadReactions(ctx context.Context, query *MessageReactio
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_reaction_message
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_reaction_message" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.MessageID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_reaction_message" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1093,7 +1092,9 @@ func (_q *MessageQuery) loadBookmarks(ctx context.Context, query *MessageBookmar
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(messagebookmark.FieldMessageID)
+	}
 	query.Where(predicate.MessageBookmark(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(message.BookmarksColumn), fks...))
 	}))
@@ -1102,13 +1103,10 @@ func (_q *MessageQuery) loadBookmarks(ctx context.Context, query *MessageBookmar
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_bookmark_message
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_bookmark_message" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.MessageID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_bookmark_message" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1124,7 +1122,9 @@ func (_q *MessageQuery) loadUserMentions(ctx context.Context, query *MessageUser
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(messageusermention.FieldMessageID)
+	}
 	query.Where(predicate.MessageUserMention(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(message.UserMentionsColumn), fks...))
 	}))
@@ -1133,13 +1133,10 @@ func (_q *MessageQuery) loadUserMentions(ctx context.Context, query *MessageUser
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_user_mention_message
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_user_mention_message" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.MessageID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_user_mention_message" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1155,7 +1152,9 @@ func (_q *MessageQuery) loadGroupMentions(ctx context.Context, query *MessageGro
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(messagegroupmention.FieldMessageID)
+	}
 	query.Where(predicate.MessageGroupMention(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(message.GroupMentionsColumn), fks...))
 	}))
@@ -1164,13 +1163,10 @@ func (_q *MessageQuery) loadGroupMentions(ctx context.Context, query *MessageGro
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_group_mention_message
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_group_mention_message" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.MessageID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_group_mention_message" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1186,7 +1182,9 @@ func (_q *MessageQuery) loadLinks(ctx context.Context, query *MessageLinkQuery, 
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(messagelink.FieldMessageID)
+	}
 	query.Where(predicate.MessageLink(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(message.LinksColumn), fks...))
 	}))
@@ -1195,13 +1193,10 @@ func (_q *MessageQuery) loadLinks(ctx context.Context, query *MessageLinkQuery, 
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_link_message
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_link_message" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.MessageID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_link_message" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1217,7 +1212,9 @@ func (_q *MessageQuery) loadAttachments(ctx context.Context, query *AttachmentQu
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(attachment.FieldMessageID)
+	}
 	query.Where(predicate.Attachment(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(message.AttachmentsColumn), fks...))
 	}))
@@ -1226,13 +1223,13 @@ func (_q *MessageQuery) loadAttachments(ctx context.Context, query *AttachmentQu
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.attachment_message
+		fk := n.MessageID
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "attachment_message" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "message_id" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "attachment_message" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1248,7 +1245,9 @@ func (_q *MessageQuery) loadPins(ctx context.Context, query *MessagePinQuery, no
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(messagepin.FieldMessageID)
+	}
 	query.Where(predicate.MessagePin(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(message.PinsColumn), fks...))
 	}))
@@ -1257,13 +1256,10 @@ func (_q *MessageQuery) loadPins(ctx context.Context, query *MessagePinQuery, no
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_pin_message
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_pin_message" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.MessageID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_pin_message" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1279,7 +1275,9 @@ func (_q *MessageQuery) loadUserThreadFollows(ctx context.Context, query *UserTh
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(userthreadfollow.FieldThreadID)
+	}
 	query.Where(predicate.UserThreadFollow(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(message.UserThreadFollowsColumn), fks...))
 	}))
@@ -1288,13 +1286,10 @@ func (_q *MessageQuery) loadUserThreadFollows(ctx context.Context, query *UserTh
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.user_thread_follow_thread
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_thread_follow_thread" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.ThreadID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_thread_follow_thread" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "thread_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1310,7 +1305,9 @@ func (_q *MessageQuery) loadThreadReadStates(ctx context.Context, query *ThreadR
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(threadreadstate.FieldThreadID)
+	}
 	query.Where(predicate.ThreadReadState(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(message.ThreadReadStatesColumn), fks...))
 	}))
@@ -1319,13 +1316,10 @@ func (_q *MessageQuery) loadThreadReadStates(ctx context.Context, query *ThreadR
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.thread_read_state_thread
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "thread_read_state_thread" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.ThreadID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "thread_read_state_thread" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "thread_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

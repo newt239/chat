@@ -15,6 +15,12 @@ const (
 	Label = "app"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCreatedByID holds the string denoting the created_by_id field in the database.
+	FieldCreatedByID = "created_by_id"
+	// FieldBotUserID holds the string denoting the bot_user_id field in the database.
+	FieldBotUserID = "bot_user_id"
+	// FieldDefaultChannelID holds the string denoting the default_channel_id field in the database.
+	FieldDefaultChannelID = "default_channel_id"
 	// FieldWorkspaceID holds the string denoting the workspace_id field in the database.
 	FieldWorkspaceID = "workspace_id"
 	// FieldName holds the string denoting the name field in the database.
@@ -53,35 +59,38 @@ const (
 	WorkspaceTable = "app"
 	// WorkspaceInverseTable is the table name for the Workspace entity.
 	// It exists in this package in order to avoid circular dependency with the "workspace" package.
-	WorkspaceInverseTable = "workspaces"
+	WorkspaceInverseTable = "workspace"
 	// WorkspaceColumn is the table column denoting the workspace relation/edge.
 	WorkspaceColumn = "workspace_id"
 	// CreatedByTable is the table that holds the created_by relation/edge.
 	CreatedByTable = "app"
 	// CreatedByInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	CreatedByInverseTable = "users"
+	CreatedByInverseTable = "user"
 	// CreatedByColumn is the table column denoting the created_by relation/edge.
-	CreatedByColumn = "app_created_by"
+	CreatedByColumn = "created_by_id"
 	// BotUserTable is the table that holds the bot_user relation/edge.
 	BotUserTable = "app"
 	// BotUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	BotUserInverseTable = "users"
+	BotUserInverseTable = "user"
 	// BotUserColumn is the table column denoting the bot_user relation/edge.
-	BotUserColumn = "app_bot_user"
+	BotUserColumn = "bot_user_id"
 	// DefaultChannelTable is the table that holds the default_channel relation/edge.
 	DefaultChannelTable = "app"
 	// DefaultChannelInverseTable is the table name for the Channel entity.
 	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	DefaultChannelInverseTable = "channels"
+	DefaultChannelInverseTable = "channel"
 	// DefaultChannelColumn is the table column denoting the default_channel relation/edge.
-	DefaultChannelColumn = "app_default_channel"
+	DefaultChannelColumn = "default_channel_id"
 )
 
 // Columns holds all SQL columns for app fields.
 var Columns = []string{
 	FieldID,
+	FieldCreatedByID,
+	FieldBotUserID,
+	FieldDefaultChannelID,
 	FieldWorkspaceID,
 	FieldName,
 	FieldDescription,
@@ -96,23 +105,10 @@ var Columns = []string{
 	FieldUpdatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "app"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"app_created_by",
-	"app_bot_user",
-	"app_default_channel",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -142,6 +138,21 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByCreatedByID orders the results by the created_by_id field.
+func ByCreatedByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedByID, opts...).ToFunc()
+}
+
+// ByBotUserID orders the results by the bot_user_id field.
+func ByBotUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBotUserID, opts...).ToFunc()
+}
+
+// ByDefaultChannelID orders the results by the default_channel_id field.
+func ByDefaultChannelID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDefaultChannelID, opts...).ToFunc()
 }
 
 // ByWorkspaceID orders the results by the workspace_id field.

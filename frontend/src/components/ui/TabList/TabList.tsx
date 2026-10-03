@@ -9,7 +9,7 @@ export const TabList = <T extends object>({ className, ...props }: TabListProps<
     {...props}
     className={withBaseClassName(
       className,
-      "flex shrink-0 gap-[18px] overflow-x-auto border-b border-border px-[18px] [scrollbar-width:none]",
+      "flex shrink-0 gap-4.5 overflow-x-auto border-b border-border px-4.5 [scrollbar-width:none]",
     )}
   />
 );

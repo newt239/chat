@@ -2,15 +2,15 @@ package repository
 
 import (
 	"context"
+	stdsql "database/sql"
+	"errors"
 	"time"
-
-	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagereaction"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
@@ -43,7 +43,7 @@ func (r *messageRepository) FindByID(ctx context.Context, id string) (*entity.Me
 }
 
 func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time, ascending bool) ([]*entity.Message, error) {
-	chIDs, err := parseUUIDs(channelIDs, "channel ID")
+	chIDs, err := utils.ParseUUIDs(channelIDs, "channel ID")
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []s
 }
 
 func (r *messageRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity.Message, error) {
-	parsedIDs, err := parseUUIDs(ids, "message ID")
+	parsedIDs, err := utils.ParseUUIDs(ids, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -145,9 +145,7 @@ func (r *messageRepository) Create(ctx context.Context, msg *entity.Message) err
 		SetUserID(userID).
 		SetBody(msg.Body).
 		SetMentionsChannel(msg.MentionsChannel).
-		SetMentionsHere(msg.MentionsHere).
-		SetNillableSenderName(msg.SenderName).
-		SetNillableSenderAvatarURL(msg.SenderAvatarURL)
+		SetMentionsHere(msg.MentionsHere)
 	if loc := msg.Location; loc != nil {
 		builder = builder.
 			SetLocationLatitude(loc.Latitude).
@@ -230,7 +228,7 @@ func (r *messageRepository) SoftDeleteByIDs(ctx context.Context, ids []string, d
 	if err != nil {
 		return err
 	}
-	messageIDs, err := parseUUIDs(ids, "message ID")
+	messageIDs, err := utils.ParseUUIDs(ids, "message ID")
 	if err != nil {
 		return err
 	}
@@ -261,6 +259,9 @@ func (r *messageRepository) AddReaction(ctx context.Context, reaction *entity.Me
 		SetUserID(userID).
 		SetEmoji(reaction.Emoji).
 		Save(ctx)
+	if ent.IsConstraintError(err) {
+		return domerr.ErrReactionExists
+	}
 	if err != nil {
 		return err
 	}
@@ -283,8 +284,8 @@ func (r *messageRepository) RemoveReaction(ctx context.Context, messageID, userI
 	client := transaction.ResolveClient(ctx, r.client)
 	_, err = client.MessageReaction.Delete().
 		Where(
-			messagereaction.HasMessageWith(message.ID(mid)),
-			messagereaction.HasUserWith(user.ID(uid)),
+			messagereaction.MessageID(mid),
+			messagereaction.UserID(uid),
 			messagereaction.Emoji(emoji),
 		).
 		Exec(ctx)
@@ -306,16 +307,14 @@ func (r *messageRepository) FindReactionsByMessageIDs(ctx context.Context, messa
 		return result, nil
 	}
 
-	parsedIDs, err := parseUUIDs(messageIDs, "message ID")
+	parsedIDs, err := utils.ParseUUIDs(messageIDs, "message ID")
 	if err != nil {
 		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
 	reactions, err := client.MessageReaction.Query().
-		Where(messagereaction.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
-		WithUser(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
+		Where(messagereaction.MessageIDIn(parsedIDs...)).
 		Order(ent.Asc(messagereaction.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
@@ -323,65 +322,18 @@ func (r *messageRepository) FindReactionsByMessageIDs(ctx context.Context, messa
 	}
 
 	for _, reaction := range reactions {
-		messageID := reaction.Edges.Message.ID.String()
+		messageID := reaction.MessageID.String()
 		result[messageID] = append(result[messageID], utils.MessageReactionToEntity(reaction))
 	}
 	return result, nil
 }
 
-func (r *messageRepository) AddUserMention(ctx context.Context, mention *entity.MessageUserMention) error {
-	messageID, err := utils.ParseUUID(mention.MessageID, "message ID")
-	if err != nil {
-		return err
+// ignoreConflict は ON CONFLICT DO NOTHING で既存の行と重なったときに返る sql.ErrNoRows を無視します
+func ignoreConflict(err error) error {
+	if errors.Is(err, stdsql.ErrNoRows) {
+		return nil
 	}
-
-	userID, err := utils.ParseUUID(mention.UserID, "user ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	_, err = client.MessageUserMention.Create().
-		SetMessageID(messageID).
-		SetUserID(userID).
-		SetNillableViaGroupID(utils.ParseUUIDPtr(mention.ViaGroupID)).
-		Save(ctx)
-
 	return err
-}
-
-func (r *messageRepository) AddGroupMention(ctx context.Context, mention *entity.MessageGroupMention) error {
-	messageID, err := utils.ParseUUID(mention.MessageID, "message ID")
-	if err != nil {
-		return err
-	}
-
-	groupID, err := utils.ParseUUID(mention.GroupID, "group ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	_, err = client.MessageGroupMention.Create().
-		SetMessageID(messageID).
-		SetGroupID(groupID).
-		Save(ctx)
-
-	return err
-}
-
-func parseUUIDs(ids []string, label string) ([]uuid.UUID, error) {
-	parsed := make([]uuid.UUID, 0, len(ids))
-	for _, id := range ids {
-		p, err := utils.ParseUUID(id, label)
-		if err != nil {
-			return nil, err
-		}
-		parsed = append(parsed, p)
-	}
-	return parsed, nil
 }
 
 func toMessageEntities(messages []*ent.Message) []*entity.Message {

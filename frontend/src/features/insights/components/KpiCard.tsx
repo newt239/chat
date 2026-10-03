@@ -32,10 +32,10 @@ export const KpiCard = ({ label, value, unit, delta }: KpiCardProps) => {
   return (
     <div className="flex min-w-0 flex-col gap-0.5 rounded-xl border border-border bg-surface px-3.5 py-3 max-md:px-3 max-md:py-2.5">
       <span className="text-xs text-muted">{label}</span>
-      <b className="text-2xl leading-tight font-bold tracking-[-0.01em] max-md:text-[19px]">
+      <b className="text-2xl leading-tight font-bold tracking-tight max-md:text-heading">
         {value}
         {unit !== "" && (
-          <small className="ml-[3px] text-[12.5px] font-medium tracking-normal text-muted max-md:ml-0 max-md:block max-md:text-[11.5px]">
+          <small className="ml-0.75 text-label font-medium tracking-normal text-muted max-md:ml-0 max-md:block max-md:text-caption">
             {unit}
           </small>
         )}
@@ -43,7 +43,7 @@ export const KpiCard = ({ label, value, unit, delta }: KpiCardProps) => {
       {delta !== null && Icon !== null && (
         <span
           className={cn(
-            "inline-flex items-center gap-[3px] text-[11.5px] font-semibold tabular-nums",
+            "inline-flex items-center gap-0.75 text-caption font-semibold tabular-nums",
             toneOf(delta),
           )}
         >

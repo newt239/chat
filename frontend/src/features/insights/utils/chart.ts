@@ -1,8 +1,8 @@
-import { formatWeekday } from "@chat/i18n";
+import { formatWeekday } from "@chat/i18n/format";
 
 import type { HeatmapCell } from "#/gen/chat/v1/insight_service_pb";
 
-import type { Locale } from "@chat/i18n";
+import type { Locale } from "@chat/i18n/i18n";
 
 // 軸の最大値を 1・2・5 の倍数に切り上げる
 export const niceMax = (value: number) => {
@@ -17,7 +17,7 @@ export const niceMax = (value: number) => {
 
 export type Direction = "up" | "down" | "flat";
 
-export const directionOf = (difference: number): Direction =>
+export const directionOf = (difference: number) =>
   difference > 0 ? "up" : difference < 0 ? "down" : "flat";
 
 // 前期が 0 のときは比率を出せないため null

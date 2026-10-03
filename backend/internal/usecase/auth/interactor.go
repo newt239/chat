@@ -4,22 +4,29 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
 	"github.com/newt239/chat/internal/usecase/audit"
 )
 
-// Service interfaces
+// TokenClaims はアクセストークンに載せる本人とセッションです
 type TokenClaims struct {
-	UserID string
-	Email  string
+	UserID    string
+	SessionID string
 }
 
 type JWTService interface {
-	GenerateToken(userID string, duration time.Duration) (string, error)
+	GenerateToken(claims TokenClaims, duration time.Duration) (string, error)
 	VerifyToken(token string) (*TokenClaims, error)
+}
+
+// SessionCloser は失効したセッションのリアルタイム接続を切ります
+type SessionCloser interface {
+	CloseSession(sessionID string)
 }
 
 type PasswordService interface {
@@ -37,18 +44,6 @@ type GoogleCodeExchanger interface {
 	Exchange(ctx context.Context, code, codeVerifier string) (idToken string, err error)
 }
 
-var (
-	ErrInvalidCredentials   = domainerrors.ErrInvalidCredentials
-	ErrUserAlreadyExists    = domainerrors.ErrUserAlreadyExists
-	ErrInvalidToken         = domainerrors.ErrInvalidToken
-	ErrSessionNotFound      = domainerrors.ErrSessionNotFound
-	ErrInvitationRequired   = domainerrors.ErrInvitationRequired
-	ErrInvitationNotFound   = domainerrors.ErrInvitationNotFound
-	ErrEmailNotVerified     = domainerrors.ErrEmailNotVerified
-	ErrPasswordAuthDisabled = domainerrors.ErrPasswordAuthDisabled
-	ErrSignupDisabled       = domainerrors.ErrSignupDisabled
-)
-
 type AuthUseCase interface {
 	PasswordAuthEnabled() bool
 	Login(ctx context.Context, input LoginInput) (*AuthOutput, error)
@@ -57,7 +52,7 @@ type AuthUseCase interface {
 	SignUp(ctx context.Context, input SignUpInput) (*AuthOutput, error)
 	SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error)
 	RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error)
-	Logout(ctx context.Context, input LogoutInput) (*LogoutOutput, error)
+	Logout(ctx context.Context, input LogoutInput) error
 }
 
 type authInteractor struct {
@@ -71,6 +66,7 @@ type authInteractor struct {
 	googleCode     GoogleCodeExchanger
 	txManager      domaintransaction.Manager
 	recorder       audit.Recorder
+	sessionCloser  SessionCloser
 	settings       Settings
 }
 
@@ -85,6 +81,7 @@ func NewAuthInteractor(
 	googleCode GoogleCodeExchanger,
 	txManager domaintransaction.Manager,
 	recorder audit.Recorder,
+	sessionCloser SessionCloser,
 	settings Settings,
 ) AuthUseCase {
 	return &authInteractor{
@@ -98,6 +95,7 @@ func NewAuthInteractor(
 		googleCode:     googleCode,
 		txManager:      txManager,
 		recorder:       recorder,
+		sessionCloser:  sessionCloser,
 		settings:       settings,
 	}
 }
@@ -108,19 +106,19 @@ func (i *authInteractor) PasswordAuthEnabled() bool {
 
 func (i *authInteractor) Login(ctx context.Context, input LoginInput) (*AuthOutput, error) {
 	if !i.settings.PasswordAuthEnabled {
-		return nil, ErrPasswordAuthDisabled
+		return nil, domerr.ErrPasswordAuthDisabled
 	}
-	user, err := i.userRepo.FindByEmail(ctx, input.Email)
+	user, err := i.userRepo.FindByEmail(ctx, entity.NormalizeEmail(input.Email))
 	if err != nil {
 		return nil, err
 	}
-	if user == nil || user.IsBot {
-		return nil, ErrInvalidCredentials
+	if user == nil || user.IsApp {
+		return nil, domerr.ErrInvalidCredentials
 	}
 
 	if err := i.passwordSvc.VerifyPassword(input.Password, user.PasswordHash); err != nil {
 		i.recordLogin(ctx, user, entity.AuditActionLoginFailed)
-		return nil, ErrInvalidCredentials
+		return nil, domerr.ErrInvalidCredentials
 	}
 	return i.login(ctx, user)
 }
@@ -146,14 +144,14 @@ func (i *authInteractor) LoginWithGoogleCode(ctx context.Context, input LoginWit
 	}
 	// 別の認可リクエストで発行されたトークンを使い回させない
 	if identity.Nonce == "" || identity.Nonce != input.Nonce {
-		return nil, ErrInvalidToken
+		return nil, domerr.ErrInvalidToken
 	}
 	return i.loginWithGoogleIdentity(ctx, identity, input.WorkspaceID)
 }
 
 func (i *authInteractor) loginWithGoogleIdentity(ctx context.Context, identity *GoogleIdentity, workspaceID *string) (*AuthOutput, error) {
 	if !identity.EmailVerified {
-		return nil, ErrEmailNotVerified
+		return nil, domerr.ErrEmailNotVerified
 	}
 
 	user, err := i.userRepo.FindByGoogleSub(ctx, identity.Sub)
@@ -183,8 +181,8 @@ func (i *authInteractor) linkGoogleAccount(ctx context.Context, identity *Google
 		return nil, err
 	}
 	// 別の Google アカウントに紐付いたユーザーやボットは乗っ取れないようにする
-	if user.IsBot || user.GoogleSub != nil {
-		return nil, ErrInvalidCredentials
+	if user.IsApp || user.GoogleSub != nil {
+		return nil, domerr.ErrInvalidCredentials
 	}
 	user.GoogleSub = &identity.Sub
 	if err := i.userRepo.Update(ctx, user); err != nil {
@@ -200,7 +198,7 @@ func (i *authInteractor) createGoogleUser(ctx context.Context, identity *GoogleI
 		return nil, err
 	}
 	if len(invitations) == 0 && workspaceID == nil {
-		return nil, ErrInvitationRequired
+		return nil, domerr.ErrInvitationRequired
 	}
 
 	user := &entity.User{
@@ -228,7 +226,7 @@ func (i *authInteractor) createGoogleUser(ctx context.Context, identity *GoogleI
 
 func (i *authInteractor) SignUp(ctx context.Context, input SignUpInput) (*AuthOutput, error) {
 	if !i.settings.PasswordAuthEnabled {
-		return nil, ErrPasswordAuthDisabled
+		return nil, domerr.ErrPasswordAuthDisabled
 	}
 	email := entity.NormalizeEmail(input.Email)
 	existing, err := i.userRepo.FindByEmail(ctx, email)
@@ -236,7 +234,7 @@ func (i *authInteractor) SignUp(ctx context.Context, input SignUpInput) (*AuthOu
 		return nil, err
 	}
 	if existing != nil {
-		return nil, ErrUserAlreadyExists
+		return nil, domerr.ErrUserAlreadyExists
 	}
 	hashed, err := i.passwordSvc.HashPassword(input.Password)
 	if err != nil {
@@ -267,7 +265,8 @@ func (i *authInteractor) joinSignupWorkspace(ctx context.Context, userID, worksp
 	if err := i.checkSignupEnabled(ctx, workspaceID, false); err != nil {
 		return err
 	}
-	member, err := i.workspaceRepo.FindMember(ctx, workspaceID, userID)
+	// 停止中のメンバーは参加し直させない
+	member, err := i.workspaceRepo.FindMemberIncludingSuspended(ctx, workspaceID, userID)
 	if err != nil || member != nil {
 		return err
 	}
@@ -280,7 +279,7 @@ func (i *authInteractor) checkSignupEnabled(ctx context.Context, workspaceID str
 		return err
 	}
 	if ws == nil || !ws.SignupEnabled || (byEmail && !ws.EmailSignupEnabled) {
-		return ErrSignupDisabled
+		return domerr.ErrSignupDisabled
 	}
 	return nil
 }
@@ -291,7 +290,7 @@ func (i *authInteractor) addSignupMember(ctx context.Context, workspaceID, userI
 
 func (i *authInteractor) SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error) {
 	if !i.settings.PasswordAuthEnabled {
-		return nil, ErrPasswordAuthDisabled
+		return nil, domerr.ErrPasswordAuthDisabled
 	}
 	now := time.Now()
 	invitation, err := i.invitationRepo.FindByTokenHash(ctx, entity.HashSecretToken(input.Token))
@@ -299,14 +298,14 @@ func (i *authInteractor) SignUpWithInvitation(ctx context.Context, input SignUpW
 		return nil, err
 	}
 	if invitation == nil || !invitation.IsPending(now) {
-		return nil, ErrInvitationNotFound
+		return nil, domerr.ErrInvitationNotFound
 	}
 	existing, err := i.userRepo.FindByEmail(ctx, invitation.Email)
 	if err != nil {
 		return nil, err
 	}
 	if existing != nil {
-		return nil, ErrUserAlreadyExists
+		return nil, domerr.ErrUserAlreadyExists
 	}
 
 	hashed, err := i.passwordSvc.HashPassword(input.Password)
@@ -383,23 +382,26 @@ func (i *authInteractor) recordLogin(ctx context.Context, user *entity.User, act
 }
 
 func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error) {
+	if input.RefreshToken == "" {
+		return nil, domerr.ErrInvalidToken
+	}
 	session, err := i.sessionRepo.FindActiveByTokenHash(ctx, entity.HashSecretToken(input.RefreshToken))
 	if err != nil {
 		return nil, err
 	}
 	if session == nil {
-		return nil, ErrInvalidToken
+		return nil, domerr.ErrInvalidToken
 	}
 	user, err := i.userRepo.FindByID(ctx, session.UserID)
 	if err != nil {
 		return nil, err
 	}
 	if user == nil {
-		return nil, ErrInvalidToken
+		return nil, domerr.ErrInvalidToken
 	}
 
 	// セッションはログイン単位で保持し、リフレッシュではトークンだけを差し替える
-	tokens, err := i.issueTokens(user)
+	tokens, err := i.issueTokens(user, session.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -409,12 +411,26 @@ func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInp
 	return tokens.output, nil
 }
 
-func (i *authInteractor) Logout(ctx context.Context, input LogoutInput) (*LogoutOutput, error) {
-	if err := i.sessionRepo.RevokeAllByUserID(ctx, input.UserID); err != nil {
-		return nil, err
+// Logout はリフレッシュトークンかアクセストークンが指すセッションだけを失効させ、その接続を切ります
+func (i *authInteractor) Logout(ctx context.Context, input LogoutInput) error {
+	sessionID := input.SessionID
+	if input.RefreshToken != "" {
+		session, err := i.sessionRepo.FindActiveByTokenHash(ctx, entity.HashSecretToken(input.RefreshToken))
+		if err != nil {
+			return err
+		}
+		if session != nil {
+			sessionID = session.ID
+		}
 	}
-
-	return &LogoutOutput{Success: true}, nil
+	if sessionID == "" {
+		return nil
+	}
+	if err := i.sessionRepo.Revoke(ctx, sessionID); err != nil {
+		return err
+	}
+	i.sessionCloser.CloseSession(sessionID)
+	return nil
 }
 
 type issuedTokens struct {
@@ -422,8 +438,8 @@ type issuedTokens struct {
 	refreshTokenHash string
 }
 
-func (i *authInteractor) issueTokens(user *entity.User) (*issuedTokens, error) {
-	accessToken, err := i.jwtService.GenerateToken(user.ID, i.settings.AccessTokenTTL)
+func (i *authInteractor) issueTokens(user *entity.User, sessionID string) (*issuedTokens, error) {
+	accessToken, err := i.jwtService.GenerateToken(TokenClaims{UserID: user.ID, SessionID: sessionID}, i.settings.AccessTokenTTL)
 	if err != nil {
 		return nil, err
 	}
@@ -450,15 +466,17 @@ func (i *authInteractor) issueTokens(user *entity.User) (*issuedTokens, error) {
 	}, nil
 }
 
-// createSession はトークンを発行し、ログイン元の端末情報とともにセッションを保存します
+// createSession はアクセストークンに載せるためセッション ID を先に採番し、ログイン元の端末情報とともに保存します
 func (i *authInteractor) createSession(ctx context.Context, user *entity.User) (*AuthOutput, error) {
-	tokens, err := i.issueTokens(user)
+	sessionID := uuid.NewString()
+	tokens, err := i.issueTokens(user, sessionID)
 	if err != nil {
 		return nil, err
 	}
 
 	client := audit.ClientInfoFrom(ctx)
 	session := &entity.Session{
+		ID:               sessionID,
 		UserID:           user.ID,
 		RefreshTokenHash: tokens.refreshTokenHash,
 		ExpiresAt:        tokens.output.ExpiresAt,

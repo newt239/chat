@@ -26,6 +26,18 @@ type InvitationCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_c *InvitationCreate) SetWorkspaceID(v string) *InvitationCreate {
+	_c.mutation.SetWorkspaceID(v)
+	return _c
+}
+
+// SetInvitedByID sets the "invited_by_id" field.
+func (_c *InvitationCreate) SetInvitedByID(v uuid.UUID) *InvitationCreate {
+	_c.mutation.SetInvitedByID(v)
+	return _c
+}
+
 // SetEmail sets the "email" field.
 func (_c *InvitationCreate) SetEmail(v string) *InvitationCreate {
 	_c.mutation.SetEmail(v)
@@ -92,21 +104,9 @@ func (_c *InvitationCreate) SetNillableID(v *uuid.UUID) *InvitationCreate {
 	return _c
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_c *InvitationCreate) SetWorkspaceID(id string) *InvitationCreate {
-	_c.mutation.SetWorkspaceID(id)
-	return _c
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_c *InvitationCreate) SetWorkspace(v *Workspace) *InvitationCreate {
 	return _c.SetWorkspaceID(v.ID)
-}
-
-// SetInvitedByID sets the "invited_by" edge to the User entity by ID.
-func (_c *InvitationCreate) SetInvitedByID(id uuid.UUID) *InvitationCreate {
-	_c.mutation.SetInvitedByID(id)
-	return _c
 }
 
 // SetInvitedBy sets the "invited_by" edge to the User entity.
@@ -161,6 +161,12 @@ func (_c *InvitationCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *InvitationCreate) check() error {
+	if _, ok := _c.mutation.WorkspaceID(); !ok {
+		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "Invitation.workspace_id"`)}
+	}
+	if _, ok := _c.mutation.InvitedByID(); !ok {
+		return &ValidationError{Name: "invited_by_id", err: errors.New(`ent: missing required field "Invitation.invited_by_id"`)}
+	}
 	if _, ok := _c.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "Invitation.email"`)}
 	}
@@ -271,7 +277,7 @@ func (_c *InvitationCreate) createSpec() (*Invitation, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.invitation_workspace = &nodes[0]
+		_node.WorkspaceID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.InvitedByIDs(); len(nodes) > 0 {
@@ -288,7 +294,7 @@ func (_c *InvitationCreate) createSpec() (*Invitation, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.invitation_invited_by = &nodes[0]
+		_node.InvitedByID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -298,7 +304,7 @@ func (_c *InvitationCreate) createSpec() (*Invitation, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Invitation.Create().
-//		SetEmail(v).
+//		SetWorkspaceID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -307,7 +313,7 @@ func (_c *InvitationCreate) createSpec() (*Invitation, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.InvitationUpsert) {
-//			SetEmail(v+v).
+//			SetWorkspaceID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *InvitationCreate) OnConflict(opts ...sql.ConflictOption) *InvitationUpsertOne {
@@ -342,6 +348,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *InvitationUpsert) SetWorkspaceID(v string) *InvitationUpsert {
+	u.Set(invitation.FieldWorkspaceID, v)
+	return u
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *InvitationUpsert) UpdateWorkspaceID() *InvitationUpsert {
+	u.SetExcluded(invitation.FieldWorkspaceID)
+	return u
+}
+
+// SetInvitedByID sets the "invited_by_id" field.
+func (u *InvitationUpsert) SetInvitedByID(v uuid.UUID) *InvitationUpsert {
+	u.Set(invitation.FieldInvitedByID, v)
+	return u
+}
+
+// UpdateInvitedByID sets the "invited_by_id" field to the value that was provided on create.
+func (u *InvitationUpsert) UpdateInvitedByID() *InvitationUpsert {
+	u.SetExcluded(invitation.FieldInvitedByID)
+	return u
+}
 
 // SetEmail sets the "email" field.
 func (u *InvitationUpsert) SetEmail(v string) *InvitationUpsert {
@@ -458,6 +488,34 @@ func (u *InvitationUpsertOne) Update(set func(*InvitationUpsert)) *InvitationUps
 		set(&InvitationUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *InvitationUpsertOne) SetWorkspaceID(v string) *InvitationUpsertOne {
+	return u.Update(func(s *InvitationUpsert) {
+		s.SetWorkspaceID(v)
+	})
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *InvitationUpsertOne) UpdateWorkspaceID() *InvitationUpsertOne {
+	return u.Update(func(s *InvitationUpsert) {
+		s.UpdateWorkspaceID()
+	})
+}
+
+// SetInvitedByID sets the "invited_by_id" field.
+func (u *InvitationUpsertOne) SetInvitedByID(v uuid.UUID) *InvitationUpsertOne {
+	return u.Update(func(s *InvitationUpsert) {
+		s.SetInvitedByID(v)
+	})
+}
+
+// UpdateInvitedByID sets the "invited_by_id" field to the value that was provided on create.
+func (u *InvitationUpsertOne) UpdateInvitedByID() *InvitationUpsertOne {
+	return u.Update(func(s *InvitationUpsert) {
+		s.UpdateInvitedByID()
+	})
 }
 
 // SetEmail sets the "email" field.
@@ -673,7 +731,7 @@ func (_c *InvitationCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.InvitationUpsert) {
-//			SetEmail(v+v).
+//			SetWorkspaceID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *InvitationCreateBulk) OnConflict(opts ...sql.ConflictOption) *InvitationUpsertBulk {
@@ -753,6 +811,34 @@ func (u *InvitationUpsertBulk) Update(set func(*InvitationUpsert)) *InvitationUp
 		set(&InvitationUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *InvitationUpsertBulk) SetWorkspaceID(v string) *InvitationUpsertBulk {
+	return u.Update(func(s *InvitationUpsert) {
+		s.SetWorkspaceID(v)
+	})
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *InvitationUpsertBulk) UpdateWorkspaceID() *InvitationUpsertBulk {
+	return u.Update(func(s *InvitationUpsert) {
+		s.UpdateWorkspaceID()
+	})
+}
+
+// SetInvitedByID sets the "invited_by_id" field.
+func (u *InvitationUpsertBulk) SetInvitedByID(v uuid.UUID) *InvitationUpsertBulk {
+	return u.Update(func(s *InvitationUpsert) {
+		s.SetInvitedByID(v)
+	})
+}
+
+// UpdateInvitedByID sets the "invited_by_id" field to the value that was provided on create.
+func (u *InvitationUpsertBulk) UpdateInvitedByID() *InvitationUpsertBulk {
+	return u.Update(func(s *InvitationUpsert) {
+		s.UpdateInvitedByID()
+	})
 }
 
 // SetEmail sets the "email" field.

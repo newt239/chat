@@ -3,7 +3,6 @@ package rpc
 import (
 	"context"
 
-	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
@@ -21,7 +20,7 @@ func (s *InvitationServer) CreateInvitation(ctx context.Context, req *chatv1.Cre
 	out, err := s.UC.Create(ctx, invitationuc.CreateInput{
 		WorkspaceID: req.WorkspaceId,
 		Email:       req.Email,
-		Role:        entity.WorkspaceRole(presenter.WorkspaceRoleName(role)),
+		Role:        presenter.WorkspaceRoleFromProto(role),
 		RequestedBy: userIDFrom(ctx),
 	})
 	if err != nil {

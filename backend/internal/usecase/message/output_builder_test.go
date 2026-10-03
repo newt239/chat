@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
@@ -91,11 +91,14 @@ type builderChannelAccess struct {
 	accessible map[string]*entity.Channel
 }
 
-func (s *builderChannelAccess) EnsureChannelAccess(_ context.Context, channelID string, _ string) (*entity.Channel, error) {
-	if ch := s.accessible[channelID]; ch != nil {
-		return ch, nil
+func (s *builderChannelAccess) AccessibleChannelsByIDs(_ context.Context, channelIDs []string, _ string) (map[string]*entity.Channel, error) {
+	result := map[string]*entity.Channel{}
+	for _, id := range channelIDs {
+		if ch := s.accessible[id]; ch != nil {
+			result[id] = ch
+		}
 	}
-	return nil, domainerrors.ErrUnauthorized
+	return result, nil
 }
 
 const (
@@ -171,21 +174,15 @@ func TestBuildIncludesPreviewsOnlyForAccessibleMessages(t *testing.T) {
 	}
 }
 
-func TestBuildAppliesWebhookSenderOverride(t *testing.T) {
+func TestBuildIncludesAppUser(t *testing.T) {
 	builder := newTestBuilder()
-	builder.userRepo = &builderUserRepo{users: []*entity.User{{ID: "bot", DisplayName: "Deploy", IsBot: true}}}
-	outputs, err := builder.Build(context.Background(), viewerID, []*entity.Message{
-		{ID: "m1", ChannelID: "public", UserID: "bot"},
-		{ID: "m2", ChannelID: "public", UserID: "bot", SenderName: ptr("GitHub"), SenderAvatarURL: ptr("https://example.com/gh.png")},
-	})
+	builder.userRepo = &builderUserRepo{users: []*entity.User{{ID: "bot", DisplayName: "Deploy", IsApp: true}}}
+	outputs, err := builder.Build(context.Background(), viewerID, []*entity.Message{{ID: "m1", ChannelID: "public", UserID: "bot"}})
 	if err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
-	if user := outputs[0].User; user.DisplayName != "Deploy" || !user.IsBot {
-		t.Errorf("ボットユーザーの情報が含まれていません: %+v", user)
-	}
-	if user := outputs[1].User; user.DisplayName != "GitHub" || *user.AvatarURL != "https://example.com/gh.png" || !user.IsBot {
-		t.Errorf("投稿ごとの表示名とアイコンが反映されていません: %+v", user)
+	if user := outputs[0].User; user.DisplayName != "Deploy" || !user.IsApp {
+		t.Errorf("アプリのユーザーの情報が含まれていません: %+v", user)
 	}
 }
 
@@ -250,7 +247,7 @@ func TestBuildPreview(t *testing.T) {
 	}
 
 	for _, id := range []string{secretTargetID, deletedID, "missing"} {
-		if _, err := builder.BuildPreview(context.Background(), viewerID, id); !errors.Is(err, ErrMessageNotFound) {
+		if _, err := builder.BuildPreview(context.Background(), viewerID, id); !errors.Is(err, domerr.ErrMessageNotFound) {
 			t.Errorf("%s は見つからない扱いにすべきです: %v", id, err)
 		}
 	}

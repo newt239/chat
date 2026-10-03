@@ -20,7 +20,7 @@ vi.mock("#/lib/platform/tauri/deepLink", () => ({
 
 describe("GoogleSignInButtonNative", () => {
   test("ブラウザでログインを始め、戻ってきた認可コードでログインする", async () => {
-    const loginWithGoogleCode = vi.fn(() => ({ accessToken: "a", refreshToken: "r" }));
+    const loginWithGoogleCode = vi.fn(() => ({ accessToken: "a", user: { id: "u1" } }));
     await renderWithProviders(
       <GoogleSignInButtonNative workspaceId={null} />,
       "/login",

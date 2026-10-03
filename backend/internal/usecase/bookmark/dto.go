@@ -16,12 +16,6 @@ type RemoveBookmarkInput struct {
 	MessageID string
 }
 
-type BookmarkOutput struct {
-	UserID    string
-	MessageID string
-	CreatedAt time.Time
-}
-
 type BookmarkWithMessageOutput struct {
 	UserID    string                `json:"userId"`
 	Message   message.MessageOutput `json:"message"`

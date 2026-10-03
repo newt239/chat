@@ -3,21 +3,23 @@ package entity
 import "time"
 
 type Message struct {
-	ID        string
-	ChannelID string
-	UserID    string
-	ParentID  *string
-	Body      string
-	CreatedAt time.Time
-	EditedAt  *time.Time
-	DeletedAt *time.Time
-	DeletedBy *string
-	// Webhook が投稿ごとに指定した表示名とアイコン
-	SenderName      *string
-	SenderAvatarURL *string
+	ID              string
+	ChannelID       string
+	UserID          string
+	ParentID        *string
+	Body            string
+	CreatedAt       time.Time
+	EditedAt        *time.Time
+	DeletedAt       *time.Time
+	DeletedBy       *string
 	Location        *MessageLocation
 	MentionsChannel bool
 	MentionsHere    bool
+}
+
+// CanBeRepliedIn は channelID のスレッドの親にできるメッセージかを返します。返信と削除済みのメッセージは親にできない
+func (m *Message) CanBeRepliedIn(channelID string) bool {
+	return m != nil && m.ChannelID == channelID && m.ParentID == nil && m.DeletedAt == nil
 }
 
 // MessageLocation はメッセージで共有された位置情報です

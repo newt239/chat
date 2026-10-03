@@ -1,26 +1,18 @@
 import { IconPin } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { MessageLinkCard } from "#/features/message/components/MessageLinkCard";
 import { usePinnedMessages } from "#/features/pin/hooks/usePinnedMessages";
-import { currentChannelIdAtom, currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
 type PinnedPanelProps = {
-  channelId: string | null;
+  workspaceId: string;
+  channelId: string;
 };
 
-export const PinnedPanel = ({ channelId }: PinnedPanelProps) => {
+export const PinnedPanel = ({ workspaceId, channelId }: PinnedPanelProps) => {
   const { t } = useTranslation();
-  const workspaceId = useAtomValue(currentWorkspaceIdAtom);
-  const currentChannelId = useAtomValue(currentChannelIdAtom);
-  const effectiveChannelId = channelId ?? currentChannelId;
-  const { pins, isLoading, isError } = usePinnedMessages(effectiveChannelId);
-
-  if (!workspaceId || !effectiveChannelId) {
-    return null;
-  }
+  const { pins, isLoading, isError } = usePinnedMessages(channelId);
 
   if (isLoading) {
     return (

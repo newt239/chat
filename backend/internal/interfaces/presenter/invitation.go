@@ -11,7 +11,7 @@ func Invitation(i invitationuc.InvitationOutput) *chatv1.Invitation {
 	return &chatv1.Invitation{
 		Id:            i.ID,
 		Email:         i.Email,
-		Role:          workspaceRoles[string(i.Role)],
+		Role:          workspaceRoles[i.Role],
 		InvitedByName: i.InvitedByName,
 		ExpiresAt:     timestamppb.New(i.ExpiresAt),
 		CreatedAt:     timestamppb.New(i.CreatedAt),

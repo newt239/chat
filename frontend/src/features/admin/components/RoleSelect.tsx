@@ -36,7 +36,7 @@ export const RoleSelect = ({ ariaLabel, value, onChange, isDisabled }: RoleSelec
     >
       <Button
         className={cn(
-          "flex h-7 min-w-24 cursor-pointer items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 text-left text-[12.5px] text-text data-disabled:cursor-default data-disabled:bg-sunken data-disabled:text-subtle",
+          "flex h-7 min-w-24 cursor-pointer items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2 text-left text-label font-normal text-text data-disabled:cursor-default data-disabled:bg-sunken data-disabled:text-subtle",
           focusRing,
         )}
       >

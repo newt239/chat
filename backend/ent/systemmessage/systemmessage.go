@@ -15,6 +15,10 @@ const (
 	Label = "system_message"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldChannelID holds the string denoting the channel_id field in the database.
+	FieldChannelID = "channel_id"
+	// FieldActorID holds the string denoting the actor_id field in the database.
+	FieldActorID = "actor_id"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
 	// FieldPayload holds the string denoting the payload field in the database.
@@ -26,47 +30,37 @@ const (
 	// EdgeActor holds the string denoting the actor edge name in mutations.
 	EdgeActor = "actor"
 	// Table holds the table name of the systemmessage in the database.
-	Table = "system_messages"
+	Table = "system_message"
 	// ChannelTable is the table that holds the channel relation/edge.
-	ChannelTable = "system_messages"
+	ChannelTable = "system_message"
 	// ChannelInverseTable is the table name for the Channel entity.
 	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	ChannelInverseTable = "channels"
+	ChannelInverseTable = "channel"
 	// ChannelColumn is the table column denoting the channel relation/edge.
-	ChannelColumn = "system_message_channel"
+	ChannelColumn = "channel_id"
 	// ActorTable is the table that holds the actor relation/edge.
-	ActorTable = "system_messages"
+	ActorTable = "system_message"
 	// ActorInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	ActorInverseTable = "users"
+	ActorInverseTable = "user"
 	// ActorColumn is the table column denoting the actor relation/edge.
-	ActorColumn = "system_message_actor"
+	ActorColumn = "actor_id"
 )
 
 // Columns holds all SQL columns for systemmessage fields.
 var Columns = []string{
 	FieldID,
+	FieldChannelID,
+	FieldActorID,
 	FieldKind,
 	FieldPayload,
 	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "system_messages"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"system_message_channel",
-	"system_message_actor",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -88,6 +82,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByChannelID orders the results by the channel_id field.
+func ByChannelID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelID, opts...).ToFunc()
+}
+
+// ByActorID orders the results by the actor_id field.
+func ByActorID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldActorID, opts...).ToFunc()
 }
 
 // ByKind orders the results by the kind field.

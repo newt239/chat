@@ -1,23 +1,23 @@
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedControl";
 import { Switch } from "#/components/ui/Switch/Switch";
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { usePreferences, useUpdatePreferences } from "#/hooks/usePreferences";
 import { logger } from "#/lib/logger";
 import { requestNotificationPermission } from "#/lib/platform/notify";
 import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
-import { notificationLevels, preferencesAtom } from "#/providers/store/preferences";
+import { notificationLevels } from "#/providers/store/preferences";
 
-import { useUpdatePreferences } from "../hooks/usePreferences";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 import { SettingRow } from "./SettingRow";
 
 export const NotificationSettings = () => {
   const { t } = useTranslation();
   const [device, setDevice] = useAtom(notificationPreferencesAtom);
-  const { notificationLevel } = useAtomValue(preferencesAtom);
-  const updatePreferences = useUpdatePreferences();
+  const { notificationLevel } = usePreferences();
+  const { update: updatePreferences } = useUpdatePreferences();
   const push = usePushNotifications();
 
   return (

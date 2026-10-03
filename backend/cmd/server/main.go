@@ -6,17 +6,15 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
+	"sync"
 	"syscall"
 	"time"
 	_ "time/tzdata" // インサイトでクライアントのタイムゾーンを扱うため、tzdata のないイメージでも読み込めるよう埋め込む
 
 	goredis "github.com/redis/go-redis/v9"
 
-	"github.com/newt239/chat/ent/migrate"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
-	"github.com/newt239/chat/internal/infrastructure/database/datamigration"
 	"github.com/newt239/chat/internal/infrastructure/logger"
 	"github.com/newt239/chat/internal/infrastructure/redis"
 	"github.com/newt239/chat/internal/infrastructure/seed"
@@ -47,33 +45,14 @@ func main() {
 	}
 
 	ctx := context.Background()
-	if err := database.WithMigrationLock(ctx, db, func(ctx context.Context) error {
-		if err := client.Schema.Create(
-			ctx,
-			migrate.WithGlobalUniqueID(true),
-			migrate.WithForeignKeys(true),
-		); err != nil {
-			return err
-		}
-		return datamigration.Run(ctx, db)
-	}); err != nil {
+	if err := database.Migrate(ctx, client, db); err != nil {
 		log.Fatalf("failed to migrate database schema: %v", err)
-	}
-
-	if _, err := client.User.Query().Limit(1).All(ctx); err != nil {
-		if strings.Contains(err.Error(), "does not exist") {
-			log.Fatalf("migration verification failed: users table does not exist after migration. This indicates the migration did not create the tables. Error: %v", err)
-		}
-		log.Printf("Warning: could not verify migration (non-fatal): %v", err)
 	}
 
 	// 既知のテストアカウントを作るため本番ではシードしない
 	if cfg.Server.Env == "production" {
 		log.Println("Production environment: skipping auto-seed")
 	} else if err := seed.AutoSeed(client); err != nil {
-		if strings.Contains(err.Error(), "does not exist") {
-			log.Fatalf("database tables do not exist after migration. This indicates a migration failure: %v", err)
-		}
 		log.Fatalf("failed to auto-seed database: %v", err)
 	}
 
@@ -89,13 +68,17 @@ func main() {
 	reg := registry.NewRegistry(client, cfg, rdb)
 	go prepareSearchIndex(reg)
 
+	// 停止時に DB を閉じる前に終わりを待つ
+	var background sync.WaitGroup
 	runCtx, stopRun := context.WithCancel(context.Background())
-	go reg.UseCase().NewScheduledMessageUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval)
+	background.Go(func() {
+		reg.UseCase().NewScheduledMessageUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval)
+	})
 	// リマインダーも予約メッセージと同じ間隔で確かめる
-	go reg.UseCase().NewCommandUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval)
+	background.Go(func() { reg.UseCase().NewCommandUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval) })
 
-	hub := reg.NewWebSocketHub()
-	go hub.Run(runCtx)
+	hub := reg.Hub()
+	background.Go(func() { hub.Run(runCtx) })
 
 	e := reg.NewRouter()
 
@@ -126,6 +109,7 @@ func main() {
 		log.Printf("Server forced to shutdown: %v", err)
 	}
 	stopRun()
+	background.Wait()
 	if rdb != nil {
 		_ = rdb.Close()
 	}

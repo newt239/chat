@@ -26,6 +26,18 @@ type ThreadReadStateCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetUserID sets the "user_id" field.
+func (_c *ThreadReadStateCreate) SetUserID(v uuid.UUID) *ThreadReadStateCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
+// SetThreadID sets the "thread_id" field.
+func (_c *ThreadReadStateCreate) SetThreadID(v uuid.UUID) *ThreadReadStateCreate {
+	_c.mutation.SetThreadID(v)
+	return _c
+}
+
 // SetLastReadAt sets the "last_read_at" field.
 func (_c *ThreadReadStateCreate) SetLastReadAt(v time.Time) *ThreadReadStateCreate {
 	_c.mutation.SetLastReadAt(v)
@@ -82,21 +94,9 @@ func (_c *ThreadReadStateCreate) SetNillableID(v *uuid.UUID) *ThreadReadStateCre
 	return _c
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *ThreadReadStateCreate) SetUserID(id uuid.UUID) *ThreadReadStateCreate {
-	_c.mutation.SetUserID(id)
-	return _c
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_c *ThreadReadStateCreate) SetUser(v *User) *ThreadReadStateCreate {
 	return _c.SetUserID(v.ID)
-}
-
-// SetThreadID sets the "thread" edge to the Message entity by ID.
-func (_c *ThreadReadStateCreate) SetThreadID(id uuid.UUID) *ThreadReadStateCreate {
-	_c.mutation.SetThreadID(id)
-	return _c
 }
 
 // SetThread sets the "thread" edge to the Message entity.
@@ -159,6 +159,12 @@ func (_c *ThreadReadStateCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *ThreadReadStateCreate) check() error {
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "ThreadReadState.user_id"`)}
+	}
+	if _, ok := _c.mutation.ThreadID(); !ok {
+		return &ValidationError{Name: "thread_id", err: errors.New(`ent: missing required field "ThreadReadState.thread_id"`)}
+	}
 	if _, ok := _c.mutation.LastReadAt(); !ok {
 		return &ValidationError{Name: "last_read_at", err: errors.New(`ent: missing required field "ThreadReadState.last_read_at"`)}
 	}
@@ -236,7 +242,7 @@ func (_c *ThreadReadStateCreate) createSpec() (*ThreadReadState, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.thread_read_state_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ThreadIDs(); len(nodes) > 0 {
@@ -253,7 +259,7 @@ func (_c *ThreadReadStateCreate) createSpec() (*ThreadReadState, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.thread_read_state_thread = &nodes[0]
+		_node.ThreadID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -263,7 +269,7 @@ func (_c *ThreadReadStateCreate) createSpec() (*ThreadReadState, *sqlgraph.Creat
 // of the `INSERT` statement. For example:
 //
 //	client.ThreadReadState.Create().
-//		SetLastReadAt(v).
+//		SetUserID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -272,7 +278,7 @@ func (_c *ThreadReadStateCreate) createSpec() (*ThreadReadState, *sqlgraph.Creat
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ThreadReadStateUpsert) {
-//			SetLastReadAt(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ThreadReadStateCreate) OnConflict(opts ...sql.ConflictOption) *ThreadReadStateUpsertOne {
@@ -307,6 +313,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUserID sets the "user_id" field.
+func (u *ThreadReadStateUpsert) SetUserID(v uuid.UUID) *ThreadReadStateUpsert {
+	u.Set(threadreadstate.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ThreadReadStateUpsert) UpdateUserID() *ThreadReadStateUpsert {
+	u.SetExcluded(threadreadstate.FieldUserID)
+	return u
+}
+
+// SetThreadID sets the "thread_id" field.
+func (u *ThreadReadStateUpsert) SetThreadID(v uuid.UUID) *ThreadReadStateUpsert {
+	u.Set(threadreadstate.FieldThreadID, v)
+	return u
+}
+
+// UpdateThreadID sets the "thread_id" field to the value that was provided on create.
+func (u *ThreadReadStateUpsert) UpdateThreadID() *ThreadReadStateUpsert {
+	u.SetExcluded(threadreadstate.FieldThreadID)
+	return u
+}
 
 // SetLastReadAt sets the "last_read_at" field.
 func (u *ThreadReadStateUpsert) SetLastReadAt(v time.Time) *ThreadReadStateUpsert {
@@ -381,6 +411,34 @@ func (u *ThreadReadStateUpsertOne) Update(set func(*ThreadReadStateUpsert)) *Thr
 		set(&ThreadReadStateUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ThreadReadStateUpsertOne) SetUserID(v uuid.UUID) *ThreadReadStateUpsertOne {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ThreadReadStateUpsertOne) UpdateUserID() *ThreadReadStateUpsertOne {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetThreadID sets the "thread_id" field.
+func (u *ThreadReadStateUpsertOne) SetThreadID(v uuid.UUID) *ThreadReadStateUpsertOne {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.SetThreadID(v)
+	})
+}
+
+// UpdateThreadID sets the "thread_id" field to the value that was provided on create.
+func (u *ThreadReadStateUpsertOne) UpdateThreadID() *ThreadReadStateUpsertOne {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.UpdateThreadID()
+	})
 }
 
 // SetLastReadAt sets the "last_read_at" field.
@@ -547,7 +605,7 @@ func (_c *ThreadReadStateCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ThreadReadStateUpsert) {
-//			SetLastReadAt(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ThreadReadStateCreateBulk) OnConflict(opts ...sql.ConflictOption) *ThreadReadStateUpsertBulk {
@@ -627,6 +685,34 @@ func (u *ThreadReadStateUpsertBulk) Update(set func(*ThreadReadStateUpsert)) *Th
 		set(&ThreadReadStateUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ThreadReadStateUpsertBulk) SetUserID(v uuid.UUID) *ThreadReadStateUpsertBulk {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ThreadReadStateUpsertBulk) UpdateUserID() *ThreadReadStateUpsertBulk {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetThreadID sets the "thread_id" field.
+func (u *ThreadReadStateUpsertBulk) SetThreadID(v uuid.UUID) *ThreadReadStateUpsertBulk {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.SetThreadID(v)
+	})
+}
+
+// UpdateThreadID sets the "thread_id" field to the value that was provided on create.
+func (u *ThreadReadStateUpsertBulk) UpdateThreadID() *ThreadReadStateUpsertBulk {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.UpdateThreadID()
+	})
 }
 
 // SetLastReadAt sets the "last_read_at" field.

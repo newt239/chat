@@ -2,7 +2,10 @@ package link
 
 import (
 	"context"
+	"slices"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/newt239/chat/internal/domain/repository"
@@ -15,10 +18,13 @@ const (
 )
 
 type stubOGPService struct {
+	mu      sync.Mutex
 	fetched []string
 }
 
 func (s *stubOGPService) FetchOGP(_ context.Context, url string) (*entity.OGPData, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.fetched = append(s.fetched, url)
 	title := "取得したタイトル"
 	return &entity.OGPData{Title: &title}, nil
@@ -30,11 +36,23 @@ func (s *stubOGPService) ExtractURLs(text string) []string {
 
 type stubLinkRepo struct {
 	repository.MessageLinkRepository
-	cached map[string]*entity.MessageLink
+	previews map[string]*entity.LinkPreview
 }
 
-func (r *stubLinkRepo) FindByURL(_ context.Context, url string) (*entity.MessageLink, error) {
-	return r.cached[url], nil
+func (r *stubLinkRepo) FindPreviewsByURLs(_ context.Context, urls []string) (map[string]*entity.LinkPreview, error) {
+	result := map[string]*entity.LinkPreview{}
+	for _, url := range urls {
+		if p, ok := r.previews[url]; ok {
+			result[url] = p
+		}
+	}
+	return result, nil
+}
+
+func (r *stubLinkRepo) UpsertPreview(_ context.Context, p *entity.LinkPreview) error {
+	p.ID = "preview-" + p.URL
+	r.previews[p.URL] = p
+	return nil
 }
 
 type stubMessageRepo struct {
@@ -56,40 +74,38 @@ func (r *stubChannelRepo) FindByID(_ context.Context, id string) (*entity.Channe
 	return &entity.Channel{ID: id, WorkspaceID: "general"}, nil
 }
 
-func TestProcessLinks(t *testing.T) {
+func TestPrepareLinks(t *testing.T) {
 	cachedTitle := "保存済みのタイトル"
 	ogpService := &stubOGPService{}
-	service := NewLinkProcessingService(
-		ogpService,
-		&stubLinkRepo{cached: map[string]*entity.MessageLink{
-			"https://cached.example.com/": {OGP: entity.OGPData{Title: &cachedTitle}},
-		}},
-		&stubMessageRepo{},
-		&stubChannelRepo{},
-	)
+	linkRepo := &stubLinkRepo{previews: map[string]*entity.LinkPreview{
+		"https://cached.example.com/": {ID: "cached", URL: "https://cached.example.com/", OGP: entity.OGPData{Title: &cachedTitle}, FetchedAt: time.Now()},
+		"https://stale.example.com/":  {ID: "stale", URL: "https://stale.example.com/", OGP: entity.OGPData{Title: &cachedTitle}, FetchedAt: time.Now().Add(-2 * entity.LinkPreviewTTL)},
+	}}
+	service := NewLinkProcessingService(ogpService, linkRepo, &stubMessageRepo{}, &stubChannelRepo{})
 	permalink := "http://localhost:5173/app/general/" + channelID + "?message=" + messageID
 	otherWorkspace := "http://localhost:5173/app/other/" + channelID + "?message=" + messageID
 	missing := "http://localhost:5173/app/general/" + channelID + "?message=f9999999-9999-9999-9999-999999999999"
-	body := permalink + " " + otherWorkspace + " " + missing + " https://cached.example.com/ https://new.example.com/"
+	body := permalink + " " + otherWorkspace + " " + missing + " https://cached.example.com/ https://new.example.com/ https://stale.example.com/"
 
-	links, err := service.ProcessLinks(context.Background(), body, "general")
+	links, err := service.PrepareLinks(context.Background(), body, "general")
 	if err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
 
-	if links[0].LinkedMessageID == nil || *links[0].LinkedMessageID != messageID || links[0].OGP.Title != nil {
+	if links[0].LinkedMessageID == nil || *links[0].LinkedMessageID != messageID || links[0].LinkPreviewID != nil {
 		t.Errorf("同じワークスペースのメッセージリンクとして扱われていません: %+v", links[0])
 	}
-	if links[1].LinkedMessageID != nil {
+	if links[1].LinkedMessageID != nil || links[1].LinkPreviewID == nil {
 		t.Error("別のワークスペースの URL をメッセージリンクとして扱っています")
 	}
-	if links[2].LinkedMessageID != nil || links[2].OGP.Title != nil {
-		t.Error("存在しないメッセージの URL にリンク先や OGP が付いています")
+	if links[2].LinkedMessageID != nil || links[2].LinkPreviewID != nil {
+		t.Error("存在しないメッセージの URL にリンク先やプレビューが付いています")
 	}
-	if links[3].OGP.Title == nil || *links[3].OGP.Title != cachedTitle {
-		t.Error("保存済みの OGP が再利用されていません")
+	if *links[3].LinkPreviewID != "cached" || *links[3].OGP.Title != cachedTitle {
+		t.Error("新しいプレビューが再利用されていません")
 	}
-	if len(ogpService.fetched) != 2 || ogpService.fetched[0] != otherWorkspace || ogpService.fetched[1] != "https://new.example.com/" {
+	slices.Sort(ogpService.fetched)
+	if want := []string{otherWorkspace, "https://new.example.com/", "https://stale.example.com/"}; !slices.Equal(ogpService.fetched, want) {
 		t.Errorf("OGP を取得した URL が期待と異なります: %v", ogpService.fetched)
 	}
 }

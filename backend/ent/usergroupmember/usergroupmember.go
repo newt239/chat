@@ -15,6 +15,10 @@ const (
 	Label = "user_group_member"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldGroupID holds the string denoting the group_id field in the database.
+	FieldGroupID = "group_id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldJoinedAt holds the string denoting the joined_at field in the database.
 	FieldJoinedAt = "joined_at"
 	// EdgeGroup holds the string denoting the group edge name in mutations.
@@ -22,45 +26,35 @@ const (
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the usergroupmember in the database.
-	Table = "user_group_members"
+	Table = "user_group_member"
 	// GroupTable is the table that holds the group relation/edge.
-	GroupTable = "user_group_members"
+	GroupTable = "user_group_member"
 	// GroupInverseTable is the table name for the UserGroup entity.
 	// It exists in this package in order to avoid circular dependency with the "usergroup" package.
-	GroupInverseTable = "user_groups"
+	GroupInverseTable = "user_group"
 	// GroupColumn is the table column denoting the group relation/edge.
-	GroupColumn = "user_group_member_group"
+	GroupColumn = "group_id"
 	// UserTable is the table that holds the user relation/edge.
-	UserTable = "user_group_members"
+	UserTable = "user_group_member"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "user_group_member_user"
+	UserColumn = "user_id"
 )
 
 // Columns holds all SQL columns for usergroupmember fields.
 var Columns = []string{
 	FieldID,
+	FieldGroupID,
+	FieldUserID,
 	FieldJoinedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "user_group_members"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"user_group_member_group",
-	"user_group_member_user",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -80,6 +74,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByGroupID orders the results by the group_id field.
+func ByGroupID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGroupID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByJoinedAt orders the results by the joined_at field.

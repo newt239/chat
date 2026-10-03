@@ -11,8 +11,6 @@ export const channelPathErrorKeys = {
   tooDeep: "channel.name.tooDeep",
 } as const;
 
-type ChannelPathError = keyof typeof channelPathErrorKeys;
-
 // "dev/frontend/web" -> ["dev", "dev/frontend"]
 export const ancestorPaths = (path: string) => {
   const segments = path.split("/");
@@ -26,10 +24,7 @@ export const canHaveChildChannel = (path: string) => path.split("/").length < MA
 export const lastSegment = (path: string) => path.split("/").at(-1) ?? path;
 
 // サーバーと同じ制約（小文字の英数字・ハイフン・アンダースコア、各階層 32 文字以内・4 階層まで）
-export const validateChannelPath = (
-  path: string,
-  existingNames: readonly string[],
-): ChannelPathError | null => {
+export const validateChannelPath = (path: string, existingNames: readonly string[]) => {
   if (path.length === 0) {
     return "required";
   }

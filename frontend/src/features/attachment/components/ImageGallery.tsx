@@ -23,12 +23,12 @@ const GRID_LIMIT = 4;
 
 // 表示する枚数（2〜4）ごとの並べ方
 const gridClassNames = new Map([
-  [2, "h-[200px] grid-cols-2"],
-  [3, "h-[260px] grid-cols-[2fr_1fr] grid-rows-2 [&>:first-child]:row-span-2"],
-  [4, "h-[300px] grid-cols-2 grid-rows-2"],
+  [2, "h-50 grid-cols-2"],
+  [3, "h-65 grid-cols-[2fr_1fr] grid-rows-2 [&>:first-child]:row-span-2"],
+  [4, "h-75 grid-cols-2 grid-rows-2"],
 ]);
 
-const tileClassName = `relative block min-h-0 cursor-zoom-in overflow-hidden bg-sunken ${focusRing} [&_img]:transition-transform [&_img]:motion-reduce:transition-none data-hovered:[&_img]:scale-[1.02]`;
+const tileClassName = `relative block min-h-0 cursor-zoom-in overflow-hidden bg-sunken ${focusRing} [&_img]:transition-transform [&_img]:motion-reduce:transition-none data-hovered:[&_img]:scale-102`;
 
 const imageClassName = "block size-full object-cover";
 
@@ -60,7 +60,7 @@ export const ImageGallery = ({ images, message }: ImageGalleryProps) => {
           onPress={() => {
             setOpenIndex(0);
           }}
-          className={cn(tileClassName, "max-w-full self-start rounded-[10px] border border-border")}
+          className={cn(tileClassName, "max-w-full self-start rounded-lg border border-border")}
           style={{ aspectRatio: `${box.width} / ${box.height}`, width: box.width }}
         >
           <AttachmentImage
@@ -70,7 +70,7 @@ export const ImageGallery = ({ images, message }: ImageGalleryProps) => {
             className={imageClassName}
           />
           {box.crop !== null && (
-            <span className="absolute right-1.5 bottom-1.5 flex items-center gap-1 rounded-full bg-media/60 px-[7px] py-0.5 text-[11px] font-semibold text-media-fg [&_svg]:size-[11px]">
+            <span className="absolute right-1.5 bottom-1.5 flex items-center gap-1 rounded-full bg-media/60 px-1.75 py-0.5 text-caption font-semibold text-media-fg [&_svg]:size-2.75">
               <IconArrowsDiagonal aria-hidden />
               {t(box.crop === "tall" ? "attachment.crop.tall" : "attachment.crop.wide")}
             </span>
@@ -83,7 +83,7 @@ export const ImageGallery = ({ images, message }: ImageGalleryProps) => {
     return (
       <div
         className={cn(
-          "grid w-[min(400px,100%)] gap-[3px] overflow-hidden rounded-[10px]",
+          "grid w-100 max-w-full gap-0.75 overflow-hidden rounded-lg",
           gridClassNames.get(shown.length),
         )}
       >

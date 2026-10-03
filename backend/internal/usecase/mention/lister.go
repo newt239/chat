@@ -2,10 +2,10 @@ package mention
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
@@ -14,8 +14,6 @@ const (
 	defaultLimit = 20
 	maxLimit     = 100
 )
-
-var ErrUnauthorized = errors.New("このワークスペースのメンションを取得する権限がありません")
 
 type Cursor struct {
 	CreatedAt time.Time
@@ -55,7 +53,7 @@ func (l *Lister) ListMentions(ctx context.Context, input ListMentionsInput) (*Li
 		return nil, fmt.Errorf("failed to verify membership: %w", err)
 	}
 	if member == nil {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	limit := input.Limit

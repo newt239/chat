@@ -42,7 +42,7 @@ const (
 	MessageTable = "poll"
 	// MessageInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	MessageInverseTable = "messages"
+	MessageInverseTable = "message"
 	// MessageColumn is the table column denoting the message relation/edge.
 	MessageColumn = "message_id"
 	// OptionsTable is the table that holds the options relation/edge.

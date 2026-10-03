@@ -3,6 +3,7 @@ package command
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -217,16 +218,11 @@ func (i *Interactor) deliver(ctx context.Context, reminder *entity.Reminder) err
 	if err != nil {
 		return fmt.Errorf("failed to open DM: %w", err)
 	}
-	// 新しく作った DM にはメンバーがいないため、公式アプリと受け取る人を参加させる
+	// 新しく作った DM にはメンバーがいないため、公式アプリと受け取る人を参加させる。参加済みなら何もしない
 	for _, userID := range []string{official.BotUserID, recipient} {
-		isMember, err := i.channelMemberRepo.IsMember(ctx, dm.ID, userID)
-		if err != nil {
-			return fmt.Errorf("failed to verify DM membership: %w", err)
-		}
-		if !isMember {
-			if err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: dm.ID, UserID: userID, Role: entity.ChannelRoleMember, JoinedAt: time.Now()}); err != nil {
-				return fmt.Errorf("failed to join DM: %w", err)
-			}
+		err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: dm.ID, UserID: userID, Role: entity.ChannelRoleMember, JoinedAt: time.Now()})
+		if err != nil && !errors.Is(err, domerr.ErrAlreadyMember) {
+			return fmt.Errorf("failed to join DM: %w", err)
 		}
 	}
 	body := fmt.Sprintf("<@%s> リマインダー: %s", recipient, reminder.Text)

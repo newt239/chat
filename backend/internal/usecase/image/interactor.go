@@ -41,7 +41,6 @@ type PresignOutput struct {
 type Interactor struct {
 	workspaceRepo domainrepository.WorkspaceRepository
 	storage       domainservice.StorageService
-	storageConfig domainservice.StorageConfig
 	// 配信用の URL の起点になるバックエンドの公開 URL
 	publicBaseURL string
 }
@@ -49,13 +48,11 @@ type Interactor struct {
 func NewInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	storage domainservice.StorageService,
-	storageConfig domainservice.StorageConfig,
 	publicBaseURL string,
 ) *Interactor {
 	return &Interactor{
 		workspaceRepo: workspaceRepo,
 		storage:       storage,
-		storageConfig: storageConfig,
 		publicBaseURL: strings.TrimSuffix(publicBaseURL, "/"),
 	}
 }
@@ -67,7 +64,7 @@ func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignO
 		return nil, err
 	}
 	key := KeyPrefix + dir + "/" + uuid.NewString()
-	url, err := i.storage.GenerateUploadURL(key, input.ContentType, input.SizeBytes, i.storageConfig.GetUploadExpires())
+	url, err := i.storage.GenerateUploadURL(ctx, key, input.ContentType, input.SizeBytes, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to presign upload: %w", err)
 	}

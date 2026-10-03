@@ -38,9 +38,7 @@ export const SeekBar = ({ position, duration, onSeek, track }: SeekBarProps) => 
         {typeof track === "object" ? (
           <Waveform seed={track.waveformSeed} progress={progress} />
         ) : (
-          <span
-            className={cn("relative h-1 w-full overflow-hidden rounded-[2px]", barTones[track])}
-          >
+          <span className={cn("relative h-1 w-full overflow-hidden rounded-xs", barTones[track])}>
             <span
               className="absolute inset-y-0 left-0 bg-accent"
               style={{ width: `${progress * 100}%` }}

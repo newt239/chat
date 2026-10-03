@@ -1,11 +1,11 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { WorkspaceSettingsPage } from "#/features/workspace/components/WorkspaceSettingsPage";
-import { isWorkspaceSettingsSection } from "#/features/workspace/schemas";
+import { findWorkspaceSettingsSection } from "#/features/workspace/schemas";
 
 export const Route = createFileRoute("/app/$workspaceId/workspace-settings/$section")({
   beforeLoad: ({ params }) => {
-    if (!isWorkspaceSettingsSection(params.section)) {
+    if (findWorkspaceSettingsSection(params.section) === undefined) {
       throw redirect({
         params: { ...params, section: "general" },
         replace: true,

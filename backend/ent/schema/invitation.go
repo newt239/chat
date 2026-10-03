@@ -26,6 +26,8 @@ func (Invitation) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
+		field.String("workspace_id"),
+		field.UUID("invited_by_id", uuid.UUID{}),
 		field.String("email").
 			NotEmpty(),
 		field.String("role").
@@ -47,10 +49,12 @@ func (Invitation) Fields() []ent.Field {
 func (Invitation) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("workspace", Workspace.Type).
+			Field("workspace_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("invited_by", User.Type).
+			Field("invited_by_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),

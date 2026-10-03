@@ -5,25 +5,47 @@ import { useQueryClient } from "@tanstack/react-query";
 import { channelListKey } from "#/features/channel/hooks/useChannel";
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 import { DirectMessageService } from "#/gen/chat/v1/direct_message_service_pb";
-import { ReadStateService } from "#/gen/chat/v1/read_state_service_pb";
+
+import { useUpdateReadState } from "./useUpdateReadState";
+
+import type {
+  DirectMessage,
+  ListDirectMessagesResponse,
+} from "#/gen/chat/v1/direct_message_service_pb";
 
 /** サイドバーの行やチャンネルの「その他」メニューから行う、スター・ミュート・既読の操作 */
 export const useChannelListActions = (workspaceId: string) => {
   const queryClient = useQueryClient();
-  const onSuccess = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: channelListKey(workspaceId) }),
-      queryClient.invalidateQueries({
+  // DM の一覧は取り直さず、変えた DM の行だけを書き換える
+  const onSuccess = async (
+    channelId: string | undefined,
+    update: (dm: DirectMessage) => DirectMessage,
+  ) => {
+    queryClient.setQueriesData<ListDirectMessagesResponse>(
+      {
         queryKey: createConnectQueryKey({
           cardinality: "finite",
+          input: { workspaceId },
           schema: DirectMessageService.method.listDirectMessages,
         }),
-      }),
-    ]);
+      },
+      (res) =>
+        res && {
+          ...res,
+          directMessages: res.directMessages.map((dm) => (dm.id === channelId ? update(dm) : dm)),
+        },
+    );
+    await queryClient.invalidateQueries({ queryKey: channelListKey(workspaceId) });
   };
-  const setStarred = useMutation(ChannelService.method.setChannelStarred, { onSuccess });
-  const setMuted = useMutation(ChannelService.method.setChannelMuted, { onSuccess });
-  const updateReadState = useMutation(ReadStateService.method.updateReadState, { onSuccess });
+  const setStarred = useMutation(ChannelService.method.setChannelStarred, {
+    onSuccess: (_, { channelId, starred = false }) =>
+      onSuccess(channelId, (dm) => ({ ...dm, isStarred: starred })),
+  });
+  const setMuted = useMutation(ChannelService.method.setChannelMuted, {
+    onSuccess: (_, { channelId, muted = false }) =>
+      onSuccess(channelId, (dm) => ({ ...dm, isMuted: muted })),
+  });
+  const updateReadState = useUpdateReadState(workspaceId);
 
   return {
     markAsRead: (channelId: string) => {

@@ -537,7 +537,7 @@ type UserSummary struct {
 	DisplayName string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	AvatarUrl   *string                `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
 	// アプリの投稿名義のボットユーザー。プロフィールを持たない
-	IsBot         bool `protobuf:"varint,4,opt,name=is_bot,json=isBot,proto3" json:"is_bot,omitempty"`
+	IsApp         bool `protobuf:"varint,4,opt,name=is_app,json=isApp,proto3" json:"is_app,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -593,9 +593,9 @@ func (x *UserSummary) GetAvatarUrl() string {
 	return ""
 }
 
-func (x *UserSummary) GetIsBot() bool {
+func (x *UserSummary) GetIsApp() bool {
 	if x != nil {
-		return x.IsBot
+		return x.IsApp
 	}
 	return false
 }
@@ -644,7 +644,7 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\"\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x12\x15\n" +
-	"\x06is_bot\x18\x04 \x01(\bR\x05isBotB\r\n" +
+	"\x06is_app\x18\x04 \x01(\bR\x05isAppB\r\n" +
 	"\v_avatar_url*`\n" +
 	"\fSidebarStyle\x12\x1d\n" +
 	"\x19SIDEBAR_STYLE_UNSPECIFIED\x10\x00\x12\x18\n" +

@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -23,10 +22,10 @@ const (
 var channelSegmentPattern = regexp.MustCompile(`^[a-z0-9_-]+$`)
 
 var (
-	ErrChannelWorkspaceIDInvalid = errors.New("ワークスペースIDの形式が無効です")
-	ErrChannelCreatorInvalid     = errors.New("作成者IDはUUID形式で指定してください")
-	ErrInvalidChannelType        = errors.New("無効なチャンネル種別です")
-	ErrGroupDMMaxMembers         = errors.New("グループDMは自分を含めて10人までです")
+	ErrChannelWorkspaceIDInvalid = fmt.Errorf("%w: ワークスペースIDの形式が無効です", domerr.ErrValidation)
+	ErrChannelCreatorInvalid     = fmt.Errorf("%w: 作成者IDはUUID形式で指定してください", domerr.ErrValidation)
+	ErrInvalidChannelType        = fmt.Errorf("%w: 無効なチャンネル種別です", domerr.ErrValidation)
+	ErrGroupDMMaxMembers         = fmt.Errorf("%w: グループDMは自分を含めて10人までです", domerr.ErrValidation)
 	ErrChannelNameInvalid        = fmt.Errorf("%w: チャンネル名は小文字の英数字・ハイフン・アンダースコアをスラッシュで区切った4階層までのパスで指定してください", domerr.ErrValidation)
 )
 
@@ -52,7 +51,6 @@ type Channel struct {
 	WorkspaceID string
 	Name        string
 	Description *string
-	IsPrivate   bool
 	Type        ChannelType
 	ParentID    *string
 	CreatedBy   string
@@ -66,7 +64,6 @@ type ChannelParams struct {
 	WorkspaceID string
 	Name        string
 	Description *string
-	IsPrivate   bool
 	Type        ChannelType
 	ParentID    *string
 	CreatedBy   string
@@ -110,7 +107,7 @@ func NewChannel(params ChannelParams) (*Channel, error) {
 		id = uuid.NewString()
 	} else {
 		if _, err := uuid.Parse(params.ID); err != nil {
-			return nil, fmt.Errorf("チャネルIDがUUID形式ではありません: %w", err)
+			return nil, fmt.Errorf("%w: チャンネルIDがUUID形式ではありません", domerr.ErrValidation)
 		}
 		id = params.ID
 	}
@@ -120,23 +117,27 @@ func NewChannel(params ChannelParams) (*Channel, error) {
 		createdAt = time.Now().UTC()
 	}
 
-	isPrivate := params.IsPrivate
-	if channelType == ChannelTypeDM || channelType == ChannelTypeGroupDM {
-		isPrivate = true
-	}
-
 	return &Channel{
 		ID:          id,
 		WorkspaceID: workspaceID,
 		Name:        name,
 		Description: cloneString(params.Description),
-		IsPrivate:   isPrivate,
 		Type:        channelType,
 		ParentID:    cloneString(params.ParentID),
 		CreatedBy:   creatorID,
 		CreatedAt:   createdAt,
 		UpdatedAt:   createdAt,
 	}, nil
+}
+
+// IsPrivate は参加者だけが閲覧できるチャンネルかを返します。DM とグループ DM も含む
+func (c *Channel) IsPrivate() bool {
+	return c.Type != ChannelTypePublic
+}
+
+// IsDM は 1 対 1 の DM とグループ DM かを返します
+func (c *Channel) IsDM() bool {
+	return c.Type == ChannelTypeDM || c.Type == ChannelTypeGroupDM
 }
 
 // ChangeName はチャンネル名を変更します。階層を移動する変更は受け付けません

@@ -2,27 +2,19 @@ package bookmark
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/message"
-)
-
-var (
-	ErrMessageNotFound = errors.New("メッセージが見つかりません")
-	ErrUnauthorized    = errors.New("この操作を行う権限がありません")
-	ErrBookmarkExists  = errors.New("このメッセージは既にブックマークされています")
 )
 
 type BookmarkUseCase interface {
 	AddBookmark(ctx context.Context, input AddBookmarkInput) error
 	RemoveBookmark(ctx context.Context, input RemoveBookmarkInput) error
 	ListBookmarks(ctx context.Context, userID string) (*ListBookmarksOutput, error)
-	IsBookmarked(ctx context.Context, userID, messageID string) (bool, error)
 }
 
 type bookmarkInteractor struct {
@@ -46,64 +38,34 @@ func NewBookmarkInteractor(
 	}
 }
 
-func (i *bookmarkInteractor) AddBookmark(ctx context.Context, input AddBookmarkInput) error {
-	// メッセージの存在確認とアクセス権限チェック
-	message, err := i.messageRepo.FindByID(ctx, input.MessageID)
+// ensureAccess はメッセージがあり、そのチャンネルを閲覧できることを確かめます
+func (i *bookmarkInteractor) ensureAccess(ctx context.Context, messageID, userID string) error {
+	msg, err := i.messageRepo.FindByID(ctx, messageID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch message: %w", err)
 	}
-	if message == nil {
-		return ErrMessageNotFound
+	if msg == nil {
+		return domerr.ErrMessageNotFound
 	}
+	_, err = i.channelAccessSvc.EnsureChannelAccess(ctx, msg.ChannelID, userID)
+	return err
+}
 
-	// チャンネルへのアクセス権限チェック
-	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
+// AddBookmark は既にブックマークしていれば ErrBookmarkExists を返します
+func (i *bookmarkInteractor) AddBookmark(ctx context.Context, input AddBookmarkInput) error {
+	if err := i.ensureAccess(ctx, input.MessageID, input.UserID); err != nil {
 		return err
 	}
-
-	// 既にブックマーク済みかチェック
-	isBookmarked, err := i.bookmarkRepo.IsBookmarked(ctx, input.UserID, input.MessageID)
-	if err != nil {
-		return fmt.Errorf("failed to check bookmark status: %w", err)
-	}
-	if isBookmarked {
-		return ErrBookmarkExists
-	}
-
-	// ブックマークを追加
-	bookmark := &entity.MessageBookmark{
-		UserID:    input.UserID,
-		MessageID: input.MessageID,
-		CreatedAt: time.Now(),
-	}
-
-	if err := i.bookmarkRepo.AddBookmark(ctx, bookmark); err != nil {
-		return fmt.Errorf("failed to add bookmark: %w", err)
-	}
-
-	return nil
+	return i.bookmarkRepo.AddBookmark(ctx, &entity.MessageBookmark{UserID: input.UserID, MessageID: input.MessageID})
 }
 
 func (i *bookmarkInteractor) RemoveBookmark(ctx context.Context, input RemoveBookmarkInput) error {
-	// メッセージの存在確認
-	message, err := i.messageRepo.FindByID(ctx, input.MessageID)
-	if err != nil {
-		return fmt.Errorf("failed to fetch message: %w", err)
-	}
-	if message == nil {
-		return ErrMessageNotFound
-	}
-
-	// チャンネルへのアクセス権限チェック
-	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
+	if err := i.ensureAccess(ctx, input.MessageID, input.UserID); err != nil {
 		return err
 	}
-
-	// ブックマークを削除
 	if err := i.bookmarkRepo.RemoveBookmark(ctx, input.UserID, input.MessageID); err != nil {
 		return fmt.Errorf("failed to remove bookmark: %w", err)
 	}
-
 	return nil
 }
 
@@ -112,10 +74,6 @@ func (i *bookmarkInteractor) ListBookmarks(ctx context.Context, userID string) (
 	bookmarks, err := i.bookmarkRepo.FindByUserID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch bookmarks: %w", err)
-	}
-
-	if len(bookmarks) == 0 {
-		return &ListBookmarksOutput{Bookmarks: []BookmarkWithMessageOutput{}}, nil
 	}
 
 	bookmarked := make([]*entity.MessageBookmark, 0, len(bookmarks))
@@ -142,9 +100,3 @@ func (i *bookmarkInteractor) ListBookmarks(ctx context.Context, userID string) (
 
 	return &ListBookmarksOutput{Bookmarks: outputs}, nil
 }
-
-func (i *bookmarkInteractor) IsBookmarked(ctx context.Context, userID, messageID string) (bool, error) {
-	return i.bookmarkRepo.IsBookmarked(ctx, userID, messageID)
-}
-
-// ensureChannelAccess は ChannelAccessService に委譲済み

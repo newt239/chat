@@ -1,7 +1,5 @@
 export type Selection = { start: number; end: number };
 
-type Edit = { text: string; selection: Selection };
-
 // 行内の書式。付けるときは prefix と suffix で囲み、外すときは tokens に一致する記号の対を探す
 const inlineFormats = {
   bold: { prefix: "**", suffix: "**", tokens: [/(?<!\*)\*\*(?!\*)/g, /(?<!_)__(?!_)/g] },
@@ -81,7 +79,7 @@ const removePair = (
   text: string,
   selection: Selection,
   { open, close }: { open: Range; close: Range },
-): Edit => {
+) => {
   const openLength = open.end - open.start;
   const shift = (position: number) =>
     Math.min(Math.max(position, open.end), close.start) - openLength;
@@ -95,12 +93,12 @@ const wrap = (
   text: string,
   { start, end }: Selection,
   { prefix, suffix }: { prefix: string; suffix: string },
-): Edit => ({
+) => ({
   selection: { end: end + prefix.length, start: start + prefix.length },
   text: text.slice(0, start) + prefix + text.slice(start, end) + suffix + text.slice(end),
 });
 
-const toggleLink = (text: string, selection: Selection): Edit => {
+const toggleLink = (text: string, selection: Selection) => {
   const link = findEnclosingLink(text, selection);
   if (link) {
     return {
@@ -115,7 +113,7 @@ const toggleLink = (text: string, selection: Selection): Edit => {
 };
 
 // 選択範囲にかかる各行の行頭へ記号を付ける。すべての行に付いていれば外す
-const toggleLines = (text: string, selection: Selection, key: keyof typeof lineFormats): Edit => {
+const toggleLines = (text: string, selection: Selection, key: keyof typeof lineFormats) => {
   const { marker, prefix, replaces } = lineFormats[key];
   const range = lineRangeOf(text, selection);
   const lines = text.slice(range.start, range.end).split("\n");
@@ -142,13 +140,11 @@ const toggleLines = (text: string, selection: Selection, key: keyof typeof lineF
   return { selection: { end: cursor, start: cursor }, text: nextText };
 };
 
-const toggleInline =
-  (key: keyof typeof inlineFormats) =>
-  (text: string, selection: Selection): Edit => {
-    const pattern = inlineFormats[key];
-    const pair = findEnclosingPair(text, selection, pattern.tokens);
-    return pair ? removePair(text, selection, pair) : wrap(text, selection, pattern);
-  };
+const toggleInline = (key: keyof typeof inlineFormats) => (text: string, selection: Selection) => {
+  const pattern = inlineFormats[key];
+  const pair = findEnclosingPair(text, selection, pattern.tokens);
+  return pair ? removePair(text, selection, pair) : wrap(text, selection, pattern);
+};
 
 const toggleLine = (key: keyof typeof lineFormats) => (text: string, selection: Selection) =>
   toggleLines(text, selection, key);
@@ -202,7 +198,7 @@ export const detectActiveFormats = (text: string, selection: Selection) => {
 };
 
 // 箇条書き・番号付き・タスク・引用の行で改行したとき、次の行に記号を引き継ぐ。項目が空なら記号を消してリストを抜ける
-export const continueList = (text: string, { start, end }: Selection): Edit | null => {
+export const continueList = (text: string, { start, end }: Selection) => {
   if (start !== end) {
     return null;
   }

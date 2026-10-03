@@ -4,17 +4,17 @@ import type { PendingAttachment } from "../api/types";
 
 type AttachmentListProps = {
   attachments: PendingAttachment[];
-  onRemove: (index: number) => void;
+  onRemove: (id: string) => void;
 };
 
 export const AttachmentList = ({ attachments, onRemove }: AttachmentListProps) => (
   <div className="flex flex-wrap gap-1.5 px-2.5 pt-2">
-    {attachments.map((attachment, index) => (
+    {attachments.map((attachment) => (
       <AttachmentListItem
-        key={`${attachment.file.name}-${attachment.file.lastModified}`}
+        key={attachment.id}
         attachment={attachment}
         onRemove={() => {
-          onRemove(index);
+          onRemove(attachment.id);
         }}
       />
     ))}

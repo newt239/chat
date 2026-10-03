@@ -1,12 +1,14 @@
 import { visit } from "unist-util-visit";
 
 import type { Paragraph, Root } from "mdast";
+import type { VFile } from "vfile";
 
 const isBlank = (paragraph: Paragraph) =>
   paragraph.children.every((child) => child.type === "text" && child.value.trim() === "");
 
-// 引用カードで中身を見せるリンクは本文から外す。外して空になった段落も消す
-export const remarkHideLinks = (urls: readonly string[]) => (tree: Root) => {
+// 引用カードで中身を見せるリンク（file.data.hiddenUrls）は本文から外す。外して空になった段落も消す
+export const remarkHideLinks = () => (tree: Root, file: VFile) => {
+  const urls = file.data.hiddenUrls ?? [];
   if (urls.length === 0) {
     return;
   }

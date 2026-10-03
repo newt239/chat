@@ -1,89 +1,11 @@
 import { atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
 
-import { storage } from "./storage";
-
-import type { User as UserMessage } from "#/gen/chat/v1/user_pb";
-
-// $typeName などを含むメッセージ型をそのまま保存しないよう、必要なフィールドだけにする
-type User = Pick<UserMessage, "id" | "email" | "displayName" | "avatarUrl">;
-
-type AuthState = {
-  user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
-};
-
-const storageKey = "auth-storage";
-
-const createEmptyAuthState = (): AuthState => ({
-  accessToken: null,
-  refreshToken: null,
-  user: null,
-});
-
-const sanitizeAuthState = (state: Partial<AuthState>): AuthState => ({
-  accessToken: state.accessToken ?? null,
-  refreshToken: state.refreshToken ?? null,
-  user: state.user
-    ? {
-        avatarUrl: state.user.avatarUrl,
-        displayName: state.user.displayName,
-        email: state.user.email,
-        id: state.user.id,
-      }
-    : null,
-});
-
-const authStorageAtom = atomWithStorage<AuthState>(storageKey, createEmptyAuthState(), undefined, {
-  getOnInit: true,
-});
-
-export const authAtom = atom(
-  (get) => sanitizeAuthState(get(authStorageAtom)),
-  (_get, set, update: AuthState) => {
-    set(authStorageAtom, sanitizeAuthState(update));
-  },
-);
-
-export const userAtom = atom<User | null>((get) => get(authAtom).user);
-export const accessTokenAtom = atom<string | null>((get) => get(authAtom).accessToken);
-export const isAuthenticatedAtom = atom<boolean>((get) => {
-  const state = get(authAtom);
-  return Boolean(state.user && state.accessToken && state.refreshToken);
-});
-
-type AuthPayload = {
-  user: User | undefined;
+type Session = {
   accessToken: string;
-  refreshToken: string;
+  userId: string;
 };
 
-export const setAuthAtom = atom(null, (_get, set, payload: AuthPayload) => {
-  set(authAtom, sanitizeAuthState(payload));
-});
+// アクセストークンはメモリにだけ置く。リロード後は Cookie のリフレッシュトークンで取り直す
+export const sessionAtom = atom<Session | null>(null);
 
-export const clearAuthAtom = atom(null, (_get, set) => {
-  set(authAtom, createEmptyAuthState());
-});
-
-export const initializeAuthAtom = atom(null, (get, set) => {
-  const current = get(authAtom);
-
-  const legacyAccessToken = storage.getItem("accessToken");
-  const legacyRefreshToken = storage.getItem("refreshToken");
-
-  if (!current.accessToken && !current.refreshToken && legacyAccessToken && legacyRefreshToken) {
-    set(
-      authAtom,
-      sanitizeAuthState({
-        accessToken: legacyAccessToken,
-        refreshToken: legacyRefreshToken,
-        user: current.user,
-      }),
-    );
-  }
-
-  storage.removeItem("accessToken");
-  storage.removeItem("refreshToken");
-});
+export const myUserIdAtom = atom((get) => get(sessionAtom)?.userId ?? null);

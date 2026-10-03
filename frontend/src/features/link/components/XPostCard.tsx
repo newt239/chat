@@ -23,7 +23,7 @@ export const XPostCard = ({ url, ogp, post }: XPostCardProps) => {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={t("link.xPost.open")}
-      className={`block w-[min(420px,100%)] overflow-hidden rounded-[10px] border border-border bg-surface font-sans no-underline data-hovered:bg-hover ${focusRing}`}
+      className={`block w-105 max-w-full overflow-hidden rounded-lg border border-border bg-surface font-sans no-underline data-hovered:bg-hover ${focusRing}`}
     >
       <div className="flex flex-col gap-2 px-3 pt-2.5 pb-3">
         <div className="flex items-center gap-2">
@@ -31,15 +31,13 @@ export const XPostCard = ({ url, ogp, post }: XPostCardProps) => {
             <img src={ogp.imageUrl} alt="" className="size-9 shrink-0 rounded-full object-cover" />
           )}
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-[13.5px] font-semibold text-text">
-              {post.authorName}
-            </span>
-            <span className="truncate text-[12px] text-muted">@{post.authorHandle}</span>
+            <span className="truncate text-body-sm font-semibold text-text">{post.authorName}</span>
+            <span className="truncate text-caption text-muted">@{post.authorHandle}</span>
           </div>
           <IconBrandX aria-hidden className="size-4 shrink-0 text-text" />
         </div>
         {ogp.description && (
-          <p className="m-0 line-clamp-6 text-[13.5px] leading-[1.5] whitespace-pre-wrap text-text">
+          <p className="m-0 line-clamp-6 text-body-sm leading-normal whitespace-pre-wrap text-text">
             {ogp.description}
           </p>
         )}

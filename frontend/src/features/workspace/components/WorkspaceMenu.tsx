@@ -14,8 +14,9 @@ import { MenuSection } from "#/components/ui/MenuSection/MenuSection";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { focusRing } from "#/components/ui/styles/styles";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { isAdminRole } from "#/lib/isAdminRole";
 
-import { useIsWorkspaceAdmin } from "../hooks/useIsWorkspaceAdmin";
 import { useWorkspaces } from "../hooks/useWorkspace";
 import { WorkspaceLogo } from "./WorkspaceLogo";
 
@@ -27,7 +28,7 @@ type WorkspaceMenuProps = {
 export const WorkspaceMenu = ({ workspaceId }: WorkspaceMenuProps) => {
   const { t } = useTranslation();
   const { data: workspaces = [] } = useWorkspaces();
-  const isAdmin = useIsWorkspaceAdmin(workspaceId);
+  const isAdmin = isAdminRole(useMyWorkspaceRole(workspaceId).data);
   const current = workspaces.find((workspace) => workspace.id === workspaceId);
   const name = current?.name ?? workspaceId;
 
@@ -39,7 +40,7 @@ export const WorkspaceMenu = ({ workspaceId }: WorkspaceMenuProps) => {
           className={`flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-left text-(--nav-strong) data-hovered:bg-(--nav-hover) ${focusRing}`}
         >
           <WorkspaceLogo name={name} iconUrl={current?.iconUrl} />
-          <span className="min-w-0 truncate text-[15px] font-bold">{name}</span>
+          <span className="min-w-0 truncate text-title font-bold">{name}</span>
           <IconChevronDown aria-hidden className="size-3.5 shrink-0 text-(--nav-muted)" />
         </Button>
       }

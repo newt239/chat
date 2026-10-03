@@ -27,6 +27,32 @@ type AttachmentCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetMessageID sets the "message_id" field.
+func (_c *AttachmentCreate) SetMessageID(v uuid.UUID) *AttachmentCreate {
+	_c.mutation.SetMessageID(v)
+	return _c
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_c *AttachmentCreate) SetNillableMessageID(v *uuid.UUID) *AttachmentCreate {
+	if v != nil {
+		_c.SetMessageID(*v)
+	}
+	return _c
+}
+
+// SetUploaderID sets the "uploader_id" field.
+func (_c *AttachmentCreate) SetUploaderID(v uuid.UUID) *AttachmentCreate {
+	_c.mutation.SetUploaderID(v)
+	return _c
+}
+
+// SetChannelID sets the "channel_id" field.
+func (_c *AttachmentCreate) SetChannelID(v uuid.UUID) *AttachmentCreate {
+	_c.mutation.SetChannelID(v)
+	return _c
+}
+
 // SetFileName sets the "file_name" field.
 func (_c *AttachmentCreate) SetFileName(v string) *AttachmentCreate {
 	_c.mutation.SetFileName(v)
@@ -205,40 +231,14 @@ func (_c *AttachmentCreate) SetNillableID(v *uuid.UUID) *AttachmentCreate {
 	return _c
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_c *AttachmentCreate) SetMessageID(id uuid.UUID) *AttachmentCreate {
-	_c.mutation.SetMessageID(id)
-	return _c
-}
-
-// SetNillableMessageID sets the "message" edge to the Message entity by ID if the given value is not nil.
-func (_c *AttachmentCreate) SetNillableMessageID(id *uuid.UUID) *AttachmentCreate {
-	if id != nil {
-		_c = _c.SetMessageID(*id)
-	}
-	return _c
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_c *AttachmentCreate) SetMessage(v *Message) *AttachmentCreate {
 	return _c.SetMessageID(v.ID)
 }
 
-// SetUploaderID sets the "uploader" edge to the User entity by ID.
-func (_c *AttachmentCreate) SetUploaderID(id uuid.UUID) *AttachmentCreate {
-	_c.mutation.SetUploaderID(id)
-	return _c
-}
-
 // SetUploader sets the "uploader" edge to the User entity.
 func (_c *AttachmentCreate) SetUploader(v *User) *AttachmentCreate {
 	return _c.SetUploaderID(v.ID)
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_c *AttachmentCreate) SetChannelID(id uuid.UUID) *AttachmentCreate {
-	_c.mutation.SetChannelID(id)
-	return _c
 }
 
 // SetChannel sets the "channel" edge to the Channel entity.
@@ -297,6 +297,12 @@ func (_c *AttachmentCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *AttachmentCreate) check() error {
+	if _, ok := _c.mutation.UploaderID(); !ok {
+		return &ValidationError{Name: "uploader_id", err: errors.New(`ent: missing required field "Attachment.uploader_id"`)}
+	}
+	if _, ok := _c.mutation.ChannelID(); !ok {
+		return &ValidationError{Name: "channel_id", err: errors.New(`ent: missing required field "Attachment.channel_id"`)}
+	}
 	if _, ok := _c.mutation.FileName(); !ok {
 		return &ValidationError{Name: "file_name", err: errors.New(`ent: missing required field "Attachment.file_name"`)}
 	}
@@ -447,7 +453,7 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.attachment_message = &nodes[0]
+		_node.MessageID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UploaderIDs(); len(nodes) > 0 {
@@ -464,7 +470,7 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.attachment_uploader = &nodes[0]
+		_node.UploaderID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ChannelIDs(); len(nodes) > 0 {
@@ -481,7 +487,7 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.attachment_channel = &nodes[0]
+		_node.ChannelID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -491,7 +497,7 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Attachment.Create().
-//		SetFileName(v).
+//		SetMessageID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -500,7 +506,7 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.AttachmentUpsert) {
-//			SetFileName(v+v).
+//			SetMessageID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *AttachmentCreate) OnConflict(opts ...sql.ConflictOption) *AttachmentUpsertOne {
@@ -535,6 +541,48 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetMessageID sets the "message_id" field.
+func (u *AttachmentUpsert) SetMessageID(v uuid.UUID) *AttachmentUpsert {
+	u.Set(attachment.FieldMessageID, v)
+	return u
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *AttachmentUpsert) UpdateMessageID() *AttachmentUpsert {
+	u.SetExcluded(attachment.FieldMessageID)
+	return u
+}
+
+// ClearMessageID clears the value of the "message_id" field.
+func (u *AttachmentUpsert) ClearMessageID() *AttachmentUpsert {
+	u.SetNull(attachment.FieldMessageID)
+	return u
+}
+
+// SetUploaderID sets the "uploader_id" field.
+func (u *AttachmentUpsert) SetUploaderID(v uuid.UUID) *AttachmentUpsert {
+	u.Set(attachment.FieldUploaderID, v)
+	return u
+}
+
+// UpdateUploaderID sets the "uploader_id" field to the value that was provided on create.
+func (u *AttachmentUpsert) UpdateUploaderID() *AttachmentUpsert {
+	u.SetExcluded(attachment.FieldUploaderID)
+	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *AttachmentUpsert) SetChannelID(v uuid.UUID) *AttachmentUpsert {
+	u.Set(attachment.FieldChannelID, v)
+	return u
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *AttachmentUpsert) UpdateChannelID() *AttachmentUpsert {
+	u.SetExcluded(attachment.FieldChannelID)
+	return u
+}
 
 // SetFileName sets the "file_name" field.
 func (u *AttachmentUpsert) SetFileName(v string) *AttachmentUpsert {
@@ -825,6 +873,55 @@ func (u *AttachmentUpsertOne) Update(set func(*AttachmentUpsert)) *AttachmentUps
 		set(&AttachmentUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *AttachmentUpsertOne) SetMessageID(v uuid.UUID) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *AttachmentUpsertOne) UpdateMessageID() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// ClearMessageID clears the value of the "message_id" field.
+func (u *AttachmentUpsertOne) ClearMessageID() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearMessageID()
+	})
+}
+
+// SetUploaderID sets the "uploader_id" field.
+func (u *AttachmentUpsertOne) SetUploaderID(v uuid.UUID) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetUploaderID(v)
+	})
+}
+
+// UpdateUploaderID sets the "uploader_id" field to the value that was provided on create.
+func (u *AttachmentUpsertOne) UpdateUploaderID() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateUploaderID()
+	})
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *AttachmentUpsertOne) SetChannelID(v uuid.UUID) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *AttachmentUpsertOne) UpdateChannelID() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateChannelID()
+	})
 }
 
 // SetFileName sets the "file_name" field.
@@ -1243,7 +1340,7 @@ func (_c *AttachmentCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.AttachmentUpsert) {
-//			SetFileName(v+v).
+//			SetMessageID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *AttachmentCreateBulk) OnConflict(opts ...sql.ConflictOption) *AttachmentUpsertBulk {
@@ -1323,6 +1420,55 @@ func (u *AttachmentUpsertBulk) Update(set func(*AttachmentUpsert)) *AttachmentUp
 		set(&AttachmentUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *AttachmentUpsertBulk) SetMessageID(v uuid.UUID) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *AttachmentUpsertBulk) UpdateMessageID() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// ClearMessageID clears the value of the "message_id" field.
+func (u *AttachmentUpsertBulk) ClearMessageID() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearMessageID()
+	})
+}
+
+// SetUploaderID sets the "uploader_id" field.
+func (u *AttachmentUpsertBulk) SetUploaderID(v uuid.UUID) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetUploaderID(v)
+	})
+}
+
+// UpdateUploaderID sets the "uploader_id" field to the value that was provided on create.
+func (u *AttachmentUpsertBulk) UpdateUploaderID() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateUploaderID()
+	})
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *AttachmentUpsertBulk) SetChannelID(v uuid.UUID) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *AttachmentUpsertBulk) UpdateChannelID() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateChannelID()
+	})
 }
 
 // SetFileName sets the "file_name" field.

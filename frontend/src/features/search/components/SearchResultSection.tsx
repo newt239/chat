@@ -7,7 +7,7 @@ type SearchResultSectionProps = {
 
 export const SearchResultSection = ({ title, children }: SearchResultSectionProps) => (
   <section className="flex flex-col">
-    <h3 className="m-0 px-[18px] pt-3 pb-1 text-[11.5px] font-semibold text-muted">{title}</h3>
+    <h3 className="m-0 px-4.5 pt-3 pb-1 text-caption font-semibold text-muted">{title}</h3>
     {children}
   </section>
 );

@@ -56,9 +56,59 @@ func IDLTE(id uuid.UUID) predicate.UserGroupMember {
 	return predicate.UserGroupMember(sql.FieldLTE(FieldID, id))
 }
 
+// GroupID applies equality check predicate on the "group_id" field. It's identical to GroupIDEQ.
+func GroupID(v uuid.UUID) predicate.UserGroupMember {
+	return predicate.UserGroupMember(sql.FieldEQ(FieldGroupID, v))
+}
+
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.UserGroupMember {
+	return predicate.UserGroupMember(sql.FieldEQ(FieldUserID, v))
+}
+
 // JoinedAt applies equality check predicate on the "joined_at" field. It's identical to JoinedAtEQ.
 func JoinedAt(v time.Time) predicate.UserGroupMember {
 	return predicate.UserGroupMember(sql.FieldEQ(FieldJoinedAt, v))
+}
+
+// GroupIDEQ applies the EQ predicate on the "group_id" field.
+func GroupIDEQ(v uuid.UUID) predicate.UserGroupMember {
+	return predicate.UserGroupMember(sql.FieldEQ(FieldGroupID, v))
+}
+
+// GroupIDNEQ applies the NEQ predicate on the "group_id" field.
+func GroupIDNEQ(v uuid.UUID) predicate.UserGroupMember {
+	return predicate.UserGroupMember(sql.FieldNEQ(FieldGroupID, v))
+}
+
+// GroupIDIn applies the In predicate on the "group_id" field.
+func GroupIDIn(vs ...uuid.UUID) predicate.UserGroupMember {
+	return predicate.UserGroupMember(sql.FieldIn(FieldGroupID, vs...))
+}
+
+// GroupIDNotIn applies the NotIn predicate on the "group_id" field.
+func GroupIDNotIn(vs ...uuid.UUID) predicate.UserGroupMember {
+	return predicate.UserGroupMember(sql.FieldNotIn(FieldGroupID, vs...))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.UserGroupMember {
+	return predicate.UserGroupMember(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.UserGroupMember {
+	return predicate.UserGroupMember(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.UserGroupMember {
+	return predicate.UserGroupMember(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.UserGroupMember {
+	return predicate.UserGroupMember(sql.FieldNotIn(FieldUserID, vs...))
 }
 
 // JoinedAtEQ applies the EQ predicate on the "joined_at" field.

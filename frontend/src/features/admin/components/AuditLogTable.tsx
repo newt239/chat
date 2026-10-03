@@ -23,7 +23,7 @@ export const AuditLogTable = ({ logs }: AuditLogTableProps) => {
 
   if (logs.length === 0) {
     return (
-      <p className="m-0 rounded-[10px] border border-border px-3 py-6 text-center text-caption text-muted">
+      <p className="m-0 rounded-lg border border-border px-3 py-6 text-center text-caption text-muted">
         {t("admin.audit.empty")}
       </p>
     );
@@ -56,9 +56,8 @@ export const AuditLogTable = ({ logs }: AuditLogTableProps) => {
                 <td className={tableClassNames.cell}>
                   <span
                     className={cn(
-                      "rounded-sm border border-border bg-sunken px-1.5 py-px text-[11.5px] font-semibold text-muted",
-                      sensitiveAuditActions.has(log.action) &&
-                        "border-[color-mix(in_srgb,var(--c-danger)_40%,transparent)] text-danger",
+                      "rounded-sm border border-border bg-sunken px-1.5 py-px text-caption font-semibold text-muted",
+                      sensitiveAuditActions.has(log.action) && "border-danger/40 text-danger",
                     )}
                   >
                     {t(`admin.audit.actions.${auditActionKeys[log.action]}`)}

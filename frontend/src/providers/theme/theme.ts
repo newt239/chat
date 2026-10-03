@@ -1,6 +1,14 @@
-import { buildTokens, fontFamily, radius, shadow, typography } from "@chat/design-tokens";
+import {
+  fontFamily,
+  letterSpacing,
+  lineHeight,
+  radius,
+  shadow,
+  typography,
+} from "@chat/design-tokens/scale";
+import { buildTokens } from "@chat/design-tokens/theme";
 
-import type { ColorMode, ThemeInput } from "@chat/design-tokens";
+import type { ColorMode, ThemeInput } from "@chat/design-tokens/theme";
 
 const px = (value: number) => `${value}px`;
 const fontStack = (families: readonly string[]) =>
@@ -21,6 +29,8 @@ const staticEntries = [
     [`--t-${name}-line`, px(t.lineHeight)] as const,
     [`--t-${name}-weight`, String(t.fontWeight)] as const,
   ]),
+  ...Object.entries(lineHeight).map(([name, value]) => [`--lh-${name}`, String(value)] as const),
+  ...Object.entries(letterSpacing).map(([name, value]) => [`--ls-${name}`, `${value}em`] as const),
   ["--ff-sans", fontStack(fontFamily.sans)] as const,
   ["--ff-mono", fontStack(fontFamily.mono)] as const,
 ];

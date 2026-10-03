@@ -6,60 +6,48 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
 
 // MessageDeleter はメッセージ削除を担当するユースケースです
 type MessageDeleter struct {
-	messageRepo       domainrepository.MessageRepository
-	userRepo          domainrepository.UserRepository
-	channelRepo       domainrepository.ChannelRepository
-	channelMemberRepo domainrepository.ChannelMemberRepository
-	threadRepo        domainrepository.ThreadRepository
-	notificationSvc   Notifier
-	channelAccessSvc  service.ChannelAccessService
-	permissionSvc     service.PermissionService
-	logger            service.Logger
-	searchIndexer     SearchIndexer
+	messageRepo      domainrepository.MessageRepository
+	userRepo         domainrepository.UserRepository
+	notificationSvc  Notifier
+	channelAccessSvc service.ChannelAccessService
+	permissionSvc    service.PermissionService
+	searchIndexer    SearchIndexer
 }
 
-// NewMessageDeleter は新しいMessageDeleterを作成します
 func NewMessageDeleter(
 	messageRepo domainrepository.MessageRepository,
 	userRepo domainrepository.UserRepository,
-	channelRepo domainrepository.ChannelRepository,
-	channelMemberRepo domainrepository.ChannelMemberRepository,
-	threadRepo domainrepository.ThreadRepository,
 	notificationSvc Notifier,
 	channelAccessSvc service.ChannelAccessService,
 	permissionSvc service.PermissionService,
-	logger service.Logger,
 	searchIndexer SearchIndexer,
 ) *MessageDeleter {
 	return &MessageDeleter{
-		messageRepo:       messageRepo,
-		userRepo:          userRepo,
-		channelRepo:       channelRepo,
-		channelMemberRepo: channelMemberRepo,
-		threadRepo:        threadRepo,
-		notificationSvc:   notificationSvc,
-		channelAccessSvc:  channelAccessSvc,
-		permissionSvc:     permissionSvc,
-		logger:            logger,
-		searchIndexer:     searchIndexer,
+		messageRepo:      messageRepo,
+		userRepo:         userRepo,
+		notificationSvc:  notificationSvc,
+		channelAccessSvc: channelAccessSvc,
+		permissionSvc:    permissionSvc,
+		searchIndexer:    searchIndexer,
 	}
 }
 
-// DeleteMessage はメッセージを削除します
+// DeleteMessage はメッセージを削除します。他人のメッセージは権限設定で許可されたロールだけが削除できます
 func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageInput) error {
 	// メッセージ存在確認
 	message, err := d.messageRepo.FindByID(ctx, input.MessageID)
 	if err != nil {
-		return fmt.Errorf("メッセージの取得に失敗しました: %w", err)
+		return fmt.Errorf("failed to fetch message: %w", err)
 	}
 	if message == nil {
-		return ErrMessageNotFound
+		return domerr.ErrMessageNotFound
 	}
 
 	// チャンネルアクセス確認
@@ -91,7 +79,7 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 	if message.ParentID == nil {
 		replies, err := d.messageRepo.FindThreadReplies(ctx, message.ID, 0, nil, nil, true)
 		if err != nil {
-			return fmt.Errorf("返信の取得に失敗しました: %w", err)
+			return fmt.Errorf("failed to fetch replies: %w", err)
 		}
 		for _, reply := range replies {
 			deleteIDs = append(deleteIDs, reply.ID)
@@ -100,7 +88,7 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 
 	// ソフトデリート実行
 	if err := d.messageRepo.SoftDeleteByIDs(ctx, deleteIDs, input.ExecutorID); err != nil {
-		return fmt.Errorf("メッセージの削除に失敗しました: %w", err)
+		return fmt.Errorf("failed to delete messages: %w", err)
 	}
 
 	// 返信が消えると親メッセージの「スレッドあり」も変わる
@@ -110,14 +98,10 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 	}
 	d.searchIndexer.Sync(ctx, indexIDs...)
 
-	// WebSocket通知を送信
-	if d.notificationSvc != nil {
-		d.notificationSvc.NotifyDeletedMessage(channel.WorkspaceID, channel.ID, MessageDeletion{
-			MessageID:  message.ID,
-			DeletedIDs: deleteIDs,
-			DeletedAt:  time.Now(),
-		})
-	}
-
+	d.notificationSvc.NotifyDeletedMessage(channel.WorkspaceID, channel.ID, MessageDeletion{
+		MessageID:  message.ID,
+		DeletedIDs: deleteIDs,
+		DeletedAt:  time.Now(),
+	})
 	return nil
 }

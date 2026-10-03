@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
@@ -45,8 +44,8 @@ type stubMuteRepo struct {
 	mutedBy string
 }
 
-func (r stubMuteRepo) FindMutedChannelIDs(_ context.Context, userID string, channelIDs []string) (map[string]bool, error) {
-	return map[string]bool{channelIDs[0]: userID == r.mutedBy}, nil
+func (r stubMuteRepo) FindMutedUserIDs(context.Context, string, []string) (map[string]bool, error) {
+	return map[string]bool{r.mutedBy: true}, nil
 }
 
 type stubThreadRepo struct {
@@ -89,11 +88,14 @@ type stubAccess struct {
 	denied string
 }
 
-func (s stubAccess) EnsureChannelAccess(_ context.Context, _ string, userID string) (*entity.Channel, error) {
-	if userID == s.denied {
-		return nil, domerr.ErrUnauthorized
+func (s stubAccess) FilterUsersWithAccess(_ context.Context, _ *entity.Channel, userIDs []string) (map[string]bool, error) {
+	result := map[string]bool{}
+	for _, id := range userIDs {
+		if id != s.denied {
+			result[id] = true
+		}
 	}
-	return &entity.Channel{}, nil
+	return result, nil
 }
 
 type stubSender struct {

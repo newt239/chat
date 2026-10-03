@@ -9,7 +9,7 @@ import {
 import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { isSettingsSection, settingsSections } from "../schemas";
+import { findSettingsSection, settingsSections } from "../schemas";
 import { AccountSettings } from "./AccountSettings";
 import { DisplaySettings } from "./DisplaySettings";
 import { NotificationSettings } from "./NotificationSettings";
@@ -41,7 +41,7 @@ const settingsRoute = getRouteApi("/app/$workspaceId/settings/$section");
 export const SettingsPage = () => {
   const { t } = useTranslation();
   const { section, workspaceId } = settingsRoute.useParams();
-  const current = isSettingsSection(section) ? section : "account";
+  const current = findSettingsSection(section) ?? "account";
   const Body = sectionBodies[current];
 
   return (

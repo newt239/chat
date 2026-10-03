@@ -177,6 +177,42 @@ func (f InvitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InvitationMutation", m)
 }
 
+// The LinkPreviewFunc type is an adapter to allow the use of ordinary
+// function as LinkPreview mutator.
+type LinkPreviewFunc func(context.Context, *ent.LinkPreviewMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LinkPreviewFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LinkPreviewMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LinkPreviewMutation", m)
+}
+
+// The LinkPreviewXPostFunc type is an adapter to allow the use of ordinary
+// function as LinkPreviewXPost mutator.
+type LinkPreviewXPostFunc func(context.Context, *ent.LinkPreviewXPostMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LinkPreviewXPostFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LinkPreviewXPostMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LinkPreviewXPostMutation", m)
+}
+
+// The LinkPreviewYoutubeFunc type is an adapter to allow the use of ordinary
+// function as LinkPreviewYoutube mutator.
+type LinkPreviewYoutubeFunc func(context.Context, *ent.LinkPreviewYoutubeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LinkPreviewYoutubeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LinkPreviewYoutubeMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LinkPreviewYoutubeMutation", m)
+}
+
 // The MessageFunc type is an adapter to allow the use of ordinary
 // function as Message mutator.
 type MessageFunc func(context.Context, *ent.MessageMutation) (ent.Value, error)
@@ -405,6 +441,18 @@ func (f UserGroupMemberFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserGroupMemberMutation", m)
 }
 
+// The UserLinkFunc type is an adapter to allow the use of ordinary
+// function as UserLink mutator.
+type UserLinkFunc func(context.Context, *ent.UserLinkMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserLinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserLinkMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserLinkMutation", m)
+}
+
 // The UserNoteFunc type is an adapter to allow the use of ordinary
 // function as UserNote mutator.
 type UserNoteFunc func(context.Context, *ent.UserNoteMutation) (ent.Value, error)
@@ -415,6 +463,18 @@ func (f UserNoteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserNoteMutation", m)
+}
+
+// The UserPreferenceFunc type is an adapter to allow the use of ordinary
+// function as UserPreference mutator.
+type UserPreferenceFunc func(context.Context, *ent.UserPreferenceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserPreferenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserPreferenceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserPreferenceMutation", m)
 }
 
 // The UserThreadFollowFunc type is an adapter to allow the use of ordinary

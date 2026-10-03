@@ -20,6 +20,10 @@ type Invitation struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// WorkspaceID holds the value of the "workspace_id" field.
+	WorkspaceID string `json:"workspace_id,omitempty"`
+	// InvitedByID holds the value of the "invited_by_id" field.
+	InvitedByID uuid.UUID `json:"invited_by_id,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
 	// Role holds the value of the "role" field.
@@ -34,10 +38,8 @@ type Invitation struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InvitationQuery when eager-loading is set.
-	Edges                 InvitationEdges `json:"edges"`
-	invitation_workspace  *string
-	invitation_invited_by *uuid.UUID
-	selectValues          sql.SelectValues
+	Edges        InvitationEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // InvitationEdges holds the relations/edges for other nodes in the graph.
@@ -78,16 +80,12 @@ func (*Invitation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case invitation.FieldEmail, invitation.FieldRole, invitation.FieldTokenHash:
+		case invitation.FieldWorkspaceID, invitation.FieldEmail, invitation.FieldRole, invitation.FieldTokenHash:
 			values[i] = new(sql.NullString)
 		case invitation.FieldExpiresAt, invitation.FieldAcceptedAt, invitation.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case invitation.FieldID:
+		case invitation.FieldID, invitation.FieldInvitedByID:
 			values[i] = new(uuid.UUID)
-		case invitation.ForeignKeys[0]: // invitation_workspace
-			values[i] = new(sql.NullString)
-		case invitation.ForeignKeys[1]: // invitation_invited_by
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -108,6 +106,18 @@ func (_m *Invitation) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
+			}
+		case invitation.FieldWorkspaceID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
+			} else if value.Valid {
+				_m.WorkspaceID = value.String
+			}
+		case invitation.FieldInvitedByID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field invited_by_id", values[i])
+			} else if value != nil {
+				_m.InvitedByID = *value
 			}
 		case invitation.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -145,20 +155,6 @@ func (_m *Invitation) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case invitation.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field invitation_workspace", values[i])
-			} else if value.Valid {
-				_m.invitation_workspace = new(string)
-				*_m.invitation_workspace = value.String
-			}
-		case invitation.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field invitation_invited_by", values[i])
-			} else if value.Valid {
-				_m.invitation_invited_by = new(uuid.UUID)
-				*_m.invitation_invited_by = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -206,6 +202,12 @@ func (_m *Invitation) String() string {
 	var builder strings.Builder
 	builder.WriteString("Invitation(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("workspace_id=")
+	builder.WriteString(_m.WorkspaceID)
+	builder.WriteString(", ")
+	builder.WriteString("invited_by_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.InvitedByID))
+	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(_m.Email)
 	builder.WriteString(", ")

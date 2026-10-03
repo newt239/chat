@@ -24,12 +24,12 @@ export const ToastRegion = () => {
     <AriaToastRegion
       queue={toastQueue}
       aria-label={t("ui.toast.region")}
-      className="fixed bottom-5 left-1/2 max-md:bottom-[calc(88px+env(safe-area-inset-bottom))] z-[400] flex -translate-x-1/2 flex-col items-center gap-1.5 outline-none"
+      className="fixed bottom-5 left-1/2 max-md:bottom-[calc(88px+env(safe-area-inset-bottom))] z-toast flex -translate-x-1/2 flex-col items-center gap-1.5 outline-none"
     >
       {({ toast }) => (
         <Toast
           toast={toast}
-          className={`flex w-max max-w-[min(480px,calc(100vw-32px))] animate-pop-in items-center gap-2 rounded-md bg-text py-[7px] pr-1.5 pl-3.5 font-sans text-[13px] text-surface shadow-lg motion-reduce:animate-none ${focusRing}`}
+          className={`flex w-max max-w-[min(480px,calc(100vw-32px))] animate-pop-in items-center gap-2 rounded-md bg-text py-1.75 pr-1.5 pl-3.5 font-sans text-body-sm text-surface shadow-lg motion-reduce:animate-none ${focusRing}`}
         >
           {toneIcons[toast.content.tone]}
           <ToastContent className="flex min-w-0 flex-1 flex-col">

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
@@ -64,7 +65,7 @@ func TestSaveDraft(t *testing.T) {
 
 	other := "other-channel"
 	_, err = uc.Save(ctx, SaveInput{Target: domainrepository.DraftTarget{UserID: "u1", ChannelID: "ch1", ParentID: &other}, Body: "x"})
-	if !errors.Is(err, ErrParentMessageNotFound) {
+	if !errors.Is(err, domerr.ErrParentMessageNotFound) {
 		t.Fatalf("別チャンネルのメッセージへの返信を拒否していません: %v", err)
 	}
 }

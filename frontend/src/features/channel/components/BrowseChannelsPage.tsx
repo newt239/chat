@@ -61,7 +61,7 @@ export const BrowseChannelsPage = () => {
   return (
     <>
       <PageHeader icon={<IconHash />} title={t("channel.browse.title")} />
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-[18px] py-3 max-md:px-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4.5 py-3 max-md:px-3">
         <TextField
           label={t("channel.browse.search")}
           type="search"
@@ -93,7 +93,7 @@ export const BrowseChannelsPage = () => {
             onChange={(next) => {
               changeFilter({ sort: next });
             }}
-            className="flex-row items-center gap-2 [&_button]:h-7 [&_button]:w-40 [&_button]:text-[12.5px] [&_label]:text-xs [&_label]:font-normal [&_label]:text-muted"
+            className="flex-row items-center gap-2 [&_button]:h-7 [&_button]:w-40 [&_button]:text-label [&_button]:font-normal [&_label]:text-xs [&_label]:font-normal [&_label]:text-muted"
           />
         </div>
         {data !== undefined && (
@@ -114,7 +114,7 @@ export const BrowseChannelsPage = () => {
                   <Link
                     to="/app/$workspaceId/$channelId"
                     params={{ channelId: channel.id, workspaceId }}
-                    className="flex min-w-0 items-center gap-1 text-[14px] font-semibold text-text no-underline data-hovered:underline [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted"
+                    className="flex min-w-0 items-center gap-1 text-body font-semibold text-text no-underline data-hovered:underline [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted"
                   >
                     <ChannelName name={channel.name} isPrivate={channel.isPrivate} />
                   </Link>

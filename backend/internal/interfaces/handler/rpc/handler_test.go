@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -17,72 +18,106 @@ import (
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
-const validToken = "valid-token"
+const (
+	validToken    = "valid-token"
+	allowedOrigin = "https://chat.localhost"
+)
 
 type fakeJWTService struct{}
 
-func (fakeJWTService) GenerateToken(string, time.Duration) (string, error) { return validToken, nil }
+func (fakeJWTService) GenerateToken(authuc.TokenClaims, time.Duration) (string, error) {
+	return validToken, nil
+}
 
 func (fakeJWTService) VerifyToken(token string) (*authuc.TokenClaims, error) {
 	if token != validToken {
 		return nil, errors.New("invalid")
 	}
-	return &authuc.TokenClaims{UserID: "user-1"}, nil
+	return &authuc.TokenClaims{UserID: "user-1", SessionID: "session-1"}, nil
 }
 
-type stubAuthServer struct {
-	chatv1connect.UnimplementedAuthServiceHandler
-	logoutErr error
+// stubAuthUseCase は渡された入力を記録し、固定のトークンを返します
+type stubAuthUseCase struct {
+	authuc.AuthUseCase
+	refreshed []string
+	loggedOut []authuc.LogoutInput
 }
 
-func (s stubAuthServer) Login(context.Context, *chatv1.LoginRequest) (*chatv1.LoginResponse, error) {
-	return &chatv1.LoginResponse{AccessToken: validToken}, nil
+func (u *stubAuthUseCase) Login(context.Context, authuc.LoginInput) (*authuc.AuthOutput, error) {
+	return &authuc.AuthOutput{AccessToken: validToken, RefreshToken: "rt", ExpiresAt: time.Now().Add(time.Hour)}, nil
 }
 
-func (s stubAuthServer) Logout(ctx context.Context, _ *chatv1.LogoutRequest) (*chatv1.LogoutResponse, error) {
+func (u *stubAuthUseCase) RefreshToken(_ context.Context, input authuc.RefreshTokenInput) (*authuc.AuthOutput, error) {
+	u.refreshed = append(u.refreshed, input.RefreshToken)
+	return &authuc.AuthOutput{AccessToken: validToken, RefreshToken: "rotated", ExpiresAt: time.Now().Add(time.Hour)}, nil
+}
+
+func (u *stubAuthUseCase) Logout(_ context.Context, input authuc.LogoutInput) error {
+	u.loggedOut = append(u.loggedOut, input)
+	return nil
+}
+
+type stubRealtimeServer struct {
+	chatv1connect.UnimplementedRealtimeServiceHandler
+	err error
+}
+
+func (s stubRealtimeServer) IssueWebSocketTicket(ctx context.Context, _ *chatv1.IssueWebSocketTicketRequest) (*chatv1.IssueWebSocketTicketResponse, error) {
 	if userIDFrom(ctx) != "user-1" {
 		return nil, errors.New("ユーザー ID がコンテキストにありません")
 	}
-	return &chatv1.LogoutResponse{}, s.logoutErr
+	return &chatv1.IssueWebSocketTicketResponse{Ticket: "ticket"}, s.err
 }
 
-func newTestClient(t *testing.T, server stubAuthServer) chatv1connect.AuthServiceClient {
+func newTestServer(t *testing.T, uc *stubAuthUseCase, realtime stubRealtimeServer) *httptest.Server {
 	t.Helper()
-	ts := httptest.NewServer(NewHandler(fakeJWTService{}, Register(chatv1connect.NewAuthServiceHandler, chatv1connect.AuthServiceHandler(server))))
+	ts := httptest.NewServer(NewHandler(fakeJWTService{}, []string{allowedOrigin},
+		Register(chatv1connect.NewAuthServiceHandler, chatv1connect.AuthServiceHandler(&AuthServer{UC: uc})),
+		Register(chatv1connect.NewRealtimeServiceHandler, chatv1connect.RealtimeServiceHandler(realtime)),
+	))
 	t.Cleanup(ts.Close)
-	return chatv1connect.NewAuthServiceClient(http.DefaultClient, ts.URL)
+	return ts
 }
 
-func withToken(token string) context.Context {
-	ctx, callInfo := connect.NewClientContext(context.Background())
-	callInfo.RequestHeader().Set("Authorization", "Bearer "+token)
+func headers(pairs ...string) context.Context {
+	ctx, _ := withHeaders(pairs...)
 	return ctx
 }
 
-func TestPublicProcedureDoesNotRequireToken(t *testing.T) {
-	client := newTestClient(t, stubAuthServer{})
-	if _, err := client.Login(context.Background(), &chatv1.LoginRequest{Email: "alice@example.com", Password: "password123"}); err != nil {
-		t.Fatalf("公開 RPC がトークンなしで失敗しました: %v", err)
+func withHeaders(pairs ...string) (context.Context, connect.CallInfo) {
+	ctx, callInfo := connect.NewClientContext(context.Background())
+	for i := 0; i < len(pairs); i += 2 {
+		callInfo.RequestHeader().Set(pairs[i], pairs[i+1])
 	}
+	return ctx, callInfo
+}
+
+const wsRequest = `{"workspaceId":"00000000-0000-0000-0000-000000000001"}`
+
+func issueTicket(client chatv1connect.RealtimeServiceClient, ctx context.Context) error {
+	_, err := client.IssueWebSocketTicket(ctx, &chatv1.IssueWebSocketTicketRequest{WorkspaceId: "00000000-0000-0000-0000-000000000001"})
+	return err
 }
 
 func TestProtectedProcedureRequiresValidToken(t *testing.T) {
-	client := newTestClient(t, stubAuthServer{})
+	ts := newTestServer(t, &stubAuthUseCase{}, stubRealtimeServer{})
+	client := chatv1connect.NewRealtimeServiceClient(http.DefaultClient, ts.URL)
 	for name, ctx := range map[string]context.Context{
 		"トークンなし":  context.Background(),
-		"不正なトークン": withToken("invalid"),
+		"不正なトークン": headers("Authorization", "Bearer invalid"),
 	} {
-		if _, err := client.Logout(ctx, &chatv1.LogoutRequest{}); connect.CodeOf(err) != connect.CodeUnauthenticated {
+		if err := issueTicket(client, ctx); connect.CodeOf(err) != connect.CodeUnauthenticated {
 			t.Errorf("%s: Unauthenticated を期待しましたが %v でした", name, err)
 		}
 	}
-	if _, err := client.Logout(withToken(validToken), &chatv1.LogoutRequest{}); err != nil {
+	if err := issueTicket(client, headers("Authorization", "Bearer "+validToken)); err != nil {
 		t.Errorf("有効なトークンで失敗しました: %v", err)
 	}
 }
 
 func TestInvalidRequestIsRejected(t *testing.T) {
-	client := newTestClient(t, stubAuthServer{})
+	ts := newTestServer(t, &stubAuthUseCase{}, stubRealtimeServer{})
+	client := chatv1connect.NewAuthServiceClient(http.DefaultClient, ts.URL)
 	_, err := client.Login(context.Background(), &chatv1.LoginRequest{Email: "not-an-email", Password: "x"})
 	if connect.CodeOf(err) != connect.CodeInvalidArgument {
 		t.Errorf("InvalidArgument を期待しましたが %v でした", err)
@@ -99,10 +134,105 @@ func TestUseCaseErrorIsConverted(t *testing.T) {
 		{errors.New("想定外"), connect.CodeInternal},
 	}
 	for _, tt := range tests {
-		client := newTestClient(t, stubAuthServer{logoutErr: tt.err})
-		_, err := client.Logout(withToken(validToken), &chatv1.LogoutRequest{})
-		if connect.CodeOf(err) != tt.want {
+		ts := newTestServer(t, &stubAuthUseCase{}, stubRealtimeServer{err: tt.err})
+		client := chatv1connect.NewRealtimeServiceClient(http.DefaultClient, ts.URL)
+		if err := issueTicket(client, headers("Authorization", "Bearer "+validToken)); connect.CodeOf(err) != tt.want {
 			t.Errorf("%v: %v を期待しましたが %v でした", tt.err, tt.want, err)
 		}
+	}
+}
+
+func TestLoginSetsRefreshTokenCookieForBrowser(t *testing.T) {
+	ts := newTestServer(t, &stubAuthUseCase{}, stubRealtimeServer{})
+	client := chatv1connect.NewAuthServiceClient(http.DefaultClient, ts.URL)
+
+	ctx, callInfo := withHeaders()
+	res, err := client.Login(ctx, &chatv1.LoginRequest{Email: "alice@example.com", Password: "password123"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.RefreshToken != nil {
+		t.Errorf("ブラウザには本文でリフレッシュトークンを返さないはず")
+	}
+	cookie := callInfo.ResponseHeader().Get("Set-Cookie")
+	for _, want := range []string{"__Secure-chat_rt=rt", "Path=/chat.v1.AuthService/", "HttpOnly", "Secure", "SameSite=Strict", "Max-Age="} {
+		if !strings.Contains(cookie, want) {
+			t.Errorf("Cookie に %q がありません: %s", want, cookie)
+		}
+	}
+	if strings.Contains(cookie, "Domain=") {
+		t.Errorf("Cookie に Domain を付けないはず: %s", cookie)
+	}
+}
+
+func TestNativeClientReceivesRefreshTokenInBody(t *testing.T) {
+	uc := &stubAuthUseCase{}
+	ts := newTestServer(t, uc, stubRealtimeServer{})
+	client := chatv1connect.NewAuthServiceClient(http.DefaultClient, ts.URL)
+
+	ctx, callInfo := withHeaders("X-Chat-Client", "native")
+	res, err := client.Refresh(ctx, &chatv1.RefreshRequest{RefreshToken: new("body-token")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.GetRefreshToken() != "rotated" || callInfo.ResponseHeader().Get("Set-Cookie") != "" {
+		t.Errorf("ネイティブアプリには本文で返し Cookie を使わないはず: body=%v cookie=%s", res.RefreshToken, callInfo.ResponseHeader().Get("Set-Cookie"))
+	}
+	if len(uc.refreshed) != 1 || uc.refreshed[0] != "body-token" {
+		t.Errorf("本文のリフレッシュトークンを使っていません: %v", uc.refreshed)
+	}
+}
+
+func TestRefreshReadsCookieAndChecksOrigin(t *testing.T) {
+	uc := &stubAuthUseCase{}
+	ts := newTestServer(t, uc, stubRealtimeServer{})
+	client := chatv1connect.NewAuthServiceClient(http.DefaultClient, ts.URL)
+
+	evil := headers("Cookie", "__Secure-chat_rt=cookie-token", "Origin", "https://evil.example")
+	if _, err := client.Refresh(evil, &chatv1.RefreshRequest{}); connect.CodeOf(err) != connect.CodePermissionDenied {
+		t.Fatalf("許可していないオリジンは拒否するはず: %v", err)
+	}
+
+	allowed := headers("Cookie", "__Secure-chat_rt=cookie-token", "Origin", allowedOrigin)
+	if _, err := client.Refresh(allowed, &chatv1.RefreshRequest{}); err != nil {
+		t.Fatal(err)
+	}
+	if len(uc.refreshed) != 1 || uc.refreshed[0] != "cookie-token" {
+		t.Errorf("Cookie のリフレッシュトークンを使っていません: %v", uc.refreshed)
+	}
+}
+
+func TestLogoutIsPublicAndClearsCookie(t *testing.T) {
+	uc := &stubAuthUseCase{}
+	ts := newTestServer(t, uc, stubRealtimeServer{})
+	client := chatv1connect.NewAuthServiceClient(http.DefaultClient, ts.URL)
+
+	ctx, callInfo := withHeaders("Cookie", "__Secure-chat_rt=cookie-token", "Authorization", "Bearer "+validToken)
+	if _, err := client.Logout(ctx, &chatv1.LogoutRequest{}); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(callInfo.ResponseHeader().Get("Set-Cookie"), "Max-Age=0") {
+		t.Errorf("Cookie を消していません: %s", callInfo.ResponseHeader().Get("Set-Cookie"))
+	}
+	want := authuc.LogoutInput{RefreshToken: "cookie-token", SessionID: "session-1"}
+	if len(uc.loggedOut) != 1 || uc.loggedOut[0] != want {
+		t.Errorf("失効させるセッションが期待と異なります: %+v", uc.loggedOut)
+	}
+
+	// 期限切れのアクセストークンでもログアウトはできる
+	if _, err := client.Logout(context.Background(), &chatv1.LogoutRequest{}); err != nil {
+		t.Errorf("トークンなしのログアウトが失敗しました: %v", err)
+	}
+}
+
+func TestConnectProtocolHeaderIsRequired(t *testing.T) {
+	ts := newTestServer(t, &stubAuthUseCase{}, stubRealtimeServer{})
+	res, err := http.Post(ts.URL+chatv1connect.RealtimeServiceIssueWebSocketTicketProcedure, "application/json", strings.NewReader(wsRequest))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = res.Body.Close() }()
+	if res.StatusCode == http.StatusOK || res.StatusCode == http.StatusUnauthorized {
+		t.Errorf("Connect-Protocol-Version のない呼び出しは拒否するはず: %d", res.StatusCode)
 	}
 }

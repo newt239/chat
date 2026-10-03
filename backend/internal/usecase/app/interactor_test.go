@@ -29,7 +29,7 @@ const (
 var channels = map[string]*entity.Channel{
 	joinedID:  {ID: joinedID, WorkspaceID: workspaceID, Name: "joined", Type: entity.ChannelTypePublic},
 	publicID:  {ID: publicID, WorkspaceID: workspaceID, Name: "public", Type: entity.ChannelTypePublic},
-	privateID: {ID: privateID, WorkspaceID: workspaceID, Name: "private", Type: entity.ChannelTypePrivate, IsPrivate: true},
+	privateID: {ID: privateID, WorkspaceID: workspaceID, Name: "private", Type: entity.ChannelTypePrivate},
 }
 
 type stubAccess struct {
@@ -175,6 +175,19 @@ type fixture struct {
 	recorder *audittest.Recorder
 }
 
+type nopLogger struct{ domainservice.Logger }
+
+func (nopLogger) Warn(string, ...domainservice.LogField) {}
+
+// post は着信 Webhook と同じくトークンを確かめてから投稿します
+func (f *fixture) post(token string, out *CreateOutput, input PostInput) (*messageuc.MessageOutput, error) {
+	app, err := f.uc.Authenticate(context.Background(), out.App.ID, token)
+	if err != nil {
+		return nil, err
+	}
+	return f.uc.Post(context.Background(), app, input)
+}
+
 func newFixture() *fixture {
 	f := &fixture{
 		apps:     &fakeAppRepo{apps: map[string]*entity.App{}},
@@ -183,7 +196,7 @@ func newFixture() *fixture {
 		poster:   &fakePoster{},
 		recorder: &audittest.Recorder{},
 	}
-	f.uc = NewInteractor(f.apps, f.users, stubWorkspaceRepo{}, stubChannelRepo{}, f.members, stubMessageRepo{}, stubAccess{}, f.poster, stubTxManager{}, f.recorder)
+	f.uc = NewInteractor(f.apps, f.users, stubWorkspaceRepo{}, stubChannelRepo{}, f.members, stubMessageRepo{}, stubAccess{}, f.poster, stubTxManager{}, f.recorder, nopLogger{})
 	return f
 }
 
@@ -210,7 +223,7 @@ func TestCreateStoresHashBotUserAndJoinsDefaultChannel(t *testing.T) {
 		t.Fatalf("トークンがハッシュで保存されていません: %+v", stored)
 	}
 	bot := f.users.users[stored.BotUserID]
-	if bot == nil || !bot.IsBot || bot.IsOfficial || bot.DisplayName != "Deploy Bot" {
+	if bot == nil || !bot.IsApp || bot.IsOfficial || bot.DisplayName != "Deploy Bot" {
 		t.Fatalf("ボットユーザーが作成されていません: %+v", bot)
 	}
 	if !f.members.members[joinedID+"/"+stored.BotUserID] {
@@ -262,7 +275,7 @@ func TestPostChecksPermissions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			f := newFixture()
 			out := f.create(t, tt.permissions...)
-			_, err := f.uc.Post(context.Background(), PostInput{AppID: out.App.ID, Token: out.Token, Text: "hi", ChannelID: &tt.channelID, ParentID: tt.parentID})
+			_, err := f.post(out.Token, out, PostInput{Text: "hi", ChannelID: &tt.channelID, ParentID: tt.parentID})
 			if !errors.Is(err, tt.wantErr) {
 				t.Fatalf("got=%v want=%v", err, tt.wantErr)
 			}
@@ -277,10 +290,10 @@ func TestPostUsesDefaultChannelAndRejectsWrongToken(t *testing.T) {
 	f := newFixture()
 	out := f.create(t, entity.AppPermissionPostJoinedChannels)
 
-	if _, err := f.uc.Post(context.Background(), PostInput{AppID: out.App.ID, Token: "wrong", Text: "hi"}); !errors.Is(err, ErrAppNotFound) {
+	if _, err := f.post("wrong", out, PostInput{Text: "hi"}); !errors.Is(err, ErrAppNotFound) {
 		t.Fatalf("誤ったトークンを拒否していません: %v", err)
 	}
-	if _, err := f.uc.Post(context.Background(), PostInput{AppID: out.App.ID, Token: out.Token, Text: "hi"}); err != nil {
+	if _, err := f.post(out.Token, out, PostInput{Text: "hi"}); err != nil {
 		t.Fatalf("既定のチャンネルに投稿できません: %v", err)
 	}
 	if got := f.poster.posted[0].ChannelID; got != joinedID {
@@ -317,7 +330,7 @@ func TestDeleteRequiresCreatorOrAdmin(t *testing.T) {
 	out := f.create(t)
 	ctx := context.Background()
 
-	if err := f.uc.Delete(ctx, TargetInput{AppID: out.App.ID, UserID: otherID}); !errors.Is(err, ErrUnauthorized) {
+	if err := f.uc.Delete(ctx, TargetInput{AppID: out.App.ID, UserID: otherID}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("作成者と管理者以外の削除を拒否していません: %v", err)
 	}
 }

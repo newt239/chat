@@ -7,10 +7,11 @@ import { useTranslation } from "react-i18next";
 import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Button } from "#/components/ui/Button/Button";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
-import { toast } from "#/components/ui/ToastRegion/toast";
 import { closePanel, openDialog } from "#/features/layout/utils/overlaySearch";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { copyWithToast } from "#/lib/clipboard";
+import { isAdminRole } from "#/lib/isAdminRole";
 
-import { useCanManageUserGroups } from "../hooks/useCanManageUserGroups";
 import { useUserGroupActions, useUserGroups } from "../hooks/useUserGroups";
 import { UserGroupMembers } from "./UserGroupMembers";
 
@@ -26,7 +27,7 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
   const { remove } = useUserGroupActions();
   const navigate = useNavigate();
   const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
-  const canManage = useCanManageUserGroups(workspaceId);
+  const canManage = isAdminRole(useMyWorkspaceRole(workspaceId).data);
   const group = groups?.find((candidate) => candidate.id === groupId);
 
   if (group === undefined) {
@@ -38,9 +39,9 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
   return (
     <div className="flex min-h-full flex-col bg-surface font-sans text-text">
       <section className="flex flex-col gap-2 border-b border-border px-4 pt-4 pb-3.5">
-        <h3 className="m-0 text-[19px] font-bold text-accent-text">@{group.name}</h3>
+        <h3 className="m-0 text-heading font-bold text-accent-text">@{group.name}</h3>
         {group.description !== undefined && group.description.length > 0 && (
-          <p className="m-0 text-[13px]">{group.description}</p>
+          <p className="m-0 text-body-sm">{group.description}</p>
         )}
         <div className="flex flex-wrap gap-1.5">
           {canManage && (
@@ -58,8 +59,7 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
             variant="secondary"
             size="sm"
             onPress={() => {
-              void navigator.clipboard.writeText(`@${group.name}`);
-              toast(t("userGroup.mentionCopied"));
+              void copyWithToast(`@${group.name}`, t("userGroup.mentionCopied"));
             }}
           >
             <IconAt aria-hidden />

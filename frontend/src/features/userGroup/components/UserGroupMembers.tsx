@@ -10,12 +10,13 @@ import { Button } from "#/components/ui/Button/Button";
 import { ComboBox } from "#/components/ui/ComboBox/ComboBox";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { useCanManageUserGroups } from "#/features/userGroup/hooks/useCanManageUserGroups";
 import {
   useUserGroupMemberActions,
   useUserGroupMembers,
 } from "#/features/userGroup/hooks/useUserGroupMembers";
-import { userAtom } from "#/providers/store/auth";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { isAdminRole } from "#/lib/isAdminRole";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 type UserGroupMembersProps = {
   groupId: string;
@@ -28,8 +29,8 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
   const { data: workspaceMembers } = useMembers(workspaceId);
   const { add, remove } = useUserGroupMemberActions();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const canManage = useCanManageUserGroups(workspaceId);
-  const myId = useAtomValue(userAtom)?.id;
+  const canManage = isAdminRole(useMyWorkspaceRole(workspaceId).data);
+  const myId = useAtomValue(myUserIdAtom);
 
   const memberIds = new Set(members?.map((member) => member.userId));
   const options = (workspaceMembers ?? [])
@@ -46,7 +47,7 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
           const member = workspaceMembers?.find((candidate) => candidate.userId === userId);
           const name = member?.nickname ?? member?.displayName ?? userId;
           return (
-            <li key={userId} className="flex items-center gap-2.5 py-0.5 text-[13.5px]">
+            <li key={userId} className="flex items-center gap-2.5 py-0.5 text-body-sm">
               <Avatar name={name} src={member?.avatarUrl} size={24} />
               <span className="min-w-0 flex-1 truncate">{name}</span>
               {/* 管理者でなくても自分はグループから抜けられる */}

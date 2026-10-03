@@ -7,9 +7,8 @@ import (
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/invitation"
 	"github.com/newt239/chat/ent/predicate"
-	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
@@ -24,9 +23,7 @@ func NewInvitationRepository(client *ent.Client) domainrepository.InvitationRepo
 }
 
 func (r *invitationRepository) query(ctx context.Context) *ent.InvitationQuery {
-	return transaction.ResolveClient(ctx, r.client).Invitation.Query().
-		WithWorkspace().
-		WithInvitedBy()
+	return transaction.ResolveClient(ctx, r.client).Invitation.Query()
 }
 
 func (r *invitationRepository) Create(ctx context.Context, inv *entity.Invitation) error {
@@ -66,7 +63,7 @@ func (r *invitationRepository) FindPendingByEmail(ctx context.Context, email str
 }
 
 func (r *invitationRepository) FindPendingByWorkspaceID(ctx context.Context, workspaceID string, now time.Time) ([]*entity.Invitation, error) {
-	return r.findPending(ctx, now, invitation.HasWorkspaceWith(workspace.ID(workspaceID)))
+	return r.findPending(ctx, now, invitation.WorkspaceID(workspaceID))
 }
 
 func (r *invitationRepository) findPending(ctx context.Context, now time.Time, where predicate.Invitation) ([]*entity.Invitation, error) {
@@ -98,32 +95,28 @@ func (r *invitationRepository) Delete(ctx context.Context, workspaceID, id strin
 		return err
 	}
 	deleted, err := transaction.ResolveClient(ctx, r.client).Invitation.Delete().
-		Where(invitation.ID(invitationID), invitation.HasWorkspaceWith(workspace.ID(workspaceID))).
+		Where(invitation.ID(invitationID), invitation.WorkspaceID(workspaceID)).
 		Exec(ctx)
 	if err != nil {
 		return err
 	}
 	if deleted == 0 {
-		return domainerrors.ErrNotFound
+		return domerr.ErrNotFound
 	}
 	return nil
 }
 
 func invitationToEntity(i *ent.Invitation) *entity.Invitation {
 	result := &entity.Invitation{
-		ID:         i.ID.String(),
-		Email:      i.Email,
-		Role:       entity.WorkspaceRole(i.Role),
-		TokenHash:  i.TokenHash,
-		ExpiresAt:  i.ExpiresAt,
-		AcceptedAt: i.AcceptedAt,
-		CreatedAt:  i.CreatedAt,
-	}
-	if i.Edges.Workspace != nil {
-		result.WorkspaceID = i.Edges.Workspace.ID
-	}
-	if i.Edges.InvitedBy != nil {
-		result.InvitedBy = i.Edges.InvitedBy.ID.String()
+		ID:          i.ID.String(),
+		Email:       i.Email,
+		Role:        entity.WorkspaceRole(i.Role),
+		TokenHash:   i.TokenHash,
+		ExpiresAt:   i.ExpiresAt,
+		AcceptedAt:  i.AcceptedAt,
+		WorkspaceID: i.WorkspaceID,
+		InvitedBy:   i.InvitedByID.String(),
+		CreatedAt:   i.CreatedAt,
 	}
 	return result
 }

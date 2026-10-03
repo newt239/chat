@@ -27,7 +27,6 @@ type ChannelReadStateQuery struct {
 	predicates  []predicate.ChannelReadState
 	withChannel *ChannelQuery
 	withUser    *UserQuery
-	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *ChannelReadStateQuery) WithUser(opts ...func(*UserQuery)) *ChannelRead
 // Example:
 //
 //	var v []struct {
-//		LastReadAt time.Time `json:"last_read_at,omitempty"`
+//		ChannelID uuid.UUID `json:"channel_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ChannelReadState.Query().
-//		GroupBy(channelreadstate.FieldLastReadAt).
+//		GroupBy(channelreadstate.FieldChannelID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *ChannelReadStateQuery) GroupBy(field string, fields ...string) *ChannelReadStateGroupBy {
@@ -359,11 +358,11 @@ func (_q *ChannelReadStateQuery) GroupBy(field string, fields ...string) *Channe
 // Example:
 //
 //	var v []struct {
-//		LastReadAt time.Time `json:"last_read_at,omitempty"`
+//		ChannelID uuid.UUID `json:"channel_id,omitempty"`
 //	}
 //
 //	client.ChannelReadState.Query().
-//		Select(channelreadstate.FieldLastReadAt).
+//		Select(channelreadstate.FieldChannelID).
 //		Scan(ctx, &v)
 func (_q *ChannelReadStateQuery) Select(fields ...string) *ChannelReadStateSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *ChannelReadStateQuery) prepareQuery(ctx context.Context) error {
 func (_q *ChannelReadStateQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ChannelReadState, error) {
 	var (
 		nodes       = []*ChannelReadState{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withChannel != nil,
 			_q.withUser != nil,
 		}
 	)
-	if _q.withChannel != nil || _q.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, channelreadstate.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ChannelReadState).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *ChannelReadStateQuery) loadChannel(ctx context.Context, query *Channel
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ChannelReadState)
 	for i := range nodes {
-		if nodes[i].channel_read_state_channel == nil {
-			continue
-		}
-		fk := *nodes[i].channel_read_state_channel
+		fk := nodes[i].ChannelID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *ChannelReadStateQuery) loadChannel(ctx context.Context, query *Channel
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_read_state_channel" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "channel_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *ChannelReadStateQuery) loadUser(ctx context.Context, query *UserQuery,
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ChannelReadState)
 	for i := range nodes {
-		if nodes[i].channel_read_state_user == nil {
-			continue
-		}
-		fk := *nodes[i].channel_read_state_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *ChannelReadStateQuery) loadUser(ctx context.Context, query *UserQuery,
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_read_state_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *ChannelReadStateQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != channelreadstate.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withChannel != nil {
+			_spec.Node.AddColumnOnce(channelreadstate.FieldChannelID)
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(channelreadstate.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

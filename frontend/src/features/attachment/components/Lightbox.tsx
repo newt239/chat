@@ -85,16 +85,16 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={transitions.base}
-          className="fixed inset-0 z-[300] bg-media/92"
+          className="fixed inset-0 z-overlay bg-media/92"
         >
           <Modal className="size-full">
             <Dialog
               aria-label={t("attachment.lightbox.label")}
               className="flex size-full flex-col font-sans text-media-fg outline-none"
             >
-              <header className="flex items-center gap-2.5 px-3.5 pt-[max(10px,env(safe-area-inset-top))] pb-2.5 text-[13px]">
+              <header className="flex items-center gap-2.5 px-3.5 pt-[max(10px,env(safe-area-inset-top))] pb-2.5 text-body-sm">
                 <Avatar name={authorName} src={message.user?.avatarUrl} size={30} />
-                <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
+                <span className="flex min-w-0 flex-1 flex-col leading-snug">
                   <span className="truncate">{image.fileName}</span>
                   <small className="truncate text-media-fg/60">
                     {authorName} · {formatDateTime(toDate(message.createdAt))}
@@ -165,7 +165,7 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
                   className={cn(
                     "flex min-w-0 justify-center",
                     isTall
-                      ? "w-[min(420px,100%)]"
+                      ? "w-105 max-w-full"
                       : "max-h-full max-w-[calc(100%-100px)] max-md:max-w-full",
                   )}
                 >
@@ -202,7 +202,7 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
                         onIndexChange(itemIndex);
                       }}
                       className={cn(
-                        "size-[7px] cursor-pointer rounded-full",
+                        "size-1.75 cursor-pointer rounded-full",
                         itemIndex === index ? "bg-media-fg" : "bg-media-fg/35",
                       )}
                     />

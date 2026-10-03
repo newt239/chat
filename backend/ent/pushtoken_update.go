@@ -30,6 +30,20 @@ func (_u *PushTokenUpdate) Where(ps ...predicate.PushToken) *PushTokenUpdate {
 	return _u
 }
 
+// SetUserID sets the "user_id" field.
+func (_u *PushTokenUpdate) SetUserID(v uuid.UUID) *PushTokenUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *PushTokenUpdate) SetNillableUserID(v *uuid.UUID) *PushTokenUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetToken sets the "token" field.
 func (_u *PushTokenUpdate) SetToken(v string) *PushTokenUpdate {
 	_u.mutation.SetToken(v)
@@ -83,12 +97,6 @@ func (_u *PushTokenUpdate) SetNillableLastSeenAt(v *time.Time) *PushTokenUpdate 
 	if v != nil {
 		_u.SetLastSeenAt(*v)
 	}
-	return _u
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *PushTokenUpdate) SetUserID(id uuid.UUID) *PushTokenUpdate {
-	_u.mutation.SetUserID(id)
 	return _u
 }
 
@@ -226,6 +234,20 @@ type PushTokenUpdateOne struct {
 	mutation *PushTokenMutation
 }
 
+// SetUserID sets the "user_id" field.
+func (_u *PushTokenUpdateOne) SetUserID(v uuid.UUID) *PushTokenUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *PushTokenUpdateOne) SetNillableUserID(v *uuid.UUID) *PushTokenUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetToken sets the "token" field.
 func (_u *PushTokenUpdateOne) SetToken(v string) *PushTokenUpdateOne {
 	_u.mutation.SetToken(v)
@@ -279,12 +301,6 @@ func (_u *PushTokenUpdateOne) SetNillableLastSeenAt(v *time.Time) *PushTokenUpda
 	if v != nil {
 		_u.SetLastSeenAt(*v)
 	}
-	return _u
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *PushTokenUpdateOne) SetUserID(id uuid.UUID) *PushTokenUpdateOne {
-	_u.mutation.SetUserID(id)
 	return _u
 }
 

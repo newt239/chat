@@ -3,25 +3,21 @@ package presenter
 import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
-var workspaceRoles = map[string]chatv1.WorkspaceRole{
-	"owner":  chatv1.WorkspaceRole_WORKSPACE_ROLE_OWNER,
-	"admin":  chatv1.WorkspaceRole_WORKSPACE_ROLE_ADMIN,
-	"member": chatv1.WorkspaceRole_WORKSPACE_ROLE_MEMBER,
-	"guest":  chatv1.WorkspaceRole_WORKSPACE_ROLE_GUEST,
+var workspaceRoles = map[entity.WorkspaceRole]chatv1.WorkspaceRole{
+	entity.WorkspaceRoleOwner:  chatv1.WorkspaceRole_WORKSPACE_ROLE_OWNER,
+	entity.WorkspaceRoleAdmin:  chatv1.WorkspaceRole_WORKSPACE_ROLE_ADMIN,
+	entity.WorkspaceRoleMember: chatv1.WorkspaceRole_WORKSPACE_ROLE_MEMBER,
+	entity.WorkspaceRoleGuest:  chatv1.WorkspaceRole_WORKSPACE_ROLE_GUEST,
 }
 
-// WorkspaceRoleName はリクエストのロールをユースケースが扱う文字列に変換します
-func WorkspaceRoleName(role chatv1.WorkspaceRole) string {
-	for name, r := range workspaceRoles {
-		if r == role {
-			return name
-		}
-	}
-	return ""
+// WorkspaceRoleFromProto はリクエストのロールをエンティティのロールに変換します
+func WorkspaceRoleFromProto(role chatv1.WorkspaceRole) entity.WorkspaceRole {
+	return reverseLookup(workspaceRoles, role)
 }
 
 func Workspace(w workspaceuc.WorkspaceOutput) *chatv1.Workspace {

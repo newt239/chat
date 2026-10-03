@@ -30,21 +30,37 @@ func (_u *MessageGroupMentionUpdate) Where(ps ...predicate.MessageGroupMention) 
 	return _u
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessageGroupMentionUpdate) SetMessageID(id uuid.UUID) *MessageGroupMentionUpdate {
-	_u.mutation.SetMessageID(id)
+// SetMessageID sets the "message_id" field.
+func (_u *MessageGroupMentionUpdate) SetMessageID(v uuid.UUID) *MessageGroupMentionUpdate {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *MessageGroupMentionUpdate) SetNillableMessageID(v *uuid.UUID) *MessageGroupMentionUpdate {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
+	return _u
+}
+
+// SetGroupID sets the "group_id" field.
+func (_u *MessageGroupMentionUpdate) SetGroupID(v uuid.UUID) *MessageGroupMentionUpdate {
+	_u.mutation.SetGroupID(v)
+	return _u
+}
+
+// SetNillableGroupID sets the "group_id" field if the given value is not nil.
+func (_u *MessageGroupMentionUpdate) SetNillableGroupID(v *uuid.UUID) *MessageGroupMentionUpdate {
+	if v != nil {
+		_u.SetGroupID(*v)
+	}
 	return _u
 }
 
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *MessageGroupMentionUpdate) SetMessage(v *Message) *MessageGroupMentionUpdate {
 	return _u.SetMessageID(v.ID)
-}
-
-// SetGroupID sets the "group" edge to the UserGroup entity by ID.
-func (_u *MessageGroupMentionUpdate) SetGroupID(id uuid.UUID) *MessageGroupMentionUpdate {
-	_u.mutation.SetGroupID(id)
-	return _u
 }
 
 // SetGroup sets the "group" edge to the UserGroup entity.
@@ -197,21 +213,37 @@ type MessageGroupMentionUpdateOne struct {
 	mutation *MessageGroupMentionMutation
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessageGroupMentionUpdateOne) SetMessageID(id uuid.UUID) *MessageGroupMentionUpdateOne {
-	_u.mutation.SetMessageID(id)
+// SetMessageID sets the "message_id" field.
+func (_u *MessageGroupMentionUpdateOne) SetMessageID(v uuid.UUID) *MessageGroupMentionUpdateOne {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *MessageGroupMentionUpdateOne) SetNillableMessageID(v *uuid.UUID) *MessageGroupMentionUpdateOne {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
+	return _u
+}
+
+// SetGroupID sets the "group_id" field.
+func (_u *MessageGroupMentionUpdateOne) SetGroupID(v uuid.UUID) *MessageGroupMentionUpdateOne {
+	_u.mutation.SetGroupID(v)
+	return _u
+}
+
+// SetNillableGroupID sets the "group_id" field if the given value is not nil.
+func (_u *MessageGroupMentionUpdateOne) SetNillableGroupID(v *uuid.UUID) *MessageGroupMentionUpdateOne {
+	if v != nil {
+		_u.SetGroupID(*v)
+	}
 	return _u
 }
 
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *MessageGroupMentionUpdateOne) SetMessage(v *Message) *MessageGroupMentionUpdateOne {
 	return _u.SetMessageID(v.ID)
-}
-
-// SetGroupID sets the "group" edge to the UserGroup entity by ID.
-func (_u *MessageGroupMentionUpdateOne) SetGroupID(id uuid.UUID) *MessageGroupMentionUpdateOne {
-	_u.mutation.SetGroupID(id)
-	return _u
 }
 
 // SetGroup sets the "group" edge to the UserGroup entity.

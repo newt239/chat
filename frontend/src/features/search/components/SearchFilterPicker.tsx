@@ -1,18 +1,17 @@
-import { IconCheck, IconChevronDown, IconSearch } from "@tabler/icons-react";
+import { IconCheck, IconChevronDown } from "@tabler/icons-react";
 import {
   Autocomplete,
   Button,
-  Input,
   Menu,
   MenuItem,
   MenuTrigger,
   Popover,
-  SearchField,
   useFilter,
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { cn, fieldStyles, overlayStyles } from "#/components/ui/styles/styles";
+import { SearchField } from "#/components/ui/SearchField/SearchField";
+import { cn, overlayStyles } from "#/components/ui/styles/styles";
 import { chipClassName } from "#/features/search/utils/chipClassName";
 
 import type { Option } from "#/components/ui/option/option";
@@ -58,7 +57,7 @@ export const SearchFilterPicker = <T extends string>({
         }
       }}
       renderEmptyState={() => (
-        <p className="m-0 px-2.5 py-1.5 text-[13px] text-muted">{t("ui.comboBox.empty")}</p>
+        <p className="m-0 px-2.5 py-1.5 text-body-sm text-muted">{t("ui.comboBox.empty")}</p>
       )}
       className="max-h-72 overflow-y-auto p-1 outline-none"
     >
@@ -89,19 +88,10 @@ export const SearchFilterPicker = <T extends string>({
         {isSearchable ? (
           <Autocomplete filter={contains}>
             <SearchField
-              aria-label={t("search.filters.find")}
+              label={t("search.filters.find")}
               autoFocus
-              className="flex items-center gap-2 border-b border-border px-2.5 text-muted"
-            >
-              <IconSearch aria-hidden className="size-4 shrink-0" />
-              <Input
-                placeholder={t("search.filters.find")}
-                className={cn(
-                  fieldStyles.input,
-                  "border-0 px-0 data-focused:ring-0 [&::-webkit-search-cancel-button]:hidden",
-                )}
-              />
-            </SearchField>
+              className="rounded-none border-0 border-b border-border data-focus-within:ring-0"
+            />
             {menu}
           </Autocomplete>
         ) : (

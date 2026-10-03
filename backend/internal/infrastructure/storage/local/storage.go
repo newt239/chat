@@ -3,6 +3,7 @@
 package local
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -45,19 +46,19 @@ func New(cfg *Config) *Storage {
 
 func (s *Storage) GetMaxFileSize() int64 { return s.config.MaxFileSize }
 
-func (s *Storage) GetUploadExpires() interface{} { return s.config.UploadExpires }
+func (s *Storage) GetUploadExpires() time.Duration { return s.config.UploadExpires }
 
-func (s *Storage) GetDownloadExpires() interface{} { return s.config.DownloadExpires }
+func (s *Storage) GetDownloadExpires() time.Duration { return s.config.DownloadExpires }
 
-func (s *Storage) GenerateUploadURL(key, _ string, _ int64, expires interface{}) (string, error) {
+func (s *Storage) GenerateUploadURL(_ context.Context, key, _ string, _ int64, expires time.Duration) (string, error) {
 	return s.signedURL(opPut, key, durationOr(expires, s.config.UploadExpires))
 }
 
-func (s *Storage) GenerateDownloadURL(key string, expires interface{}) (string, error) {
+func (s *Storage) GenerateDownloadURL(_ context.Context, key string, expires time.Duration) (string, error) {
 	return s.signedURL(opGet, key, durationOr(expires, s.config.DownloadExpires))
 }
 
-func (s *Storage) DeleteObject(key string) error {
+func (s *Storage) DeleteObject(_ context.Context, key string) error {
 	path, err := s.path(key)
 	if err != nil {
 		return err
@@ -165,8 +166,8 @@ func (s *Storage) path(key string) (string, error) {
 	return filepath.Join(s.config.Dir, filepath.FromSlash(cleaned)), nil
 }
 
-func durationOr(value interface{}, fallback time.Duration) time.Duration {
-	if d, ok := value.(time.Duration); ok && d > 0 {
+func durationOr(d, fallback time.Duration) time.Duration {
+	if d > 0 {
 		return d
 	}
 	return fallback

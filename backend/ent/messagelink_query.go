@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/newt239/chat/ent/linkpreview"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagelink"
 	"github.com/newt239/chat/ent/predicate"
@@ -20,12 +21,12 @@ import (
 // MessageLinkQuery is the builder for querying MessageLink entities.
 type MessageLinkQuery struct {
 	config
-	ctx         *QueryContext
-	order       []messagelink.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.MessageLink
-	withMessage *MessageQuery
-	withFKs     bool
+	ctx             *QueryContext
+	order           []messagelink.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.MessageLink
+	withMessage     *MessageQuery
+	withLinkPreview *LinkPreviewQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,6 +78,28 @@ func (_q *MessageLinkQuery) QueryMessage() *MessageQuery {
 			sqlgraph.From(messagelink.Table, messagelink.FieldID, selector),
 			sqlgraph.To(message.Table, message.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, messagelink.MessageTable, messagelink.MessageColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLinkPreview chains the current query on the "link_preview" edge.
+func (_q *MessageLinkQuery) QueryLinkPreview() *LinkPreviewQuery {
+	query := (&LinkPreviewClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(messagelink.Table, messagelink.FieldID, selector),
+			sqlgraph.To(linkpreview.Table, linkpreview.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, messagelink.LinkPreviewTable, messagelink.LinkPreviewColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -271,12 +294,13 @@ func (_q *MessageLinkQuery) Clone() *MessageLinkQuery {
 		return nil
 	}
 	return &MessageLinkQuery{
-		config:      _q.config,
-		ctx:         _q.ctx.Clone(),
-		order:       append([]messagelink.OrderOption{}, _q.order...),
-		inters:      append([]Interceptor{}, _q.inters...),
-		predicates:  append([]predicate.MessageLink{}, _q.predicates...),
-		withMessage: _q.withMessage.Clone(),
+		config:          _q.config,
+		ctx:             _q.ctx.Clone(),
+		order:           append([]messagelink.OrderOption{}, _q.order...),
+		inters:          append([]Interceptor{}, _q.inters...),
+		predicates:      append([]predicate.MessageLink{}, _q.predicates...),
+		withMessage:     _q.withMessage.Clone(),
+		withLinkPreview: _q.withLinkPreview.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -294,18 +318,29 @@ func (_q *MessageLinkQuery) WithMessage(opts ...func(*MessageQuery)) *MessageLin
 	return _q
 }
 
+// WithLinkPreview tells the query-builder to eager-load the nodes that are connected to
+// the "link_preview" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *MessageLinkQuery) WithLinkPreview(opts ...func(*LinkPreviewQuery)) *MessageLinkQuery {
+	query := (&LinkPreviewClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withLinkPreview = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		URL string `json:"url,omitempty"`
+//		MessageID uuid.UUID `json:"message_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.MessageLink.Query().
-//		GroupBy(messagelink.FieldURL).
+//		GroupBy(messagelink.FieldMessageID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *MessageLinkQuery) GroupBy(field string, fields ...string) *MessageLinkGroupBy {
@@ -323,11 +358,11 @@ func (_q *MessageLinkQuery) GroupBy(field string, fields ...string) *MessageLink
 // Example:
 //
 //	var v []struct {
-//		URL string `json:"url,omitempty"`
+//		MessageID uuid.UUID `json:"message_id,omitempty"`
 //	}
 //
 //	client.MessageLink.Query().
-//		Select(messagelink.FieldURL).
+//		Select(messagelink.FieldMessageID).
 //		Scan(ctx, &v)
 func (_q *MessageLinkQuery) Select(fields ...string) *MessageLinkSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -371,18 +406,12 @@ func (_q *MessageLinkQuery) prepareQuery(ctx context.Context) error {
 func (_q *MessageLinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*MessageLink, error) {
 	var (
 		nodes       = []*MessageLink{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			_q.withMessage != nil,
+			_q.withLinkPreview != nil,
 		}
 	)
-	if _q.withMessage != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, messagelink.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*MessageLink).scanValues(nil, columns)
 	}
@@ -407,6 +436,12 @@ func (_q *MessageLinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 			return nil, err
 		}
 	}
+	if query := _q.withLinkPreview; query != nil {
+		if err := _q.loadLinkPreview(ctx, query, nodes, nil,
+			func(n *MessageLink, e *LinkPreview) { n.Edges.LinkPreview = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -414,10 +449,7 @@ func (_q *MessageLinkQuery) loadMessage(ctx context.Context, query *MessageQuery
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessageLink)
 	for i := range nodes {
-		if nodes[i].message_link_message == nil {
-			continue
-		}
-		fk := *nodes[i].message_link_message
+		fk := nodes[i].MessageID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -434,7 +466,39 @@ func (_q *MessageLinkQuery) loadMessage(ctx context.Context, query *MessageQuery
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_link_message" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "message_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *MessageLinkQuery) loadLinkPreview(ctx context.Context, query *LinkPreviewQuery, nodes []*MessageLink, init func(*MessageLink), assign func(*MessageLink, *LinkPreview)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*MessageLink)
+	for i := range nodes {
+		if nodes[i].LinkPreviewID == nil {
+			continue
+		}
+		fk := *nodes[i].LinkPreviewID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(linkpreview.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "link_preview_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -467,6 +531,12 @@ func (_q *MessageLinkQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != messagelink.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withMessage != nil {
+			_spec.Node.AddColumnOnce(messagelink.FieldMessageID)
+		}
+		if _q.withLinkPreview != nil {
+			_spec.Node.AddColumnOnce(messagelink.FieldLinkPreviewID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

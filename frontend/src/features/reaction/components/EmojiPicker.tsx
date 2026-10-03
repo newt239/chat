@@ -1,15 +1,12 @@
-import { useMemo } from "react";
-
 import data from "@emoji-mart/data";
 import en from "@emoji-mart/data/i18n/en.json";
 import ja from "@emoji-mart/data/i18n/ja.json";
 import Picker from "@emoji-mart/react";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { useCustomEmojiMap } from "#/features/customEmoji/hooks/useCustomEmojis";
 import { toCustomEmojiValue } from "#/features/customEmoji/utils/customEmoji";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 import { useColorMode } from "#/providers/theme/colorMode";
 
 type EmojiPickerProps = {
@@ -30,24 +27,21 @@ const CUSTOM_ID_PREFIX = "custom-";
 
 export const EmojiPicker = ({ onEmojiSelect }: EmojiPickerProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   const colorMode = useColorMode();
   const customEmojis = useCustomEmojiMap();
-  const custom = useMemo(
-    () => [
-      {
-        emojis: [...customEmojis.values()].map((emoji) => ({
-          id: `${CUSTOM_ID_PREFIX}${emoji.name}`,
-          keywords: [emoji.name],
-          name: emoji.name,
-          skins: [{ src: emoji.imageUrl }],
-        })),
-        id: "custom",
-        name: t("reaction.picker.custom"),
-      },
-    ],
-    [customEmojis, t],
-  );
+  const custom = [
+    {
+      emojis: [...customEmojis.values()].map((emoji) => ({
+        id: `${CUSTOM_ID_PREFIX}${emoji.name}`,
+        keywords: [emoji.name],
+        name: emoji.name,
+        skins: [{ src: emoji.imageUrl }],
+      })),
+      id: "custom",
+      name: t("reaction.picker.custom"),
+    },
+  ];
 
   return (
     <Picker

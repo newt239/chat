@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/newt239/chat/ent/channelreadstate"
+
 	"github.com/newt239/chat/internal/domain/entity"
 )
 
@@ -60,10 +62,32 @@ func TestCalculateMetadataByMessageIDs(t *testing.T) {
 	if got.ReplyCount != 1 || *got.LastReplyUserID != f.alice.ID.String() || !got.LastReplyAt.Equal(f.messages["reply"].CreatedAt) {
 		t.Errorf("スレッドのメタデータが期待と異なります: %+v", got)
 	}
-	if !reflect.DeepEqual(got.ParticipantUserIDs, []string{f.bob.ID.String()}) {
-		t.Errorf("参加者が期待と異なります: %v", got.ParticipantUserIDs)
-	}
 	if metadata[single].ReplyCount != 0 || metadata[single].LastReplyAt != nil {
 		t.Errorf("返信のないメッセージのメタデータが期待と異なります: %+v", metadata[single])
+	}
+}
+
+func TestAdvanceReadStateBatchDoesNotMoveBackwards(t *testing.T) {
+	client := openTestClient(t)
+	f := newSearchFixture(t, client)
+	ctx := context.Background()
+	repo := NewReadStateRepository(client)
+	general, dev := f.channels["general"].ID.String(), f.channels["dev"].ID.String()
+	alice := f.alice.ID.String()
+	later := time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC)
+
+	if err := repo.Upsert(ctx, &entity.ChannelReadState{ChannelID: general, UserID: alice, LastReadAt: later}); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.AdvanceBatch(ctx, []string{general, dev}, alice, later.Add(-time.Hour)); err != nil {
+		t.Fatalf("既読位置をまとめて進められません: %v", err)
+	}
+	states := client.ChannelReadState.Query().Where(channelreadstate.UserID(f.alice.ID)).AllX(ctx)
+	got := map[string]time.Time{}
+	for _, s := range states {
+		got[s.ChannelID.String()] = s.LastReadAt
+	}
+	if !got[general].Equal(later) || !got[dev].Equal(later.Add(-time.Hour)) {
+		t.Errorf("既読位置が期待と異なります: %v", got)
 	}
 }

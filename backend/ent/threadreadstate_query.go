@@ -27,7 +27,6 @@ type ThreadReadStateQuery struct {
 	predicates []predicate.ThreadReadState
 	withUser   *UserQuery
 	withThread *MessageQuery
-	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *ThreadReadStateQuery) WithThread(opts ...func(*MessageQuery)) *ThreadR
 // Example:
 //
 //	var v []struct {
-//		LastReadAt time.Time `json:"last_read_at,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ThreadReadState.Query().
-//		GroupBy(threadreadstate.FieldLastReadAt).
+//		GroupBy(threadreadstate.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *ThreadReadStateQuery) GroupBy(field string, fields ...string) *ThreadReadStateGroupBy {
@@ -359,11 +358,11 @@ func (_q *ThreadReadStateQuery) GroupBy(field string, fields ...string) *ThreadR
 // Example:
 //
 //	var v []struct {
-//		LastReadAt time.Time `json:"last_read_at,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.ThreadReadState.Query().
-//		Select(threadreadstate.FieldLastReadAt).
+//		Select(threadreadstate.FieldUserID).
 //		Scan(ctx, &v)
 func (_q *ThreadReadStateQuery) Select(fields ...string) *ThreadReadStateSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *ThreadReadStateQuery) prepareQuery(ctx context.Context) error {
 func (_q *ThreadReadStateQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ThreadReadState, error) {
 	var (
 		nodes       = []*ThreadReadState{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withUser != nil,
 			_q.withThread != nil,
 		}
 	)
-	if _q.withUser != nil || _q.withThread != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, threadreadstate.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ThreadReadState).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *ThreadReadStateQuery) loadUser(ctx context.Context, query *UserQuery, 
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ThreadReadState)
 	for i := range nodes {
-		if nodes[i].thread_read_state_user == nil {
-			continue
-		}
-		fk := *nodes[i].thread_read_state_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *ThreadReadStateQuery) loadUser(ctx context.Context, query *UserQuery, 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "thread_read_state_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *ThreadReadStateQuery) loadThread(ctx context.Context, query *MessageQu
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ThreadReadState)
 	for i := range nodes {
-		if nodes[i].thread_read_state_thread == nil {
-			continue
-		}
-		fk := *nodes[i].thread_read_state_thread
+		fk := nodes[i].ThreadID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *ThreadReadStateQuery) loadThread(ctx context.Context, query *MessageQu
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "thread_read_state_thread" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "thread_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *ThreadReadStateQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != threadreadstate.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(threadreadstate.FieldUserID)
+		}
+		if _q.withThread != nil {
+			_spec.Node.AddColumnOnce(threadreadstate.FieldThreadID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

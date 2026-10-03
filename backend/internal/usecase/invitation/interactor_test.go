@@ -17,6 +17,13 @@ type stubWorkspaceRepo struct {
 }
 
 func (r *stubWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
+	if m := r.members[userID]; m != nil && m.SuspendedAt == nil {
+		return m, nil
+	}
+	return nil, nil
+}
+
+func (r *stubWorkspaceRepo) FindMemberIncludingSuspended(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
 	return r.members[userID], nil
 }
 
@@ -111,7 +118,7 @@ func TestCreatePermission(t *testing.T) {
 		{name: "既定ではメンバーは招待できない", role: entity.WorkspaceRoleMember, wantErr: domerr.ErrUnauthorized},
 		{name: "権限を許可するとメンバーも招待できる", overrides: []entity.PermissionOverride{allowMemberInvite}, role: entity.WorkspaceRoleMember},
 		{name: "招待を許可されたメンバーでも管理者としては招待できない", overrides: []entity.PermissionOverride{allowMemberInvite}, role: entity.WorkspaceRoleAdmin, wantErr: domerr.ErrUnauthorized},
-		{name: "オーナーとしては招待できない", overrides: []entity.PermissionOverride{allowMemberInvite}, role: entity.WorkspaceRoleOwner, wantErr: ErrInvalidRole},
+		{name: "オーナーとしては招待できない", overrides: []entity.PermissionOverride{allowMemberInvite}, role: entity.WorkspaceRoleOwner, wantErr: domerr.ErrInvalidRole},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -138,7 +145,7 @@ func TestCreateAddsExistingUserDirectly(t *testing.T) {
 		t.Errorf("既存ユーザーがワークスペースに追加されていません: %+v", m)
 	}
 
-	if _, err := f.uc.Create(context.Background(), CreateInput{WorkspaceID: "ws", Email: "existing@example.com", Role: entity.WorkspaceRoleMember, RequestedBy: "user"}); !errors.Is(err, ErrAlreadyMember) {
+	if _, err := f.uc.Create(context.Background(), CreateInput{WorkspaceID: "ws", Email: "existing@example.com", Role: entity.WorkspaceRoleMember, RequestedBy: "user"}); !errors.Is(err, domerr.ErrAlreadyMember) {
 		t.Errorf("参加済みのユーザーは招待できないはず: %v", err)
 	}
 }

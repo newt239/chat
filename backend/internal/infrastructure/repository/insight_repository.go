@@ -22,23 +22,23 @@ func NewInsightRepository(client *ent.Client) domainrepository.InsightRepository
 
 // $1: ワークスペース ID, $2: 期間の開始, $3: 期間の終了
 const workspaceMessagesSQL = `
-	SELECT m.message_user AS user_id, m.created_at
-	FROM messages m JOIN channels c ON c.id = m.message_channel
-	WHERE c.channel_workspace = $1 AND m.deleted_at IS NULL AND m.created_at >= $2 AND m.created_at < $3`
+	SELECT m.user_id AS user_id, m.created_at
+	FROM message m JOIN channel c ON c.id = m.channel_id
+	WHERE c.workspace_id = $1 AND m.deleted_at IS NULL AND m.created_at >= $2 AND m.created_at < $3`
 
 // 投稿とリアクションを「活動」とみなす
 const workspaceActivitiesSQL = `
 	SELECT user_id, created_at, 1 AS is_message FROM (` + workspaceMessagesSQL + `) msg
 	UNION ALL
-	SELECT r.message_reaction_user, r.created_at, 0
-	FROM message_reactions r
-	JOIN messages m ON m.id = r.message_reaction_message
-	JOIN channels c ON c.id = m.message_channel
-	WHERE c.channel_workspace = $1 AND r.created_at >= $2 AND r.created_at < $3`
+	SELECT r.user_id, r.created_at, 0
+	FROM message_reaction r
+	JOIN message m ON m.id = r.message_id
+	JOIN channel c ON c.id = m.channel_id
+	WHERE c.workspace_id = $1 AND r.created_at >= $2 AND r.created_at < $3`
 
 const workspaceAttachmentsSQL = `
-	FROM attachments a JOIN channels c ON c.id = a.attachment_channel
-	WHERE c.channel_workspace = $1 AND a.status = 'attached'`
+	FROM attachment a JOIN channel c ON c.id = a.channel_id
+	WHERE c.workspace_id = $1 AND a.status = 'attached'`
 
 func (r *insightRepository) query(ctx context.Context, query string, args []any, scan func(*sql.Rows) error) error {
 	rows, err := transaction.ResolveClient(ctx, r.client).QueryContext(ctx, query, args...)
@@ -72,8 +72,8 @@ func (r *insightRepository) CountActiveMembers(ctx context.Context, workspaceID 
 
 func (r *insightRepository) CountMembersJoinedBefore(ctx context.Context, workspaceID string, before time.Time) (int, error) {
 	n, err := r.queryInt(ctx, `
-		SELECT COUNT(*) FROM workspace_members
-		WHERE workspace_member_workspace = $1 AND joined_at < $2 AND suspended_at IS NULL`, workspaceID, before)
+		SELECT COUNT(*) FROM workspace_member
+		WHERE workspace_id = $1 AND joined_at < $2 AND suspended_at IS NULL`, workspaceID, before)
 	return int(n), err
 }
 
@@ -130,17 +130,17 @@ func (r *insightRepository) ChannelMessageCounts(ctx context.Context, workspaceI
 	}
 	var result []entity.ChannelMessageCount
 	err := r.query(ctx, `
-		SELECT c.id, c.name, c.is_private,
+		SELECT c.id, c.name, c.channel_type <> 'public',
 			COUNT(m.id),
 			COUNT(m.id) FILTER (WHERE m.created_at >= $3)
-		FROM channels c
-		LEFT JOIN messages m ON m.message_channel = c.id AND m.deleted_at IS NULL AND m.created_at >= $2 AND m.created_at < $4
-		WHERE c.channel_workspace = $1
+		FROM channel c
+		LEFT JOIN message m ON m.channel_id = c.id AND m.deleted_at IS NULL AND m.created_at >= $2 AND m.created_at < $4
+		WHERE c.workspace_id = $1
 			AND COALESCE(c.channel_type, 'public') IN ('public', 'private')
-			AND ($5::uuid IS NULL OR NOT c.is_private OR EXISTS (
-				SELECT 1 FROM channel_members cm WHERE cm.channel_member_channel = c.id AND cm.channel_member_user = $5::uuid
+			AND ($5::uuid IS NULL OR c.channel_type = 'public' OR EXISTS (
+				SELECT 1 FROM channel_member cm WHERE cm.channel_id = c.id AND cm.user_id = $5::uuid
 			))
-		GROUP BY c.id, c.name, c.is_private
+		GROUP BY c.id, c.name, c.channel_type
 		ORDER BY COUNT(m.id) DESC, c.name`,
 		[]any{workspaceID, from, recentFrom, to, viewer},
 		func(rows *sql.Rows) error {
@@ -174,12 +174,12 @@ func (r *insightRepository) Heatmap(ctx context.Context, workspaceID string, fro
 func (r *insightRepository) MemberActivities(ctx context.Context, workspaceID string, from, to time.Time) ([]entity.MemberActivity, error) {
 	var result []entity.MemberActivity
 	err := r.query(ctx, `
-		SELECT wm.workspace_member_user,
-			(SELECT COUNT(*) FROM (`+workspaceMessagesSQL+`) t WHERE t.user_id = wm.workspace_member_user),
-			(SELECT COALESCE(SUM(a.size_bytes), 0) `+workspaceAttachmentsSQL+` AND a.attachment_uploader = wm.workspace_member_user),
-			(SELECT MAX(m.created_at) FROM messages m JOIN channels c ON c.id = m.message_channel
-				WHERE c.channel_workspace = $1 AND m.deleted_at IS NULL AND m.message_user = wm.workspace_member_user)
-		FROM workspace_members wm WHERE wm.workspace_member_workspace = $1`,
+		SELECT wm.user_id,
+			(SELECT COUNT(*) FROM (`+workspaceMessagesSQL+`) t WHERE t.user_id = wm.user_id),
+			(SELECT COALESCE(SUM(a.size_bytes), 0) `+workspaceAttachmentsSQL+` AND a.uploader_id = wm.user_id),
+			(SELECT MAX(m.created_at) FROM message m JOIN channel c ON c.id = m.channel_id
+				WHERE c.workspace_id = $1 AND m.deleted_at IS NULL AND m.user_id = wm.user_id)
+		FROM workspace_member wm WHERE wm.workspace_id = $1`,
 		[]any{workspaceID, from, to},
 		func(rows *sql.Rows) error {
 			var a entity.MemberActivity

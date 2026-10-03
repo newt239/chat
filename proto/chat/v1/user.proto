@@ -113,5 +113,5 @@ message UserSummary {
   string display_name = 2;
   optional string avatar_url = 3;
   // アプリの投稿名義のボットユーザー。プロフィールを持たない
-  bool is_bot = 4;
+  bool is_app = 4;
 }

@@ -23,15 +23,11 @@ import (
 // MaxTextLength は 1 回の投稿で受け付ける本文の最大文字数です
 const MaxTextLength = 4000
 
-const (
-	maxSenderNameLength = 80
-	// OfficialAppName は公式アプリの名前です
-	OfficialAppName = "Chat"
-)
+// OfficialAppName は公式アプリの名前です
+const OfficialAppName = "Chat"
 
 var (
 	ErrAppNotFound        = errors.New("指定されたアプリが見つかりません")
-	ErrUnauthorized       = errors.New("このアプリを編集できるのは作成者と管理者だけです")
 	ErrOfficialApp        = errors.New("公式アプリは編集・削除できません")
 	ErrUnsupportedChannel = errors.New("DM にはアプリを追加できません")
 	ErrInactive           = errors.New("作成者がワークスペースを抜けたため、このアプリは使えません")
@@ -61,6 +57,7 @@ type Interactor struct {
 	poster            MessagePoster
 	txManager         domaintransaction.Manager
 	recorder          audit.Recorder
+	logger            domainservice.Logger
 }
 
 func NewInteractor(
@@ -74,6 +71,7 @@ func NewInteractor(
 	poster MessagePoster,
 	txManager domaintransaction.Manager,
 	recorder audit.Recorder,
+	logger domainservice.Logger,
 ) *Interactor {
 	return &Interactor{
 		appRepo:           appRepo,
@@ -86,10 +84,11 @@ func NewInteractor(
 		poster:            poster,
 		txManager:         txManager,
 		recorder:          recorder,
+		logger:            logger,
 	}
 }
 
-// List はワークスペースのアプリを返します。公式アプリがまだなければ用意します
+// List はワークスペースのアプリを返します
 func (i *Interactor) List(ctx context.Context, input ListInput) ([]Output, error) {
 	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
 	if err != nil {
@@ -97,9 +96,6 @@ func (i *Interactor) List(ctx context.Context, input ListInput) ([]Output, error
 	}
 	if member == nil {
 		return nil, domerr.ErrUnauthorized
-	}
-	if _, err := i.EnsureOfficial(ctx, input.WorkspaceID); err != nil {
-		return nil, err
 	}
 	apps, err := i.appRepo.FindByWorkspaceID(ctx, input.WorkspaceID)
 	if err != nil {
@@ -241,10 +237,6 @@ func (i *Interactor) AddToChannel(ctx context.Context, input ChannelInput) error
 	if ch.ArchivedAt != nil {
 		return domerr.ErrChannelArchived
 	}
-	isMember, err := i.channelMemberRepo.IsMember(ctx, ch.ID, app.BotUserID)
-	if err != nil || isMember {
-		return err
-	}
 	return i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: ch.ID, UserID: app.BotUserID, Role: entity.ChannelRoleMember})
 }
 
@@ -256,19 +248,23 @@ func (i *Interactor) RemoveFromChannel(ctx context.Context, input ChannelInput) 
 	return i.channelMemberRepo.RemoveMember(ctx, ch.ID, app.BotUserID)
 }
 
-// Post は着信 Webhook に届いた内容をアプリのボットユーザー名義で投稿します
-func (i *Interactor) Post(ctx context.Context, input PostInput) (*messageuc.MessageOutput, error) {
-	if uuid.Validate(input.AppID) != nil {
+// Authenticate は着信 Webhook のアプリとトークンを確かめます。トークンの誤りも存在しない場合と区別しない
+func (i *Interactor) Authenticate(ctx context.Context, appID, token string) (*entity.App, error) {
+	if uuid.Validate(appID) != nil {
 		return nil, ErrAppNotFound
 	}
-	app, err := i.appRepo.FindByID(ctx, input.AppID)
+	app, err := i.appRepo.FindByID(ctx, appID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load app: %w", err)
 	}
-	// トークンの誤りも存在しない場合と区別しない
-	if app == nil || !app.VerifyToken(input.Token) {
+	if app == nil || !app.VerifyToken(token) {
 		return nil, ErrAppNotFound
 	}
+	return app, nil
+}
+
+// Post は Authenticate で確かめたアプリのボットユーザー名義で、着信 Webhook に届いた内容を投稿します
+func (i *Interactor) Post(ctx context.Context, app *entity.App, input PostInput) (*messageuc.MessageOutput, error) {
 	creator, err := i.workspaceRepo.FindMember(ctx, app.WorkspaceID, app.CreatedBy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify creator: %w", err)
@@ -292,8 +288,9 @@ func (i *Interactor) Post(ctx context.Context, input PostInput) (*messageuc.Mess
 	if err != nil {
 		return nil, err
 	}
+	// 最終利用日時は表示のためだけなので、記録できなくても投稿は成功させる
 	if err := i.appRepo.MarkUsed(ctx, app.ID, output.CreatedAt); err != nil {
-		return nil, fmt.Errorf("failed to update last used time: %w", err)
+		i.logger.Warn("アプリの最終利用日時を記録できません", domainservice.LogField{Key: "appId", Value: app.ID}, domainservice.LogField{Key: "error", Value: err.Error()})
 	}
 	return output, nil
 }
@@ -374,8 +371,8 @@ func (i *Interactor) postAs(ctx context.Context, app *entity.App, channelID stri
 		if err != nil {
 			return nil, fmt.Errorf("failed to load parent message: %w", err)
 		}
-		if parent == nil || parent.ChannelID != ch.ID || parent.ParentID != nil || parent.DeletedAt != nil {
-			return nil, messageuc.ErrParentMessageNotFound
+		if !parent.CanBeRepliedIn(ch.ID) {
+			return nil, domerr.ErrParentMessageNotFound
 		}
 		message.ParentID = parentID
 	}
@@ -406,7 +403,7 @@ func (i *Interactor) applySettings(ctx context.Context, app *entity.App, setting
 		if ch.WorkspaceID != app.WorkspaceID {
 			return domerr.ErrChannelNotFound
 		}
-		if ch.Type == entity.ChannelTypeDM || ch.Type == entity.ChannelTypeGroupDM {
+		if ch.IsDM() {
 			return ErrUnsupportedChannel
 		}
 	}
@@ -437,7 +434,7 @@ func (i *Interactor) createBotUser(ctx context.Context, app *entity.App, isOffic
 		PasswordHash: entity.UnusablePasswordHash,
 		DisplayName:  app.Name,
 		AvatarURL:    app.AvatarURL,
-		IsBot:        true,
+		IsApp:        true,
 		IsOfficial:   isOfficial,
 	}
 	if err := i.userRepo.Create(ctx, bot); err != nil {
@@ -451,11 +448,11 @@ func (i *Interactor) joinDefaultChannel(ctx context.Context, app *entity.App) er
 	if app.DefaultChannelID == nil {
 		return nil
 	}
-	isMember, err := i.channelMemberRepo.IsMember(ctx, *app.DefaultChannelID, app.BotUserID)
-	if err != nil || isMember {
-		return err
+	err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: *app.DefaultChannelID, UserID: app.BotUserID, Role: entity.ChannelRoleMember})
+	if errors.Is(err, domerr.ErrAlreadyMember) {
+		return nil
 	}
-	return i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: *app.DefaultChannelID, UserID: app.BotUserID, Role: entity.ChannelRoleMember})
+	return err
 }
 
 func buildMessage(app *entity.App, input PostInput) (*entity.Message, error) {
@@ -467,20 +464,7 @@ func buildMessage(app *entity.App, input PostInput) (*entity.Message, error) {
 		return nil, ErrTextTooLong
 	}
 
-	message := &entity.Message{UserID: app.BotUserID, Body: text}
-	if input.Username != nil {
-		if name := truncate(strings.TrimSpace(*input.Username), maxSenderNameLength); name != "" {
-			message.SenderName = &name
-		}
-	}
-	if input.AvatarURL != nil && strings.TrimSpace(*input.AvatarURL) != "" {
-		avatar := strings.TrimSpace(*input.AvatarURL)
-		if !isHTTPURL(avatar) {
-			return nil, ErrInvalidURL
-		}
-		message.SenderAvatarURL = &avatar
-	}
-	return message, nil
+	return &entity.Message{UserID: app.BotUserID, Body: text}, nil
 }
 
 // findManageable はアプリを取得し、作成者か管理者であることを確認します。公式アプリは誰も管理できない
@@ -503,7 +487,7 @@ func (i *Interactor) findManageable(ctx context.Context, appID, userID string) (
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 	return app, nil
 }
@@ -520,7 +504,7 @@ func (i *Interactor) findManageableInChannel(ctx context.Context, input ChannelI
 	if ch.WorkspaceID != app.WorkspaceID {
 		return nil, nil, domerr.ErrChannelNotFound
 	}
-	if ch.Type == entity.ChannelTypeDM || ch.Type == entity.ChannelTypeGroupDM {
+	if ch.IsDM() {
 		return nil, nil, ErrUnsupportedChannel
 	}
 	return app, ch, nil
@@ -550,10 +534,6 @@ func (i *Interactor) toOutputs(ctx context.Context, apps []*entity.App, viewerID
 
 	outputs := make([]Output, 0, len(apps))
 	for _, a := range apps {
-		creator := messageuc.UserInfo{ID: a.CreatedBy}
-		if u := byID[a.CreatedBy]; u != nil {
-			creator = messageuc.UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL}
-		}
 		canManage := !a.IsOfficial && (isAdmin || a.CreatedBy == viewerID)
 		output := Output{
 			ID:               a.ID,
@@ -566,7 +546,7 @@ func (i *Interactor) toOutputs(ctx context.Context, apps []*entity.App, viewerID
 			OutgoingURL:      a.OutgoingURL,
 			IsOfficial:       a.IsOfficial,
 			BotUserID:        a.BotUserID,
-			CreatedBy:        creator,
+			CreatedBy:        messageuc.UserInfoOf(a.CreatedBy, byID),
 			CreatedAt:        a.CreatedAt,
 			LastUsedAt:       a.LastUsedAt,
 			CanManage:        canManage,
@@ -593,12 +573,4 @@ func (i *Interactor) record(ctx context.Context, app *entity.App, actorID string
 func isHTTPURL(raw string) bool {
 	u, err := url.Parse(raw)
 	return err == nil && (u.Scheme == "http" || u.Scheme == "https") && u.Host != ""
-}
-
-func truncate(s string, maxRunes int) string {
-	runes := []rune(s)
-	if len(runes) <= maxRunes {
-		return s
-	}
-	return string(runes[:maxRunes])
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -42,7 +42,7 @@ func (s *permissionService) Ensure(ctx context.Context, workspaceID, userID stri
 		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
 	}
 	if member == nil {
-		return nil, domainerrors.ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 	if member.Role == entity.WorkspaceRoleOwner {
 		return member, nil
@@ -53,7 +53,7 @@ func (s *permissionService) Ensure(ctx context.Context, workspaceID, userID stri
 		return nil, err
 	}
 	if !matrix.Allows(member.Role, permission) {
-		return nil, domainerrors.ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 	return member, nil
 }

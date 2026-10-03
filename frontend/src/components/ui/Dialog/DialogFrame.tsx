@@ -23,7 +23,7 @@ const layouts = {
   bottom: {
     animation: { animate: { y: 0 }, exit: { y: "100%" }, initial: { y: "100%" } },
     className:
-      "fixed inset-x-0 bottom-0 max-h-[88%] overflow-y-auto rounded-t-[18px] pb-[max(24px,env(safe-area-inset-bottom))]",
+      "fixed inset-x-0 bottom-0 max-h-[88%] overflow-y-auto rounded-t-xl pb-[max(24px,env(safe-area-inset-bottom))]",
     transition: transitions.sheet,
   },
   center: {
@@ -65,7 +65,7 @@ export const DialogFrame = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={transitions.fast}
-          className="fixed inset-0 z-[300] grid place-items-center bg-overlay px-4 py-6"
+          className="fixed inset-0 z-overlay grid place-items-center bg-overlay px-4 py-6"
         >
           <MotionModal
             {...animation}
@@ -96,7 +96,7 @@ export const DialogFrame = ({
                     dragControls.start(event);
                   }}
                 >
-                  <span className="h-[5px] w-9 rounded-[3px] bg-border-strong" />
+                  <span className="h-1.25 w-9 rounded-sm bg-border-strong" />
                 </div>
               )}
               {children}

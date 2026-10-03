@@ -15,6 +15,10 @@ const (
 	Label = "workspace_member"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldWorkspaceID holds the string denoting the workspace_id field in the database.
+	FieldWorkspaceID = "workspace_id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// FieldJoinedAt holds the string denoting the joined_at field in the database.
@@ -26,47 +30,37 @@ const (
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the workspacemember in the database.
-	Table = "workspace_members"
+	Table = "workspace_member"
 	// WorkspaceTable is the table that holds the workspace relation/edge.
-	WorkspaceTable = "workspace_members"
+	WorkspaceTable = "workspace_member"
 	// WorkspaceInverseTable is the table name for the Workspace entity.
 	// It exists in this package in order to avoid circular dependency with the "workspace" package.
-	WorkspaceInverseTable = "workspaces"
+	WorkspaceInverseTable = "workspace"
 	// WorkspaceColumn is the table column denoting the workspace relation/edge.
-	WorkspaceColumn = "workspace_member_workspace"
+	WorkspaceColumn = "workspace_id"
 	// UserTable is the table that holds the user relation/edge.
-	UserTable = "workspace_members"
+	UserTable = "workspace_member"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "workspace_member_user"
+	UserColumn = "user_id"
 )
 
 // Columns holds all SQL columns for workspacemember fields.
 var Columns = []string{
 	FieldID,
+	FieldWorkspaceID,
+	FieldUserID,
 	FieldRole,
 	FieldJoinedAt,
 	FieldSuspendedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "workspace_members"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"workspace_member_workspace",
-	"workspace_member_user",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -88,6 +82,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByWorkspaceID orders the results by the workspace_id field.
+func ByWorkspaceID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWorkspaceID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByRole orders the results by the role field.

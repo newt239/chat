@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useMentionDirectory } from "../../hooks/useMentionDirectory";
 import { chipClassName } from "./chipClassName";
@@ -22,7 +22,7 @@ type MentionProps = {
 export const Mention = ({ "data-mention": value }: MentionProps) => {
   const { t } = useTranslation();
   const directory = useMentionDirectory();
-  const currentUser = useAtomValue(userAtom);
+  const myId = useAtomValue(myUserIdAtom);
   const navigate = useNavigate();
   const [kind, id = ""] = value.split(":");
 
@@ -44,7 +44,7 @@ export const Mention = ({ "data-mention": value }: MentionProps) => {
     );
   }
 
-  const isMe = member !== undefined && member.userId === currentUser?.id;
+  const isMe = member?.userId === myId;
   return (
     <Button
       className={cn(chipClassName, isMe && "bg-mention-chip text-mention-text", focusRing)}

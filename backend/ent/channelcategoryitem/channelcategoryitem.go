@@ -13,6 +13,12 @@ const (
 	Label = "channel_category_item"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCategoryID holds the string denoting the category_id field in the database.
+	FieldCategoryID = "category_id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
+	// FieldChannelID holds the string denoting the channel_id field in the database.
+	FieldChannelID = "channel_id"
 	// EdgeCategory holds the string denoting the category edge name in mutations.
 	EdgeCategory = "category"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -27,45 +33,35 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "channelcategory" package.
 	CategoryInverseTable = "channel_category"
 	// CategoryColumn is the table column denoting the category relation/edge.
-	CategoryColumn = "channel_category_items"
+	CategoryColumn = "category_id"
 	// UserTable is the table that holds the user relation/edge.
 	UserTable = "channel_category_item"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "channel_category_item_user"
+	UserColumn = "user_id"
 	// ChannelTable is the table that holds the channel relation/edge.
 	ChannelTable = "channel_category_item"
 	// ChannelInverseTable is the table name for the Channel entity.
 	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	ChannelInverseTable = "channels"
+	ChannelInverseTable = "channel"
 	// ChannelColumn is the table column denoting the channel relation/edge.
-	ChannelColumn = "channel_category_item_channel"
+	ChannelColumn = "channel_id"
 )
 
 // Columns holds all SQL columns for channelcategoryitem fields.
 var Columns = []string{
 	FieldID,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "channel_category_item"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"channel_category_items",
-	"channel_category_item_user",
-	"channel_category_item_channel",
+	FieldCategoryID,
+	FieldUserID,
+	FieldChannelID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -83,6 +79,21 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByCategoryID orders the results by the category_id field.
+func ByCategoryID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCategoryID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
+}
+
+// ByChannelID orders the results by the channel_id field.
+func ByChannelID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelID, opts...).ToFunc()
 }
 
 // ByCategoryField orders the results by category field.

@@ -2,20 +2,17 @@ package message
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 )
 
 var (
-	ErrChannelNotFound       = errors.New("チャンネルが見つかりません")
-	ErrUnauthorized          = errors.New("この操作を行う権限がありません")
-	ErrParentMessageNotFound = errors.New("親メッセージが見つかりません")
-	ErrMessageNotFound       = errors.New("メッセージが見つかりません")
 	ErrMessageAlreadyDeleted = errors.New("メッセージは既に削除されています")
 	ErrCannotEditDeleted     = errors.New("削除済みメッセージは編集できません")
-	ErrAttachmentNotFound    = errors.New("添付ファイルが見つかりません")
-	ErrEmptyMessage          = errors.New("本文・添付・位置情報・投票のいずれかが必要です")
+	ErrEmptyMessage          = fmt.Errorf("%w: 本文・添付・位置情報・投票のいずれかが必要です", domerr.ErrValidation)
 	ErrOfficialMessage       = errors.New("公式アプリの投稿は編集・削除できません")
 )
 
@@ -62,7 +59,7 @@ type UserInfo struct {
 	ID          string  `json:"id"`
 	DisplayName string  `json:"displayName"`
 	AvatarURL   *string `json:"avatarUrl,omitempty"`
-	IsBot       bool    `json:"isBot"`
+	IsApp       bool    `json:"isApp"`
 }
 
 type UserMention struct {
@@ -164,11 +161,11 @@ type ListMessagesOutput struct {
 }
 
 type ThreadMetadataOutput struct {
-	MessageID          string     `json:"messageId"`
-	ReplyCount         int        `json:"replyCount"`
-	LastReplyAt        *time.Time `json:"lastReplyAt"`
-	LastReplyUser      *UserInfo  `json:"lastReplyUser"`
-	ParticipantUserIDs []string   `json:"participantUserIds"`
+	MessageID     string     `json:"messageId"`
+	ReplyCount    int        `json:"replyCount"`
+	LastReplyAt   *time.Time `json:"lastReplyAt"`
+	LastReplyUser *UserInfo  `json:"lastReplyUser"`
+	IsFollowing   bool       `json:"isFollowing"`
 }
 
 type GetThreadRepliesInput struct {
@@ -205,14 +202,30 @@ type MessageWithThreadOutput struct {
 	ThreadMetadata *ThreadMetadataOutput `json:"threadMetadata,omitempty"`
 }
 
+type ListMessagesWithThreadOutput struct {
+	Messages []MessageWithThreadOutput
+	HasMore  bool
+}
+
 // SystemMessageOutput はシステムメッセージの出力です
 type SystemMessageOutput struct {
-	ID        string         `json:"id"`
-	ChannelID string         `json:"channelId"`
-	Kind      string         `json:"kind"`
-	Payload   map[string]any `json:"payload"`
-	ActorID   *string        `json:"actorId,omitempty"`
-	CreatedAt time.Time      `json:"createdAt"`
+	ID        string                   `json:"id"`
+	ChannelID string                   `json:"channelId"`
+	Kind      entity.SystemMessageKind `json:"kind"`
+	Payload   map[string]any           `json:"payload"`
+	ActorID   *string                  `json:"actorId,omitempty"`
+	CreatedAt time.Time                `json:"createdAt"`
+}
+
+func NewSystemMessageOutput(sm *entity.SystemMessage) SystemMessageOutput {
+	return SystemMessageOutput{
+		ID:        sm.ID,
+		ChannelID: sm.ChannelID,
+		Kind:      sm.Kind,
+		Payload:   sm.Payload,
+		ActorID:   sm.ActorID,
+		CreatedAt: sm.CreatedAt,
+	}
 }
 
 // TimelineItem はユーザー/システム両メッセージの統合タイムライン項目です

@@ -2,12 +2,11 @@ package message
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
@@ -134,14 +133,14 @@ func (b *MessageOutputBuilder) Build(ctx context.Context, viewerID string, messa
 	return outputs, nil
 }
 
-// BuildPreview は viewerID が参照できるメッセージの引用カードを返します。参照できなければ ErrMessageNotFound を返します
+// BuildPreview は viewerID が参照できるメッセージの引用カードを返します。参照できなければ domerr.ErrMessageNotFound を返します
 func (b *MessageOutputBuilder) BuildPreview(ctx context.Context, viewerID, messageID string) (*MessagePreviewOutput, error) {
 	linked, channels, err := b.fetchAccessibleMessages(ctx, viewerID, []string{messageID})
 	if err != nil {
 		return nil, err
 	}
 	if len(linked) == 0 {
-		return nil, ErrMessageNotFound
+		return nil, domerr.ErrMessageNotFound
 	}
 	users, err := b.fetchUsers(ctx, []string{linked[0].UserID})
 	if err != nil {
@@ -152,30 +151,25 @@ func (b *MessageOutputBuilder) BuildPreview(ctx context.Context, viewerID, messa
 
 // fetchAccessibleMessages は削除されておらず viewerID が参照できるメッセージと、そのチャンネルを返します
 func (b *MessageOutputBuilder) fetchAccessibleMessages(ctx context.Context, viewerID string, ids []string) ([]*entity.Message, map[string]*entity.Channel, error) {
-	channels := map[string]*entity.Channel{}
 	if len(ids) == 0 {
-		return nil, channels, nil
+		return nil, map[string]*entity.Channel{}, nil
 	}
-
 	messages, err := b.messageRepo.FindByIDs(ctx, uniqueStrings(ids))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch linked messages: %w", err)
 	}
+	channelIDs := make([]string, 0, len(messages))
+	for _, msg := range messages {
+		channelIDs = append(channelIDs, msg.ChannelID)
+	}
+	channels, err := b.channelAccessSvc.AccessibleChannelsByIDs(ctx, uniqueStrings(channelIDs), viewerID)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	accessible := make([]*entity.Message, 0, len(messages))
 	for _, msg := range messages {
-		if msg.DeletedAt != nil {
-			continue
-		}
-		ch, checked := channels[msg.ChannelID]
-		if !checked {
-			ch, err = b.channelAccessSvc.EnsureChannelAccess(ctx, msg.ChannelID, viewerID)
-			if err != nil && !errors.Is(err, domainerrors.ErrUnauthorized) && !errors.Is(err, domainerrors.ErrChannelNotFound) {
-				return nil, nil, err
-			}
-			channels[msg.ChannelID] = ch
-		}
-		if ch != nil {
+		if msg.DeletedAt == nil && channels[msg.ChannelID] != nil {
 			accessible = append(accessible, msg)
 		}
 	}
@@ -269,7 +263,7 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 		ID:          msg.ID,
 		ChannelID:   msg.ChannelID,
 		UserID:      msg.UserID,
-		User:        authorInfo(msg, users),
+		User:        UserInfoOf(msg.UserID, users),
 		ParentID:    msg.ParentID,
 		Body:        msg.Body,
 		Mentions:    make([]UserMention, 0, len(related.userMentions[msg.ID])),
@@ -307,7 +301,7 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 	}
 	for _, reaction := range related.reactions[msg.ID] {
 		output.Reactions = append(output.Reactions, ReactionInfo{
-			User:      toUserInfo(reaction.UserID, users),
+			User:      UserInfoOf(reaction.UserID, users),
 			Emoji:     reaction.Emoji,
 			CreatedAt: reaction.CreatedAt,
 		})
@@ -322,11 +316,11 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 		})
 	}
 	if msg.DeletedBy != nil {
-		deletedBy := toUserInfo(*msg.DeletedBy, users)
+		deletedBy := UserInfoOf(*msg.DeletedBy, users)
 		output.DeletedBy = &deletedBy
 	}
 	if pin := related.pins[msg.ID]; pin != nil {
-		output.Pin = &PinInfo{PinnedBy: toUserInfo(pin.PinnedBy, users), PinnedAt: pin.PinnedAt}
+		output.Pin = &PinInfo{PinnedBy: UserInfoOf(pin.PinnedBy, users), PinnedAt: pin.PinnedAt}
 	}
 	return output
 }
@@ -337,7 +331,7 @@ func buildPreview(msg *entity.Message, ch *entity.Channel, users map[string]*ent
 		ChannelID:   msg.ChannelID,
 		ChannelName: ch.Name,
 		ParentID:    msg.ParentID,
-		User:        authorInfo(msg, users),
+		User:        UserInfoOf(msg.UserID, users),
 		BodyExcerpt: excerpt(msg.Body, previewExcerptRunes),
 		CreatedAt:   msg.CreatedAt,
 	}
@@ -351,23 +345,17 @@ func excerpt(body string, maxRunes int) string {
 	return string(runes[:maxRunes]) + "…"
 }
 
-func toUserInfo(userID string, users map[string]*entity.User) UserInfo {
-	if u := users[userID]; u != nil {
-		return UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsBot: u.IsBot}
-	}
-	return UserInfo{ID: userID, DisplayName: "Unknown User"}
+// NewUserInfo は表示に使うユーザーの名前・アバター・アプリかどうかを取り出します
+func NewUserInfo(u *entity.User) UserInfo {
+	return UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsApp: u.IsApp}
 }
 
-// authorInfo は投稿者の情報に、アプリが投稿ごとに指定した表示名とアイコンを反映します
-func authorInfo(msg *entity.Message, users map[string]*entity.User) UserInfo {
-	info := toUserInfo(msg.UserID, users)
-	if msg.SenderName != nil {
-		info.DisplayName = *msg.SenderName
+// UserInfoOf は users にないユーザーを削除済みとして扱います
+func UserInfoOf(userID string, users map[string]*entity.User) UserInfo {
+	if u := users[userID]; u != nil {
+		return NewUserInfo(u)
 	}
-	if msg.SenderAvatarURL != nil {
-		info.AvatarURL = msg.SenderAvatarURL
-	}
-	return info
+	return UserInfo{ID: userID, DisplayName: "Unknown User"}
 }
 
 func groupByMessageID[T any](items []T, messageID func(T) string) map[string][]T {

@@ -13,11 +13,11 @@ import { useTranslation } from "react-i18next";
 
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
-import { toast } from "#/components/ui/ToastRegion/toast";
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useChannelListActions } from "#/features/channel/hooks/useChannelListActions";
 import { canHaveChildChannel } from "#/features/channel/utils/channelPath";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { copyWithToast } from "#/lib/clipboard";
 import { toShareUrl } from "#/lib/platform/appOrigin";
 import { isTauri } from "#/lib/platform/platform";
 
@@ -95,8 +95,7 @@ export const ChannelMenuItems = ({
         icon={<IconLink />}
         onAction={() => {
           const { href } = router.buildLocation(location);
-          void navigator.clipboard.writeText(toShareUrl(href));
-          toast(t("shell.channelMenu.linkCopied"));
+          void copyWithToast(toShareUrl(href), t("shell.channelMenu.linkCopied"));
         }}
       >
         {t("shell.channelMenu.copyLink")}

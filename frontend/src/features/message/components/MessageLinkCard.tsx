@@ -30,14 +30,14 @@ export const MessageLinkCard = ({ message, workspaceId, markedAt }: MessageLinkC
       className="flex gap-2.5 rounded-lg px-2 py-1.5 font-sans text-text no-underline data-hovered:bg-hover"
     >
       <Avatar name={name} src={message.user?.avatarUrl} size={28} />
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5 leading-[1.35]">
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5 leading-snug">
         <span className="flex items-baseline gap-2">
-          <b className="truncate text-[13.5px] font-semibold">{name}</b>
-          <span className="shrink-0 font-mono text-[11px] text-subtle tabular-nums">
+          <b className="truncate text-body-sm font-semibold">{name}</b>
+          <span className="shrink-0 font-mono text-caption text-subtle tabular-nums">
             {formatDateTime(toDate(markedAt))}
           </span>
         </span>
-        <span className="line-clamp-3 text-[13px] whitespace-pre-wrap text-muted">
+        <span className="line-clamp-3 text-body-sm whitespace-pre-wrap text-muted">
           {toText(message.body)}
         </span>
       </span>

@@ -27,7 +27,6 @@ type ChannelStarQuery struct {
 	predicates  []predicate.ChannelStar
 	withUser    *UserQuery
 	withChannel *ChannelQuery
-	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *ChannelStarQuery) WithChannel(opts ...func(*ChannelQuery)) *ChannelSta
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ChannelStar.Query().
-//		GroupBy(channelstar.FieldCreatedAt).
+//		GroupBy(channelstar.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *ChannelStarQuery) GroupBy(field string, fields ...string) *ChannelStarGroupBy {
@@ -359,11 +358,11 @@ func (_q *ChannelStarQuery) GroupBy(field string, fields ...string) *ChannelStar
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.ChannelStar.Query().
-//		Select(channelstar.FieldCreatedAt).
+//		Select(channelstar.FieldUserID).
 //		Scan(ctx, &v)
 func (_q *ChannelStarQuery) Select(fields ...string) *ChannelStarSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *ChannelStarQuery) prepareQuery(ctx context.Context) error {
 func (_q *ChannelStarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ChannelStar, error) {
 	var (
 		nodes       = []*ChannelStar{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withUser != nil,
 			_q.withChannel != nil,
 		}
 	)
-	if _q.withUser != nil || _q.withChannel != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, channelstar.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ChannelStar).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *ChannelStarQuery) loadUser(ctx context.Context, query *UserQuery, node
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ChannelStar)
 	for i := range nodes {
-		if nodes[i].channel_star_user == nil {
-			continue
-		}
-		fk := *nodes[i].channel_star_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *ChannelStarQuery) loadUser(ctx context.Context, query *UserQuery, node
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_star_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *ChannelStarQuery) loadChannel(ctx context.Context, query *ChannelQuery
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ChannelStar)
 	for i := range nodes {
-		if nodes[i].channel_star_channel == nil {
-			continue
-		}
-		fk := *nodes[i].channel_star_channel
+		fk := nodes[i].ChannelID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *ChannelStarQuery) loadChannel(ctx context.Context, query *ChannelQuery
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_star_channel" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "channel_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *ChannelStarQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != channelstar.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(channelstar.FieldUserID)
+		}
+		if _q.withChannel != nil {
+			_spec.Node.AddColumnOnce(channelstar.FieldChannelID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

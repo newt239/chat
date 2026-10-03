@@ -33,7 +33,7 @@ describe("GoogleSignInButton", () => {
   test("Google のボタンを描画し、受け取った ID トークンでログインする", async () => {
     vi.mocked(loadGoogleIdentity).mockResolvedValue();
     const { configs, renderButton } = setupGoogle();
-    const loginWithGoogle = vi.fn(() => ({ accessToken: "a", refreshToken: "r" }));
+    const loginWithGoogle = vi.fn(() => ({ accessToken: "a", user: { id: "u1" } }));
     await renderWithProviders(
       <GoogleSignInButton clientId="client-1" workspaceId={null} />,
       "/app/ws1",

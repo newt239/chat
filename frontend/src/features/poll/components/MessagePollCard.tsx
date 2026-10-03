@@ -71,11 +71,11 @@ export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
   return (
     <section
       aria-label={t("poll.label")}
-      className="flex w-[min(440px,100%)] flex-col gap-2 rounded-[10px] border border-border bg-surface px-3 py-2.5 font-sans"
+      className="flex w-110 max-w-full flex-col gap-2 rounded-lg border border-border bg-surface px-3 py-2.5 font-sans"
     >
       <header className="flex flex-wrap items-center gap-1.5">
         <IconChartBar aria-hidden className="size-4 shrink-0 text-accent-text" />
-        <b className="min-w-0 flex-1 text-[14px] break-words">{poll.question}</b>
+        <b className="min-w-0 flex-1 text-body font-bold break-words">{poll.question}</b>
         {poll.allowMultiple && <Badge tone="tag">{t("poll.multipleBadge")}</Badge>}
         {poll.anonymous && <Badge tone="tag">{t("poll.anonymousBadge")}</Badge>}
         {poll.isClosed && <Badge tone="tag">{t("poll.closedBadge")}</Badge>}
@@ -92,7 +92,7 @@ export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
                   choose(option.id);
                 }}
                 className={cn(
-                  "relative flex w-full cursor-pointer items-center gap-2 overflow-hidden rounded-md border px-2.5 py-1.5 text-left text-[13px] text-text data-disabled:cursor-default",
+                  "relative flex w-full cursor-pointer items-center gap-2 overflow-hidden rounded-md border px-2.5 py-1.5 text-left text-body-sm text-text data-disabled:cursor-default",
                   isMine ? "border-accent" : "border-border data-hovered:bg-hover",
                   focusRing,
                 )}

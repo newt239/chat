@@ -1,43 +1,33 @@
-import { useEffect, useMemo } from "react";
-
-import { skipToken, useQuery } from "@connectrpc/connect-query";
-import { useSetAtom } from "jotai";
+import { useQuery } from "@connectrpc/connect-query";
 
 import { PinService } from "#/gen/chat/v1/pin_service_pb";
 import { toDate } from "#/lib/timestamp";
-import { setChannelPinsCountAtom } from "#/providers/store/ui";
+
+import type { ListPinsResponse } from "#/gen/chat/v1/pin_service_pb";
 
 const PIN_LIMIT = 100;
 
-const usePins = (channelId: string | null) =>
+// メッセージが削除されたピンは表示できないため除く
+const toVisiblePins = (res: ListPinsResponse) =>
+  res.pins.flatMap(({ message, ...pin }) => (message === undefined ? [] : [{ ...pin, message }]));
+
+/** ヘッダーのバッジに出す件数。ピンの操作や WebSocket のイベントで一覧ごと invalidate して更新する */
+export const usePinCount = (channelId: string) =>
   useQuery(
     PinService.method.listPins,
-    channelId === null ? skipToken : { channelId, limit: PIN_LIMIT },
-    {
-      // メッセージが削除されたピンは表示できないため除く
-      select: (res) =>
-        res.pins.flatMap(({ message, ...pin }) =>
-          message === undefined ? [] : [{ ...pin, message }],
-        ),
-    },
+    { channelId, limit: PIN_LIMIT },
+    { select: (res) => toVisiblePins(res).length },
+  ).data ?? 0;
+
+export const usePinnedMessages = (channelId: string) => {
+  const query = useQuery(
+    PinService.method.listPins,
+    { channelId, limit: PIN_LIMIT },
+    { select: toVisiblePins },
   );
 
-export const usePinnedMessages = (channelId: string | null) => {
-  const setPinsCount = useSetAtom(setChannelPinsCountAtom);
-  const query = usePins(channelId);
-
-  useEffect(() => {
-    if (channelId && query.data) {
-      setPinsCount({ channelId, count: query.data.length });
-    }
-  }, [channelId, query.data, setPinsCount]);
-
-  const pinsSorted = useMemo(
-    () =>
-      (query.data ?? []).toSorted(
-        (a, b) => toDate(b.pinnedAt).getTime() - toDate(a.pinnedAt).getTime(),
-      ),
-    [query.data],
+  const pinsSorted = (query.data ?? []).toSorted(
+    (a, b) => toDate(b.pinnedAt).getTime() - toDate(a.pinnedAt).getTime(),
   );
 
   return { ...query, pins: pinsSorted };

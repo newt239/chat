@@ -2,19 +2,13 @@ package reaction
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
-)
-
-var (
-	ErrMessageNotFound = errors.New("メッセージが見つかりません")
-	ErrUnauthorized    = errors.New("この操作を行う権限がありません")
-	ErrReactionExists  = errors.New("同じリアクションが既に追加されています")
+	"github.com/newt239/chat/internal/usecase/message"
 )
 
 type ReactionUseCase interface {
@@ -24,193 +18,101 @@ type ReactionUseCase interface {
 }
 
 type reactionInteractor struct {
-	messageRepo       domainrepository.MessageRepository
-	channelRepo       domainrepository.ChannelRepository
-	channelMemberRepo domainrepository.ChannelMemberRepository
-	workspaceRepo     domainrepository.WorkspaceRepository
-	userRepo          domainrepository.UserRepository
-	notificationSvc   Notifier
-	channelAccessSvc  service.ChannelAccessService
+	messageRepo      domainrepository.MessageRepository
+	userRepo         domainrepository.UserRepository
+	notificationSvc  Notifier
+	channelAccessSvc service.ChannelAccessService
 }
 
 func NewReactionInteractor(
 	messageRepo domainrepository.MessageRepository,
-	channelRepo domainrepository.ChannelRepository,
-	channelMemberRepo domainrepository.ChannelMemberRepository,
-	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	notificationSvc Notifier,
 	channelAccessSvc service.ChannelAccessService,
 ) ReactionUseCase {
 	return &reactionInteractor{
-		messageRepo:       messageRepo,
-		channelRepo:       channelRepo,
-		channelMemberRepo: channelMemberRepo,
-		workspaceRepo:     workspaceRepo,
-		userRepo:          userRepo,
-		notificationSvc:   notificationSvc,
-		channelAccessSvc:  channelAccessSvc,
+		messageRepo:      messageRepo,
+		userRepo:         userRepo,
+		notificationSvc:  notificationSvc,
+		channelAccessSvc: channelAccessSvc,
 	}
 }
 
-func (i *reactionInteractor) AddReaction(ctx context.Context, input AddReactionInput) error {
-	// メッセージの存在確認とアクセス権限チェック
-	message, err := i.messageRepo.FindByID(ctx, input.MessageID)
+// ensureAccess はメッセージがあり、そのチャンネルを閲覧できることを確かめます
+func (i *reactionInteractor) ensureAccess(ctx context.Context, messageID, userID string) (*entity.Channel, error) {
+	msg, err := i.messageRepo.FindByID(ctx, messageID)
 	if err != nil {
-		return fmt.Errorf("failed to fetch message: %w", err)
+		return nil, fmt.Errorf("failed to fetch message: %w", err)
 	}
-	if message == nil {
-		return ErrMessageNotFound
+	if msg == nil {
+		return nil, domerr.ErrMessageNotFound
 	}
+	return i.channelAccessSvc.EnsureChannelAccess(ctx, msg.ChannelID, userID)
+}
 
-	// チャンネルへのアクセス権限チェック
-	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
+// AddReaction は同じリアクションが既にあれば ErrReactionExists を返します
+func (i *reactionInteractor) AddReaction(ctx context.Context, input AddReactionInput) error {
+	ch, err := i.ensureAccess(ctx, input.MessageID, input.UserID)
+	if err != nil {
 		return err
 	}
 
-	// リアクションを追加
-	reaction := &entity.MessageReaction{
-		MessageID: input.MessageID,
-		UserID:    input.UserID,
-		Emoji:     input.Emoji,
-		CreatedAt: time.Now(),
-	}
-
+	reaction := &entity.MessageReaction{MessageID: input.MessageID, UserID: input.UserID, Emoji: input.Emoji}
 	if err := i.messageRepo.AddReaction(ctx, reaction); err != nil {
-		return fmt.Errorf("failed to add reaction: %w", err)
+		return err
 	}
 
 	notification := ReactionNotification{MessageID: input.MessageID, UserID: input.UserID, Emoji: input.Emoji, CreatedAt: reaction.CreatedAt}
-	if user, _ := i.userRepo.FindByID(ctx, input.UserID); user != nil {
-		userInfo := toReactionOutput(reaction, user).User
-		notification.User = &userInfo
+	if user, err := i.userRepo.FindByID(ctx, input.UserID); err == nil && user != nil {
+		notification.User = new(message.NewUserInfo(user))
 	}
-	i.notifyReaction(ctx, message.ChannelID, notification, true)
-
+	i.notificationSvc.NotifyReactionAdded(ch.WorkspaceID, ch.ID, notification)
 	return nil
 }
 
-// notifyReaction はリアクションの追加・削除をチャンネル購読者に通知します
-func (i *reactionInteractor) notifyReaction(ctx context.Context, channelID string, reaction ReactionNotification, added bool) {
-	if i.notificationSvc == nil {
-		return
-	}
-
-	channel, err := i.channelRepo.FindByID(ctx, channelID)
-	if err != nil || channel == nil {
-		return
-	}
-
-	if added {
-		i.notificationSvc.NotifyReactionAdded(channel.WorkspaceID, channel.ID, reaction)
-		return
-	}
-	i.notificationSvc.NotifyReactionRemoved(channel.WorkspaceID, channel.ID, reaction)
-}
-
 func (i *reactionInteractor) RemoveReaction(ctx context.Context, input RemoveReactionInput) error {
-	// メッセージの存在確認
-	message, err := i.messageRepo.FindByID(ctx, input.MessageID)
+	ch, err := i.ensureAccess(ctx, input.MessageID, input.UserID)
 	if err != nil {
-		return fmt.Errorf("failed to fetch message: %w", err)
-	}
-	if message == nil {
-		return ErrMessageNotFound
-	}
-
-	// チャンネルへのアクセス権限チェック
-	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
 		return err
 	}
-
-	// リアクションを削除
 	if err := i.messageRepo.RemoveReaction(ctx, input.MessageID, input.UserID, input.Emoji); err != nil {
 		return fmt.Errorf("failed to remove reaction: %w", err)
 	}
-
-	i.notifyReaction(ctx, message.ChannelID, ReactionNotification{MessageID: input.MessageID, UserID: input.UserID, Emoji: input.Emoji}, false)
-
+	i.notificationSvc.NotifyReactionRemoved(ch.WorkspaceID, ch.ID, ReactionNotification{MessageID: input.MessageID, UserID: input.UserID, Emoji: input.Emoji})
 	return nil
 }
 
 func (i *reactionInteractor) ListReactions(ctx context.Context, messageID string, userID string) (*ListReactionsOutput, error) {
-	// メッセージの存在確認
-	message, err := i.messageRepo.FindByID(ctx, messageID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch message: %w", err)
-	}
-	if message == nil {
-		return nil, ErrMessageNotFound
-	}
-
-	// チャンネルへのアクセス権限チェック
-	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, userID); err != nil {
+	if _, err := i.ensureAccess(ctx, messageID, userID); err != nil {
 		return nil, err
 	}
 
-	// リアクションを取得
 	reactions, err := i.messageRepo.FindReactions(ctx, messageID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch reactions: %w", err)
 	}
 
-	if len(reactions) == 0 {
-		return &ListReactionsOutput{Reactions: []ReactionOutput{}}, nil
-	}
-
-	// ユーザーIDを収集
-	userIDs := make([]string, 0, len(reactions))
-	userIDSet := make(map[string]bool)
+	var userIDs []string
 	for _, reaction := range reactions {
-		if !userIDSet[reaction.UserID] {
-			userIDs = append(userIDs, reaction.UserID)
-			userIDSet[reaction.UserID] = true
-		}
+		userIDs = append(userIDs, reaction.UserID)
 	}
-
-	// ユーザー情報を一括取得
 	users, err := i.userRepo.FindByIDs(ctx, userIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch users: %w", err)
 	}
-
-	// ユーザー情報をマップに格納
-	userMap := make(map[string]*entity.User)
+	userMap := make(map[string]*entity.User, len(users))
 	for _, user := range users {
 		userMap[user.ID] = user
 	}
 
-	// ReactionOutputに変換
 	outputs := make([]ReactionOutput, 0, len(reactions))
 	for _, reaction := range reactions {
-		user := userMap[reaction.UserID]
-		outputs = append(outputs, toReactionOutput(reaction, user))
+		outputs = append(outputs, ReactionOutput{
+			MessageID: reaction.MessageID,
+			User:      message.UserInfoOf(reaction.UserID, userMap),
+			Emoji:     reaction.Emoji,
+			CreatedAt: reaction.CreatedAt,
+		})
 	}
-
 	return &ListReactionsOutput{Reactions: outputs}, nil
-}
-
-// ensureChannelAccess は ChannelAccessService に委譲済み
-
-func toReactionOutput(reaction *entity.MessageReaction, user *entity.User) ReactionOutput {
-	userInfo := UserInfo{
-		ID:          "",
-		DisplayName: "Unknown User",
-		AvatarURL:   nil,
-	}
-
-	if user != nil {
-		userInfo = UserInfo{
-			ID:          user.ID,
-			DisplayName: user.DisplayName,
-			AvatarURL:   user.AvatarURL,
-		}
-	}
-
-	return ReactionOutput{
-		MessageID: reaction.MessageID,
-		User:      userInfo,
-		Emoji:     reaction.Emoji,
-		CreatedAt: reaction.CreatedAt,
-	}
 }

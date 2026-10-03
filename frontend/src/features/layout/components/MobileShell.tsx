@@ -117,7 +117,7 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
           <MobileStackLayer key={content.key} onBack={backFromPanel}>
             <header className="flex h-12 shrink-0 items-center gap-1 border-b border-border px-3">
               <BackButton />
-              <h2 className="m-0 min-w-0 flex-1 truncate text-[16px] font-bold">{content.title}</h2>
+              <h2 className="m-0 min-w-0 flex-1 truncate text-title font-bold">{content.title}</h2>
               {content.extra}
             </header>
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{content.body}</div>

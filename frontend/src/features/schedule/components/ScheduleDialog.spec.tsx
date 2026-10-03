@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
+import { QueryWrapper } from "#/test/QueryWrapper";
+
 import { ScheduleDialog } from "./ScheduleDialog";
 
 const renderDialog = (initialDate: Date, onConfirm: (scheduledAt: Date) => void) =>
@@ -16,6 +18,7 @@ const renderDialog = (initialDate: Date, onConfirm: (scheduledAt: Date) => void)
     >
       <p>本文の欄</p>
     </ScheduleDialog>,
+    { wrapper: QueryWrapper },
   );
 
 describe("ScheduleDialog", () => {

@@ -15,7 +15,6 @@ export const ui: Messages["ui"] = {
   copyableUrl: {
     copied: "Copied the link",
     copy: "Copy",
-    copyFailed: "Couldn't copy",
   },
   iconImage: {
     change: "Change image",

@@ -15,6 +15,10 @@ type stubListThreadRepo struct {
 	output *domainrepository.FindParticipatingThreadsOutput
 }
 
+func (r *stubListThreadRepo) FindFollowedThreadIDs(context.Context, string, []string) (map[string]bool, error) {
+	return map[string]bool{"t2": true}, nil
+}
+
 func (r *stubListThreadRepo) FindParticipatingThreads(_ context.Context, _ domainrepository.FindParticipatingThreadsInput) (*domainrepository.FindParticipatingThreadsOutput, error) {
 	return r.output, nil
 }
@@ -108,6 +112,9 @@ func TestListParticipatingThreadsBuildsMessages(t *testing.T) {
 		if !reflect.DeepEqual(got, want[item.ThreadID]) {
 			t.Errorf("%s の最新の返信が期待と異なります: got=%v want=%v", item.ThreadID, got, want[item.ThreadID])
 		}
+	}
+	if out.Items[0].IsFollowing || !out.Items[1].IsFollowing {
+		t.Errorf("閲覧者のフォロー状態が入っていません: %v %v", out.Items[0].IsFollowing, out.Items[1].IsFollowing)
 	}
 	if out.Items[0].ReplyCount != 5 {
 		t.Errorf("返信数が引き継がれていません: %d", out.Items[0].ReplyCount)

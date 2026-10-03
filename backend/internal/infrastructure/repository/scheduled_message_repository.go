@@ -9,7 +9,6 @@ import (
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/scheduledmessage"
-	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -27,6 +26,12 @@ const claimDueSQL = `
 		FOR UPDATE SKIP LOCKED
 	)
 	RETURNING id`
+
+// 送信の途中でサーバーが止まり、送信中のまま残った予約を失敗にする
+// $1: 現在時刻, $2: これより前から送信中なら止まったとみなす時刻
+const failStaleSendingSQL = `
+	UPDATE scheduled_message SET status = 'failed', failure_reason = '送信が中断されました', updated_at = $1
+	WHERE status = 'sending' AND updated_at < $2`
 
 type scheduledMessageRepository struct {
 	client *ent.Client
@@ -96,7 +101,7 @@ func (r *scheduledMessageRepository) FindByWorkspace(ctx context.Context, userID
 	messages, err := transaction.ResolveClient(ctx, r.client).ScheduledMessage.Query().
 		Where(
 			scheduledmessage.UserID(uid),
-			scheduledmessage.HasChannelWith(channel.HasWorkspaceWith(workspace.ID(workspaceID))),
+			scheduledmessage.HasChannelWith(channel.WorkspaceID(workspaceID)),
 		).
 		Order(ent.Asc(scheduledmessage.FieldScheduledAt)).
 		All(ctx)
@@ -127,8 +132,11 @@ func (r *scheduledMessageRepository) Delete(ctx context.Context, id string) erro
 	return transaction.ResolveClient(ctx, r.client).ScheduledMessage.DeleteOneID(sid).Exec(ctx)
 }
 
-func (r *scheduledMessageRepository) ClaimDue(ctx context.Context, now time.Time, limit int) ([]*entity.ScheduledMessage, error) {
+func (r *scheduledMessageRepository) ClaimDue(ctx context.Context, now, staleBefore time.Time, limit int) ([]*entity.ScheduledMessage, error) {
 	client := transaction.ResolveClient(ctx, r.client)
+	if _, err := client.ExecContext(ctx, failStaleSendingSQL, now, staleBefore); err != nil {
+		return nil, err
+	}
 	rows, err := client.QueryContext(ctx, claimDueSQL, now, limit)
 	if err != nil {
 		return nil, err

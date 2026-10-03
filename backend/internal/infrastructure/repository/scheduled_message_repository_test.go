@@ -30,14 +30,14 @@ func TestScheduledMessageClaimDueSkipsLockedRows(t *testing.T) {
 
 	// 1 つ目のトランザクションが取り出して確定させる前は、他のワーカーには見えない
 	err := transaction.NewTransactionManager(client).Do(ctx, func(txCtx context.Context) error {
-		claimed, err := repo.ClaimDue(txCtx, now, 10)
+		claimed, err := repo.ClaimDue(txCtx, now, now.Add(-time.Hour), 10)
 		if err != nil {
 			return err
 		}
 		if len(claimed) != 1 || claimed[0].ID != due.ID || claimed[0].Status != entity.ScheduledMessageSending {
 			t.Errorf("期限の来た予約だけを送信中にしていません: %+v", claimed)
 		}
-		concurrent, err := repo.ClaimDue(ctx, now, 10)
+		concurrent, err := repo.ClaimDue(ctx, now, now.Add(-time.Hour), 10)
 		if err != nil {
 			return err
 		}
@@ -50,7 +50,7 @@ func TestScheduledMessageClaimDueSkipsLockedRows(t *testing.T) {
 		t.Fatalf("取り出しに失敗しました: %v", err)
 	}
 
-	if again, _ := repo.ClaimDue(ctx, now, 10); len(again) != 0 {
+	if again, _ := repo.ClaimDue(ctx, now, now.Add(-time.Hour), 10); len(again) != 0 {
 		t.Errorf("送信中の予約をもう一度取り出しています: %+v", again)
 	}
 	if claimed, _ := repo.Claim(ctx, due.ID); claimed != nil {
@@ -69,6 +69,14 @@ func TestScheduledMessageClaimDueSkipsLockedRows(t *testing.T) {
 	rescheduled, _ := repo.FindByID(ctx, future.ID)
 	if rescheduled.Status != entity.ScheduledMessageScheduled || rescheduled.FailureReason != nil || rescheduled.Body != "直した" {
 		t.Errorf("失敗した予約が予約中に戻っていません: %+v", rescheduled)
+	}
+
+	// 送信中のまま止まった予約は失敗に戻し、今すぐ送信で送り直せるようにする
+	if _, err := repo.ClaimDue(ctx, now, time.Now().Add(time.Minute), 10); err != nil {
+		t.Fatalf("取り出しに失敗しました: %v", err)
+	}
+	if stale, _ := repo.FindByID(ctx, due.ID); stale.Status != entity.ScheduledMessageFailed || stale.FailureReason == nil {
+		t.Errorf("送信中のまま止まった予約が失敗になっていません: %+v", stale)
 	}
 }
 
@@ -94,7 +102,7 @@ func TestScheduledMessageClaimDueIsExclusiveAcrossWorkers(t *testing.T) {
 	for range workers {
 		wg.Go(func() {
 			for {
-				claimed, err := repo.ClaimDue(ctx, now, 3)
+				claimed, err := repo.ClaimDue(ctx, now, now.Add(-time.Hour), 3)
 				if err != nil {
 					t.Errorf("取り出しに失敗しました: %v", err)
 					return

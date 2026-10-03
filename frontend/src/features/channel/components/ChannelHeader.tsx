@@ -11,16 +11,16 @@ import {
   IconUsers,
 } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { IconToggleButton } from "#/components/ui/IconToggleButton/IconToggleButton";
 import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
-import { cn, focusRing } from "#/components/ui/styles/styles";
+import { focusRing } from "#/components/ui/styles/styles";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { DMAvatar } from "#/features/dm/components/DMAvatar";
 import { useDMs } from "#/features/dm/hooks/useDM";
@@ -29,10 +29,10 @@ import { BackButton } from "#/features/layout/components/BackButton";
 import { useMobileForward } from "#/features/layout/hooks/useMobileForward";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { usePinCount } from "#/features/pin/hooks/usePinnedMessages";
 import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { useIsMobile } from "#/hooks/useMediaQuery";
-import { pinsCountByChannelAtom } from "#/providers/store/ui";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
 import { useChannelById } from "../hooks/useChannelById";
@@ -54,7 +54,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const pinsCount = useAtomValue(pinsCountByChannelAtom)[channelId] ?? 0;
+  const pinsCount = usePinCount(channelId);
   const { descendants, includesDescendants, setIncludesDescendants } = useChannelAggregation(
     workspaceId,
     channelId,
@@ -105,26 +105,23 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
 
   return (
     <>
-      <header className="flex h-12 shrink-0 items-center gap-1.5 border-b border-border pr-2.5 pl-[18px] max-md:pl-3">
+      <header className="flex h-12 shrink-0 items-center gap-1.5 border-b border-border pr-2.5 pl-4.5 max-md:pl-3">
         <BackButton />
-        <IconButton
-          label={isStarred ? t("shell.channelMenu.unstar") : t("shell.channelMenu.star")}
-          aria-pressed={isStarred}
-          className={cn(
-            "max-md:hidden",
-            isStarred && "text-mention-bar data-hovered:text-mention-bar",
-          )}
-          onPress={() => {
-            setStarred(channelId, !isStarred);
+        <IconToggleButton
+          label={t("shell.channelMenu.star")}
+          isSelected={isStarred}
+          className="max-md:hidden data-selected:bg-transparent data-selected:text-mention-bar data-selected:data-hovered:bg-hover"
+          onChange={(starred) => {
+            setStarred(channelId, starred);
           }}
         >
           {isStarred ? <IconStarFilled /> : <IconStar />}
-        </IconButton>
+        </IconToggleButton>
         <Button
           onPress={() => {
             openRightPanel(infoPanel);
           }}
-          className={`flex min-w-0 shrink cursor-pointer items-center gap-1 rounded-[6px] px-1 py-0.5 text-[15px] font-bold whitespace-nowrap data-hovered:bg-hover [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted ${focusRing}`}
+          className={`flex min-w-0 shrink cursor-pointer items-center gap-1 rounded-md px-1 py-0.5 text-title font-bold whitespace-nowrap data-hovered:bg-hover [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted ${focusRing}`}
         >
           {channel ? (
             <ChannelName name={channel.name} isPrivate={channel.isPrivate} />
@@ -148,7 +145,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
           </Tooltip>
         )}
         {!isMobile && descendantsToggle}
-        <p className="m-0 flex min-w-0 flex-1 items-center gap-1 truncate pl-1.5 text-[12.5px] text-muted max-md:invisible [&_svg]:size-3.5 [&_svg]:shrink-0">
+        <p className="m-0 flex min-w-0 flex-1 items-center gap-1 truncate pl-1.5 text-label font-normal text-muted max-md:invisible [&_svg]:size-3.5 [&_svg]:shrink-0">
           {channel?.description}
           {isGroupDM && t("dm.header.groupCount", { count: dm.members.length + 1 })}
           {memo && (
@@ -166,7 +163,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
             onPress={() => {
               openRightPanel({ panel: "members" });
             }}
-            className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border max-md:hidden border-border py-0.5 pr-2 pl-[3px] text-xs text-muted tabular-nums data-hovered:bg-hover ${focusRing}`}
+            className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border max-md:hidden border-border py-0.5 pr-2 pl-0.75 text-xs text-muted tabular-nums data-hovered:bg-hover ${focusRing}`}
           >
             <span className="flex [&>*+*]:-ml-1.5 [&>*]:ring-2 [&>*]:ring-surface">
               {members.slice(0, 3).map((member) => (
@@ -189,7 +186,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
         >
           <IconPin />
           {pinsCount > 0 && (
-            <span className="absolute top-px right-0 font-mono text-[9.5px] leading-none font-semibold text-muted">
+            <span className="absolute top-px right-0 font-mono text-caption leading-none font-semibold text-muted">
               {pinsCount > 99 ? "99+" : pinsCount}
             </span>
           )}

@@ -56,9 +56,59 @@ func IDLTE(id uuid.UUID) predicate.ChannelStar {
 	return predicate.ChannelStar(sql.FieldLTE(FieldID, id))
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.ChannelStar {
+	return predicate.ChannelStar(sql.FieldEQ(FieldUserID, v))
+}
+
+// ChannelID applies equality check predicate on the "channel_id" field. It's identical to ChannelIDEQ.
+func ChannelID(v uuid.UUID) predicate.ChannelStar {
+	return predicate.ChannelStar(sql.FieldEQ(FieldChannelID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.ChannelStar {
 	return predicate.ChannelStar(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.ChannelStar {
+	return predicate.ChannelStar(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.ChannelStar {
+	return predicate.ChannelStar(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.ChannelStar {
+	return predicate.ChannelStar(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.ChannelStar {
+	return predicate.ChannelStar(sql.FieldNotIn(FieldUserID, vs...))
+}
+
+// ChannelIDEQ applies the EQ predicate on the "channel_id" field.
+func ChannelIDEQ(v uuid.UUID) predicate.ChannelStar {
+	return predicate.ChannelStar(sql.FieldEQ(FieldChannelID, v))
+}
+
+// ChannelIDNEQ applies the NEQ predicate on the "channel_id" field.
+func ChannelIDNEQ(v uuid.UUID) predicate.ChannelStar {
+	return predicate.ChannelStar(sql.FieldNEQ(FieldChannelID, v))
+}
+
+// ChannelIDIn applies the In predicate on the "channel_id" field.
+func ChannelIDIn(vs ...uuid.UUID) predicate.ChannelStar {
+	return predicate.ChannelStar(sql.FieldIn(FieldChannelID, vs...))
+}
+
+// ChannelIDNotIn applies the NotIn predicate on the "channel_id" field.
+func ChannelIDNotIn(vs ...uuid.UUID) predicate.ChannelStar {
+	return predicate.ChannelStar(sql.FieldNotIn(FieldChannelID, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-	"strings"
 
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
@@ -14,6 +13,22 @@ type SearchServer struct {
 	UC searchuc.SearchUseCase
 }
 
+var searchTargets = map[chatv1.SearchTarget]searchuc.SearchTarget{
+	chatv1.SearchTarget_SEARCH_TARGET_ALL:      searchuc.SearchTargetAll,
+	chatv1.SearchTarget_SEARCH_TARGET_MESSAGES: searchuc.SearchTargetMessages,
+	chatv1.SearchTarget_SEARCH_TARGET_CHANNELS: searchuc.SearchTargetChannels,
+	chatv1.SearchTarget_SEARCH_TARGET_USERS:    searchuc.SearchTargetUsers,
+	chatv1.SearchTarget_SEARCH_TARGET_GROUPS:   searchuc.SearchTargetGroups,
+}
+
+var searchHas = map[chatv1.SearchHas]domainrepository.MessageContentKind{
+	chatv1.SearchHas_SEARCH_HAS_IMAGE:    domainrepository.MessageContentImage,
+	chatv1.SearchHas_SEARCH_HAS_FILE:     domainrepository.MessageContentFile,
+	chatv1.SearchHas_SEARCH_HAS_LINK:     domainrepository.MessageContentLink,
+	chatv1.SearchHas_SEARCH_HAS_VIDEO:    domainrepository.MessageContentVideo,
+	chatv1.SearchHas_SEARCH_HAS_LOCATION: domainrepository.MessageContentLocation,
+}
+
 func (s *SearchServer) SearchWorkspace(ctx context.Context, req *chatv1.SearchWorkspaceRequest) (*chatv1.SearchWorkspaceResponse, error) {
 	sort := domainrepository.MessageSearchSortNewest
 	if req.Sort == chatv1.SearchSort_SEARCH_SORT_RELEVANCE {
@@ -23,7 +38,7 @@ func (s *SearchServer) SearchWorkspace(ctx context.Context, req *chatv1.SearchWo
 		WorkspaceID: req.WorkspaceId,
 		RequesterID: userIDFrom(ctx),
 		Query:       req.Query,
-		Target:      searchuc.SearchTarget(strings.ToLower(strings.TrimPrefix(req.Target.String(), "SEARCH_TARGET_"))),
+		Target:      searchTargets[req.Target],
 		Filter:      messageFilter(req.MessageFilter),
 		Sort:        sort,
 		Page:        int(req.Page),
@@ -41,7 +56,9 @@ func messageFilter(f *chatv1.MessageSearchFilter) searchuc.MessageFilter {
 	}
 	has := make([]domainrepository.MessageContentKind, 0, len(f.Has))
 	for _, h := range f.Has {
-		has = append(has, domainrepository.MessageContentKind(strings.ToLower(strings.TrimPrefix(h.String(), "SEARCH_HAS_"))))
+		if kind, ok := searchHas[h]; ok {
+			has = append(has, kind)
+		}
 	}
 	return searchuc.MessageFilter{
 		FromUserIDs:               f.FromUserIds,

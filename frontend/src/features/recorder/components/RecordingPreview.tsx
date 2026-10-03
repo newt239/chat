@@ -54,7 +54,7 @@ export const RecordingPreview = ({ url, durationSeconds }: RecordingPreviewProps
       <span className="min-w-0 flex-1">
         <Waveform seed={url} progress={durationSeconds > 0 ? position / durationSeconds : 0} />
       </span>
-      <span className="font-mono text-[11px] whitespace-nowrap text-muted tabular-nums">
+      <span className="font-mono text-caption whitespace-nowrap text-muted tabular-nums">
         {formatDuration(position)} / {formatDuration(durationSeconds)}
       </span>
     </span>

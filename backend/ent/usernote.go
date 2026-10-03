@@ -19,6 +19,10 @@ type UserNote struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// OwnerID holds the value of the "owner_id" field.
+	OwnerID uuid.UUID `json:"owner_id,omitempty"`
+	// TargetID holds the value of the "target_id" field.
+	TargetID uuid.UUID `json:"target_id,omitempty"`
 	// Nickname holds the value of the "nickname" field.
 	Nickname *string `json:"nickname,omitempty"`
 	// Memo holds the value of the "memo" field.
@@ -27,10 +31,8 @@ type UserNote struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserNoteQuery when eager-loading is set.
-	Edges            UserNoteEdges `json:"edges"`
-	user_note_owner  *uuid.UUID
-	user_note_target *uuid.UUID
-	selectValues     sql.SelectValues
+	Edges        UserNoteEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // UserNoteEdges holds the relations/edges for other nodes in the graph.
@@ -75,12 +77,8 @@ func (*UserNote) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case usernote.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case usernote.FieldID:
+		case usernote.FieldID, usernote.FieldOwnerID, usernote.FieldTargetID:
 			values[i] = new(uuid.UUID)
-		case usernote.ForeignKeys[0]: // user_note_owner
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case usernote.ForeignKeys[1]: // user_note_target
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -102,6 +100,18 @@ func (_m *UserNote) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case usernote.FieldOwnerID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field owner_id", values[i])
+			} else if value != nil {
+				_m.OwnerID = *value
+			}
+		case usernote.FieldTargetID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field target_id", values[i])
+			} else if value != nil {
+				_m.TargetID = *value
+			}
 		case usernote.FieldNickname:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field nickname", values[i])
@@ -121,20 +131,6 @@ func (_m *UserNote) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
-			}
-		case usernote.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_note_owner", values[i])
-			} else if value.Valid {
-				_m.user_note_owner = new(uuid.UUID)
-				*_m.user_note_owner = *value.S.(*uuid.UUID)
-			}
-		case usernote.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_note_target", values[i])
-			} else if value.Valid {
-				_m.user_note_target = new(uuid.UUID)
-				*_m.user_note_target = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -182,6 +178,12 @@ func (_m *UserNote) String() string {
 	var builder strings.Builder
 	builder.WriteString("UserNote(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("owner_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OwnerID))
+	builder.WriteString(", ")
+	builder.WriteString("target_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TargetID))
+	builder.WriteString(", ")
 	if v := _m.Nickname; v != nil {
 		builder.WriteString("nickname=")
 		builder.WriteString(*v)

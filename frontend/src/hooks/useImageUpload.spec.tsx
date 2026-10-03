@@ -4,19 +4,18 @@ import { createRouterTransport } from "@connectrpc/connect";
 import { TransportProvider } from "@connectrpc/connect-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
-import { afterEach, describe, expect, test, vi } from "vite-plus/test";
+import { describe, expect, test, vi } from "vite-plus/test";
 
 import { ImagePurpose, ImageService } from "#/gen/chat/v1/image_service_pb";
+import { putToStorage } from "#/lib/storage";
 
 import { useImageUpload } from "./useImageUpload";
 
 import type { PresignImageUploadRequest } from "#/gen/chat/v1/image_service_pb";
 
-describe("useImageUpload", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
+vi.mock("#/lib/storage", () => ({ putToStorage: vi.fn(() => Promise.resolve()) }));
 
+describe("useImageUpload", () => {
   test("発行された URL に画像を PUT して配信用の URL を返す", async () => {
     const presigned = vi.fn<(req: PresignImageUploadRequest) => void>();
     const transport = createRouterTransport((router) => {
@@ -25,10 +24,6 @@ describe("useImageUpload", () => {
         return { imageUrl: "https://api.example.com/images/a", uploadUrl: "https://s3/put" };
       });
     });
-    const fetchMock = vi.fn<typeof fetch>(() =>
-      Promise.resolve(new Response(null, { status: 200 })),
-    );
-    vi.stubGlobal("fetch", fetchMock);
     const wrapper = ({ children }: { children: ReactNode }) => (
       <TransportProvider transport={transport}>
         <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
@@ -38,9 +33,10 @@ describe("useImageUpload", () => {
       wrapper,
     });
 
+    const image = new Blob(["x"], { type: "image/webp" });
     let url = "";
     await act(async () => {
-      url = await result.current.mutateAsync(new Blob(["x"], { type: "image/webp" }));
+      url = await result.current.mutateAsync(image);
     });
 
     expect(url).toBe("https://api.example.com/images/a");
@@ -52,9 +48,6 @@ describe("useImageUpload", () => {
         workspaceId: "ws1",
       }),
     );
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://s3/put",
-      expect.objectContaining({ method: "PUT" }),
-    );
+    expect(putToStorage).toHaveBeenCalledWith(image, "https://s3/put", expect.any(Function));
   });
 });

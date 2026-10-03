@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+
+service RealtimeService {
+  // WebSocket の接続に使う 1 回限りのチケットを発行する。有効期限は 30 秒
+  rpc IssueWebSocketTicket(IssueWebSocketTicketRequest) returns (IssueWebSocketTicketResponse);
+}
+
+message IssueWebSocketTicketRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message IssueWebSocketTicketResponse {
+  string ticket = 1;
+}

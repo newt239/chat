@@ -7,5 +7,6 @@ export const settingsSections = [
 ] as const;
 export type SettingsSection = (typeof settingsSections)[number];
 
-export const isSettingsSection = (value: string): value is SettingsSection =>
-  settingsSections.some((section) => section === value);
+// URL の値が設定の画面のどれかなら、その名前を返す
+export const findSettingsSection = (value: string) =>
+  settingsSections.find((section) => section === value);

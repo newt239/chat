@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/auth_service.proto.
  */
 export const file_chat_v1_auth_service: GenFile = /*@__PURE__*/
-  fileDesc("ChpjaGF0L3YxL2F1dGhfc2VydmljZS5wcm90bxIHY2hhdC52MSIWChRHZXRBdXRoQ29uZmlnUmVxdWVzdCI2ChVHZXRBdXRoQ29uZmlnUmVzcG9uc2USHQoVcGFzc3dvcmRfYXV0aF9lbmFibGVkGAEgASgIIkEKDExvZ2luUmVxdWVzdBIWCgVlbWFpbBgBIAEoCUIHukgEcgJgARIZCghwYXNzd29yZBgCIAEoCUIHukgEcgIQASJZCg1Mb2dpblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhsKBHVzZXIYAyABKAsyDS5jaGF0LnYxLlVzZXIiaAoWTG9naW5XaXRoR29vZ2xlUmVxdWVzdBIZCghpZF90b2tlbhgBIAEoCUIHukgEcgIQARIiCgx3b3Jrc3BhY2VfaWQYAiABKAlCB7pIBHICEAFIAIgBAUIPCg1fd29ya3NwYWNlX2lkImMKF0xvZ2luV2l0aEdvb2dsZVJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhsKBHVzZXIYAyABKAsyDS5jaGF0LnYxLlVzZXIiowEKGkxvZ2luV2l0aEdvb2dsZUNvZGVSZXF1ZXN0EhUKBGNvZGUYASABKAlCB7pIBHICEAESIQoNY29kZV92ZXJpZmllchgCIAEoCUIKukgHcgUQKxiAARIWCgVub25jZRgDIAEoCUIHukgEcgIQARIiCgx3b3Jrc3BhY2VfaWQYBCABKAlCB7pIBHICEAFIAIgBAUIPCg1fd29ya3NwYWNlX2lkImcKG0xvZ2luV2l0aEdvb2dsZUNvZGVSZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSFQoNcmVmcmVzaF90b2tlbhgCIAEoCRIbCgR1c2VyGAMgASgLMg0uY2hhdC52MS5Vc2VyInEKG1NpZ25VcFdpdGhJbnZpdGF0aW9uUmVxdWVzdBIWCgV0b2tlbhgBIAEoCUIHukgEcgIQARIfCgxkaXNwbGF5X25hbWUYAiABKAlCCbpIBnIEEAEYZBIZCghwYXNzd29yZBgDIAEoCUIHukgEcgIQCCJoChxTaWduVXBXaXRoSW52aXRhdGlvblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhsKBHVzZXIYAyABKAsyDS5jaGF0LnYxLlVzZXIiggEKDVNpZ25VcFJlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABEhYKBWVtYWlsGAIgASgJQge6SARyAmABEh8KDGRpc3BsYXlfbmFtZRgDIAEoCUIJukgGcgQQARhkEhkKCHBhc3N3b3JkGAQgASgJQge6SARyAhAIIloKDlNpZ25VcFJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhsKBHVzZXIYAyABKAsyDS5jaGF0LnYxLlVzZXIiMAoOUmVmcmVzaFJlcXVlc3QSHgoNcmVmcmVzaF90b2tlbhgBIAEoCUIHukgEcgIQASJbCg9SZWZyZXNoUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSGwoEdXNlchgDIAEoCzINLmNoYXQudjEuVXNlciIPCg1Mb2dvdXRSZXF1ZXN0IhAKDkxvZ291dFJlc3BvbnNlMuYECgtBdXRoU2VydmljZRJOCg1HZXRBdXRoQ29uZmlnEh0uY2hhdC52MS5HZXRBdXRoQ29uZmlnUmVxdWVzdBoeLmNoYXQudjEuR2V0QXV0aENvbmZpZ1Jlc3BvbnNlEjYKBUxvZ2luEhUuY2hhdC52MS5Mb2dpblJlcXVlc3QaFi5jaGF0LnYxLkxvZ2luUmVzcG9uc2USVAoPTG9naW5XaXRoR29vZ2xlEh8uY2hhdC52MS5Mb2dpbldpdGhHb29nbGVSZXF1ZXN0GiAuY2hhdC52MS5Mb2dpbldpdGhHb29nbGVSZXNwb25zZRJgChNMb2dpbldpdGhHb29nbGVDb2RlEiMuY2hhdC52MS5Mb2dpbldpdGhHb29nbGVDb2RlUmVxdWVzdBokLmNoYXQudjEuTG9naW5XaXRoR29vZ2xlQ29kZVJlc3BvbnNlEmMKFFNpZ25VcFdpdGhJbnZpdGF0aW9uEiQuY2hhdC52MS5TaWduVXBXaXRoSW52aXRhdGlvblJlcXVlc3QaJS5jaGF0LnYxLlNpZ25VcFdpdGhJbnZpdGF0aW9uUmVzcG9uc2USOQoGU2lnblVwEhYuY2hhdC52MS5TaWduVXBSZXF1ZXN0GhcuY2hhdC52MS5TaWduVXBSZXNwb25zZRI8CgdSZWZyZXNoEhcuY2hhdC52MS5SZWZyZXNoUmVxdWVzdBoYLmNoYXQudjEuUmVmcmVzaFJlc3BvbnNlEjkKBkxvZ291dBIWLmNoYXQudjEuTG9nb3V0UmVxdWVzdBoXLmNoYXQudjEuTG9nb3V0UmVzcG9uc2VCkQEKC2NvbS5jaGF0LnYxQhBBdXRoU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_chat_v1_user]);
+  fileDesc("ChpjaGF0L3YxL2F1dGhfc2VydmljZS5wcm90bxIHY2hhdC52MSIWChRHZXRBdXRoQ29uZmlnUmVxdWVzdCI2ChVHZXRBdXRoQ29uZmlnUmVzcG9uc2USHQoVcGFzc3dvcmRfYXV0aF9lbmFibGVkGAEgASgIIkEKDExvZ2luUmVxdWVzdBIWCgVlbWFpbBgBIAEoCUIHukgEcgJgARIZCghwYXNzd29yZBgCIAEoCUIHukgEcgIQASJwCg1Mb2dpblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIaCg1yZWZyZXNoX3Rva2VuGAIgASgJSACIAQESGwoEdXNlchgDIAEoCzINLmNoYXQudjEuVXNlckIQCg5fcmVmcmVzaF90b2tlbiJoChZMb2dpbldpdGhHb29nbGVSZXF1ZXN0EhkKCGlkX3Rva2VuGAEgASgJQge6SARyAhABEiIKDHdvcmtzcGFjZV9pZBgCIAEoCUIHukgEcgIQAUgAiAEBQg8KDV93b3Jrc3BhY2VfaWQiegoXTG9naW5XaXRoR29vZ2xlUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhoKDXJlZnJlc2hfdG9rZW4YAiABKAlIAIgBARIbCgR1c2VyGAMgASgLMg0uY2hhdC52MS5Vc2VyQhAKDl9yZWZyZXNoX3Rva2VuIqMBChpMb2dpbldpdGhHb29nbGVDb2RlUmVxdWVzdBIVCgRjb2RlGAEgASgJQge6SARyAhABEiEKDWNvZGVfdmVyaWZpZXIYAiABKAlCCrpIB3IFECsYgAESFgoFbm9uY2UYAyABKAlCB7pIBHICEAESIgoMd29ya3NwYWNlX2lkGAQgASgJQge6SARyAhABSACIAQFCDwoNX3dvcmtzcGFjZV9pZCJ+ChtMb2dpbldpdGhHb29nbGVDb2RlUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhoKDXJlZnJlc2hfdG9rZW4YAiABKAlIAIgBARIbCgR1c2VyGAMgASgLMg0uY2hhdC52MS5Vc2VyQhAKDl9yZWZyZXNoX3Rva2VuInEKG1NpZ25VcFdpdGhJbnZpdGF0aW9uUmVxdWVzdBIWCgV0b2tlbhgBIAEoCUIHukgEcgIQARIfCgxkaXNwbGF5X25hbWUYAiABKAlCCbpIBnIEEAEYZBIZCghwYXNzd29yZBgDIAEoCUIHukgEcgIQCCJ/ChxTaWduVXBXaXRoSW52aXRhdGlvblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIaCg1yZWZyZXNoX3Rva2VuGAIgASgJSACIAQESGwoEdXNlchgDIAEoCzINLmNoYXQudjEuVXNlckIQCg5fcmVmcmVzaF90b2tlbiKCAQoNU2lnblVwUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAESFgoFZW1haWwYAiABKAlCB7pIBHICYAESHwoMZGlzcGxheV9uYW1lGAMgASgJQgm6SAZyBBABGGQSGQoIcGFzc3dvcmQYBCABKAlCB7pIBHICEAgicQoOU2lnblVwUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhoKDXJlZnJlc2hfdG9rZW4YAiABKAlIAIgBARIbCgR1c2VyGAMgASgLMg0uY2hhdC52MS5Vc2VyQhAKDl9yZWZyZXNoX3Rva2VuIkcKDlJlZnJlc2hSZXF1ZXN0EiMKDXJlZnJlc2hfdG9rZW4YASABKAlCB7pIBHICEAFIAIgBAUIQCg5fcmVmcmVzaF90b2tlbiJyCg9SZWZyZXNoUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhoKDXJlZnJlc2hfdG9rZW4YAiABKAlIAIgBARIbCgR1c2VyGAMgASgLMg0uY2hhdC52MS5Vc2VyQhAKDl9yZWZyZXNoX3Rva2VuIg8KDUxvZ291dFJlcXVlc3QiEAoOTG9nb3V0UmVzcG9uc2Uy5gQKC0F1dGhTZXJ2aWNlEk4KDUdldEF1dGhDb25maWcSHS5jaGF0LnYxLkdldEF1dGhDb25maWdSZXF1ZXN0Gh4uY2hhdC52MS5HZXRBdXRoQ29uZmlnUmVzcG9uc2USNgoFTG9naW4SFS5jaGF0LnYxLkxvZ2luUmVxdWVzdBoWLmNoYXQudjEuTG9naW5SZXNwb25zZRJUCg9Mb2dpbldpdGhHb29nbGUSHy5jaGF0LnYxLkxvZ2luV2l0aEdvb2dsZVJlcXVlc3QaIC5jaGF0LnYxLkxvZ2luV2l0aEdvb2dsZVJlc3BvbnNlEmAKE0xvZ2luV2l0aEdvb2dsZUNvZGUSIy5jaGF0LnYxLkxvZ2luV2l0aEdvb2dsZUNvZGVSZXF1ZXN0GiQuY2hhdC52MS5Mb2dpbldpdGhHb29nbGVDb2RlUmVzcG9uc2USYwoUU2lnblVwV2l0aEludml0YXRpb24SJC5jaGF0LnYxLlNpZ25VcFdpdGhJbnZpdGF0aW9uUmVxdWVzdBolLmNoYXQudjEuU2lnblVwV2l0aEludml0YXRpb25SZXNwb25zZRI5CgZTaWduVXASFi5jaGF0LnYxLlNpZ25VcFJlcXVlc3QaFy5jaGF0LnYxLlNpZ25VcFJlc3BvbnNlEjwKB1JlZnJlc2gSFy5jaGF0LnYxLlJlZnJlc2hSZXF1ZXN0GhguY2hhdC52MS5SZWZyZXNoUmVzcG9uc2USOQoGTG9nb3V0EhYuY2hhdC52MS5Mb2dvdXRSZXF1ZXN0GhcuY2hhdC52MS5Mb2dvdXRSZXNwb25zZUKRAQoLY29tLmNoYXQudjFCEEF1dGhTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_chat_v1_user]);
 
 /**
  * @generated from message chat.v1.GetAuthConfigRequest
@@ -77,9 +77,11 @@ export type LoginResponse = Message<"chat.v1.LoginResponse"> & {
   accessToken: string;
 
   /**
-   * @generated from field: string refresh_token = 2;
+   * ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+   *
+   * @generated from field: optional string refresh_token = 2;
    */
-  refreshToken: string;
+  refreshToken?: string | undefined;
 
   /**
    * @generated from field: chat.v1.User user = 3;
@@ -130,9 +132,11 @@ export type LoginWithGoogleResponse = Message<"chat.v1.LoginWithGoogleResponse">
   accessToken: string;
 
   /**
-   * @generated from field: string refresh_token = 2;
+   * ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+   *
+   * @generated from field: optional string refresh_token = 2;
    */
-  refreshToken: string;
+  refreshToken?: string | undefined;
 
   /**
    * @generated from field: chat.v1.User user = 3;
@@ -191,9 +195,11 @@ export type LoginWithGoogleCodeResponse = Message<"chat.v1.LoginWithGoogleCodeRe
   accessToken: string;
 
   /**
-   * @generated from field: string refresh_token = 2;
+   * ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+   *
+   * @generated from field: optional string refresh_token = 2;
    */
-  refreshToken: string;
+  refreshToken?: string | undefined;
 
   /**
    * @generated from field: chat.v1.User user = 3;
@@ -245,9 +251,11 @@ export type SignUpWithInvitationResponse = Message<"chat.v1.SignUpWithInvitation
   accessToken: string;
 
   /**
-   * @generated from field: string refresh_token = 2;
+   * ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+   *
+   * @generated from field: optional string refresh_token = 2;
    */
-  refreshToken: string;
+  refreshToken?: string | undefined;
 
   /**
    * @generated from field: chat.v1.User user = 3;
@@ -304,9 +312,11 @@ export type SignUpResponse = Message<"chat.v1.SignUpResponse"> & {
   accessToken: string;
 
   /**
-   * @generated from field: string refresh_token = 2;
+   * ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+   *
+   * @generated from field: optional string refresh_token = 2;
    */
-  refreshToken: string;
+  refreshToken?: string | undefined;
 
   /**
    * @generated from field: chat.v1.User user = 3;
@@ -326,9 +336,11 @@ export const SignUpResponseSchema: GenMessage<SignUpResponse> = /*@__PURE__*/
  */
 export type RefreshRequest = Message<"chat.v1.RefreshRequest"> & {
   /**
-   * @generated from field: string refresh_token = 1;
+   * ネイティブアプリだけが送る。ブラウザは Cookie を使う
+   *
+   * @generated from field: optional string refresh_token = 1;
    */
-  refreshToken: string;
+  refreshToken?: string | undefined;
 };
 
 /**
@@ -348,9 +360,11 @@ export type RefreshResponse = Message<"chat.v1.RefreshResponse"> & {
   accessToken: string;
 
   /**
-   * @generated from field: string refresh_token = 2;
+   * ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+   *
+   * @generated from field: optional string refresh_token = 2;
    */
-  refreshToken: string;
+  refreshToken?: string | undefined;
 
   /**
    * @generated from field: chat.v1.User user = 3;

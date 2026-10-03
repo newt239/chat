@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
@@ -55,7 +55,7 @@ func TestMarkThreadReadRequiresExistingThread(t *testing.T) {
 
 	err := reader.MarkThreadRead(context.Background(), MarkThreadReadInput{ThreadID: "t1", UserID: "u1"})
 
-	if !errors.Is(err, domainerrors.ErrMessageNotFound) {
+	if !errors.Is(err, domerr.ErrMessageNotFound) {
 		t.Fatalf("存在しないスレッドが拒否されていません: %v", err)
 	}
 	if threadRepo.upsertCalls != 0 {
@@ -68,12 +68,12 @@ func TestMarkThreadReadRequiresChannelAccess(t *testing.T) {
 	reader := NewThreadReader(
 		threadRepo,
 		&stubMessageRepo{message: &entity.Message{ID: "t1", ChannelID: "ch1"}},
-		&stubChannelAccessService{err: domainerrors.ErrUnauthorized},
+		&stubChannelAccessService{err: domerr.ErrUnauthorized},
 	)
 
 	err := reader.MarkThreadRead(context.Background(), MarkThreadReadInput{ThreadID: "t1", UserID: "u1"})
 
-	if !errors.Is(err, domainerrors.ErrUnauthorized) {
+	if !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("権限のないチャンネルのスレッドが拒否されていません: %v", err)
 	}
 	if threadRepo.upsertCalls != 0 {
@@ -86,12 +86,12 @@ func TestFollowThreadRequiresChannelAccess(t *testing.T) {
 	reader := NewThreadReader(
 		threadRepo,
 		&stubMessageRepo{message: &entity.Message{ID: "t1", ChannelID: "ch1"}},
-		&stubChannelAccessService{err: domainerrors.ErrUnauthorized},
+		&stubChannelAccessService{err: domerr.ErrUnauthorized},
 	)
 
 	err := reader.FollowThread(context.Background(), FollowThreadInput{ThreadID: "t1", UserID: "u1"})
 
-	if !errors.Is(err, domainerrors.ErrUnauthorized) {
+	if !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("権限のないスレッドのフォローが拒否されていません: %v", err)
 	}
 	if threadRepo.followCalls != 0 {

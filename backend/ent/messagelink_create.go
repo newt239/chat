@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/newt239/chat/ent/linkpreview"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagelink"
 )
@@ -25,176 +26,28 @@ type MessageLinkCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetMessageID sets the "message_id" field.
+func (_c *MessageLinkCreate) SetMessageID(v uuid.UUID) *MessageLinkCreate {
+	_c.mutation.SetMessageID(v)
+	return _c
+}
+
 // SetURL sets the "url" field.
 func (_c *MessageLinkCreate) SetURL(v string) *MessageLinkCreate {
 	_c.mutation.SetURL(v)
 	return _c
 }
 
-// SetTitle sets the "title" field.
-func (_c *MessageLinkCreate) SetTitle(v string) *MessageLinkCreate {
-	_c.mutation.SetTitle(v)
+// SetLinkPreviewID sets the "link_preview_id" field.
+func (_c *MessageLinkCreate) SetLinkPreviewID(v uuid.UUID) *MessageLinkCreate {
+	_c.mutation.SetLinkPreviewID(v)
 	return _c
 }
 
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableTitle(v *string) *MessageLinkCreate {
+// SetNillableLinkPreviewID sets the "link_preview_id" field if the given value is not nil.
+func (_c *MessageLinkCreate) SetNillableLinkPreviewID(v *uuid.UUID) *MessageLinkCreate {
 	if v != nil {
-		_c.SetTitle(*v)
-	}
-	return _c
-}
-
-// SetDescription sets the "description" field.
-func (_c *MessageLinkCreate) SetDescription(v string) *MessageLinkCreate {
-	_c.mutation.SetDescription(v)
-	return _c
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableDescription(v *string) *MessageLinkCreate {
-	if v != nil {
-		_c.SetDescription(*v)
-	}
-	return _c
-}
-
-// SetImageURL sets the "image_url" field.
-func (_c *MessageLinkCreate) SetImageURL(v string) *MessageLinkCreate {
-	_c.mutation.SetImageURL(v)
-	return _c
-}
-
-// SetNillableImageURL sets the "image_url" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableImageURL(v *string) *MessageLinkCreate {
-	if v != nil {
-		_c.SetImageURL(*v)
-	}
-	return _c
-}
-
-// SetSiteName sets the "site_name" field.
-func (_c *MessageLinkCreate) SetSiteName(v string) *MessageLinkCreate {
-	_c.mutation.SetSiteName(v)
-	return _c
-}
-
-// SetNillableSiteName sets the "site_name" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableSiteName(v *string) *MessageLinkCreate {
-	if v != nil {
-		_c.SetSiteName(*v)
-	}
-	return _c
-}
-
-// SetCardType sets the "card_type" field.
-func (_c *MessageLinkCreate) SetCardType(v string) *MessageLinkCreate {
-	_c.mutation.SetCardType(v)
-	return _c
-}
-
-// SetNillableCardType sets the "card_type" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableCardType(v *string) *MessageLinkCreate {
-	if v != nil {
-		_c.SetCardType(*v)
-	}
-	return _c
-}
-
-// SetImageWidth sets the "image_width" field.
-func (_c *MessageLinkCreate) SetImageWidth(v int32) *MessageLinkCreate {
-	_c.mutation.SetImageWidth(v)
-	return _c
-}
-
-// SetNillableImageWidth sets the "image_width" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableImageWidth(v *int32) *MessageLinkCreate {
-	if v != nil {
-		_c.SetImageWidth(*v)
-	}
-	return _c
-}
-
-// SetImageHeight sets the "image_height" field.
-func (_c *MessageLinkCreate) SetImageHeight(v int32) *MessageLinkCreate {
-	_c.mutation.SetImageHeight(v)
-	return _c
-}
-
-// SetNillableImageHeight sets the "image_height" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableImageHeight(v *int32) *MessageLinkCreate {
-	if v != nil {
-		_c.SetImageHeight(*v)
-	}
-	return _c
-}
-
-// SetYoutubeVideoID sets the "youtube_video_id" field.
-func (_c *MessageLinkCreate) SetYoutubeVideoID(v string) *MessageLinkCreate {
-	_c.mutation.SetYoutubeVideoID(v)
-	return _c
-}
-
-// SetNillableYoutubeVideoID sets the "youtube_video_id" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableYoutubeVideoID(v *string) *MessageLinkCreate {
-	if v != nil {
-		_c.SetYoutubeVideoID(*v)
-	}
-	return _c
-}
-
-// SetYoutubeChannelName sets the "youtube_channel_name" field.
-func (_c *MessageLinkCreate) SetYoutubeChannelName(v string) *MessageLinkCreate {
-	_c.mutation.SetYoutubeChannelName(v)
-	return _c
-}
-
-// SetNillableYoutubeChannelName sets the "youtube_channel_name" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableYoutubeChannelName(v *string) *MessageLinkCreate {
-	if v != nil {
-		_c.SetYoutubeChannelName(*v)
-	}
-	return _c
-}
-
-// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
-func (_c *MessageLinkCreate) SetYoutubeDurationSeconds(v int32) *MessageLinkCreate {
-	_c.mutation.SetYoutubeDurationSeconds(v)
-	return _c
-}
-
-// SetNillableYoutubeDurationSeconds sets the "youtube_duration_seconds" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableYoutubeDurationSeconds(v *int32) *MessageLinkCreate {
-	if v != nil {
-		_c.SetYoutubeDurationSeconds(*v)
-	}
-	return _c
-}
-
-// SetXAuthorName sets the "x_author_name" field.
-func (_c *MessageLinkCreate) SetXAuthorName(v string) *MessageLinkCreate {
-	_c.mutation.SetXAuthorName(v)
-	return _c
-}
-
-// SetNillableXAuthorName sets the "x_author_name" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableXAuthorName(v *string) *MessageLinkCreate {
-	if v != nil {
-		_c.SetXAuthorName(*v)
-	}
-	return _c
-}
-
-// SetXAuthorHandle sets the "x_author_handle" field.
-func (_c *MessageLinkCreate) SetXAuthorHandle(v string) *MessageLinkCreate {
-	_c.mutation.SetXAuthorHandle(v)
-	return _c
-}
-
-// SetNillableXAuthorHandle sets the "x_author_handle" field if the given value is not nil.
-func (_c *MessageLinkCreate) SetNillableXAuthorHandle(v *string) *MessageLinkCreate {
-	if v != nil {
-		_c.SetXAuthorHandle(*v)
+		_c.SetLinkPreviewID(*v)
 	}
 	return _c
 }
@@ -241,15 +94,14 @@ func (_c *MessageLinkCreate) SetNillableID(v *uuid.UUID) *MessageLinkCreate {
 	return _c
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_c *MessageLinkCreate) SetMessageID(id uuid.UUID) *MessageLinkCreate {
-	_c.mutation.SetMessageID(id)
-	return _c
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_c *MessageLinkCreate) SetMessage(v *Message) *MessageLinkCreate {
 	return _c.SetMessageID(v.ID)
+}
+
+// SetLinkPreview sets the "link_preview" edge to the LinkPreview entity.
+func (_c *MessageLinkCreate) SetLinkPreview(v *LinkPreview) *MessageLinkCreate {
+	return _c.SetLinkPreviewID(v.ID)
 }
 
 // Mutation returns the MessageLinkMutation object of the builder.
@@ -299,6 +151,9 @@ func (_c *MessageLinkCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *MessageLinkCreate) check() error {
+	if _, ok := _c.mutation.MessageID(); !ok {
+		return &ValidationError{Name: "message_id", err: errors.New(`ent: missing required field "MessageLink.message_id"`)}
+	}
 	if _, ok := _c.mutation.URL(); !ok {
 		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "MessageLink.url"`)}
 	}
@@ -353,54 +208,6 @@ func (_c *MessageLinkCreate) createSpec() (*MessageLink, *sqlgraph.CreateSpec) {
 		_spec.SetField(messagelink.FieldURL, field.TypeString, value)
 		_node.URL = value
 	}
-	if value, ok := _c.mutation.Title(); ok {
-		_spec.SetField(messagelink.FieldTitle, field.TypeString, value)
-		_node.Title = value
-	}
-	if value, ok := _c.mutation.Description(); ok {
-		_spec.SetField(messagelink.FieldDescription, field.TypeString, value)
-		_node.Description = value
-	}
-	if value, ok := _c.mutation.ImageURL(); ok {
-		_spec.SetField(messagelink.FieldImageURL, field.TypeString, value)
-		_node.ImageURL = value
-	}
-	if value, ok := _c.mutation.SiteName(); ok {
-		_spec.SetField(messagelink.FieldSiteName, field.TypeString, value)
-		_node.SiteName = value
-	}
-	if value, ok := _c.mutation.CardType(); ok {
-		_spec.SetField(messagelink.FieldCardType, field.TypeString, value)
-		_node.CardType = value
-	}
-	if value, ok := _c.mutation.ImageWidth(); ok {
-		_spec.SetField(messagelink.FieldImageWidth, field.TypeInt32, value)
-		_node.ImageWidth = &value
-	}
-	if value, ok := _c.mutation.ImageHeight(); ok {
-		_spec.SetField(messagelink.FieldImageHeight, field.TypeInt32, value)
-		_node.ImageHeight = &value
-	}
-	if value, ok := _c.mutation.YoutubeVideoID(); ok {
-		_spec.SetField(messagelink.FieldYoutubeVideoID, field.TypeString, value)
-		_node.YoutubeVideoID = &value
-	}
-	if value, ok := _c.mutation.YoutubeChannelName(); ok {
-		_spec.SetField(messagelink.FieldYoutubeChannelName, field.TypeString, value)
-		_node.YoutubeChannelName = &value
-	}
-	if value, ok := _c.mutation.YoutubeDurationSeconds(); ok {
-		_spec.SetField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32, value)
-		_node.YoutubeDurationSeconds = &value
-	}
-	if value, ok := _c.mutation.XAuthorName(); ok {
-		_spec.SetField(messagelink.FieldXAuthorName, field.TypeString, value)
-		_node.XAuthorName = &value
-	}
-	if value, ok := _c.mutation.XAuthorHandle(); ok {
-		_spec.SetField(messagelink.FieldXAuthorHandle, field.TypeString, value)
-		_node.XAuthorHandle = &value
-	}
 	if value, ok := _c.mutation.LinkedMessageID(); ok {
 		_spec.SetField(messagelink.FieldLinkedMessageID, field.TypeUUID, value)
 		_node.LinkedMessageID = &value
@@ -423,7 +230,24 @@ func (_c *MessageLinkCreate) createSpec() (*MessageLink, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_link_message = &nodes[0]
+		_node.MessageID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.LinkPreviewIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   messagelink.LinkPreviewTable,
+			Columns: []string{messagelink.LinkPreviewColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(linkpreview.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.LinkPreviewID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -433,7 +257,7 @@ func (_c *MessageLinkCreate) createSpec() (*MessageLink, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.MessageLink.Create().
-//		SetURL(v).
+//		SetMessageID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -442,7 +266,7 @@ func (_c *MessageLinkCreate) createSpec() (*MessageLink, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageLinkUpsert) {
-//			SetURL(v+v).
+//			SetMessageID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageLinkCreate) OnConflict(opts ...sql.ConflictOption) *MessageLinkUpsertOne {
@@ -490,237 +314,21 @@ func (u *MessageLinkUpsert) UpdateURL() *MessageLinkUpsert {
 	return u
 }
 
-// SetTitle sets the "title" field.
-func (u *MessageLinkUpsert) SetTitle(v string) *MessageLinkUpsert {
-	u.Set(messagelink.FieldTitle, v)
+// SetLinkPreviewID sets the "link_preview_id" field.
+func (u *MessageLinkUpsert) SetLinkPreviewID(v uuid.UUID) *MessageLinkUpsert {
+	u.Set(messagelink.FieldLinkPreviewID, v)
 	return u
 }
 
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateTitle() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldTitle)
+// UpdateLinkPreviewID sets the "link_preview_id" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateLinkPreviewID() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldLinkPreviewID)
 	return u
 }
 
-// ClearTitle clears the value of the "title" field.
-func (u *MessageLinkUpsert) ClearTitle() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldTitle)
-	return u
-}
-
-// SetDescription sets the "description" field.
-func (u *MessageLinkUpsert) SetDescription(v string) *MessageLinkUpsert {
-	u.Set(messagelink.FieldDescription, v)
-	return u
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateDescription() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldDescription)
-	return u
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *MessageLinkUpsert) ClearDescription() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldDescription)
-	return u
-}
-
-// SetImageURL sets the "image_url" field.
-func (u *MessageLinkUpsert) SetImageURL(v string) *MessageLinkUpsert {
-	u.Set(messagelink.FieldImageURL, v)
-	return u
-}
-
-// UpdateImageURL sets the "image_url" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateImageURL() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldImageURL)
-	return u
-}
-
-// ClearImageURL clears the value of the "image_url" field.
-func (u *MessageLinkUpsert) ClearImageURL() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldImageURL)
-	return u
-}
-
-// SetSiteName sets the "site_name" field.
-func (u *MessageLinkUpsert) SetSiteName(v string) *MessageLinkUpsert {
-	u.Set(messagelink.FieldSiteName, v)
-	return u
-}
-
-// UpdateSiteName sets the "site_name" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateSiteName() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldSiteName)
-	return u
-}
-
-// ClearSiteName clears the value of the "site_name" field.
-func (u *MessageLinkUpsert) ClearSiteName() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldSiteName)
-	return u
-}
-
-// SetCardType sets the "card_type" field.
-func (u *MessageLinkUpsert) SetCardType(v string) *MessageLinkUpsert {
-	u.Set(messagelink.FieldCardType, v)
-	return u
-}
-
-// UpdateCardType sets the "card_type" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateCardType() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldCardType)
-	return u
-}
-
-// ClearCardType clears the value of the "card_type" field.
-func (u *MessageLinkUpsert) ClearCardType() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldCardType)
-	return u
-}
-
-// SetImageWidth sets the "image_width" field.
-func (u *MessageLinkUpsert) SetImageWidth(v int32) *MessageLinkUpsert {
-	u.Set(messagelink.FieldImageWidth, v)
-	return u
-}
-
-// UpdateImageWidth sets the "image_width" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateImageWidth() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldImageWidth)
-	return u
-}
-
-// AddImageWidth adds v to the "image_width" field.
-func (u *MessageLinkUpsert) AddImageWidth(v int32) *MessageLinkUpsert {
-	u.Add(messagelink.FieldImageWidth, v)
-	return u
-}
-
-// ClearImageWidth clears the value of the "image_width" field.
-func (u *MessageLinkUpsert) ClearImageWidth() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldImageWidth)
-	return u
-}
-
-// SetImageHeight sets the "image_height" field.
-func (u *MessageLinkUpsert) SetImageHeight(v int32) *MessageLinkUpsert {
-	u.Set(messagelink.FieldImageHeight, v)
-	return u
-}
-
-// UpdateImageHeight sets the "image_height" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateImageHeight() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldImageHeight)
-	return u
-}
-
-// AddImageHeight adds v to the "image_height" field.
-func (u *MessageLinkUpsert) AddImageHeight(v int32) *MessageLinkUpsert {
-	u.Add(messagelink.FieldImageHeight, v)
-	return u
-}
-
-// ClearImageHeight clears the value of the "image_height" field.
-func (u *MessageLinkUpsert) ClearImageHeight() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldImageHeight)
-	return u
-}
-
-// SetYoutubeVideoID sets the "youtube_video_id" field.
-func (u *MessageLinkUpsert) SetYoutubeVideoID(v string) *MessageLinkUpsert {
-	u.Set(messagelink.FieldYoutubeVideoID, v)
-	return u
-}
-
-// UpdateYoutubeVideoID sets the "youtube_video_id" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateYoutubeVideoID() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldYoutubeVideoID)
-	return u
-}
-
-// ClearYoutubeVideoID clears the value of the "youtube_video_id" field.
-func (u *MessageLinkUpsert) ClearYoutubeVideoID() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldYoutubeVideoID)
-	return u
-}
-
-// SetYoutubeChannelName sets the "youtube_channel_name" field.
-func (u *MessageLinkUpsert) SetYoutubeChannelName(v string) *MessageLinkUpsert {
-	u.Set(messagelink.FieldYoutubeChannelName, v)
-	return u
-}
-
-// UpdateYoutubeChannelName sets the "youtube_channel_name" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateYoutubeChannelName() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldYoutubeChannelName)
-	return u
-}
-
-// ClearYoutubeChannelName clears the value of the "youtube_channel_name" field.
-func (u *MessageLinkUpsert) ClearYoutubeChannelName() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldYoutubeChannelName)
-	return u
-}
-
-// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
-func (u *MessageLinkUpsert) SetYoutubeDurationSeconds(v int32) *MessageLinkUpsert {
-	u.Set(messagelink.FieldYoutubeDurationSeconds, v)
-	return u
-}
-
-// UpdateYoutubeDurationSeconds sets the "youtube_duration_seconds" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateYoutubeDurationSeconds() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldYoutubeDurationSeconds)
-	return u
-}
-
-// AddYoutubeDurationSeconds adds v to the "youtube_duration_seconds" field.
-func (u *MessageLinkUpsert) AddYoutubeDurationSeconds(v int32) *MessageLinkUpsert {
-	u.Add(messagelink.FieldYoutubeDurationSeconds, v)
-	return u
-}
-
-// ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
-func (u *MessageLinkUpsert) ClearYoutubeDurationSeconds() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldYoutubeDurationSeconds)
-	return u
-}
-
-// SetXAuthorName sets the "x_author_name" field.
-func (u *MessageLinkUpsert) SetXAuthorName(v string) *MessageLinkUpsert {
-	u.Set(messagelink.FieldXAuthorName, v)
-	return u
-}
-
-// UpdateXAuthorName sets the "x_author_name" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateXAuthorName() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldXAuthorName)
-	return u
-}
-
-// ClearXAuthorName clears the value of the "x_author_name" field.
-func (u *MessageLinkUpsert) ClearXAuthorName() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldXAuthorName)
-	return u
-}
-
-// SetXAuthorHandle sets the "x_author_handle" field.
-func (u *MessageLinkUpsert) SetXAuthorHandle(v string) *MessageLinkUpsert {
-	u.Set(messagelink.FieldXAuthorHandle, v)
-	return u
-}
-
-// UpdateXAuthorHandle sets the "x_author_handle" field to the value that was provided on create.
-func (u *MessageLinkUpsert) UpdateXAuthorHandle() *MessageLinkUpsert {
-	u.SetExcluded(messagelink.FieldXAuthorHandle)
-	return u
-}
-
-// ClearXAuthorHandle clears the value of the "x_author_handle" field.
-func (u *MessageLinkUpsert) ClearXAuthorHandle() *MessageLinkUpsert {
-	u.SetNull(messagelink.FieldXAuthorHandle)
+// ClearLinkPreviewID clears the value of the "link_preview_id" field.
+func (u *MessageLinkUpsert) ClearLinkPreviewID() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldLinkPreviewID)
 	return u
 }
 
@@ -758,6 +366,9 @@ func (u *MessageLinkUpsertOne) UpdateNewValues() *MessageLinkUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(messagelink.FieldID)
+		}
+		if _, exists := u.create.mutation.MessageID(); exists {
+			s.SetIgnore(messagelink.FieldMessageID)
 		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
 			s.SetIgnore(messagelink.FieldCreatedAt)
@@ -807,276 +418,24 @@ func (u *MessageLinkUpsertOne) UpdateURL() *MessageLinkUpsertOne {
 	})
 }
 
-// SetTitle sets the "title" field.
-func (u *MessageLinkUpsertOne) SetTitle(v string) *MessageLinkUpsertOne {
+// SetLinkPreviewID sets the "link_preview_id" field.
+func (u *MessageLinkUpsertOne) SetLinkPreviewID(v uuid.UUID) *MessageLinkUpsertOne {
 	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetTitle(v)
+		s.SetLinkPreviewID(v)
 	})
 }
 
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateTitle() *MessageLinkUpsertOne {
+// UpdateLinkPreviewID sets the "link_preview_id" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateLinkPreviewID() *MessageLinkUpsertOne {
 	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateTitle()
+		s.UpdateLinkPreviewID()
 	})
 }
 
-// ClearTitle clears the value of the "title" field.
-func (u *MessageLinkUpsertOne) ClearTitle() *MessageLinkUpsertOne {
+// ClearLinkPreviewID clears the value of the "link_preview_id" field.
+func (u *MessageLinkUpsertOne) ClearLinkPreviewID() *MessageLinkUpsertOne {
 	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearTitle()
-	})
-}
-
-// SetDescription sets the "description" field.
-func (u *MessageLinkUpsertOne) SetDescription(v string) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetDescription(v)
-	})
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateDescription() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateDescription()
-	})
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *MessageLinkUpsertOne) ClearDescription() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearDescription()
-	})
-}
-
-// SetImageURL sets the "image_url" field.
-func (u *MessageLinkUpsertOne) SetImageURL(v string) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetImageURL(v)
-	})
-}
-
-// UpdateImageURL sets the "image_url" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateImageURL() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateImageURL()
-	})
-}
-
-// ClearImageURL clears the value of the "image_url" field.
-func (u *MessageLinkUpsertOne) ClearImageURL() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearImageURL()
-	})
-}
-
-// SetSiteName sets the "site_name" field.
-func (u *MessageLinkUpsertOne) SetSiteName(v string) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetSiteName(v)
-	})
-}
-
-// UpdateSiteName sets the "site_name" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateSiteName() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateSiteName()
-	})
-}
-
-// ClearSiteName clears the value of the "site_name" field.
-func (u *MessageLinkUpsertOne) ClearSiteName() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearSiteName()
-	})
-}
-
-// SetCardType sets the "card_type" field.
-func (u *MessageLinkUpsertOne) SetCardType(v string) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetCardType(v)
-	})
-}
-
-// UpdateCardType sets the "card_type" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateCardType() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateCardType()
-	})
-}
-
-// ClearCardType clears the value of the "card_type" field.
-func (u *MessageLinkUpsertOne) ClearCardType() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearCardType()
-	})
-}
-
-// SetImageWidth sets the "image_width" field.
-func (u *MessageLinkUpsertOne) SetImageWidth(v int32) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetImageWidth(v)
-	})
-}
-
-// AddImageWidth adds v to the "image_width" field.
-func (u *MessageLinkUpsertOne) AddImageWidth(v int32) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.AddImageWidth(v)
-	})
-}
-
-// UpdateImageWidth sets the "image_width" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateImageWidth() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateImageWidth()
-	})
-}
-
-// ClearImageWidth clears the value of the "image_width" field.
-func (u *MessageLinkUpsertOne) ClearImageWidth() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearImageWidth()
-	})
-}
-
-// SetImageHeight sets the "image_height" field.
-func (u *MessageLinkUpsertOne) SetImageHeight(v int32) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetImageHeight(v)
-	})
-}
-
-// AddImageHeight adds v to the "image_height" field.
-func (u *MessageLinkUpsertOne) AddImageHeight(v int32) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.AddImageHeight(v)
-	})
-}
-
-// UpdateImageHeight sets the "image_height" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateImageHeight() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateImageHeight()
-	})
-}
-
-// ClearImageHeight clears the value of the "image_height" field.
-func (u *MessageLinkUpsertOne) ClearImageHeight() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearImageHeight()
-	})
-}
-
-// SetYoutubeVideoID sets the "youtube_video_id" field.
-func (u *MessageLinkUpsertOne) SetYoutubeVideoID(v string) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetYoutubeVideoID(v)
-	})
-}
-
-// UpdateYoutubeVideoID sets the "youtube_video_id" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateYoutubeVideoID() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateYoutubeVideoID()
-	})
-}
-
-// ClearYoutubeVideoID clears the value of the "youtube_video_id" field.
-func (u *MessageLinkUpsertOne) ClearYoutubeVideoID() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearYoutubeVideoID()
-	})
-}
-
-// SetYoutubeChannelName sets the "youtube_channel_name" field.
-func (u *MessageLinkUpsertOne) SetYoutubeChannelName(v string) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetYoutubeChannelName(v)
-	})
-}
-
-// UpdateYoutubeChannelName sets the "youtube_channel_name" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateYoutubeChannelName() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateYoutubeChannelName()
-	})
-}
-
-// ClearYoutubeChannelName clears the value of the "youtube_channel_name" field.
-func (u *MessageLinkUpsertOne) ClearYoutubeChannelName() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearYoutubeChannelName()
-	})
-}
-
-// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
-func (u *MessageLinkUpsertOne) SetYoutubeDurationSeconds(v int32) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetYoutubeDurationSeconds(v)
-	})
-}
-
-// AddYoutubeDurationSeconds adds v to the "youtube_duration_seconds" field.
-func (u *MessageLinkUpsertOne) AddYoutubeDurationSeconds(v int32) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.AddYoutubeDurationSeconds(v)
-	})
-}
-
-// UpdateYoutubeDurationSeconds sets the "youtube_duration_seconds" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateYoutubeDurationSeconds() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateYoutubeDurationSeconds()
-	})
-}
-
-// ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
-func (u *MessageLinkUpsertOne) ClearYoutubeDurationSeconds() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearYoutubeDurationSeconds()
-	})
-}
-
-// SetXAuthorName sets the "x_author_name" field.
-func (u *MessageLinkUpsertOne) SetXAuthorName(v string) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetXAuthorName(v)
-	})
-}
-
-// UpdateXAuthorName sets the "x_author_name" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateXAuthorName() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateXAuthorName()
-	})
-}
-
-// ClearXAuthorName clears the value of the "x_author_name" field.
-func (u *MessageLinkUpsertOne) ClearXAuthorName() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearXAuthorName()
-	})
-}
-
-// SetXAuthorHandle sets the "x_author_handle" field.
-func (u *MessageLinkUpsertOne) SetXAuthorHandle(v string) *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetXAuthorHandle(v)
-	})
-}
-
-// UpdateXAuthorHandle sets the "x_author_handle" field to the value that was provided on create.
-func (u *MessageLinkUpsertOne) UpdateXAuthorHandle() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateXAuthorHandle()
-	})
-}
-
-// ClearXAuthorHandle clears the value of the "x_author_handle" field.
-func (u *MessageLinkUpsertOne) ClearXAuthorHandle() *MessageLinkUpsertOne {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearXAuthorHandle()
+		s.ClearLinkPreviewID()
 	})
 }
 
@@ -1237,7 +596,7 @@ func (_c *MessageLinkCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageLinkUpsert) {
-//			SetURL(v+v).
+//			SetMessageID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageLinkCreateBulk) OnConflict(opts ...sql.ConflictOption) *MessageLinkUpsertBulk {
@@ -1283,6 +642,9 @@ func (u *MessageLinkUpsertBulk) UpdateNewValues() *MessageLinkUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(messagelink.FieldID)
+			}
+			if _, exists := b.mutation.MessageID(); exists {
+				s.SetIgnore(messagelink.FieldMessageID)
 			}
 			if _, exists := b.mutation.CreatedAt(); exists {
 				s.SetIgnore(messagelink.FieldCreatedAt)
@@ -1333,276 +695,24 @@ func (u *MessageLinkUpsertBulk) UpdateURL() *MessageLinkUpsertBulk {
 	})
 }
 
-// SetTitle sets the "title" field.
-func (u *MessageLinkUpsertBulk) SetTitle(v string) *MessageLinkUpsertBulk {
+// SetLinkPreviewID sets the "link_preview_id" field.
+func (u *MessageLinkUpsertBulk) SetLinkPreviewID(v uuid.UUID) *MessageLinkUpsertBulk {
 	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetTitle(v)
+		s.SetLinkPreviewID(v)
 	})
 }
 
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateTitle() *MessageLinkUpsertBulk {
+// UpdateLinkPreviewID sets the "link_preview_id" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateLinkPreviewID() *MessageLinkUpsertBulk {
 	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateTitle()
+		s.UpdateLinkPreviewID()
 	})
 }
 
-// ClearTitle clears the value of the "title" field.
-func (u *MessageLinkUpsertBulk) ClearTitle() *MessageLinkUpsertBulk {
+// ClearLinkPreviewID clears the value of the "link_preview_id" field.
+func (u *MessageLinkUpsertBulk) ClearLinkPreviewID() *MessageLinkUpsertBulk {
 	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearTitle()
-	})
-}
-
-// SetDescription sets the "description" field.
-func (u *MessageLinkUpsertBulk) SetDescription(v string) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetDescription(v)
-	})
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateDescription() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateDescription()
-	})
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *MessageLinkUpsertBulk) ClearDescription() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearDescription()
-	})
-}
-
-// SetImageURL sets the "image_url" field.
-func (u *MessageLinkUpsertBulk) SetImageURL(v string) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetImageURL(v)
-	})
-}
-
-// UpdateImageURL sets the "image_url" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateImageURL() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateImageURL()
-	})
-}
-
-// ClearImageURL clears the value of the "image_url" field.
-func (u *MessageLinkUpsertBulk) ClearImageURL() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearImageURL()
-	})
-}
-
-// SetSiteName sets the "site_name" field.
-func (u *MessageLinkUpsertBulk) SetSiteName(v string) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetSiteName(v)
-	})
-}
-
-// UpdateSiteName sets the "site_name" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateSiteName() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateSiteName()
-	})
-}
-
-// ClearSiteName clears the value of the "site_name" field.
-func (u *MessageLinkUpsertBulk) ClearSiteName() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearSiteName()
-	})
-}
-
-// SetCardType sets the "card_type" field.
-func (u *MessageLinkUpsertBulk) SetCardType(v string) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetCardType(v)
-	})
-}
-
-// UpdateCardType sets the "card_type" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateCardType() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateCardType()
-	})
-}
-
-// ClearCardType clears the value of the "card_type" field.
-func (u *MessageLinkUpsertBulk) ClearCardType() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearCardType()
-	})
-}
-
-// SetImageWidth sets the "image_width" field.
-func (u *MessageLinkUpsertBulk) SetImageWidth(v int32) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetImageWidth(v)
-	})
-}
-
-// AddImageWidth adds v to the "image_width" field.
-func (u *MessageLinkUpsertBulk) AddImageWidth(v int32) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.AddImageWidth(v)
-	})
-}
-
-// UpdateImageWidth sets the "image_width" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateImageWidth() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateImageWidth()
-	})
-}
-
-// ClearImageWidth clears the value of the "image_width" field.
-func (u *MessageLinkUpsertBulk) ClearImageWidth() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearImageWidth()
-	})
-}
-
-// SetImageHeight sets the "image_height" field.
-func (u *MessageLinkUpsertBulk) SetImageHeight(v int32) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetImageHeight(v)
-	})
-}
-
-// AddImageHeight adds v to the "image_height" field.
-func (u *MessageLinkUpsertBulk) AddImageHeight(v int32) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.AddImageHeight(v)
-	})
-}
-
-// UpdateImageHeight sets the "image_height" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateImageHeight() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateImageHeight()
-	})
-}
-
-// ClearImageHeight clears the value of the "image_height" field.
-func (u *MessageLinkUpsertBulk) ClearImageHeight() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearImageHeight()
-	})
-}
-
-// SetYoutubeVideoID sets the "youtube_video_id" field.
-func (u *MessageLinkUpsertBulk) SetYoutubeVideoID(v string) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetYoutubeVideoID(v)
-	})
-}
-
-// UpdateYoutubeVideoID sets the "youtube_video_id" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateYoutubeVideoID() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateYoutubeVideoID()
-	})
-}
-
-// ClearYoutubeVideoID clears the value of the "youtube_video_id" field.
-func (u *MessageLinkUpsertBulk) ClearYoutubeVideoID() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearYoutubeVideoID()
-	})
-}
-
-// SetYoutubeChannelName sets the "youtube_channel_name" field.
-func (u *MessageLinkUpsertBulk) SetYoutubeChannelName(v string) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetYoutubeChannelName(v)
-	})
-}
-
-// UpdateYoutubeChannelName sets the "youtube_channel_name" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateYoutubeChannelName() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateYoutubeChannelName()
-	})
-}
-
-// ClearYoutubeChannelName clears the value of the "youtube_channel_name" field.
-func (u *MessageLinkUpsertBulk) ClearYoutubeChannelName() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearYoutubeChannelName()
-	})
-}
-
-// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
-func (u *MessageLinkUpsertBulk) SetYoutubeDurationSeconds(v int32) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetYoutubeDurationSeconds(v)
-	})
-}
-
-// AddYoutubeDurationSeconds adds v to the "youtube_duration_seconds" field.
-func (u *MessageLinkUpsertBulk) AddYoutubeDurationSeconds(v int32) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.AddYoutubeDurationSeconds(v)
-	})
-}
-
-// UpdateYoutubeDurationSeconds sets the "youtube_duration_seconds" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateYoutubeDurationSeconds() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateYoutubeDurationSeconds()
-	})
-}
-
-// ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
-func (u *MessageLinkUpsertBulk) ClearYoutubeDurationSeconds() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearYoutubeDurationSeconds()
-	})
-}
-
-// SetXAuthorName sets the "x_author_name" field.
-func (u *MessageLinkUpsertBulk) SetXAuthorName(v string) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetXAuthorName(v)
-	})
-}
-
-// UpdateXAuthorName sets the "x_author_name" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateXAuthorName() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateXAuthorName()
-	})
-}
-
-// ClearXAuthorName clears the value of the "x_author_name" field.
-func (u *MessageLinkUpsertBulk) ClearXAuthorName() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearXAuthorName()
-	})
-}
-
-// SetXAuthorHandle sets the "x_author_handle" field.
-func (u *MessageLinkUpsertBulk) SetXAuthorHandle(v string) *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.SetXAuthorHandle(v)
-	})
-}
-
-// UpdateXAuthorHandle sets the "x_author_handle" field to the value that was provided on create.
-func (u *MessageLinkUpsertBulk) UpdateXAuthorHandle() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.UpdateXAuthorHandle()
-	})
-}
-
-// ClearXAuthorHandle clears the value of the "x_author_handle" field.
-func (u *MessageLinkUpsertBulk) ClearXAuthorHandle() *MessageLinkUpsertBulk {
-	return u.Update(func(s *MessageLinkUpsert) {
-		s.ClearXAuthorHandle()
+		s.ClearLinkPreviewID()
 	})
 }
 

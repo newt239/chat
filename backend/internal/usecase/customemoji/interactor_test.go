@@ -5,6 +5,7 @@ import (
 	"errors"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
@@ -103,25 +104,19 @@ type fakeStorage struct {
 	deleted    []string
 }
 
-func (s *fakeStorage) GenerateUploadURL(key, _ string, _ int64, _ interface{}) (string, error) {
+func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, _ int64, _ time.Duration) (string, error) {
 	s.uploadKeys = append(s.uploadKeys, key)
 	return "https://storage/put/" + key, nil
 }
 
-func (s *fakeStorage) GenerateDownloadURL(key string, _ interface{}) (string, error) {
+func (s *fakeStorage) GenerateDownloadURL(_ context.Context, key string, _ time.Duration) (string, error) {
 	return "https://storage/get/" + key, nil
 }
 
-func (s *fakeStorage) DeleteObject(key string) error {
+func (s *fakeStorage) DeleteObject(_ context.Context, key string) error {
 	s.deleted = append(s.deleted, key)
 	return nil
 }
-
-type fakeConfig struct {
-	domainservice.StorageConfig
-}
-
-func (fakeConfig) GetUploadExpires() interface{} { return nil }
 
 type fakeNotifier struct {
 	created, deleted []string
@@ -157,7 +152,7 @@ func newFixture() fixture {
 	storage := &fakeStorage{}
 	notifier := &fakeNotifier{}
 	recorder := &audittest.Recorder{}
-	uc := NewInteractor(repo, fakeUserRepo{}, stubWorkspaceRepo{}, stubPermission{}, storage, fakeConfig{}, notifier, recorder, nopLogger{})
+	uc := NewInteractor(repo, fakeUserRepo{}, stubWorkspaceRepo{}, stubPermission{}, storage, notifier, recorder, nopLogger{})
 	return fixture{uc: uc, repo: repo, storage: storage, notifier: notifier, recorder: recorder}
 }
 
@@ -256,7 +251,7 @@ func TestDelete(t *testing.T) {
 	}{
 		{name: "登録者は削除できる", userID: creatorID, emojiID: "e1"},
 		{name: "管理者は削除できる", userID: adminID, emojiID: "e1"},
-		{name: "他のメンバーは削除できない", userID: otherID, emojiID: "e1", want: ErrUnauthorized},
+		{name: "他のメンバーは削除できない", userID: otherID, emojiID: "e1", want: domerr.ErrUnauthorized},
 		{name: "他のワークスペースの絵文字は見つからない", userID: adminID, emojiID: "e2", want: ErrEmojiNotFound},
 		{name: "メンバー以外は削除できない", userID: outsiderID, emojiID: "e1", want: domerr.ErrUnauthorized},
 	}

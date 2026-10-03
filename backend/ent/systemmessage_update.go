@@ -30,6 +30,40 @@ func (_u *SystemMessageUpdate) Where(ps ...predicate.SystemMessage) *SystemMessa
 	return _u
 }
 
+// SetChannelID sets the "channel_id" field.
+func (_u *SystemMessageUpdate) SetChannelID(v uuid.UUID) *SystemMessageUpdate {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *SystemMessageUpdate) SetNillableChannelID(v *uuid.UUID) *SystemMessageUpdate {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
+	return _u
+}
+
+// SetActorID sets the "actor_id" field.
+func (_u *SystemMessageUpdate) SetActorID(v uuid.UUID) *SystemMessageUpdate {
+	_u.mutation.SetActorID(v)
+	return _u
+}
+
+// SetNillableActorID sets the "actor_id" field if the given value is not nil.
+func (_u *SystemMessageUpdate) SetNillableActorID(v *uuid.UUID) *SystemMessageUpdate {
+	if v != nil {
+		_u.SetActorID(*v)
+	}
+	return _u
+}
+
+// ClearActorID clears the value of the "actor_id" field.
+func (_u *SystemMessageUpdate) ClearActorID() *SystemMessageUpdate {
+	_u.mutation.ClearActorID()
+	return _u
+}
+
 // SetKind sets the "kind" field.
 func (_u *SystemMessageUpdate) SetKind(v string) *SystemMessageUpdate {
 	_u.mutation.SetKind(v)
@@ -50,29 +84,9 @@ func (_u *SystemMessageUpdate) SetPayload(v map[string]interface{}) *SystemMessa
 	return _u
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *SystemMessageUpdate) SetChannelID(id uuid.UUID) *SystemMessageUpdate {
-	_u.mutation.SetChannelID(id)
-	return _u
-}
-
 // SetChannel sets the "channel" edge to the Channel entity.
 func (_u *SystemMessageUpdate) SetChannel(v *Channel) *SystemMessageUpdate {
 	return _u.SetChannelID(v.ID)
-}
-
-// SetActorID sets the "actor" edge to the User entity by ID.
-func (_u *SystemMessageUpdate) SetActorID(id uuid.UUID) *SystemMessageUpdate {
-	_u.mutation.SetActorID(id)
-	return _u
-}
-
-// SetNillableActorID sets the "actor" edge to the User entity by ID if the given value is not nil.
-func (_u *SystemMessageUpdate) SetNillableActorID(id *uuid.UUID) *SystemMessageUpdate {
-	if id != nil {
-		_u = _u.SetActorID(*id)
-	}
-	return _u
 }
 
 // SetActor sets the "actor" edge to the User entity.
@@ -233,6 +247,40 @@ type SystemMessageUpdateOne struct {
 	mutation *SystemMessageMutation
 }
 
+// SetChannelID sets the "channel_id" field.
+func (_u *SystemMessageUpdateOne) SetChannelID(v uuid.UUID) *SystemMessageUpdateOne {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *SystemMessageUpdateOne) SetNillableChannelID(v *uuid.UUID) *SystemMessageUpdateOne {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
+	return _u
+}
+
+// SetActorID sets the "actor_id" field.
+func (_u *SystemMessageUpdateOne) SetActorID(v uuid.UUID) *SystemMessageUpdateOne {
+	_u.mutation.SetActorID(v)
+	return _u
+}
+
+// SetNillableActorID sets the "actor_id" field if the given value is not nil.
+func (_u *SystemMessageUpdateOne) SetNillableActorID(v *uuid.UUID) *SystemMessageUpdateOne {
+	if v != nil {
+		_u.SetActorID(*v)
+	}
+	return _u
+}
+
+// ClearActorID clears the value of the "actor_id" field.
+func (_u *SystemMessageUpdateOne) ClearActorID() *SystemMessageUpdateOne {
+	_u.mutation.ClearActorID()
+	return _u
+}
+
 // SetKind sets the "kind" field.
 func (_u *SystemMessageUpdateOne) SetKind(v string) *SystemMessageUpdateOne {
 	_u.mutation.SetKind(v)
@@ -253,29 +301,9 @@ func (_u *SystemMessageUpdateOne) SetPayload(v map[string]interface{}) *SystemMe
 	return _u
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *SystemMessageUpdateOne) SetChannelID(id uuid.UUID) *SystemMessageUpdateOne {
-	_u.mutation.SetChannelID(id)
-	return _u
-}
-
 // SetChannel sets the "channel" edge to the Channel entity.
 func (_u *SystemMessageUpdateOne) SetChannel(v *Channel) *SystemMessageUpdateOne {
 	return _u.SetChannelID(v.ID)
-}
-
-// SetActorID sets the "actor" edge to the User entity by ID.
-func (_u *SystemMessageUpdateOne) SetActorID(id uuid.UUID) *SystemMessageUpdateOne {
-	_u.mutation.SetActorID(id)
-	return _u
-}
-
-// SetNillableActorID sets the "actor" edge to the User entity by ID if the given value is not nil.
-func (_u *SystemMessageUpdateOne) SetNillableActorID(id *uuid.UUID) *SystemMessageUpdateOne {
-	if id != nil {
-		_u = _u.SetActorID(*id)
-	}
-	return _u
 }
 
 // SetActor sets the "actor" edge to the User entity.

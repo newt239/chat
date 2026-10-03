@@ -56,9 +56,59 @@ func IDLTE(id uuid.UUID) predicate.ChannelReadState {
 	return predicate.ChannelReadState(sql.FieldLTE(FieldID, id))
 }
 
+// ChannelID applies equality check predicate on the "channel_id" field. It's identical to ChannelIDEQ.
+func ChannelID(v uuid.UUID) predicate.ChannelReadState {
+	return predicate.ChannelReadState(sql.FieldEQ(FieldChannelID, v))
+}
+
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.ChannelReadState {
+	return predicate.ChannelReadState(sql.FieldEQ(FieldUserID, v))
+}
+
 // LastReadAt applies equality check predicate on the "last_read_at" field. It's identical to LastReadAtEQ.
 func LastReadAt(v time.Time) predicate.ChannelReadState {
 	return predicate.ChannelReadState(sql.FieldEQ(FieldLastReadAt, v))
+}
+
+// ChannelIDEQ applies the EQ predicate on the "channel_id" field.
+func ChannelIDEQ(v uuid.UUID) predicate.ChannelReadState {
+	return predicate.ChannelReadState(sql.FieldEQ(FieldChannelID, v))
+}
+
+// ChannelIDNEQ applies the NEQ predicate on the "channel_id" field.
+func ChannelIDNEQ(v uuid.UUID) predicate.ChannelReadState {
+	return predicate.ChannelReadState(sql.FieldNEQ(FieldChannelID, v))
+}
+
+// ChannelIDIn applies the In predicate on the "channel_id" field.
+func ChannelIDIn(vs ...uuid.UUID) predicate.ChannelReadState {
+	return predicate.ChannelReadState(sql.FieldIn(FieldChannelID, vs...))
+}
+
+// ChannelIDNotIn applies the NotIn predicate on the "channel_id" field.
+func ChannelIDNotIn(vs ...uuid.UUID) predicate.ChannelReadState {
+	return predicate.ChannelReadState(sql.FieldNotIn(FieldChannelID, vs...))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.ChannelReadState {
+	return predicate.ChannelReadState(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.ChannelReadState {
+	return predicate.ChannelReadState(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.ChannelReadState {
+	return predicate.ChannelReadState(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.ChannelReadState {
+	return predicate.ChannelReadState(sql.FieldNotIn(FieldUserID, vs...))
 }
 
 // LastReadAtEQ applies the EQ predicate on the "last_read_at" field.

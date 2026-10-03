@@ -2,9 +2,13 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
+	domerr "github.com/newt239/chat/internal/domain/errors"
+
+	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -60,5 +64,47 @@ func TestSearchBrowsableChannels(t *testing.T) {
 				t.Errorf("got=%v (%d) want=%v (%d)", names, total, tt.wantNames, tt.wantTotal)
 			}
 		})
+	}
+}
+
+func TestFindOrCreateDMReusesChannelByKey(t *testing.T) {
+	client := openTestClient(t)
+	f := newSearchFixture(t, client)
+	repo := NewChannelRepository(client)
+	ctx := context.Background()
+	alice, bob := f.alice.ID.String(), f.bob.ID.String()
+
+	dm, err := repo.FindOrCreateDM(ctx, f.workspaceID, alice, bob)
+	if err != nil {
+		t.Fatalf("DM の作成に失敗しました: %v", err)
+	}
+	again, err := repo.FindOrCreateDM(ctx, f.workspaceID, bob, alice)
+	if err != nil || again.ID != dm.ID {
+		t.Fatalf("相手から開いても同じ DM を返すことを期待しましたが %v, %v でした", again, err)
+	}
+
+	group, err := repo.FindOrCreateGroupDM(ctx, f.workspaceID, alice, []string{alice, bob}, "")
+	if err != nil || group.ID == dm.ID {
+		t.Fatalf("グループ DM は 1:1 の DM と別に作ることを期待しましたが %v, %v でした", group, err)
+	}
+	same, err := repo.FindOrCreateGroupDM(ctx, f.workspaceID, bob, []string{bob, alice}, "別名")
+	if err != nil || same.ID != group.ID {
+		t.Fatalf("メンバーが同じグループ DM を返すことを期待しましたが %v, %v でした", same, err)
+	}
+}
+
+func TestAddMemberReportsDuplicate(t *testing.T) {
+	client := openTestClient(t)
+	f := newSearchFixture(t, client)
+	repo := NewChannelMemberRepository(client)
+	ctx := context.Background()
+	member := &entity.ChannelMember{ChannelID: f.channels["general"].ID.String(), UserID: f.alice.ID.String(), Role: entity.ChannelRoleMember}
+
+	if err := repo.AddMember(ctx, member); !errors.Is(err, domerr.ErrAlreadyMember) {
+		t.Fatalf("参加済みのメンバーは ErrAlreadyMember を返すことを期待しましたが %v でした", err)
+	}
+	members, err := repo.FindMembers(ctx, member.ChannelID)
+	if err != nil || len(members) != 2 {
+		t.Fatalf("メンバーが重複していないことを期待しましたが %d 人, %v でした", len(members), err)
 	}
 }

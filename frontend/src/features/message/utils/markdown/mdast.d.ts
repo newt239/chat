@@ -1,5 +1,12 @@
 import type { Literal } from "mdast";
 
+// renderMarkdown が処理ごとに remarkHideLinks へ渡す値
+declare module "vfile" {
+  interface DataMap {
+    hiddenUrls: readonly string[];
+  }
+}
+
 // remark プラグインで追加するカスタムノードを mdast に登録する
 declare module "mdast" {
   interface MentionNode extends Literal {

@@ -1,4 +1,5 @@
-import { colorTokenNames, themePresets, typography } from "@chat/design-tokens";
+import { typography } from "@chat/design-tokens/scale";
+import { colorTokenNames, themePresets } from "@chat/design-tokens/theme";
 import { describe, expect, test } from "vite-plus/test";
 
 import globalsCss from "#/styles/globals.css?raw";

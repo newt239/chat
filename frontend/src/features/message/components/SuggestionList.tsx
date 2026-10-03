@@ -37,7 +37,7 @@ export const SuggestionList = ({ id, items, activeIndex, onSelect }: SuggestionL
             onSelect(item);
           }}
           className={cn(
-            "flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-[13px] [&_svg]:size-4 [&_svg]:text-muted",
+            "flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-body-sm [&_svg]:size-4 [&_svg]:text-muted",
             index === activeIndex && "bg-hover",
           )}
         >

@@ -33,6 +33,34 @@ func (_u *UserGroupUpdate) Where(ps ...predicate.UserGroup) *UserGroupUpdate {
 	return _u
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_u *UserGroupUpdate) SetWorkspaceID(v string) *UserGroupUpdate {
+	_u.mutation.SetWorkspaceID(v)
+	return _u
+}
+
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_u *UserGroupUpdate) SetNillableWorkspaceID(v *string) *UserGroupUpdate {
+	if v != nil {
+		_u.SetWorkspaceID(*v)
+	}
+	return _u
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (_u *UserGroupUpdate) SetCreatedByID(v uuid.UUID) *UserGroupUpdate {
+	_u.mutation.SetCreatedByID(v)
+	return _u
+}
+
+// SetNillableCreatedByID sets the "created_by_id" field if the given value is not nil.
+func (_u *UserGroupUpdate) SetNillableCreatedByID(v *uuid.UUID) *UserGroupUpdate {
+	if v != nil {
+		_u.SetCreatedByID(*v)
+	}
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *UserGroupUpdate) SetName(v string) *UserGroupUpdate {
 	_u.mutation.SetName(v)
@@ -73,21 +101,9 @@ func (_u *UserGroupUpdate) SetUpdatedAt(v time.Time) *UserGroupUpdate {
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *UserGroupUpdate) SetWorkspaceID(id string) *UserGroupUpdate {
-	_u.mutation.SetWorkspaceID(id)
-	return _u
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *UserGroupUpdate) SetWorkspace(v *Workspace) *UserGroupUpdate {
 	return _u.SetWorkspaceID(v.ID)
-}
-
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_u *UserGroupUpdate) SetCreatedByID(id uuid.UUID) *UserGroupUpdate {
-	_u.mutation.SetCreatedByID(id)
-	return _u
 }
 
 // SetCreatedBy sets the "created_by" edge to the User entity.
@@ -428,6 +444,34 @@ type UserGroupUpdateOne struct {
 	mutation *UserGroupMutation
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_u *UserGroupUpdateOne) SetWorkspaceID(v string) *UserGroupUpdateOne {
+	_u.mutation.SetWorkspaceID(v)
+	return _u
+}
+
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_u *UserGroupUpdateOne) SetNillableWorkspaceID(v *string) *UserGroupUpdateOne {
+	if v != nil {
+		_u.SetWorkspaceID(*v)
+	}
+	return _u
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (_u *UserGroupUpdateOne) SetCreatedByID(v uuid.UUID) *UserGroupUpdateOne {
+	_u.mutation.SetCreatedByID(v)
+	return _u
+}
+
+// SetNillableCreatedByID sets the "created_by_id" field if the given value is not nil.
+func (_u *UserGroupUpdateOne) SetNillableCreatedByID(v *uuid.UUID) *UserGroupUpdateOne {
+	if v != nil {
+		_u.SetCreatedByID(*v)
+	}
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *UserGroupUpdateOne) SetName(v string) *UserGroupUpdateOne {
 	_u.mutation.SetName(v)
@@ -468,21 +512,9 @@ func (_u *UserGroupUpdateOne) SetUpdatedAt(v time.Time) *UserGroupUpdateOne {
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *UserGroupUpdateOne) SetWorkspaceID(id string) *UserGroupUpdateOne {
-	_u.mutation.SetWorkspaceID(id)
-	return _u
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *UserGroupUpdateOne) SetWorkspace(v *Workspace) *UserGroupUpdateOne {
 	return _u.SetWorkspaceID(v.ID)
-}
-
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_u *UserGroupUpdateOne) SetCreatedByID(id uuid.UUID) *UserGroupUpdateOne {
-	_u.mutation.SetCreatedByID(id)
-	return _u
 }
 
 // SetCreatedBy sets the "created_by" edge to the User entity.

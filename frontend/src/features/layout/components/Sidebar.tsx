@@ -3,12 +3,12 @@ import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { NavLink } from "#/components/block/NavLink/NavLink";
+import { sidebarNavTone } from "#/components/block/NavLink/navTone";
 import { ResizeHandle } from "#/components/ui/ResizeHandle/ResizeHandle";
+import { MiniPlayer } from "#/features/player/components/MiniPlayer";
 import { WorkspaceMenu } from "#/features/workspace/components/WorkspaceMenu";
 import { sidebarWidthRanges, sidebarWidthsAtom } from "#/providers/store/ui";
 
-import { sidebarNavTone } from "../utils/navTone";
-import { MiniPlayerSlot } from "./MiniPlayerSlot";
 import { NavigationList } from "./NavigationList";
 import { SidebarFooter } from "./SidebarFooter";
 
@@ -32,13 +32,13 @@ export const Sidebar = ({ workspaceId }: SidebarProps) => {
       <NavLink
         to="/app/$workspaceId/search"
         params={{ workspaceId }}
-        className="mx-2.5 mb-1.5 h-[30px] w-auto bg-(--nav-hover) text-[13px] text-(--nav-muted)"
+        className="mx-2.5 mb-1.5 h-7.5 w-auto bg-(--nav-hover) text-body-sm text-(--nav-muted)"
       >
         <IconSearch aria-hidden />
         {t("shell.nav.search")}
       </NavLink>
       <NavigationList workspaceId={workspaceId} />
-      <MiniPlayerSlot />
+      <MiniPlayer variant="sidebar" />
       <SidebarFooter />
       <ResizeHandle
         label={t("shell.sidebar.resize")}

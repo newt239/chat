@@ -1,6 +1,7 @@
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import path from "node:path";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite-plus";
@@ -169,15 +170,15 @@ export default defineConfig(({ mode }) => {
         "react/function-component-definition": ["warn", { namedComponents: "arrow-function" }],
         "react/jsx-filename-extension": ["warn", { extensions: [".tsx"] }],
         "react/jsx-max-depth": "off",
+        // React Compiler がメモ化するため
+        "react/jsx-no-constructed-context-values": "off",
         "react/jsx-no-literals": "off",
         "react/jsx-no-useless-fragment": "off",
         "react/jsx-props-no-spreading": "off",
         "react/no-object-type-as-default-prop": "off",
         "react/react-in-jsx-scope": "off",
-        // React Compiler が未対応の構文を報告するだけでコード自体は正しいため
         // 外部値とフォーム状態を同期する用途で使っているため
         "react/set-state-in-effect": "off",
-        "react/todo": "off",
         "require-unicode-regexp": "off",
         "sort-imports": "off",
         "typescript/consistent-type-definitions": ["error", "type"],
@@ -223,6 +224,7 @@ export default defineConfig(({ mode }) => {
       }),
       tailwindcss(),
       react(),
+      babel({ presets: [reactCompilerPreset()] }),
       VitePWA({
         // 通知の受信・クリックを扱うため Service Worker は自前で書く
         disable: isTauri,

@@ -26,6 +26,7 @@ import { schedule } from "./schedule";
 import { search } from "./search";
 import { settings } from "./settings";
 import { shell } from "./shell";
+import { thread } from "./thread";
 import { ui } from "./ui";
 import { userGroup } from "./userGroup";
 import { workspace } from "./workspace";
@@ -58,6 +59,7 @@ export const en: Messages = {
   search,
   settings,
   shell,
+  thread,
   ui,
   userGroup,
   workspace,

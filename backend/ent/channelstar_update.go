@@ -30,21 +30,37 @@ func (_u *ChannelStarUpdate) Where(ps ...predicate.ChannelStar) *ChannelStarUpda
 	return _u
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ChannelStarUpdate) SetUserID(id uuid.UUID) *ChannelStarUpdate {
-	_u.mutation.SetUserID(id)
+// SetUserID sets the "user_id" field.
+func (_u *ChannelStarUpdate) SetUserID(v uuid.UUID) *ChannelStarUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ChannelStarUpdate) SetNillableUserID(v *uuid.UUID) *ChannelStarUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (_u *ChannelStarUpdate) SetChannelID(v uuid.UUID) *ChannelStarUpdate {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *ChannelStarUpdate) SetNillableChannelID(v *uuid.UUID) *ChannelStarUpdate {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
 	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
 func (_u *ChannelStarUpdate) SetUser(v *User) *ChannelStarUpdate {
 	return _u.SetUserID(v.ID)
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *ChannelStarUpdate) SetChannelID(id uuid.UUID) *ChannelStarUpdate {
-	_u.mutation.SetChannelID(id)
-	return _u
 }
 
 // SetChannel sets the "channel" edge to the Channel entity.
@@ -197,21 +213,37 @@ type ChannelStarUpdateOne struct {
 	mutation *ChannelStarMutation
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ChannelStarUpdateOne) SetUserID(id uuid.UUID) *ChannelStarUpdateOne {
-	_u.mutation.SetUserID(id)
+// SetUserID sets the "user_id" field.
+func (_u *ChannelStarUpdateOne) SetUserID(v uuid.UUID) *ChannelStarUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ChannelStarUpdateOne) SetNillableUserID(v *uuid.UUID) *ChannelStarUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (_u *ChannelStarUpdateOne) SetChannelID(v uuid.UUID) *ChannelStarUpdateOne {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *ChannelStarUpdateOne) SetNillableChannelID(v *uuid.UUID) *ChannelStarUpdateOne {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
 	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
 func (_u *ChannelStarUpdateOne) SetUser(v *User) *ChannelStarUpdateOne {
 	return _u.SetUserID(v.ID)
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *ChannelStarUpdateOne) SetChannelID(id uuid.UUID) *ChannelStarUpdateOne {
-	_u.mutation.SetChannelID(id)
-	return _u
 }
 
 // SetChannel sets the "channel" edge to the Channel entity.

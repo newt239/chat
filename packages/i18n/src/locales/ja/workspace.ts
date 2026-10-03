@@ -54,7 +54,11 @@ export const workspace = {
     submit: "登録",
   },
   members: {
+    actionFailed: "メンバーを変更できませんでした",
     remove: "{{name}} をワークスペースから外す",
+    removeConfirm: "{{name}} をワークスペースから外しますか？",
+    removeConfirmBody: "参加しているチャンネルからも外れます。もう一度参加するには招待が必要です。",
+    removeSubmit: "外す",
     role: "ロール",
     title: "メンバー（{{count}} 人）",
   },

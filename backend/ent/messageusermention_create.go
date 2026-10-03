@@ -26,6 +26,18 @@ type MessageUserMentionCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetMessageID sets the "message_id" field.
+func (_c *MessageUserMentionCreate) SetMessageID(v uuid.UUID) *MessageUserMentionCreate {
+	_c.mutation.SetMessageID(v)
+	return _c
+}
+
+// SetUserID sets the "user_id" field.
+func (_c *MessageUserMentionCreate) SetUserID(v uuid.UUID) *MessageUserMentionCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
 // SetViaGroupID sets the "via_group_id" field.
 func (_c *MessageUserMentionCreate) SetViaGroupID(v uuid.UUID) *MessageUserMentionCreate {
 	_c.mutation.SetViaGroupID(v)
@@ -68,21 +80,9 @@ func (_c *MessageUserMentionCreate) SetNillableID(v *uuid.UUID) *MessageUserMent
 	return _c
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_c *MessageUserMentionCreate) SetMessageID(id uuid.UUID) *MessageUserMentionCreate {
-	_c.mutation.SetMessageID(id)
-	return _c
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_c *MessageUserMentionCreate) SetMessage(v *Message) *MessageUserMentionCreate {
 	return _c.SetMessageID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *MessageUserMentionCreate) SetUserID(id uuid.UUID) *MessageUserMentionCreate {
-	_c.mutation.SetUserID(id)
-	return _c
 }
 
 // SetUser sets the "user" edge to the User entity.
@@ -137,6 +137,12 @@ func (_c *MessageUserMentionCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *MessageUserMentionCreate) check() error {
+	if _, ok := _c.mutation.MessageID(); !ok {
+		return &ValidationError{Name: "message_id", err: errors.New(`ent: missing required field "MessageUserMention.message_id"`)}
+	}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "MessageUserMention.user_id"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "MessageUserMention.created_at"`)}
 	}
@@ -204,7 +210,7 @@ func (_c *MessageUserMentionCreate) createSpec() (*MessageUserMention, *sqlgraph
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_user_mention_message = &nodes[0]
+		_node.MessageID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
@@ -221,7 +227,7 @@ func (_c *MessageUserMentionCreate) createSpec() (*MessageUserMention, *sqlgraph
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_user_mention_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -231,7 +237,7 @@ func (_c *MessageUserMentionCreate) createSpec() (*MessageUserMention, *sqlgraph
 // of the `INSERT` statement. For example:
 //
 //	client.MessageUserMention.Create().
-//		SetViaGroupID(v).
+//		SetMessageID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -240,7 +246,7 @@ func (_c *MessageUserMentionCreate) createSpec() (*MessageUserMention, *sqlgraph
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageUserMentionUpsert) {
-//			SetViaGroupID(v+v).
+//			SetMessageID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageUserMentionCreate) OnConflict(opts ...sql.ConflictOption) *MessageUserMentionUpsertOne {
@@ -275,6 +281,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageUserMentionUpsert) SetMessageID(v uuid.UUID) *MessageUserMentionUpsert {
+	u.Set(messageusermention.FieldMessageID, v)
+	return u
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageUserMentionUpsert) UpdateMessageID() *MessageUserMentionUpsert {
+	u.SetExcluded(messageusermention.FieldMessageID)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *MessageUserMentionUpsert) SetUserID(v uuid.UUID) *MessageUserMentionUpsert {
+	u.Set(messageusermention.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *MessageUserMentionUpsert) UpdateUserID() *MessageUserMentionUpsert {
+	u.SetExcluded(messageusermention.FieldUserID)
+	return u
+}
 
 // SetViaGroupID sets the "via_group_id" field.
 func (u *MessageUserMentionUpsert) SetViaGroupID(v uuid.UUID) *MessageUserMentionUpsert {
@@ -343,6 +373,34 @@ func (u *MessageUserMentionUpsertOne) Update(set func(*MessageUserMentionUpsert)
 		set(&MessageUserMentionUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageUserMentionUpsertOne) SetMessageID(v uuid.UUID) *MessageUserMentionUpsertOne {
+	return u.Update(func(s *MessageUserMentionUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageUserMentionUpsertOne) UpdateMessageID() *MessageUserMentionUpsertOne {
+	return u.Update(func(s *MessageUserMentionUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *MessageUserMentionUpsertOne) SetUserID(v uuid.UUID) *MessageUserMentionUpsertOne {
+	return u.Update(func(s *MessageUserMentionUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *MessageUserMentionUpsertOne) UpdateUserID() *MessageUserMentionUpsertOne {
+	return u.Update(func(s *MessageUserMentionUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetViaGroupID sets the "via_group_id" field.
@@ -502,7 +560,7 @@ func (_c *MessageUserMentionCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageUserMentionUpsert) {
-//			SetViaGroupID(v+v).
+//			SetMessageID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageUserMentionCreateBulk) OnConflict(opts ...sql.ConflictOption) *MessageUserMentionUpsertBulk {
@@ -582,6 +640,34 @@ func (u *MessageUserMentionUpsertBulk) Update(set func(*MessageUserMentionUpsert
 		set(&MessageUserMentionUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageUserMentionUpsertBulk) SetMessageID(v uuid.UUID) *MessageUserMentionUpsertBulk {
+	return u.Update(func(s *MessageUserMentionUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageUserMentionUpsertBulk) UpdateMessageID() *MessageUserMentionUpsertBulk {
+	return u.Update(func(s *MessageUserMentionUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *MessageUserMentionUpsertBulk) SetUserID(v uuid.UUID) *MessageUserMentionUpsertBulk {
+	return u.Update(func(s *MessageUserMentionUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *MessageUserMentionUpsertBulk) UpdateUserID() *MessageUserMentionUpsertBulk {
+	return u.Update(func(s *MessageUserMentionUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetViaGroupID sets the "via_group_id" field.

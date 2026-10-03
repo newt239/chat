@@ -30,21 +30,37 @@ func (_u *ChannelMuteUpdate) Where(ps ...predicate.ChannelMute) *ChannelMuteUpda
 	return _u
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ChannelMuteUpdate) SetUserID(id uuid.UUID) *ChannelMuteUpdate {
-	_u.mutation.SetUserID(id)
+// SetUserID sets the "user_id" field.
+func (_u *ChannelMuteUpdate) SetUserID(v uuid.UUID) *ChannelMuteUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ChannelMuteUpdate) SetNillableUserID(v *uuid.UUID) *ChannelMuteUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (_u *ChannelMuteUpdate) SetChannelID(v uuid.UUID) *ChannelMuteUpdate {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *ChannelMuteUpdate) SetNillableChannelID(v *uuid.UUID) *ChannelMuteUpdate {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
 	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
 func (_u *ChannelMuteUpdate) SetUser(v *User) *ChannelMuteUpdate {
 	return _u.SetUserID(v.ID)
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *ChannelMuteUpdate) SetChannelID(id uuid.UUID) *ChannelMuteUpdate {
-	_u.mutation.SetChannelID(id)
-	return _u
 }
 
 // SetChannel sets the "channel" edge to the Channel entity.
@@ -197,21 +213,37 @@ type ChannelMuteUpdateOne struct {
 	mutation *ChannelMuteMutation
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ChannelMuteUpdateOne) SetUserID(id uuid.UUID) *ChannelMuteUpdateOne {
-	_u.mutation.SetUserID(id)
+// SetUserID sets the "user_id" field.
+func (_u *ChannelMuteUpdateOne) SetUserID(v uuid.UUID) *ChannelMuteUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ChannelMuteUpdateOne) SetNillableUserID(v *uuid.UUID) *ChannelMuteUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (_u *ChannelMuteUpdateOne) SetChannelID(v uuid.UUID) *ChannelMuteUpdateOne {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *ChannelMuteUpdateOne) SetNillableChannelID(v *uuid.UUID) *ChannelMuteUpdateOne {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
 	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
 func (_u *ChannelMuteUpdateOne) SetUser(v *User) *ChannelMuteUpdateOne {
 	return _u.SetUserID(v.ID)
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *ChannelMuteUpdateOne) SetChannelID(id uuid.UUID) *ChannelMuteUpdateOne {
-	_u.mutation.SetChannelID(id)
-	return _u
 }
 
 // SetChannel sets the "channel" edge to the Channel entity.

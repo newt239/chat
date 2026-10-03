@@ -30,11 +30,11 @@ export const FileAttachment = ({ attachment }: FileAttachmentProps) => {
   };
 
   return (
-    <div className="flex w-[min(360px,100%)] items-center gap-2.5 rounded-[10px] border border-border bg-surface py-2 pr-1.5 pl-2.5 font-sans">
+    <div className="flex w-90 max-w-full items-center gap-2.5 rounded-lg border border-border bg-surface py-2 pr-1.5 pl-2.5 font-sans">
       <FileIcon mimeType={attachment.mimeType} />
-      <div className="flex min-w-0 flex-1 flex-col leading-[1.35]">
-        <b className="truncate text-[13px] font-semibold">{attachment.fileName}</b>
-        <small className="text-[11.5px] text-muted">
+      <div className="flex min-w-0 flex-1 flex-col leading-snug">
+        <b className="truncate text-body-sm font-semibold">{attachment.fileName}</b>
+        <small className="text-caption text-muted">
           {formatFileSize(Number(attachment.sizeBytes))}
         </small>
       </div>

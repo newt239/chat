@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -15,12 +17,18 @@ type UserGroup struct {
 	ent.Schema
 }
 
+func (UserGroup) Annotations() []schema.Annotation {
+	return []schema.Annotation{entsql.Annotation{Table: "user_group"}}
+}
+
 // Fields of the UserGroup.
 func (UserGroup) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
+		field.String("workspace_id"),
+		field.UUID("created_by_id", uuid.UUID{}),
 		field.String("name").
 			NotEmpty(),
 		field.String("description").
@@ -38,9 +46,11 @@ func (UserGroup) Fields() []ent.Field {
 func (UserGroup) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("workspace", Workspace.Type).
+			Field("workspace_id").
 			Unique().
 			Required(),
 		edge.To("created_by", User.Type).
+			Field("created_by_id").
 			Unique().
 			Required(),
 		edge.From("members", UserGroupMember.Type).
@@ -53,8 +63,7 @@ func (UserGroup) Edges() []ent.Edge {
 // Indexes of the UserGroup.
 func (UserGroup) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("name").
-			Edges("workspace").
+		index.Fields("workspace_id", "name").
 			Unique(),
 	}
 }

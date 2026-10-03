@@ -17,7 +17,7 @@ func imageHandler(storage service.StorageService, config service.StorageConfig) 
 		if path == "" || strings.Contains(path, "..") {
 			return c.NoContent(http.StatusNotFound)
 		}
-		url, err := storage.GenerateDownloadURL(imageuc.KeyPrefix+path, config.GetDownloadExpires())
+		url, err := storage.GenerateDownloadURL(c.Request().Context(), imageuc.KeyPrefix+path, 0)
 		if err != nil {
 			return c.NoContent(http.StatusInternalServerError)
 		}

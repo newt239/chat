@@ -1,6 +1,9 @@
+import { create } from "@bufbuild/protobuf";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
+
+import { OgpDataSchema } from "#/gen/chat/v1/message_pb";
 
 import { OgpCard } from "./OgpCard";
 
@@ -9,7 +12,7 @@ describe("OgpCard", () => {
     render(
       <OgpCard
         url="https://example.com/post"
-        ogp={{ description: "説明", siteName: "Example", title: "記事" }}
+        ogp={create(OgpDataSchema, { description: "説明", siteName: "Example", title: "記事" })}
       />,
     );
 
@@ -23,7 +26,13 @@ describe("OgpCard", () => {
 
   test("サイト名がなければホスト名を出し、外すボタンを押せる", async () => {
     const onRemove = vi.fn<() => void>();
-    render(<OgpCard url="https://example.com/post" ogp={{ title: "記事" }} onRemove={onRemove} />);
+    render(
+      <OgpCard
+        url="https://example.com/post"
+        ogp={create(OgpDataSchema, { title: "記事" })}
+        onRemove={onRemove}
+      />,
+    );
 
     expect(screen.getByText("example.com")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "プレビューを外す" }));

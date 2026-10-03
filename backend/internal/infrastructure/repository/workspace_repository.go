@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	domerr "github.com/newt239/chat/internal/domain/errors"
+
 	"entgo.io/ent/dialect/sql"
 
 	"github.com/newt239/chat/ent"
@@ -30,7 +32,6 @@ func (r *workspaceRepository) FindByID(ctx context.Context, id string) (*entity.
 	client := transaction.ResolveClient(ctx, r.client)
 	w, err := client.Workspace.Query().
 		Where(workspace.ID(id)).
-		WithCreatedBy().
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -49,8 +50,7 @@ func (r *workspaceRepository) FindByUserID(ctx context.Context, userID string) (
 		return nil, err
 	}
 	workspaces, err := client.Workspace.Query().
-		Where(workspace.HasMembersWith(workspacemember.HasUserWith(user.ID(uid)), workspacemember.SuspendedAtIsNil())).
-		WithCreatedBy().
+		Where(workspace.HasMembersWith(workspacemember.UserID(uid), workspacemember.SuspendedAtIsNil())).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -89,15 +89,9 @@ func (r *workspaceRepository) Create(ctx context.Context, w *entity.Workspace) e
 	}
 
 	ws, err := builder.Save(ctx)
-	if err != nil {
-		return err
+	if ent.IsConstraintError(err) {
+		return domerr.ErrWorkspaceIDExists
 	}
-
-	// Load edges
-	ws, err = client.Workspace.Query().
-		Where(workspace.ID(ws.ID)).
-		WithCreatedBy().
-		Only(ctx)
 	if err != nil {
 		return err
 	}
@@ -129,15 +123,9 @@ func (r *workspaceRepository) Update(ctx context.Context, w *entity.Workspace) e
 		SetEmailSignupEnabled(w.EmailSignupEnabled)
 
 	ws, err := builder.Save(ctx)
-	if err != nil {
-		return err
+	if ent.IsConstraintError(err) {
+		return domerr.ErrWorkspaceIDExists
 	}
-
-	// Load edges
-	ws, err = client.Workspace.Query().
-		Where(workspace.ID(ws.ID)).
-		WithCreatedBy().
-		Only(ctx)
 	if err != nil {
 		return err
 	}
@@ -159,24 +147,11 @@ func (r *workspaceRepository) AddMember(ctx context.Context, member *entity.Work
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	_, err = client.WorkspaceMember.Create().
+	wm, err := client.WorkspaceMember.Create().
 		SetWorkspaceID(member.WorkspaceID).
 		SetUserID(uid).
 		SetRole(string(member.Role)).
 		Save(ctx)
-	if err != nil {
-		return err
-	}
-
-	// Load edges
-	wm, err := client.WorkspaceMember.Query().
-		Where(
-			workspacemember.HasWorkspaceWith(workspace.ID(member.WorkspaceID)),
-			workspacemember.HasUserWith(user.ID(uid)),
-		).
-		WithWorkspace().
-		WithUser().
-		Only(ctx)
 	if err != nil {
 		return err
 	}
@@ -196,8 +171,8 @@ func (r *workspaceRepository) UpdateMemberRole(ctx context.Context, workspaceID 
 	// Find the member first
 	wm, err := client.WorkspaceMember.Query().
 		Where(
-			workspacemember.HasWorkspaceWith(workspace.ID(workspaceID)),
-			workspacemember.HasUserWith(user.ID(uid)),
+			workspacemember.WorkspaceID(workspaceID),
+			workspacemember.UserID(uid),
 		).
 		Only(ctx)
 	if err != nil {
@@ -221,8 +196,8 @@ func (r *workspaceRepository) SetMemberSuspended(ctx context.Context, workspaceI
 	client := transaction.ResolveClient(ctx, r.client)
 	update := client.WorkspaceMember.Update().
 		Where(
-			workspacemember.HasWorkspaceWith(workspace.ID(workspaceID)),
-			workspacemember.HasUserWith(user.ID(uid)),
+			workspacemember.WorkspaceID(workspaceID),
+			workspacemember.UserID(uid),
 		)
 	if suspendedAt == nil {
 		update = update.ClearSuspendedAt()
@@ -241,8 +216,8 @@ func (r *workspaceRepository) RemoveMember(ctx context.Context, workspaceID, use
 	client := transaction.ResolveClient(ctx, r.client)
 	_, err = client.WorkspaceMember.Delete().
 		Where(
-			workspacemember.HasWorkspaceWith(workspace.ID(workspaceID)),
-			workspacemember.HasUserWith(user.ID(uid)),
+			workspacemember.WorkspaceID(workspaceID),
+			workspacemember.UserID(uid),
 		).
 		Exec(ctx)
 
@@ -252,9 +227,7 @@ func (r *workspaceRepository) RemoveMember(ctx context.Context, workspaceID, use
 func (r *workspaceRepository) FindMembersByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.WorkspaceMember, error) {
 	client := transaction.ResolveClient(ctx, r.client)
 	members, err := client.WorkspaceMember.Query().
-		Where(workspacemember.HasWorkspaceWith(workspace.ID(workspaceID))).
-		WithWorkspace().
-		WithUser().
+		Where(workspacemember.WorkspaceID(workspaceID)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -289,8 +262,6 @@ func (r *workspaceRepository) findMember(ctx context.Context, workspaceID string
 			s.Where(sql.EQ(workspacemember.UserColumn, uid))
 		}).
 		Where(predicates...).
-		WithWorkspace().
-		WithUser().
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -307,9 +278,7 @@ func (r *workspaceRepository) SearchMembers(ctx context.Context, workspaceID str
 	trimmedQuery := strings.TrimSpace(query)
 
 	memberQuery := client.WorkspaceMember.Query().
-		Where(workspacemember.HasWorkspaceWith(workspace.ID(workspaceID))).
-		WithWorkspace().
-		WithUser()
+		Where(workspacemember.WorkspaceID(workspaceID))
 
 	if trimmedQuery != "" {
 		memberQuery = memberQuery.Where(
@@ -355,7 +324,6 @@ func (r *workspaceRepository) FindAllPublic(ctx context.Context) ([]*entity.Work
 	client := transaction.ResolveClient(ctx, r.client)
 	list, err := client.Workspace.Query().
 		Where(workspace.IsPublic(true)).
-		WithCreatedBy().
 		Order(ent.Desc(workspace.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
@@ -369,24 +337,63 @@ func (r *workspaceRepository) FindAllPublic(ctx context.Context) ([]*entity.Work
 	return result, nil
 }
 
-func (r *workspaceRepository) CountMembers(ctx context.Context, workspaceID string) (int, error) {
-	client := transaction.ResolveClient(ctx, r.client)
-	count, err := client.WorkspaceMember.Query().
-		Where(workspacemember.HasWorkspaceWith(workspace.ID(workspaceID))).
-		Count(ctx)
-	if err != nil {
-		return 0, err
+// CountMembersBatch は停止中も含めたメンバー数をワークスペースごとに返します
+func (r *workspaceRepository) CountMembersBatch(ctx context.Context, workspaceIDs []string) (map[string]int, error) {
+	counts := make(map[string]int, len(workspaceIDs))
+	if len(workspaceIDs) == 0 {
+		return counts, nil
 	}
-	return count, nil
+	var rows []struct {
+		WorkspaceID string `json:"workspace_id"`
+		Count       int    `json:"count"`
+	}
+	err := transaction.ResolveClient(ctx, r.client).WorkspaceMember.Query().
+		Where(workspacemember.WorkspaceIDIn(workspaceIDs...)).
+		GroupBy(workspacemember.FieldWorkspaceID).
+		Aggregate(ent.Count()).
+		Scan(ctx, &rows)
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		counts[row.WorkspaceID] = row.Count
+	}
+	return counts, nil
 }
 
-func (r *workspaceRepository) ExistsByID(ctx context.Context, id string) (bool, error) {
-	client := transaction.ResolveClient(ctx, r.client)
-	count, err := client.Workspace.Query().
-		Where(workspace.ID(id)).
-		Count(ctx)
+// FindMembershipsByUserID はユーザーが停止されずに参加しているワークスペースのメンバー情報を返します
+func (r *workspaceRepository) FindMembershipsByUserID(ctx context.Context, userID string) ([]*entity.WorkspaceMember, error) {
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	return count > 0, nil
+	members, err := transaction.ResolveClient(ctx, r.client).WorkspaceMember.Query().
+		Where(workspacemember.UserID(uid), workspacemember.SuspendedAtIsNil()).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*entity.WorkspaceMember, 0, len(members))
+	for _, wm := range members {
+		result = append(result, utils.WorkspaceMemberToEntity(wm))
+	}
+	return result, nil
+}
+
+func (r *workspaceRepository) FindActiveMemberIDs(ctx context.Context, workspaceID string, userIDs []string) (map[string]bool, error) {
+	uids, err := utils.ParseUUIDs(userIDs, "user ID")
+	if err != nil {
+		return nil, err
+	}
+	members, err := transaction.ResolveClient(ctx, r.client).WorkspaceMember.Query().
+		Where(workspacemember.WorkspaceID(workspaceID), workspacemember.UserIDIn(uids...), workspacemember.SuspendedAtIsNil()).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]bool, len(members))
+	for _, m := range members {
+		result[m.UserID.String()] = true
+	}
+	return result, nil
 }

@@ -26,6 +26,8 @@ import (
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/userlink"
+	"github.com/newt239/chat/ent/userpreference"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 )
@@ -50,6 +52,8 @@ type UserQuery struct {
 	withCreatedUserGroups *UserGroupQuery
 	withAttachments       *AttachmentQuery
 	withChannelReadStates *ChannelReadStateQuery
+	withPreference        *UserPreferenceQuery
+	withLinks             *UserLinkQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -372,6 +376,50 @@ func (_q *UserQuery) QueryChannelReadStates() *ChannelReadStateQuery {
 	return query
 }
 
+// QueryPreference chains the current query on the "preference" edge.
+func (_q *UserQuery) QueryPreference() *UserPreferenceQuery {
+	query := (&UserPreferenceClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(userpreference.Table, userpreference.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.PreferenceTable, user.PreferenceColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLinks chains the current query on the "links" edge.
+func (_q *UserQuery) QueryLinks() *UserLinkQuery {
+	query := (&UserLinkClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(userlink.Table, userlink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.LinksTable, user.LinksColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first User entity from the query.
 // Returns a *NotFoundError when no User was found.
 func (_q *UserQuery) First(ctx context.Context) (*User, error) {
@@ -577,6 +625,8 @@ func (_q *UserQuery) Clone() *UserQuery {
 		withCreatedUserGroups: _q.withCreatedUserGroups.Clone(),
 		withAttachments:       _q.withAttachments.Clone(),
 		withChannelReadStates: _q.withChannelReadStates.Clone(),
+		withPreference:        _q.withPreference.Clone(),
+		withLinks:             _q.withLinks.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -726,6 +776,28 @@ func (_q *UserQuery) WithChannelReadStates(opts ...func(*ChannelReadStateQuery))
 	return _q
 }
 
+// WithPreference tells the query-builder to eager-load the nodes that are connected to
+// the "preference" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithPreference(opts ...func(*UserPreferenceQuery)) *UserQuery {
+	query := (&UserPreferenceClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withPreference = query
+	return _q
+}
+
+// WithLinks tells the query-builder to eager-load the nodes that are connected to
+// the "links" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithLinks(opts ...func(*UserLinkQuery)) *UserQuery {
+	query := (&UserLinkClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withLinks = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -804,7 +876,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [13]bool{
+		loadedTypes = [15]bool{
 			_q.withSessions != nil,
 			_q.withCreatedWorkspaces != nil,
 			_q.withWorkspaceMembers != nil,
@@ -818,6 +890,8 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			_q.withCreatedUserGroups != nil,
 			_q.withAttachments != nil,
 			_q.withChannelReadStates != nil,
+			_q.withPreference != nil,
+			_q.withLinks != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -929,6 +1003,19 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
+	if query := _q.withPreference; query != nil {
+		if err := _q.loadPreference(ctx, query, nodes, nil,
+			func(n *User, e *UserPreference) { n.Edges.Preference = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withLinks; query != nil {
+		if err := _q.loadLinks(ctx, query, nodes,
+			func(n *User) { n.Edges.Links = []*UserLink{} },
+			func(n *User, e *UserLink) { n.Edges.Links = append(n.Edges.Links, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -942,7 +1029,9 @@ func (_q *UserQuery) loadSessions(ctx context.Context, query *SessionQuery, node
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(session.FieldUserID)
+	}
 	query.Where(predicate.Session(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.SessionsColumn), fks...))
 	}))
@@ -951,13 +1040,10 @@ func (_q *UserQuery) loadSessions(ctx context.Context, query *SessionQuery, node
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.session_user
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "session_user" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "session_user" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -973,7 +1059,9 @@ func (_q *UserQuery) loadCreatedWorkspaces(ctx context.Context, query *Workspace
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(workspace.FieldCreatedByID)
+	}
 	query.Where(predicate.Workspace(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.CreatedWorkspacesColumn), fks...))
 	}))
@@ -982,13 +1070,10 @@ func (_q *UserQuery) loadCreatedWorkspaces(ctx context.Context, query *Workspace
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.workspace_created_by
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "workspace_created_by" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.CreatedByID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "workspace_created_by" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "created_by_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1004,7 +1089,9 @@ func (_q *UserQuery) loadWorkspaceMembers(ctx context.Context, query *WorkspaceM
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(workspacemember.FieldUserID)
+	}
 	query.Where(predicate.WorkspaceMember(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.WorkspaceMembersColumn), fks...))
 	}))
@@ -1013,13 +1100,10 @@ func (_q *UserQuery) loadWorkspaceMembers(ctx context.Context, query *WorkspaceM
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.workspace_member_user
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "workspace_member_user" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "workspace_member_user" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1035,7 +1119,9 @@ func (_q *UserQuery) loadCreatedChannels(ctx context.Context, query *ChannelQuer
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(channel.FieldCreatedByID)
+	}
 	query.Where(predicate.Channel(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.CreatedChannelsColumn), fks...))
 	}))
@@ -1044,13 +1130,10 @@ func (_q *UserQuery) loadCreatedChannels(ctx context.Context, query *ChannelQuer
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.channel_created_by
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "channel_created_by" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.CreatedByID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "channel_created_by" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "created_by_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1066,7 +1149,9 @@ func (_q *UserQuery) loadChannelMembers(ctx context.Context, query *ChannelMembe
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(channelmember.FieldUserID)
+	}
 	query.Where(predicate.ChannelMember(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.ChannelMembersColumn), fks...))
 	}))
@@ -1075,13 +1160,10 @@ func (_q *UserQuery) loadChannelMembers(ctx context.Context, query *ChannelMembe
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.channel_member_user
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "channel_member_user" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "channel_member_user" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1127,7 +1209,9 @@ func (_q *UserQuery) loadMessageReactions(ctx context.Context, query *MessageRea
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(messagereaction.FieldUserID)
+	}
 	query.Where(predicate.MessageReaction(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.MessageReactionsColumn), fks...))
 	}))
@@ -1136,13 +1220,10 @@ func (_q *UserQuery) loadMessageReactions(ctx context.Context, query *MessageRea
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_reaction_user
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_reaction_user" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_reaction_user" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1158,7 +1239,9 @@ func (_q *UserQuery) loadMessageBookmarks(ctx context.Context, query *MessageBoo
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(messagebookmark.FieldUserID)
+	}
 	query.Where(predicate.MessageBookmark(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.MessageBookmarksColumn), fks...))
 	}))
@@ -1167,13 +1250,10 @@ func (_q *UserQuery) loadMessageBookmarks(ctx context.Context, query *MessageBoo
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_bookmark_user
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_bookmark_user" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_bookmark_user" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1189,7 +1269,9 @@ func (_q *UserQuery) loadUserMentions(ctx context.Context, query *MessageUserMen
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(messageusermention.FieldUserID)
+	}
 	query.Where(predicate.MessageUserMention(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.UserMentionsColumn), fks...))
 	}))
@@ -1198,13 +1280,10 @@ func (_q *UserQuery) loadUserMentions(ctx context.Context, query *MessageUserMen
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_user_mention_user
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_user_mention_user" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_user_mention_user" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1220,7 +1299,9 @@ func (_q *UserQuery) loadUserGroupMembers(ctx context.Context, query *UserGroupM
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(usergroupmember.FieldUserID)
+	}
 	query.Where(predicate.UserGroupMember(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.UserGroupMembersColumn), fks...))
 	}))
@@ -1229,13 +1310,10 @@ func (_q *UserQuery) loadUserGroupMembers(ctx context.Context, query *UserGroupM
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.user_group_member_user
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_group_member_user" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_group_member_user" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1251,7 +1329,9 @@ func (_q *UserQuery) loadCreatedUserGroups(ctx context.Context, query *UserGroup
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(usergroup.FieldCreatedByID)
+	}
 	query.Where(predicate.UserGroup(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.CreatedUserGroupsColumn), fks...))
 	}))
@@ -1260,13 +1340,10 @@ func (_q *UserQuery) loadCreatedUserGroups(ctx context.Context, query *UserGroup
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.user_group_created_by
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_group_created_by" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.CreatedByID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_group_created_by" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "created_by_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1282,7 +1359,9 @@ func (_q *UserQuery) loadAttachments(ctx context.Context, query *AttachmentQuery
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(attachment.FieldUploaderID)
+	}
 	query.Where(predicate.Attachment(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.AttachmentsColumn), fks...))
 	}))
@@ -1291,13 +1370,10 @@ func (_q *UserQuery) loadAttachments(ctx context.Context, query *AttachmentQuery
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.attachment_uploader
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "attachment_uploader" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UploaderID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "attachment_uploader" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "uploader_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1313,7 +1389,9 @@ func (_q *UserQuery) loadChannelReadStates(ctx context.Context, query *ChannelRe
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(channelreadstate.FieldUserID)
+	}
 	query.Where(predicate.ChannelReadState(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.ChannelReadStatesColumn), fks...))
 	}))
@@ -1322,13 +1400,67 @@ func (_q *UserQuery) loadChannelReadStates(ctx context.Context, query *ChannelRe
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.channel_read_state_user
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "channel_read_state_user" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "channel_read_state_user" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadPreference(ctx context.Context, query *UserPreferenceQuery, nodes []*User, init func(*User), assign func(*User, *UserPreference)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(userpreference.FieldUserID)
+	}
+	query.Where(predicate.UserPreference(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.PreferenceColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadLinks(ctx context.Context, query *UserLinkQuery, nodes []*User, init func(*User), assign func(*User, *UserLink)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(userlink.FieldUserID)
+	}
+	query.Where(predicate.UserLink(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.LinksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

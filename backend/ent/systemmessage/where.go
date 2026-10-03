@@ -56,6 +56,16 @@ func IDLTE(id uuid.UUID) predicate.SystemMessage {
 	return predicate.SystemMessage(sql.FieldLTE(FieldID, id))
 }
 
+// ChannelID applies equality check predicate on the "channel_id" field. It's identical to ChannelIDEQ.
+func ChannelID(v uuid.UUID) predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldEQ(FieldChannelID, v))
+}
+
+// ActorID applies equality check predicate on the "actor_id" field. It's identical to ActorIDEQ.
+func ActorID(v uuid.UUID) predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldEQ(FieldActorID, v))
+}
+
 // Kind applies equality check predicate on the "kind" field. It's identical to KindEQ.
 func Kind(v string) predicate.SystemMessage {
 	return predicate.SystemMessage(sql.FieldEQ(FieldKind, v))
@@ -64,6 +74,56 @@ func Kind(v string) predicate.SystemMessage {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.SystemMessage {
 	return predicate.SystemMessage(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// ChannelIDEQ applies the EQ predicate on the "channel_id" field.
+func ChannelIDEQ(v uuid.UUID) predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldEQ(FieldChannelID, v))
+}
+
+// ChannelIDNEQ applies the NEQ predicate on the "channel_id" field.
+func ChannelIDNEQ(v uuid.UUID) predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldNEQ(FieldChannelID, v))
+}
+
+// ChannelIDIn applies the In predicate on the "channel_id" field.
+func ChannelIDIn(vs ...uuid.UUID) predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldIn(FieldChannelID, vs...))
+}
+
+// ChannelIDNotIn applies the NotIn predicate on the "channel_id" field.
+func ChannelIDNotIn(vs ...uuid.UUID) predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldNotIn(FieldChannelID, vs...))
+}
+
+// ActorIDEQ applies the EQ predicate on the "actor_id" field.
+func ActorIDEQ(v uuid.UUID) predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldEQ(FieldActorID, v))
+}
+
+// ActorIDNEQ applies the NEQ predicate on the "actor_id" field.
+func ActorIDNEQ(v uuid.UUID) predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldNEQ(FieldActorID, v))
+}
+
+// ActorIDIn applies the In predicate on the "actor_id" field.
+func ActorIDIn(vs ...uuid.UUID) predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldIn(FieldActorID, vs...))
+}
+
+// ActorIDNotIn applies the NotIn predicate on the "actor_id" field.
+func ActorIDNotIn(vs ...uuid.UUID) predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldNotIn(FieldActorID, vs...))
+}
+
+// ActorIDIsNil applies the IsNil predicate on the "actor_id" field.
+func ActorIDIsNil() predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldIsNull(FieldActorID))
+}
+
+// ActorIDNotNil applies the NotNil predicate on the "actor_id" field.
+func ActorIDNotNil() predicate.SystemMessage {
+	return predicate.SystemMessage(sql.FieldNotNull(FieldActorID))
 }
 
 // KindEQ applies the EQ predicate on the "kind" field.

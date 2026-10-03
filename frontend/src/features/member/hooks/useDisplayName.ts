@@ -1,19 +1,14 @@
-import { useCallback } from "react";
-
-import { useAtomValue } from "jotai";
-
-import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
+import { useParams } from "@tanstack/react-router";
 
 import { useMembers } from "./useMembers";
 
-/** 自分が付けたニックネームがあればそれを、なければ表示名を返す関数。ユーザー名の表示はすべてこれを通す */
+/** 自分が付けたニックネーム、メンバーの表示名、fallback の順に名前を返す関数。ユーザー名の表示はすべてこれを通す */
 export const useDisplayName = () => {
-  const workspaceId = useAtomValue(currentWorkspaceIdAtom);
+  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { data: members } = useMembers(workspaceId);
 
-  return useCallback(
-    (userId: string, displayName: string) =>
-      members?.find((member) => member.userId === userId)?.nickname ?? displayName,
-    [members],
-  );
+  return (userId: string, fallback: string) => {
+    const member = members?.find((candidate) => candidate.userId === userId);
+    return member?.nickname ?? member?.displayName ?? fallback;
+  };
 };

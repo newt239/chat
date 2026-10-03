@@ -21,6 +21,10 @@ type SystemMessage struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// ChannelID holds the value of the "channel_id" field.
+	ChannelID uuid.UUID `json:"channel_id,omitempty"`
+	// ActorID holds the value of the "actor_id" field.
+	ActorID *uuid.UUID `json:"actor_id,omitempty"`
 	// Kind holds the value of the "kind" field.
 	Kind string `json:"kind,omitempty"`
 	// Payload holds the value of the "payload" field.
@@ -29,10 +33,8 @@ type SystemMessage struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SystemMessageQuery when eager-loading is set.
-	Edges                  SystemMessageEdges `json:"edges"`
-	system_message_channel *uuid.UUID
-	system_message_actor   *uuid.UUID
-	selectValues           sql.SelectValues
+	Edges        SystemMessageEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // SystemMessageEdges holds the relations/edges for other nodes in the graph.
@@ -73,18 +75,16 @@ func (*SystemMessage) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemmessage.FieldActorID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case systemmessage.FieldPayload:
 			values[i] = new([]byte)
 		case systemmessage.FieldKind:
 			values[i] = new(sql.NullString)
 		case systemmessage.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case systemmessage.FieldID:
+		case systemmessage.FieldID, systemmessage.FieldChannelID:
 			values[i] = new(uuid.UUID)
-		case systemmessage.ForeignKeys[0]: // system_message_channel
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case systemmessage.ForeignKeys[1]: // system_message_actor
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -106,6 +106,19 @@ func (_m *SystemMessage) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case systemmessage.FieldChannelID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_id", values[i])
+			} else if value != nil {
+				_m.ChannelID = *value
+			}
+		case systemmessage.FieldActorID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field actor_id", values[i])
+			} else if value.Valid {
+				_m.ActorID = new(uuid.UUID)
+				*_m.ActorID = *value.S.(*uuid.UUID)
+			}
 		case systemmessage.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
@@ -125,20 +138,6 @@ func (_m *SystemMessage) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case systemmessage.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field system_message_channel", values[i])
-			} else if value.Valid {
-				_m.system_message_channel = new(uuid.UUID)
-				*_m.system_message_channel = *value.S.(*uuid.UUID)
-			}
-		case systemmessage.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field system_message_actor", values[i])
-			} else if value.Valid {
-				_m.system_message_actor = new(uuid.UUID)
-				*_m.system_message_actor = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -186,6 +185,14 @@ func (_m *SystemMessage) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemMessage(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("channel_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChannelID))
+	builder.WriteString(", ")
+	if v := _m.ActorID; v != nil {
+		builder.WriteString("actor_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(_m.Kind)
 	builder.WriteString(", ")

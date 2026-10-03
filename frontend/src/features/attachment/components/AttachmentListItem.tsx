@@ -19,11 +19,11 @@ export const AttachmentListItem = ({ attachment, onRemove }: AttachmentListItemP
   const { file, state } = attachment;
 
   return (
-    <div className="relative flex w-[200px] items-center gap-2 rounded-md border border-border bg-sunken p-1.5 font-sans">
+    <div className="relative flex w-50 items-center gap-2 rounded-md border border-border bg-sunken p-1.5 font-sans">
       <FileIcon mimeType={file.type} />
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-[1.3]">
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-snug">
         <span className="truncate text-xs font-medium">{file.name}</span>
-        <span className="truncate text-[11px] text-muted">
+        <span className="truncate text-caption text-muted">
           {formatFileSize(file.size)}
           {state.status === "uploading" && ` · ${state.progress}%`}
           {state.status === "completed" && ` · ${t("attachment.completed")}`}
@@ -44,7 +44,7 @@ export const AttachmentListItem = ({ attachment, onRemove }: AttachmentListItemP
         aria-label={t("attachment.remove")}
         onPress={onRemove}
         isDisabled={state.status === "uploading" || state.status === "presigning"}
-        className={`absolute -top-1.5 -right-1.5 grid size-[18px] place-items-center rounded-full bg-text text-surface data-disabled:opacity-40 [&_svg]:size-[11px] ${focusRing}`}
+        className={`absolute -top-1.5 -right-1.5 grid size-4.5 place-items-center rounded-full bg-text text-surface data-disabled:opacity-40 [&_svg]:size-2.75 ${focusRing}`}
       >
         <IconX aria-hidden stroke={2.5} />
       </Button>

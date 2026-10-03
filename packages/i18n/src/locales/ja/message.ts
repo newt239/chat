@@ -81,9 +81,7 @@ export const message = {
   },
   link: {
     copied: "リンクをコピーしました",
-    copyFailed: "リンクをコピーできませんでした",
     textCopied: "テキストをコピーしました",
-    textCopyFailed: "テキストをコピーできませんでした",
   },
   mention: {
     unknownChannel: "非公開のチャンネル",
@@ -94,8 +92,6 @@ export const message = {
     empty: "まだメッセージがありません",
     jumpToLatest: "最新のメッセージへ移動",
     loading: "読み込み中…",
-    selectChannel: "チャンネルを選ぶとメッセージが表示されます",
-    selectWorkspace: "ワークスペースを選んでください",
   },
   profileOf: "{{name}} のプロフィール",
   sheet: {

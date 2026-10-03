@@ -59,7 +59,7 @@ func createRichSamples(
 	// 既存の公開チャンネルにも新しいメンバーを入れ、参加のお知らせを残す
 	joinedAt := time.Now().Add(-26 * time.Hour)
 	for _, ch := range channels {
-		if ch.IsPrivate {
+		if ch.IsPrivate() {
 			continue
 		}
 		for i, member := range members[len(users):] {
@@ -265,7 +265,7 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		if sample.link != nil {
 			sample.link.MessageID = msg.ID.String()
 			sample.link.CreatedAt = createdAt
-			if err := linkRepo.Create(ctx, sample.link); err != nil {
+			if err := createLink(ctx, linkRepo, sample.link); err != nil {
 				return fmt.Errorf("failed to create link: %w", err)
 			}
 		}
@@ -295,7 +295,7 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		SetEmail("deploy-bot@example.com").
 		SetPasswordHash("!").
 		SetDisplayName("Deploy Bot").
-		SetIsBot(true).
+		SetIsApp(true).
 		Save(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to create bot: %w", err)
@@ -317,7 +317,6 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 	if err := client.Message.Create().
 		SetChannelID(channelID).
 		SetUserID(bot.ID).
-		SetSenderName("Deploy Bot").
 		SetBody("✅ v1.2.3 を本番環境にデプロイしました").
 		SetCreatedAt(next()).
 		Exec(ctx); err != nil {

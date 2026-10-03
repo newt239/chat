@@ -7,10 +7,7 @@ export const attachment = {
   download: "ダウンロード",
   downloadFailed: "ダウンロードできませんでした",
   errors: {
-    aborted: "アップロードがキャンセルされました",
     empty: "ファイルが空です",
-    http: "アップロードに失敗しました（HTTP {{status}}）",
-    network: "ネットワークエラーが発生しました",
     tooLarge: "ファイルサイズが上限（1GB）を超えています: {{size}}",
     unknown: "アップロードに失敗しました",
   },

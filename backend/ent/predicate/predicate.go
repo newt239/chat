@@ -48,6 +48,15 @@ type Draft func(*sql.Selector)
 // Invitation is the predicate function for invitation builders.
 type Invitation func(*sql.Selector)
 
+// LinkPreview is the predicate function for linkpreview builders.
+type LinkPreview func(*sql.Selector)
+
+// LinkPreviewXPost is the predicate function for linkpreviewxpost builders.
+type LinkPreviewXPost func(*sql.Selector)
+
+// LinkPreviewYoutube is the predicate function for linkpreviewyoutube builders.
+type LinkPreviewYoutube func(*sql.Selector)
+
 // Message is the predicate function for message builders.
 type Message func(*sql.Selector)
 
@@ -105,8 +114,14 @@ type UserGroup func(*sql.Selector)
 // UserGroupMember is the predicate function for usergroupmember builders.
 type UserGroupMember func(*sql.Selector)
 
+// UserLink is the predicate function for userlink builders.
+type UserLink func(*sql.Selector)
+
 // UserNote is the predicate function for usernote builders.
 type UserNote func(*sql.Selector)
+
+// UserPreference is the predicate function for userpreference builders.
+type UserPreference func(*sql.Selector)
 
 // UserThreadFollow is the predicate function for userthreadfollow builders.
 type UserThreadFollow func(*sql.Selector)

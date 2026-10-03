@@ -56,9 +56,84 @@ func IDLTE(id uuid.UUID) predicate.MessagePin {
 	return predicate.MessagePin(sql.FieldLTE(FieldID, id))
 }
 
+// ChannelID applies equality check predicate on the "channel_id" field. It's identical to ChannelIDEQ.
+func ChannelID(v uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldEQ(FieldChannelID, v))
+}
+
+// MessageID applies equality check predicate on the "message_id" field. It's identical to MessageIDEQ.
+func MessageID(v uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldEQ(FieldMessageID, v))
+}
+
+// PinnedByID applies equality check predicate on the "pinned_by_id" field. It's identical to PinnedByIDEQ.
+func PinnedByID(v uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldEQ(FieldPinnedByID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.MessagePin {
 	return predicate.MessagePin(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// ChannelIDEQ applies the EQ predicate on the "channel_id" field.
+func ChannelIDEQ(v uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldEQ(FieldChannelID, v))
+}
+
+// ChannelIDNEQ applies the NEQ predicate on the "channel_id" field.
+func ChannelIDNEQ(v uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldNEQ(FieldChannelID, v))
+}
+
+// ChannelIDIn applies the In predicate on the "channel_id" field.
+func ChannelIDIn(vs ...uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldIn(FieldChannelID, vs...))
+}
+
+// ChannelIDNotIn applies the NotIn predicate on the "channel_id" field.
+func ChannelIDNotIn(vs ...uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldNotIn(FieldChannelID, vs...))
+}
+
+// MessageIDEQ applies the EQ predicate on the "message_id" field.
+func MessageIDEQ(v uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldEQ(FieldMessageID, v))
+}
+
+// MessageIDNEQ applies the NEQ predicate on the "message_id" field.
+func MessageIDNEQ(v uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldNEQ(FieldMessageID, v))
+}
+
+// MessageIDIn applies the In predicate on the "message_id" field.
+func MessageIDIn(vs ...uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldIn(FieldMessageID, vs...))
+}
+
+// MessageIDNotIn applies the NotIn predicate on the "message_id" field.
+func MessageIDNotIn(vs ...uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldNotIn(FieldMessageID, vs...))
+}
+
+// PinnedByIDEQ applies the EQ predicate on the "pinned_by_id" field.
+func PinnedByIDEQ(v uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldEQ(FieldPinnedByID, v))
+}
+
+// PinnedByIDNEQ applies the NEQ predicate on the "pinned_by_id" field.
+func PinnedByIDNEQ(v uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldNEQ(FieldPinnedByID, v))
+}
+
+// PinnedByIDIn applies the In predicate on the "pinned_by_id" field.
+func PinnedByIDIn(vs ...uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldIn(FieldPinnedByID, vs...))
+}
+
+// PinnedByIDNotIn applies the NotIn predicate on the "pinned_by_id" field.
+func PinnedByIDNotIn(vs ...uuid.UUID) predicate.MessagePin {
+	return predicate.MessagePin(sql.FieldNotIn(FieldPinnedByID, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

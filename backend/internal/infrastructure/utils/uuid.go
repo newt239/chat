@@ -4,16 +4,15 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+
+	domerr "github.com/newt239/chat/internal/domain/errors"
 )
 
-// ParseUUID は文字列をUUIDに変換します
+// ParseUUID は文字列をUUIDに変換します。形式の誤りは入力の検証エラーとして返します
 func ParseUUID(id string, label string) (uuid.UUID, error) {
-	if id == "" {
-		return uuid.Nil, fmt.Errorf("%s cannot be empty", label)
-	}
 	parsed, err := uuid.Parse(id)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("invalid %s format: %w", label, err)
+		return uuid.Nil, fmt.Errorf("%w: invalid %s format", domerr.ErrValidation, label)
 	}
 	return parsed, nil
 }

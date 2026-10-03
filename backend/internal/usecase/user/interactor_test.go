@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -40,7 +41,7 @@ var cobalt = entity.UserPreferences{
 
 func TestUpdatePreferencesSavesAndReturnsPreferences(t *testing.T) {
 	repo := &stubUserRepo{users: map[string]*entity.User{"alice": {ID: "alice", DisplayName: "Alice"}}}
-	uc := NewInteractor(repo, nil, nil)
+	uc := NewInteractor(repo, nil, nil, nil)
 
 	got, err := uc.UpdatePreferences(context.Background(), UpdatePreferencesInput{UserID: "alice", Preferences: cobalt})
 	if err != nil {
@@ -60,19 +61,19 @@ func TestUpdatePreferencesSavesAndReturnsPreferences(t *testing.T) {
 }
 
 func TestUpdatePreferencesRejectsUnknownUser(t *testing.T) {
-	uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{}}, nil, nil)
+	uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{}}, nil, nil, nil)
 
 	_, err := uc.UpdatePreferences(context.Background(), UpdatePreferencesInput{UserID: "ghost", Preferences: cobalt})
-	if !errors.Is(err, entity.ErrUserNotFound) {
+	if !errors.Is(err, domerr.ErrUserNotFound) {
 		t.Fatalf("存在しないユーザーの設定更新が拒否されていません: %v", err)
 	}
 }
 
 func TestUpdatePreferencesRequiresLogin(t *testing.T) {
-	uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{}}, nil, nil)
+	uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{}}, nil, nil, nil)
 
 	_, err := uc.UpdatePreferences(context.Background(), UpdatePreferencesInput{Preferences: cobalt})
-	if !errors.Is(err, ErrUnauthorized) {
+	if !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("未ログインでの設定更新が拒否されていません: %v", err)
 	}
 }
@@ -90,12 +91,12 @@ func TestUpdatePreferencesValidatesTimezone(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{"alice": {ID: "alice"}}}, nil, nil)
+			uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{"alice": {ID: "alice"}}}, nil, nil, nil)
 			prefs := cobalt
 			prefs.Timezone = tt.timezone
 
 			_, err := uc.UpdatePreferences(context.Background(), UpdatePreferencesInput{UserID: "alice", Preferences: prefs})
-			if errors.Is(err, ErrInvalidTimeZone) != tt.wantErr {
+			if errors.Is(err, domerr.ErrInvalidTimeZone) != tt.wantErr {
 				t.Fatalf("タイムゾーン %q の検証結果が期待と異なります: %v", tt.timezone, err)
 			}
 		})

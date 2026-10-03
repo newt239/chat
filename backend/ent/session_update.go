@@ -30,6 +30,20 @@ func (_u *SessionUpdate) Where(ps ...predicate.Session) *SessionUpdate {
 	return _u
 }
 
+// SetUserID sets the "user_id" field.
+func (_u *SessionUpdate) SetUserID(v uuid.UUID) *SessionUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *SessionUpdate) SetNillableUserID(v *uuid.UUID) *SessionUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetRefreshTokenHash sets the "refresh_token_hash" field.
 func (_u *SessionUpdate) SetRefreshTokenHash(v string) *SessionUpdate {
 	_u.mutation.SetRefreshTokenHash(v)
@@ -103,12 +117,6 @@ func (_u *SessionUpdate) SetNillableUserAgent(v *string) *SessionUpdate {
 	if v != nil {
 		_u.SetUserAgent(*v)
 	}
-	return _u
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *SessionUpdate) SetUserID(id uuid.UUID) *SessionUpdate {
-	_u.mutation.SetUserID(id)
 	return _u
 }
 
@@ -247,6 +255,20 @@ type SessionUpdateOne struct {
 	mutation *SessionMutation
 }
 
+// SetUserID sets the "user_id" field.
+func (_u *SessionUpdateOne) SetUserID(v uuid.UUID) *SessionUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *SessionUpdateOne) SetNillableUserID(v *uuid.UUID) *SessionUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetRefreshTokenHash sets the "refresh_token_hash" field.
 func (_u *SessionUpdateOne) SetRefreshTokenHash(v string) *SessionUpdateOne {
 	_u.mutation.SetRefreshTokenHash(v)
@@ -320,12 +342,6 @@ func (_u *SessionUpdateOne) SetNillableUserAgent(v *string) *SessionUpdateOne {
 	if v != nil {
 		_u.SetUserAgent(*v)
 	}
-	return _u
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *SessionUpdateOne) SetUserID(id uuid.UUID) *SessionUpdateOne {
-	_u.mutation.SetUserID(id)
 	return _u
 }
 

@@ -41,16 +41,16 @@ export const ChannelLinksSection = ({ channelId }: ChannelLinksSectionProps) => 
             className="flex items-center gap-2 rounded-md px-2 py-1 [&_svg]:shrink-0"
           >
             <IconLink aria-hidden className="size-4 text-muted" />
-            <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
+            <span className="flex min-w-0 flex-1 flex-col leading-snug">
               <Link
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`truncate rounded-sm text-[13.5px] text-text no-underline data-hovered:underline ${focusRing}`}
+                className={`truncate rounded-sm text-body-sm text-text no-underline data-hovered:underline ${focusRing}`}
               >
                 {link.title}
               </Link>
-              <small className="truncate text-[11.5px] text-subtle">{link.url}</small>
+              <small className="truncate text-caption text-subtle">{link.url}</small>
             </span>
             {canEdit && (
               <span className="flex shrink-0 [&_button]:size-7 [&_svg]:size-4! max-md:gap-1 max-md:[&_button]:size-11">

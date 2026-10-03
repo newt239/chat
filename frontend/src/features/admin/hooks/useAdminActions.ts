@@ -28,11 +28,20 @@ export const useAdminActions = () => {
   };
 
   return {
-    exportAuditLogs: useMutation(AdminService.method.exportAuditLogs, options),
+    // 書き出しは監査ログに 1 行増えるだけなので、ほかの一覧は取り直さない
+    exportAuditLogs: useMutation(AdminService.method.exportAuditLogs, {
+      onError: options.onError,
+      onSuccess: () =>
+        queryClient.invalidateQueries({
+          queryKey: createConnectQueryKey({
+            cardinality: undefined,
+            schema: AdminService.method.listAuditLogs,
+          }),
+        }),
+    }),
     resume: useMutation(AdminService.method.resumeMember, options),
     suspend: useMutation(AdminService.method.suspendMember, options),
     updatePermission: useMutation(PermissionService.method.updatePermission, options),
-    updateRole: useMutation(WorkspaceService.method.updateMemberRole, options),
     updateWorkspace: useMutation(WorkspaceService.method.updateWorkspace, options),
   };
 };

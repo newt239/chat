@@ -32,6 +32,54 @@ func (_u *AttachmentUpdate) Where(ps ...predicate.Attachment) *AttachmentUpdate 
 	return _u
 }
 
+// SetMessageID sets the "message_id" field.
+func (_u *AttachmentUpdate) SetMessageID(v uuid.UUID) *AttachmentUpdate {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *AttachmentUpdate) SetNillableMessageID(v *uuid.UUID) *AttachmentUpdate {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
+	return _u
+}
+
+// ClearMessageID clears the value of the "message_id" field.
+func (_u *AttachmentUpdate) ClearMessageID() *AttachmentUpdate {
+	_u.mutation.ClearMessageID()
+	return _u
+}
+
+// SetUploaderID sets the "uploader_id" field.
+func (_u *AttachmentUpdate) SetUploaderID(v uuid.UUID) *AttachmentUpdate {
+	_u.mutation.SetUploaderID(v)
+	return _u
+}
+
+// SetNillableUploaderID sets the "uploader_id" field if the given value is not nil.
+func (_u *AttachmentUpdate) SetNillableUploaderID(v *uuid.UUID) *AttachmentUpdate {
+	if v != nil {
+		_u.SetUploaderID(*v)
+	}
+	return _u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (_u *AttachmentUpdate) SetChannelID(v uuid.UUID) *AttachmentUpdate {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *AttachmentUpdate) SetNillableChannelID(v *uuid.UUID) *AttachmentUpdate {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
+	return _u
+}
+
 // SetFileName sets the "file_name" field.
 func (_u *AttachmentUpdate) SetFileName(v string) *AttachmentUpdate {
 	_u.mutation.SetFileName(v)
@@ -304,40 +352,14 @@ func (_u *AttachmentUpdate) ClearExpiresAt() *AttachmentUpdate {
 	return _u
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *AttachmentUpdate) SetMessageID(id uuid.UUID) *AttachmentUpdate {
-	_u.mutation.SetMessageID(id)
-	return _u
-}
-
-// SetNillableMessageID sets the "message" edge to the Message entity by ID if the given value is not nil.
-func (_u *AttachmentUpdate) SetNillableMessageID(id *uuid.UUID) *AttachmentUpdate {
-	if id != nil {
-		_u = _u.SetMessageID(*id)
-	}
-	return _u
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *AttachmentUpdate) SetMessage(v *Message) *AttachmentUpdate {
 	return _u.SetMessageID(v.ID)
 }
 
-// SetUploaderID sets the "uploader" edge to the User entity by ID.
-func (_u *AttachmentUpdate) SetUploaderID(id uuid.UUID) *AttachmentUpdate {
-	_u.mutation.SetUploaderID(id)
-	return _u
-}
-
 // SetUploader sets the "uploader" edge to the User entity.
 func (_u *AttachmentUpdate) SetUploader(v *User) *AttachmentUpdate {
 	return _u.SetUploaderID(v.ID)
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *AttachmentUpdate) SetChannelID(id uuid.UUID) *AttachmentUpdate {
-	_u.mutation.SetChannelID(id)
-	return _u
 }
 
 // SetChannel sets the "channel" edge to the Channel entity.
@@ -626,6 +648,54 @@ type AttachmentUpdateOne struct {
 	mutation *AttachmentMutation
 }
 
+// SetMessageID sets the "message_id" field.
+func (_u *AttachmentUpdateOne) SetMessageID(v uuid.UUID) *AttachmentUpdateOne {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *AttachmentUpdateOne) SetNillableMessageID(v *uuid.UUID) *AttachmentUpdateOne {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
+	return _u
+}
+
+// ClearMessageID clears the value of the "message_id" field.
+func (_u *AttachmentUpdateOne) ClearMessageID() *AttachmentUpdateOne {
+	_u.mutation.ClearMessageID()
+	return _u
+}
+
+// SetUploaderID sets the "uploader_id" field.
+func (_u *AttachmentUpdateOne) SetUploaderID(v uuid.UUID) *AttachmentUpdateOne {
+	_u.mutation.SetUploaderID(v)
+	return _u
+}
+
+// SetNillableUploaderID sets the "uploader_id" field if the given value is not nil.
+func (_u *AttachmentUpdateOne) SetNillableUploaderID(v *uuid.UUID) *AttachmentUpdateOne {
+	if v != nil {
+		_u.SetUploaderID(*v)
+	}
+	return _u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (_u *AttachmentUpdateOne) SetChannelID(v uuid.UUID) *AttachmentUpdateOne {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *AttachmentUpdateOne) SetNillableChannelID(v *uuid.UUID) *AttachmentUpdateOne {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
+	return _u
+}
+
 // SetFileName sets the "file_name" field.
 func (_u *AttachmentUpdateOne) SetFileName(v string) *AttachmentUpdateOne {
 	_u.mutation.SetFileName(v)
@@ -898,40 +968,14 @@ func (_u *AttachmentUpdateOne) ClearExpiresAt() *AttachmentUpdateOne {
 	return _u
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *AttachmentUpdateOne) SetMessageID(id uuid.UUID) *AttachmentUpdateOne {
-	_u.mutation.SetMessageID(id)
-	return _u
-}
-
-// SetNillableMessageID sets the "message" edge to the Message entity by ID if the given value is not nil.
-func (_u *AttachmentUpdateOne) SetNillableMessageID(id *uuid.UUID) *AttachmentUpdateOne {
-	if id != nil {
-		_u = _u.SetMessageID(*id)
-	}
-	return _u
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *AttachmentUpdateOne) SetMessage(v *Message) *AttachmentUpdateOne {
 	return _u.SetMessageID(v.ID)
 }
 
-// SetUploaderID sets the "uploader" edge to the User entity by ID.
-func (_u *AttachmentUpdateOne) SetUploaderID(id uuid.UUID) *AttachmentUpdateOne {
-	_u.mutation.SetUploaderID(id)
-	return _u
-}
-
 // SetUploader sets the "uploader" edge to the User entity.
 func (_u *AttachmentUpdateOne) SetUploader(v *User) *AttachmentUpdateOne {
 	return _u.SetUploaderID(v.ID)
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *AttachmentUpdateOne) SetChannelID(id uuid.UUID) *AttachmentUpdateOne {
-	_u.mutation.SetChannelID(id)
-	return _u
 }
 
 // SetChannel sets the "channel" edge to the Channel entity.

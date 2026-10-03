@@ -3,7 +3,6 @@
 package user
 
 import (
-	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -26,34 +25,12 @@ const (
 	FieldDisplayName = "display_name"
 	// FieldBio holds the string denoting the bio field in the database.
 	FieldBio = "bio"
-	// FieldLinks holds the string denoting the links field in the database.
-	FieldLinks = "links"
 	// FieldAvatarURL holds the string denoting the avatar_url field in the database.
 	FieldAvatarURL = "avatar_url"
-	// FieldIsBot holds the string denoting the is_bot field in the database.
-	FieldIsBot = "is_bot"
+	// FieldIsApp holds the string denoting the is_app field in the database.
+	FieldIsApp = "is_app"
 	// FieldIsOfficial holds the string denoting the is_official field in the database.
 	FieldIsOfficial = "is_official"
-	// FieldThemeHue holds the string denoting the theme_hue field in the database.
-	FieldThemeHue = "theme_hue"
-	// FieldThemeChroma holds the string denoting the theme_chroma field in the database.
-	FieldThemeChroma = "theme_chroma"
-	// FieldThemeSidebar holds the string denoting the theme_sidebar field in the database.
-	FieldThemeSidebar = "theme_sidebar"
-	// FieldColorMode holds the string denoting the color_mode field in the database.
-	FieldColorMode = "color_mode"
-	// FieldLocale holds the string denoting the locale field in the database.
-	FieldLocale = "locale"
-	// FieldNotificationLevel holds the string denoting the notification_level field in the database.
-	FieldNotificationLevel = "notification_level"
-	// FieldTimezone holds the string denoting the timezone field in the database.
-	FieldTimezone = "timezone"
-	// FieldTimezoneAutoUpdate holds the string denoting the timezone_auto_update field in the database.
-	FieldTimezoneAutoUpdate = "timezone_auto_update"
-	// FieldChannelSortOrder holds the string denoting the channel_sort_order field in the database.
-	FieldChannelSortOrder = "channel_sort_order"
-	// FieldHideJoinMessages holds the string denoting the hide_join_messages field in the database.
-	FieldHideJoinMessages = "hide_join_messages"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -84,99 +61,117 @@ const (
 	EdgeAttachments = "attachments"
 	// EdgeChannelReadStates holds the string denoting the channel_read_states edge name in mutations.
 	EdgeChannelReadStates = "channel_read_states"
+	// EdgePreference holds the string denoting the preference edge name in mutations.
+	EdgePreference = "preference"
+	// EdgeLinks holds the string denoting the links edge name in mutations.
+	EdgeLinks = "links"
 	// Table holds the table name of the user in the database.
-	Table = "users"
+	Table = "user"
 	// SessionsTable is the table that holds the sessions relation/edge.
-	SessionsTable = "sessions"
+	SessionsTable = "session"
 	// SessionsInverseTable is the table name for the Session entity.
 	// It exists in this package in order to avoid circular dependency with the "session" package.
-	SessionsInverseTable = "sessions"
+	SessionsInverseTable = "session"
 	// SessionsColumn is the table column denoting the sessions relation/edge.
-	SessionsColumn = "session_user"
+	SessionsColumn = "user_id"
 	// CreatedWorkspacesTable is the table that holds the created_workspaces relation/edge.
-	CreatedWorkspacesTable = "workspaces"
+	CreatedWorkspacesTable = "workspace"
 	// CreatedWorkspacesInverseTable is the table name for the Workspace entity.
 	// It exists in this package in order to avoid circular dependency with the "workspace" package.
-	CreatedWorkspacesInverseTable = "workspaces"
+	CreatedWorkspacesInverseTable = "workspace"
 	// CreatedWorkspacesColumn is the table column denoting the created_workspaces relation/edge.
-	CreatedWorkspacesColumn = "workspace_created_by"
+	CreatedWorkspacesColumn = "created_by_id"
 	// WorkspaceMembersTable is the table that holds the workspace_members relation/edge.
-	WorkspaceMembersTable = "workspace_members"
+	WorkspaceMembersTable = "workspace_member"
 	// WorkspaceMembersInverseTable is the table name for the WorkspaceMember entity.
 	// It exists in this package in order to avoid circular dependency with the "workspacemember" package.
-	WorkspaceMembersInverseTable = "workspace_members"
+	WorkspaceMembersInverseTable = "workspace_member"
 	// WorkspaceMembersColumn is the table column denoting the workspace_members relation/edge.
-	WorkspaceMembersColumn = "workspace_member_user"
+	WorkspaceMembersColumn = "user_id"
 	// CreatedChannelsTable is the table that holds the created_channels relation/edge.
-	CreatedChannelsTable = "channels"
+	CreatedChannelsTable = "channel"
 	// CreatedChannelsInverseTable is the table name for the Channel entity.
 	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	CreatedChannelsInverseTable = "channels"
+	CreatedChannelsInverseTable = "channel"
 	// CreatedChannelsColumn is the table column denoting the created_channels relation/edge.
-	CreatedChannelsColumn = "channel_created_by"
+	CreatedChannelsColumn = "created_by_id"
 	// ChannelMembersTable is the table that holds the channel_members relation/edge.
-	ChannelMembersTable = "channel_members"
+	ChannelMembersTable = "channel_member"
 	// ChannelMembersInverseTable is the table name for the ChannelMember entity.
 	// It exists in this package in order to avoid circular dependency with the "channelmember" package.
-	ChannelMembersInverseTable = "channel_members"
+	ChannelMembersInverseTable = "channel_member"
 	// ChannelMembersColumn is the table column denoting the channel_members relation/edge.
-	ChannelMembersColumn = "channel_member_user"
+	ChannelMembersColumn = "user_id"
 	// MessagesTable is the table that holds the messages relation/edge.
-	MessagesTable = "messages"
+	MessagesTable = "message"
 	// MessagesInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	MessagesInverseTable = "messages"
+	MessagesInverseTable = "message"
 	// MessagesColumn is the table column denoting the messages relation/edge.
-	MessagesColumn = "message_user"
+	MessagesColumn = "user_id"
 	// MessageReactionsTable is the table that holds the message_reactions relation/edge.
-	MessageReactionsTable = "message_reactions"
+	MessageReactionsTable = "message_reaction"
 	// MessageReactionsInverseTable is the table name for the MessageReaction entity.
 	// It exists in this package in order to avoid circular dependency with the "messagereaction" package.
-	MessageReactionsInverseTable = "message_reactions"
+	MessageReactionsInverseTable = "message_reaction"
 	// MessageReactionsColumn is the table column denoting the message_reactions relation/edge.
-	MessageReactionsColumn = "message_reaction_user"
+	MessageReactionsColumn = "user_id"
 	// MessageBookmarksTable is the table that holds the message_bookmarks relation/edge.
-	MessageBookmarksTable = "message_bookmarks"
+	MessageBookmarksTable = "message_bookmark"
 	// MessageBookmarksInverseTable is the table name for the MessageBookmark entity.
 	// It exists in this package in order to avoid circular dependency with the "messagebookmark" package.
-	MessageBookmarksInverseTable = "message_bookmarks"
+	MessageBookmarksInverseTable = "message_bookmark"
 	// MessageBookmarksColumn is the table column denoting the message_bookmarks relation/edge.
-	MessageBookmarksColumn = "message_bookmark_user"
+	MessageBookmarksColumn = "user_id"
 	// UserMentionsTable is the table that holds the user_mentions relation/edge.
-	UserMentionsTable = "message_user_mentions"
+	UserMentionsTable = "message_user_mention"
 	// UserMentionsInverseTable is the table name for the MessageUserMention entity.
 	// It exists in this package in order to avoid circular dependency with the "messageusermention" package.
-	UserMentionsInverseTable = "message_user_mentions"
+	UserMentionsInverseTable = "message_user_mention"
 	// UserMentionsColumn is the table column denoting the user_mentions relation/edge.
-	UserMentionsColumn = "message_user_mention_user"
+	UserMentionsColumn = "user_id"
 	// UserGroupMembersTable is the table that holds the user_group_members relation/edge.
-	UserGroupMembersTable = "user_group_members"
+	UserGroupMembersTable = "user_group_member"
 	// UserGroupMembersInverseTable is the table name for the UserGroupMember entity.
 	// It exists in this package in order to avoid circular dependency with the "usergroupmember" package.
-	UserGroupMembersInverseTable = "user_group_members"
+	UserGroupMembersInverseTable = "user_group_member"
 	// UserGroupMembersColumn is the table column denoting the user_group_members relation/edge.
-	UserGroupMembersColumn = "user_group_member_user"
+	UserGroupMembersColumn = "user_id"
 	// CreatedUserGroupsTable is the table that holds the created_user_groups relation/edge.
-	CreatedUserGroupsTable = "user_groups"
+	CreatedUserGroupsTable = "user_group"
 	// CreatedUserGroupsInverseTable is the table name for the UserGroup entity.
 	// It exists in this package in order to avoid circular dependency with the "usergroup" package.
-	CreatedUserGroupsInverseTable = "user_groups"
+	CreatedUserGroupsInverseTable = "user_group"
 	// CreatedUserGroupsColumn is the table column denoting the created_user_groups relation/edge.
-	CreatedUserGroupsColumn = "user_group_created_by"
+	CreatedUserGroupsColumn = "created_by_id"
 	// AttachmentsTable is the table that holds the attachments relation/edge.
-	AttachmentsTable = "attachments"
+	AttachmentsTable = "attachment"
 	// AttachmentsInverseTable is the table name for the Attachment entity.
 	// It exists in this package in order to avoid circular dependency with the "attachment" package.
-	AttachmentsInverseTable = "attachments"
+	AttachmentsInverseTable = "attachment"
 	// AttachmentsColumn is the table column denoting the attachments relation/edge.
-	AttachmentsColumn = "attachment_uploader"
+	AttachmentsColumn = "uploader_id"
 	// ChannelReadStatesTable is the table that holds the channel_read_states relation/edge.
-	ChannelReadStatesTable = "channel_read_states"
+	ChannelReadStatesTable = "channel_read_state"
 	// ChannelReadStatesInverseTable is the table name for the ChannelReadState entity.
 	// It exists in this package in order to avoid circular dependency with the "channelreadstate" package.
-	ChannelReadStatesInverseTable = "channel_read_states"
+	ChannelReadStatesInverseTable = "channel_read_state"
 	// ChannelReadStatesColumn is the table column denoting the channel_read_states relation/edge.
-	ChannelReadStatesColumn = "channel_read_state_user"
+	ChannelReadStatesColumn = "user_id"
+	// PreferenceTable is the table that holds the preference relation/edge.
+	PreferenceTable = "user_preference"
+	// PreferenceInverseTable is the table name for the UserPreference entity.
+	// It exists in this package in order to avoid circular dependency with the "userpreference" package.
+	PreferenceInverseTable = "user_preference"
+	// PreferenceColumn is the table column denoting the preference relation/edge.
+	PreferenceColumn = "user_id"
+	// LinksTable is the table that holds the links relation/edge.
+	LinksTable = "user_link"
+	// LinksInverseTable is the table name for the UserLink entity.
+	// It exists in this package in order to avoid circular dependency with the "userlink" package.
+	LinksInverseTable = "user_link"
+	// LinksColumn is the table column denoting the links relation/edge.
+	LinksColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -187,20 +182,9 @@ var Columns = []string{
 	FieldGoogleSub,
 	FieldDisplayName,
 	FieldBio,
-	FieldLinks,
 	FieldAvatarURL,
-	FieldIsBot,
+	FieldIsApp,
 	FieldIsOfficial,
-	FieldThemeHue,
-	FieldThemeChroma,
-	FieldThemeSidebar,
-	FieldColorMode,
-	FieldLocale,
-	FieldNotificationLevel,
-	FieldTimezone,
-	FieldTimezoneAutoUpdate,
-	FieldChannelSortOrder,
-	FieldHideJoinMessages,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -222,22 +206,10 @@ var (
 	PasswordHashValidator func(string) error
 	// DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
 	DisplayNameValidator func(string) error
-	// DefaultIsBot holds the default value on creation for the "is_bot" field.
-	DefaultIsBot bool
+	// DefaultIsApp holds the default value on creation for the "is_app" field.
+	DefaultIsApp bool
 	// DefaultIsOfficial holds the default value on creation for the "is_official" field.
 	DefaultIsOfficial bool
-	// DefaultThemeHue holds the default value on creation for the "theme_hue" field.
-	DefaultThemeHue int
-	// DefaultThemeChroma holds the default value on creation for the "theme_chroma" field.
-	DefaultThemeChroma float64
-	// DefaultLocale holds the default value on creation for the "locale" field.
-	DefaultLocale string
-	// DefaultTimezone holds the default value on creation for the "timezone" field.
-	DefaultTimezone string
-	// DefaultTimezoneAutoUpdate holds the default value on creation for the "timezone_auto_update" field.
-	DefaultTimezoneAutoUpdate bool
-	// DefaultHideJoinMessages holds the default value on creation for the "hide_join_messages" field.
-	DefaultHideJoinMessages bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -247,112 +219,6 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// ThemeSidebar defines the type for the "theme_sidebar" enum field.
-type ThemeSidebar string
-
-// ThemeSidebarTinted is the default value of the ThemeSidebar enum.
-const DefaultThemeSidebar = ThemeSidebarTinted
-
-// ThemeSidebar values.
-const (
-	ThemeSidebarTinted ThemeSidebar = "tinted"
-	ThemeSidebarLight  ThemeSidebar = "light"
-)
-
-func (ts ThemeSidebar) String() string {
-	return string(ts)
-}
-
-// ThemeSidebarValidator is a validator for the "theme_sidebar" field enum values. It is called by the builders before save.
-func ThemeSidebarValidator(ts ThemeSidebar) error {
-	switch ts {
-	case ThemeSidebarTinted, ThemeSidebarLight:
-		return nil
-	default:
-		return fmt.Errorf("user: invalid enum value for theme_sidebar field: %q", ts)
-	}
-}
-
-// ColorMode defines the type for the "color_mode" enum field.
-type ColorMode string
-
-// ColorModeSystem is the default value of the ColorMode enum.
-const DefaultColorMode = ColorModeSystem
-
-// ColorMode values.
-const (
-	ColorModeLight  ColorMode = "light"
-	ColorModeDark   ColorMode = "dark"
-	ColorModeSystem ColorMode = "system"
-)
-
-func (cm ColorMode) String() string {
-	return string(cm)
-}
-
-// ColorModeValidator is a validator for the "color_mode" field enum values. It is called by the builders before save.
-func ColorModeValidator(cm ColorMode) error {
-	switch cm {
-	case ColorModeLight, ColorModeDark, ColorModeSystem:
-		return nil
-	default:
-		return fmt.Errorf("user: invalid enum value for color_mode field: %q", cm)
-	}
-}
-
-// NotificationLevel defines the type for the "notification_level" enum field.
-type NotificationLevel string
-
-// NotificationLevelMentions is the default value of the NotificationLevel enum.
-const DefaultNotificationLevel = NotificationLevelMentions
-
-// NotificationLevel values.
-const (
-	NotificationLevelAll      NotificationLevel = "all"
-	NotificationLevelMentions NotificationLevel = "mentions"
-	NotificationLevelNone     NotificationLevel = "none"
-)
-
-func (nl NotificationLevel) String() string {
-	return string(nl)
-}
-
-// NotificationLevelValidator is a validator for the "notification_level" field enum values. It is called by the builders before save.
-func NotificationLevelValidator(nl NotificationLevel) error {
-	switch nl {
-	case NotificationLevelAll, NotificationLevelMentions, NotificationLevelNone:
-		return nil
-	default:
-		return fmt.Errorf("user: invalid enum value for notification_level field: %q", nl)
-	}
-}
-
-// ChannelSortOrder defines the type for the "channel_sort_order" enum field.
-type ChannelSortOrder string
-
-// ChannelSortOrderDefault is the default value of the ChannelSortOrder enum.
-const DefaultChannelSortOrder = ChannelSortOrderDefault
-
-// ChannelSortOrder values.
-const (
-	ChannelSortOrderDefault        ChannelSortOrder = "default"
-	ChannelSortOrderRecentActivity ChannelSortOrder = "recent_activity"
-)
-
-func (cso ChannelSortOrder) String() string {
-	return string(cso)
-}
-
-// ChannelSortOrderValidator is a validator for the "channel_sort_order" field enum values. It is called by the builders before save.
-func ChannelSortOrderValidator(cso ChannelSortOrder) error {
-	switch cso {
-	case ChannelSortOrderDefault, ChannelSortOrderRecentActivity:
-		return nil
-	default:
-		return fmt.Errorf("user: invalid enum value for channel_sort_order field: %q", cso)
-	}
-}
 
 // OrderOption defines the ordering options for the User queries.
 type OrderOption func(*sql.Selector)
@@ -392,64 +258,14 @@ func ByAvatarURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAvatarURL, opts...).ToFunc()
 }
 
-// ByIsBot orders the results by the is_bot field.
-func ByIsBot(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsBot, opts...).ToFunc()
+// ByIsApp orders the results by the is_app field.
+func ByIsApp(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsApp, opts...).ToFunc()
 }
 
 // ByIsOfficial orders the results by the is_official field.
 func ByIsOfficial(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsOfficial, opts...).ToFunc()
-}
-
-// ByThemeHue orders the results by the theme_hue field.
-func ByThemeHue(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldThemeHue, opts...).ToFunc()
-}
-
-// ByThemeChroma orders the results by the theme_chroma field.
-func ByThemeChroma(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldThemeChroma, opts...).ToFunc()
-}
-
-// ByThemeSidebar orders the results by the theme_sidebar field.
-func ByThemeSidebar(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldThemeSidebar, opts...).ToFunc()
-}
-
-// ByColorMode orders the results by the color_mode field.
-func ByColorMode(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldColorMode, opts...).ToFunc()
-}
-
-// ByLocale orders the results by the locale field.
-func ByLocale(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLocale, opts...).ToFunc()
-}
-
-// ByNotificationLevel orders the results by the notification_level field.
-func ByNotificationLevel(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNotificationLevel, opts...).ToFunc()
-}
-
-// ByTimezone orders the results by the timezone field.
-func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
-}
-
-// ByTimezoneAutoUpdate orders the results by the timezone_auto_update field.
-func ByTimezoneAutoUpdate(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTimezoneAutoUpdate, opts...).ToFunc()
-}
-
-// ByChannelSortOrder orders the results by the channel_sort_order field.
-func ByChannelSortOrder(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldChannelSortOrder, opts...).ToFunc()
-}
-
-// ByHideJoinMessages orders the results by the hide_join_messages field.
-func ByHideJoinMessages(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldHideJoinMessages, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -643,6 +459,27 @@ func ByChannelReadStates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 		sqlgraph.OrderByNeighborTerms(s, newChannelReadStatesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByPreferenceField orders the results by preference field.
+func ByPreferenceField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPreferenceStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByLinksCount orders the results by links count.
+func ByLinksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLinksStep(), opts...)
+	}
+}
+
+// ByLinks orders the results by links terms.
+func ByLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSessionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -732,5 +569,19 @@ func newChannelReadStatesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ChannelReadStatesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, ChannelReadStatesTable, ChannelReadStatesColumn),
+	)
+}
+func newPreferenceStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PreferenceInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, PreferenceTable, PreferenceColumn),
+	)
+}
+func newLinksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LinksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, LinksTable, LinksColumn),
 	)
 }

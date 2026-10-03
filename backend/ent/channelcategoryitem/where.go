@@ -54,6 +54,81 @@ func IDLTE(id uuid.UUID) predicate.ChannelCategoryItem {
 	return predicate.ChannelCategoryItem(sql.FieldLTE(FieldID, id))
 }
 
+// CategoryID applies equality check predicate on the "category_id" field. It's identical to CategoryIDEQ.
+func CategoryID(v uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldEQ(FieldCategoryID, v))
+}
+
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldEQ(FieldUserID, v))
+}
+
+// ChannelID applies equality check predicate on the "channel_id" field. It's identical to ChannelIDEQ.
+func ChannelID(v uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldEQ(FieldChannelID, v))
+}
+
+// CategoryIDEQ applies the EQ predicate on the "category_id" field.
+func CategoryIDEQ(v uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldEQ(FieldCategoryID, v))
+}
+
+// CategoryIDNEQ applies the NEQ predicate on the "category_id" field.
+func CategoryIDNEQ(v uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldNEQ(FieldCategoryID, v))
+}
+
+// CategoryIDIn applies the In predicate on the "category_id" field.
+func CategoryIDIn(vs ...uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldIn(FieldCategoryID, vs...))
+}
+
+// CategoryIDNotIn applies the NotIn predicate on the "category_id" field.
+func CategoryIDNotIn(vs ...uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldNotIn(FieldCategoryID, vs...))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldNotIn(FieldUserID, vs...))
+}
+
+// ChannelIDEQ applies the EQ predicate on the "channel_id" field.
+func ChannelIDEQ(v uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldEQ(FieldChannelID, v))
+}
+
+// ChannelIDNEQ applies the NEQ predicate on the "channel_id" field.
+func ChannelIDNEQ(v uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldNEQ(FieldChannelID, v))
+}
+
+// ChannelIDIn applies the In predicate on the "channel_id" field.
+func ChannelIDIn(vs ...uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldIn(FieldChannelID, vs...))
+}
+
+// ChannelIDNotIn applies the NotIn predicate on the "channel_id" field.
+func ChannelIDNotIn(vs ...uuid.UUID) predicate.ChannelCategoryItem {
+	return predicate.ChannelCategoryItem(sql.FieldNotIn(FieldChannelID, vs...))
+}
+
 // HasCategory applies the HasEdge predicate on the "category" edge.
 func HasCategory() predicate.ChannelCategoryItem {
 	return predicate.ChannelCategoryItem(func(s *sql.Selector) {

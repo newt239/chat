@@ -43,13 +43,13 @@ export const ChannelMemberPanel = ({ channelId }: ChannelMemberPanelProps) => {
 
   const viewers = members.filter((member) => viewerIds.includes(member.userId));
   const others = members.filter((member) => !viewerIds.includes(member.userId));
-  const section = (
+  const renderSection = (
     title: string,
     list: ChannelMember[],
     detail: (member: ChannelMember) => string,
   ) => (
     <section aria-label={title} className="flex flex-col">
-      <h4 className="m-0 px-2 pt-2.5 pb-1 text-[11.5px] font-semibold text-muted">
+      <h4 className="m-0 px-2 pt-2.5 pb-1 text-caption font-semibold text-muted">
         {title} · {list.length}
       </h4>
       <ul className="m-0 flex list-none flex-col p-0">
@@ -69,8 +69,8 @@ export const ChannelMemberPanel = ({ channelId }: ChannelMemberPanelProps) => {
 
   return (
     <div className="flex min-h-full flex-col bg-surface p-1.5">
-      {section(t("channel.members.viewing"), viewers, () => t("channel.members.viewingNow"))}
-      {section(t("channel.members.others"), others, (member) => member.email)}
+      {renderSection(t("channel.members.viewing"), viewers, () => t("channel.members.viewingNow"))}
+      {renderSection(t("channel.members.others"), others, (member) => member.email)}
     </div>
   );
 };

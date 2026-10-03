@@ -1,15 +1,14 @@
-import { formatBytes, formatNumber } from "@chat/i18n";
-import { useAtomValue } from "jotai";
+import { formatBytes, formatNumber } from "@chat/i18n/format";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Link } from "#/components/ui/Link/Link";
 import { useAuditLogs } from "#/features/admin/hooks/useAdminQueries";
-import { isAdminRole } from "#/features/admin/utils/isAdminRole";
 import { ChartCard } from "#/features/insights/components/ChartCard";
 import { HBarList } from "#/features/insights/components/HBarList";
 import { KpiCard } from "#/features/insights/components/KpiCard";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
+import { isAdminRole } from "#/lib/isAdminRole";
 
 import { AuditLogTable } from "./AuditLogTable";
 
@@ -25,7 +24,7 @@ type AdminOverviewTabProps = {
 
 export const AdminOverviewTab = ({ workspaceId, members }: AdminOverviewTabProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   const { data: recent } = useAuditLogs({ limit: RECENT_LOGS, workspaceId });
 
   const active = members.filter((member) => member.suspendedAt === undefined);
@@ -93,7 +92,7 @@ export const AdminOverviewTab = ({ workspaceId, members }: AdminOverviewTabProps
       </div>
       <section className="flex flex-col gap-2">
         <header className="flex items-baseline justify-between gap-2">
-          <h2 className="m-0 text-[13.5px] font-bold">{t("admin.overview.recentAudit")}</h2>
+          <h2 className="m-0 text-body-sm font-bold">{t("admin.overview.recentAudit")}</h2>
           <Link
             to="/app/$workspaceId/admin"
             params={{ workspaceId }}

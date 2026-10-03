@@ -17,7 +17,8 @@ import { ChannelSectionMenu } from "#/features/channel/components/ChannelSection
 import { useChannelCategories } from "#/features/channel/hooks/useChannelCategories";
 import { DMList } from "#/features/dm/components/DMList";
 import { UserGroupNavList } from "#/features/userGroup/components/UserGroupNavList";
-import { useIsWorkspaceAdmin } from "#/features/workspace/hooks/useIsWorkspaceAdmin";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { isAdminRole } from "#/lib/isAdminRole";
 
 import { openDialog } from "../utils/overlaySearch";
 import { SidebarSection } from "./SidebarSection";
@@ -30,7 +31,7 @@ type NavigationListProps = {
 // サイドバーとモバイルのホームで共有する移動先の一覧。配色は親の --nav-* に従う
 export const NavigationList = ({ workspaceId }: NavigationListProps) => {
   const { t } = useTranslation();
-  const isAdmin = useIsWorkspaceAdmin(workspaceId);
+  const isAdmin = isAdminRole(useMyWorkspaceRole(workspaceId).data);
   const navigate = useNavigate();
   const { data: categories = [] } = useChannelCategories(workspaceId);
   const categoryIds = categories.map((category) => category.id);

@@ -2,11 +2,12 @@ package repository
 
 import (
 	"context"
-
-	"github.com/google/uuid"
+	"time"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/message"
+	"github.com/newt239/chat/ent/linkpreview"
+	"github.com/newt239/chat/ent/linkpreviewxpost"
+	"github.com/newt239/chat/ent/linkpreviewyoutube"
 	"github.com/newt239/chat/ent/messagelink"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -22,116 +23,117 @@ func NewLinkRepository(client *ent.Client) domainrepository.MessageLinkRepositor
 	return &linkRepository{client: client}
 }
 
-func (r *linkRepository) Create(ctx context.Context, link *entity.MessageLink) error {
-	mid, err := utils.ParseUUID(link.MessageID, "message ID")
-	if err != nil {
-		return err
+// CreateBulk はリンクをまとめて保存します。プレビューは UpsertPreview で先に保存しておく
+func (r *linkRepository) CreateBulk(ctx context.Context, links []*entity.MessageLink) error {
+	if len(links) == 0 {
+		return nil
 	}
-
 	client := transaction.ResolveClient(ctx, r.client)
-
-	builder := client.MessageLink.Create().
-		SetMessageID(mid).
-		SetURL(link.URL)
-
-	if link.ID != "" {
-		linkID, err := utils.ParseUUID(link.ID, "link ID")
+	builders := make([]*ent.MessageLinkCreate, 0, len(links))
+	for _, link := range links {
+		mid, err := utils.ParseUUID(link.MessageID, "message ID")
 		if err != nil {
 			return err
 		}
-		builder = builder.SetID(linkID)
+		builders = append(builders, client.MessageLink.Create().
+			SetMessageID(mid).
+			SetURL(link.URL).
+			SetNillableLinkPreviewID(utils.ParseUUIDPtr(link.LinkPreviewID)).
+			SetNillableLinkedMessageID(utils.ParseUUIDPtr(link.LinkedMessageID)).
+			SetNillableCreatedAt(nonZeroTime(link.CreatedAt)))
 	}
-
-	ogp := link.OGP
-	builder = builder.
-		SetNillableTitle(ogp.Title).
-		SetNillableDescription(ogp.Description).
-		SetNillableImageURL(ogp.ImageURL).
-		SetNillableSiteName(ogp.SiteName).
-		SetNillableCardType(ogp.CardType).
-		SetNillableImageWidth(ogp.ImageWidth).
-		SetNillableImageHeight(ogp.ImageHeight).
-		SetNillableLinkedMessageID(utils.ParseUUIDPtr(link.LinkedMessageID))
-	if ogp.YouTube != nil {
-		builder = builder.
-			SetYoutubeVideoID(ogp.YouTube.VideoID).
-			SetNillableYoutubeChannelName(ogp.YouTube.ChannelName).
-			SetNillableYoutubeDurationSeconds(ogp.YouTube.DurationSeconds)
-	}
-	if ogp.XPost != nil {
-		builder = builder.
-			SetXAuthorName(ogp.XPost.AuthorName).
-			SetXAuthorHandle(ogp.XPost.AuthorHandle)
-	}
-
-	ml, err := builder.Save(ctx)
+	saved, err := client.MessageLink.CreateBulk(builders...).Save(ctx)
 	if err != nil {
 		return err
 	}
-
-	// Load edges
-	ml, err = client.MessageLink.Query().
-		Where(messagelink.ID(ml.ID)).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		Only(ctx)
-	if err != nil {
-		return err
+	for i, ml := range saved {
+		links[i].ID = ml.ID.String()
+		links[i].CreatedAt = ml.CreatedAt
 	}
-
-	*link = *utils.MessageLinkToEntity(ml)
 	return nil
 }
 
-func (r *linkRepository) FindByMessageID(ctx context.Context, messageID string) ([]*entity.MessageLink, error) {
-	mid, err := utils.ParseUUID(messageID, "message ID")
-	if err != nil {
-		return nil, err
+func (r *linkRepository) FindPreviewsByURLs(ctx context.Context, urls []string) (map[string]*entity.LinkPreview, error) {
+	result := make(map[string]*entity.LinkPreview, len(urls))
+	if len(urls) == 0 {
+		return result, nil
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	links, err := client.MessageLink.Query().
-		Where(messagelink.HasMessageWith(message.ID(mid))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
+	previews, err := transaction.ResolveClient(ctx, r.client).LinkPreview.Query().
+		Where(linkpreview.URLIn(urls...)).
+		WithYoutube().
+		WithXPost().
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]*entity.MessageLink, 0, len(links))
-	for _, ml := range links {
-		result = append(result, utils.MessageLinkToEntity(ml))
+	for _, lp := range previews {
+		result[lp.URL] = &entity.LinkPreview{ID: lp.ID.String(), URL: lp.URL, OGP: utils.LinkPreviewToOGP(lp), FetchedAt: lp.FetchedAt}
 	}
-
 	return result, nil
+}
+
+func (r *linkRepository) UpsertPreview(ctx context.Context, preview *entity.LinkPreview) error {
+	return transaction.WithTx(ctx, r.client, func(client *ent.Client) error {
+		ogp := preview.OGP
+		previewID, err := client.LinkPreview.Create().
+			SetURL(preview.URL).
+			SetNillableTitle(ogp.Title).
+			SetNillableDescription(ogp.Description).
+			SetNillableImageURL(ogp.ImageURL).
+			SetNillableSiteName(ogp.SiteName).
+			SetNillableCardType(ogp.CardType).
+			SetNillableImageWidth(ogp.ImageWidth).
+			SetNillableImageHeight(ogp.ImageHeight).
+			SetFetchedAt(preview.FetchedAt).
+			OnConflictColumns(linkpreview.FieldURL).
+			UpdateNewValues().
+			ID(ctx)
+		if err != nil {
+			return err
+		}
+
+		if _, err := client.LinkPreviewYoutube.Delete().Where(linkpreviewyoutube.LinkPreviewID(previewID)).Exec(ctx); err != nil {
+			return err
+		}
+		if yt := ogp.YouTube; yt != nil {
+			if err := client.LinkPreviewYoutube.Create().
+				SetLinkPreviewID(previewID).
+				SetVideoID(yt.VideoID).
+				SetNillableChannelName(yt.ChannelName).
+				SetNillableDurationSeconds(yt.DurationSeconds).
+				Exec(ctx); err != nil {
+				return err
+			}
+		}
+		if _, err := client.LinkPreviewXPost.Delete().Where(linkpreviewxpost.LinkPreviewID(previewID)).Exec(ctx); err != nil {
+			return err
+		}
+		if x := ogp.XPost; x != nil {
+			if err := client.LinkPreviewXPost.Create().
+				SetLinkPreviewID(previewID).
+				SetAuthorName(x.AuthorName).
+				SetAuthorHandle(x.AuthorHandle).
+				Exec(ctx); err != nil {
+				return err
+			}
+		}
+		preview.ID = previewID.String()
+		return nil
+	})
 }
 
 func (r *linkRepository) FindByMessageIDs(ctx context.Context, messageIDs []string) ([]*entity.MessageLink, error) {
 	if len(messageIDs) == 0 {
 		return []*entity.MessageLink{}, nil
 	}
-
-	// Parse all message IDs
-	parsedIDs := make([]uuid.UUID, 0, len(messageIDs))
-	for _, id := range messageIDs {
-		parsedID, err := utils.ParseUUID(id, "message ID")
-		if err != nil {
-			return nil, err
-		}
-		parsedIDs = append(parsedIDs, parsedID)
+	parsedIDs, err := utils.ParseUUIDs(messageIDs, "message ID")
+	if err != nil {
+		return nil, err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	links, err := client.MessageLink.Query().
-		Where(messagelink.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
+	links, err := transaction.ResolveClient(ctx, r.client).MessageLink.Query().
+		Where(messagelink.MessageIDIn(parsedIDs...)).
+		WithLinkPreview(func(q *ent.LinkPreviewQuery) { q.WithYoutube().WithXPost() }).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -141,24 +143,7 @@ func (r *linkRepository) FindByMessageIDs(ctx context.Context, messageIDs []stri
 	for _, ml := range links {
 		result = append(result, utils.MessageLinkToEntity(ml))
 	}
-
 	return result, nil
-}
-
-func (r *linkRepository) FindByURL(ctx context.Context, url string) (*entity.MessageLink, error) {
-	client := transaction.ResolveClient(ctx, r.client)
-	ml, err := client.MessageLink.Query().
-		Where(messagelink.URL(url)).
-		Order(ent.Desc(messagelink.FieldCreatedAt)).
-		First(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return utils.MessageLinkToEntity(ml), nil
 }
 
 func (r *linkRepository) DeleteByMessageID(ctx context.Context, messageID string) error {
@@ -167,10 +152,16 @@ func (r *linkRepository) DeleteByMessageID(ctx context.Context, messageID string
 		return err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	_, err = client.MessageLink.Delete().
-		Where(messagelink.HasMessageWith(message.ID(mid))).
+	_, err = transaction.ResolveClient(ctx, r.client).MessageLink.Delete().
+		Where(messagelink.MessageID(mid)).
 		Exec(ctx)
-
 	return err
+}
+
+// nonZeroTime は未設定の日時を nil にして DB の既定値を使わせます
+func nonZeroTime(t time.Time) *time.Time {
+	if t.IsZero() {
+		return nil
+	}
+	return &t
 }

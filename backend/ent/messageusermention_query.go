@@ -27,7 +27,6 @@ type MessageUserMentionQuery struct {
 	predicates  []predicate.MessageUserMention
 	withMessage *MessageQuery
 	withUser    *UserQuery
-	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *MessageUserMentionQuery) WithUser(opts ...func(*UserQuery)) *MessageUs
 // Example:
 //
 //	var v []struct {
-//		ViaGroupID uuid.UUID `json:"via_group_id,omitempty"`
+//		MessageID uuid.UUID `json:"message_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.MessageUserMention.Query().
-//		GroupBy(messageusermention.FieldViaGroupID).
+//		GroupBy(messageusermention.FieldMessageID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *MessageUserMentionQuery) GroupBy(field string, fields ...string) *MessageUserMentionGroupBy {
@@ -359,11 +358,11 @@ func (_q *MessageUserMentionQuery) GroupBy(field string, fields ...string) *Mess
 // Example:
 //
 //	var v []struct {
-//		ViaGroupID uuid.UUID `json:"via_group_id,omitempty"`
+//		MessageID uuid.UUID `json:"message_id,omitempty"`
 //	}
 //
 //	client.MessageUserMention.Query().
-//		Select(messageusermention.FieldViaGroupID).
+//		Select(messageusermention.FieldMessageID).
 //		Scan(ctx, &v)
 func (_q *MessageUserMentionQuery) Select(fields ...string) *MessageUserMentionSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *MessageUserMentionQuery) prepareQuery(ctx context.Context) error {
 func (_q *MessageUserMentionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*MessageUserMention, error) {
 	var (
 		nodes       = []*MessageUserMention{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withMessage != nil,
 			_q.withUser != nil,
 		}
 	)
-	if _q.withMessage != nil || _q.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, messageusermention.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*MessageUserMention).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *MessageUserMentionQuery) loadMessage(ctx context.Context, query *Messa
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessageUserMention)
 	for i := range nodes {
-		if nodes[i].message_user_mention_message == nil {
-			continue
-		}
-		fk := *nodes[i].message_user_mention_message
+		fk := nodes[i].MessageID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *MessageUserMentionQuery) loadMessage(ctx context.Context, query *Messa
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_user_mention_message" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "message_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *MessageUserMentionQuery) loadUser(ctx context.Context, query *UserQuer
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessageUserMention)
 	for i := range nodes {
-		if nodes[i].message_user_mention_user == nil {
-			continue
-		}
-		fk := *nodes[i].message_user_mention_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *MessageUserMentionQuery) loadUser(ctx context.Context, query *UserQuer
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_user_mention_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *MessageUserMentionQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != messageusermention.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withMessage != nil {
+			_spec.Node.AddColumnOnce(messageusermention.FieldMessageID)
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(messageusermention.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

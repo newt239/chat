@@ -83,9 +83,7 @@ export const message: Messages["message"] = {
   },
   link: {
     copied: "Link copied",
-    copyFailed: "Couldn't copy the link",
     textCopied: "Text copied",
-    textCopyFailed: "Couldn't copy the text",
   },
   mention: {
     unknownChannel: "private channel",
@@ -96,8 +94,6 @@ export const message: Messages["message"] = {
     empty: "No messages yet",
     jumpToLatest: "Jump to latest messages",
     loading: "Loading…",
-    selectChannel: "Pick a channel to see its messages",
-    selectWorkspace: "Pick a workspace",
   },
   profileOf: "Profile of {{name}}",
   sheet: {

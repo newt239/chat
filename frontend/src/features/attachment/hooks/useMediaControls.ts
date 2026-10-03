@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 
 import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -19,35 +19,38 @@ export const useMediaControls = (
 ) => {
   const { t } = useTranslation();
   const { workspaceId = "" } = useParams({ strict: false });
-  const state = usePlayerState();
+  // 再生中の添付だけが位置の更新を受け取り、ほかの添付は描き直さない
+  const state = usePlayerState((current) =>
+    current.track?.attachmentId === attachment.id && current.track.messageId === message.id
+      ? current
+      : null,
+  );
   const { mutateAsync: fetchUrl } = useDownloadUrl();
   const { data: posterUrl } = useAttachmentUrl(
     kind === "video" && attachment.media?.thumbnail ? attachment.id : null,
     true,
   );
-  const isActive =
-    state.track?.attachmentId === attachment.id && state.track.messageId === message.id;
+  const isActive = state !== null;
 
   const start = async () => {
+    // React Compiler が try/catch の中の ?? を扱えないため、外で組み立てる
+    const track = {
+      attachmentId: attachment.id,
+      authorName: message.user?.displayName ?? "",
+      channelId: message.channelId,
+      durationSeconds: attachment.media?.durationSeconds ?? 0,
+      fileName: attachment.fileName,
+      kind,
+      messageId: message.id,
+      parentId: message.parentId,
+      posterUrl,
+      workspaceId,
+    };
     try {
-      await mediaPlayer.play(
-        {
-          attachmentId: attachment.id,
-          authorName: message.user?.displayName ?? "",
-          channelId: message.channelId,
-          durationSeconds: attachment.media?.durationSeconds ?? 0,
-          fileName: attachment.fileName,
-          kind,
-          messageId: message.id,
-          parentId: message.parentId,
-          posterUrl,
-          workspaceId,
-        },
-        async () => {
-          const { url } = await fetchUrl({ attachmentId: attachment.id });
-          return url;
-        },
-      );
+      await mediaPlayer.play(track, async () => {
+        const { url } = await fetchUrl({ attachmentId: attachment.id });
+        return url;
+      });
     } catch {
       toast(t("attachment.player.playFailed"), { tone: "danger" });
     }
@@ -75,23 +78,20 @@ export const useMediaControls = (
 
   // 再生中の添付がメッセージ一覧に見えているかをプレイヤーに伝える
   const detachRef = useRef<(() => void) | null>(null);
-  const inlineRef = useCallback(
-    (element: HTMLElement | null) => {
-      detachRef.current?.();
-      detachRef.current = element !== null && isActive ? mediaPlayer.attachInline(element) : null;
-    },
-    [isActive],
-  );
+  const inlineRef = (element: HTMLElement | null) => {
+    detachRef.current?.();
+    detachRef.current = element !== null && isActive ? mediaPlayer.attachInline(element) : null;
+  };
 
   return {
-    duration: isActive ? state.duration : (attachment.media?.durationSeconds ?? 0),
+    duration: state?.duration ?? attachment.media?.durationSeconds ?? 0,
     handleCycleRate: isActive ? mediaPlayer.cycleRate : toggle,
     handleSeek: seek,
     handleToggle: toggle,
     inlineRef,
     isActive,
-    isPlaying: isActive && state.isPlaying,
-    position: isActive ? state.position : 0,
-    rate: isActive ? state.rate : 1,
+    isPlaying: state?.isPlaying ?? false,
+    position: state?.position ?? 0,
+    rate: state?.rate ?? 1,
   };
 };

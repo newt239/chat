@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	ErrUnauthorized     = errors.New("このワークスペースのメンバーではありません")
 	ErrCategoryNotFound = errors.New("カテゴリが見つかりません")
 	ErrInvalidOrder     = fmt.Errorf("%w: 並び替えにはすべてのカテゴリを指定してください", domerr.ErrValidation)
 )
@@ -55,7 +54,7 @@ func (i *interactor) ensureWorkspaceMember(ctx context.Context, workspaceID, use
 		return fmt.Errorf("failed to verify membership: %w", err)
 	}
 	if member == nil {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 	return nil
 }

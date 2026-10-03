@@ -1,6 +1,6 @@
-import { motion } from "@chat/design-tokens";
+import { motion } from "@chat/design-tokens/motion";
 
-import type { MotionToken, MotionTokenName } from "@chat/design-tokens";
+import type { MotionToken, MotionTokenName } from "@chat/design-tokens/motion";
 import type { Transition } from "motion/react";
 
 const toTransition = (token: MotionToken): Transition =>

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
 )
@@ -70,7 +70,7 @@ func (r *ThreadReader) ensureThreadAccess(ctx context.Context, threadID, userID 
 		return fmt.Errorf("failed to fetch thread: %w", err)
 	}
 	if thread == nil {
-		return domainerrors.ErrMessageNotFound
+		return domerr.ErrMessageNotFound
 	}
 
 	_, err = r.channelAccessSvc.EnsureChannelAccess(ctx, thread.ChannelID, userID)

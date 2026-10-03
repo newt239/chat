@@ -27,6 +27,32 @@ type AppCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetCreatedByID sets the "created_by_id" field.
+func (_c *AppCreate) SetCreatedByID(v uuid.UUID) *AppCreate {
+	_c.mutation.SetCreatedByID(v)
+	return _c
+}
+
+// SetBotUserID sets the "bot_user_id" field.
+func (_c *AppCreate) SetBotUserID(v uuid.UUID) *AppCreate {
+	_c.mutation.SetBotUserID(v)
+	return _c
+}
+
+// SetDefaultChannelID sets the "default_channel_id" field.
+func (_c *AppCreate) SetDefaultChannelID(v uuid.UUID) *AppCreate {
+	_c.mutation.SetDefaultChannelID(v)
+	return _c
+}
+
+// SetNillableDefaultChannelID sets the "default_channel_id" field if the given value is not nil.
+func (_c *AppCreate) SetNillableDefaultChannelID(v *uuid.UUID) *AppCreate {
+	if v != nil {
+		_c.SetDefaultChannelID(*v)
+	}
+	return _c
+}
+
 // SetWorkspaceID sets the "workspace_id" field.
 func (_c *AppCreate) SetWorkspaceID(v string) *AppCreate {
 	_c.mutation.SetWorkspaceID(v)
@@ -190,40 +216,14 @@ func (_c *AppCreate) SetWorkspace(v *Workspace) *AppCreate {
 	return _c.SetWorkspaceID(v.ID)
 }
 
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_c *AppCreate) SetCreatedByID(id uuid.UUID) *AppCreate {
-	_c.mutation.SetCreatedByID(id)
-	return _c
-}
-
 // SetCreatedBy sets the "created_by" edge to the User entity.
 func (_c *AppCreate) SetCreatedBy(v *User) *AppCreate {
 	return _c.SetCreatedByID(v.ID)
 }
 
-// SetBotUserID sets the "bot_user" edge to the User entity by ID.
-func (_c *AppCreate) SetBotUserID(id uuid.UUID) *AppCreate {
-	_c.mutation.SetBotUserID(id)
-	return _c
-}
-
 // SetBotUser sets the "bot_user" edge to the User entity.
 func (_c *AppCreate) SetBotUser(v *User) *AppCreate {
 	return _c.SetBotUserID(v.ID)
-}
-
-// SetDefaultChannelID sets the "default_channel" edge to the Channel entity by ID.
-func (_c *AppCreate) SetDefaultChannelID(id uuid.UUID) *AppCreate {
-	_c.mutation.SetDefaultChannelID(id)
-	return _c
-}
-
-// SetNillableDefaultChannelID sets the "default_channel" edge to the Channel entity by ID if the given value is not nil.
-func (_c *AppCreate) SetNillableDefaultChannelID(id *uuid.UUID) *AppCreate {
-	if id != nil {
-		_c = _c.SetDefaultChannelID(*id)
-	}
-	return _c
 }
 
 // SetDefaultChannel sets the "default_channel" edge to the Channel entity.
@@ -290,6 +290,12 @@ func (_c *AppCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *AppCreate) check() error {
+	if _, ok := _c.mutation.CreatedByID(); !ok {
+		return &ValidationError{Name: "created_by_id", err: errors.New(`ent: missing required field "App.created_by_id"`)}
+	}
+	if _, ok := _c.mutation.BotUserID(); !ok {
+		return &ValidationError{Name: "bot_user_id", err: errors.New(`ent: missing required field "App.bot_user_id"`)}
+	}
 	if _, ok := _c.mutation.WorkspaceID(); !ok {
 		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "App.workspace_id"`)}
 	}
@@ -433,7 +439,7 @@ func (_c *AppCreate) createSpec() (*App, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.app_created_by = &nodes[0]
+		_node.CreatedByID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.BotUserIDs(); len(nodes) > 0 {
@@ -450,7 +456,7 @@ func (_c *AppCreate) createSpec() (*App, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.app_bot_user = &nodes[0]
+		_node.BotUserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.DefaultChannelIDs(); len(nodes) > 0 {
@@ -467,7 +473,7 @@ func (_c *AppCreate) createSpec() (*App, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.app_default_channel = &nodes[0]
+		_node.DefaultChannelID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -477,7 +483,7 @@ func (_c *AppCreate) createSpec() (*App, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.App.Create().
-//		SetWorkspaceID(v).
+//		SetCreatedByID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -486,7 +492,7 @@ func (_c *AppCreate) createSpec() (*App, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.AppUpsert) {
-//			SetWorkspaceID(v+v).
+//			SetCreatedByID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *AppCreate) OnConflict(opts ...sql.ConflictOption) *AppUpsertOne {
@@ -521,6 +527,48 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *AppUpsert) SetCreatedByID(v uuid.UUID) *AppUpsert {
+	u.Set(app.FieldCreatedByID, v)
+	return u
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *AppUpsert) UpdateCreatedByID() *AppUpsert {
+	u.SetExcluded(app.FieldCreatedByID)
+	return u
+}
+
+// SetBotUserID sets the "bot_user_id" field.
+func (u *AppUpsert) SetBotUserID(v uuid.UUID) *AppUpsert {
+	u.Set(app.FieldBotUserID, v)
+	return u
+}
+
+// UpdateBotUserID sets the "bot_user_id" field to the value that was provided on create.
+func (u *AppUpsert) UpdateBotUserID() *AppUpsert {
+	u.SetExcluded(app.FieldBotUserID)
+	return u
+}
+
+// SetDefaultChannelID sets the "default_channel_id" field.
+func (u *AppUpsert) SetDefaultChannelID(v uuid.UUID) *AppUpsert {
+	u.Set(app.FieldDefaultChannelID, v)
+	return u
+}
+
+// UpdateDefaultChannelID sets the "default_channel_id" field to the value that was provided on create.
+func (u *AppUpsert) UpdateDefaultChannelID() *AppUpsert {
+	u.SetExcluded(app.FieldDefaultChannelID)
+	return u
+}
+
+// ClearDefaultChannelID clears the value of the "default_channel_id" field.
+func (u *AppUpsert) ClearDefaultChannelID() *AppUpsert {
+	u.SetNull(app.FieldDefaultChannelID)
+	return u
+}
 
 // SetName sets the "name" field.
 func (u *AppUpsert) SetName(v string) *AppUpsert {
@@ -730,6 +778,55 @@ func (u *AppUpsertOne) Update(set func(*AppUpsert)) *AppUpsertOne {
 		set(&AppUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *AppUpsertOne) SetCreatedByID(v uuid.UUID) *AppUpsertOne {
+	return u.Update(func(s *AppUpsert) {
+		s.SetCreatedByID(v)
+	})
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *AppUpsertOne) UpdateCreatedByID() *AppUpsertOne {
+	return u.Update(func(s *AppUpsert) {
+		s.UpdateCreatedByID()
+	})
+}
+
+// SetBotUserID sets the "bot_user_id" field.
+func (u *AppUpsertOne) SetBotUserID(v uuid.UUID) *AppUpsertOne {
+	return u.Update(func(s *AppUpsert) {
+		s.SetBotUserID(v)
+	})
+}
+
+// UpdateBotUserID sets the "bot_user_id" field to the value that was provided on create.
+func (u *AppUpsertOne) UpdateBotUserID() *AppUpsertOne {
+	return u.Update(func(s *AppUpsert) {
+		s.UpdateBotUserID()
+	})
+}
+
+// SetDefaultChannelID sets the "default_channel_id" field.
+func (u *AppUpsertOne) SetDefaultChannelID(v uuid.UUID) *AppUpsertOne {
+	return u.Update(func(s *AppUpsert) {
+		s.SetDefaultChannelID(v)
+	})
+}
+
+// UpdateDefaultChannelID sets the "default_channel_id" field to the value that was provided on create.
+func (u *AppUpsertOne) UpdateDefaultChannelID() *AppUpsertOne {
+	return u.Update(func(s *AppUpsert) {
+		s.UpdateDefaultChannelID()
+	})
+}
+
+// ClearDefaultChannelID clears the value of the "default_channel_id" field.
+func (u *AppUpsertOne) ClearDefaultChannelID() *AppUpsertOne {
+	return u.Update(func(s *AppUpsert) {
+		s.ClearDefaultChannelID()
+	})
 }
 
 // SetName sets the "name" field.
@@ -1050,7 +1147,7 @@ func (_c *AppCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.AppUpsert) {
-//			SetWorkspaceID(v+v).
+//			SetCreatedByID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *AppCreateBulk) OnConflict(opts ...sql.ConflictOption) *AppUpsertBulk {
@@ -1133,6 +1230,55 @@ func (u *AppUpsertBulk) Update(set func(*AppUpsert)) *AppUpsertBulk {
 		set(&AppUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *AppUpsertBulk) SetCreatedByID(v uuid.UUID) *AppUpsertBulk {
+	return u.Update(func(s *AppUpsert) {
+		s.SetCreatedByID(v)
+	})
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *AppUpsertBulk) UpdateCreatedByID() *AppUpsertBulk {
+	return u.Update(func(s *AppUpsert) {
+		s.UpdateCreatedByID()
+	})
+}
+
+// SetBotUserID sets the "bot_user_id" field.
+func (u *AppUpsertBulk) SetBotUserID(v uuid.UUID) *AppUpsertBulk {
+	return u.Update(func(s *AppUpsert) {
+		s.SetBotUserID(v)
+	})
+}
+
+// UpdateBotUserID sets the "bot_user_id" field to the value that was provided on create.
+func (u *AppUpsertBulk) UpdateBotUserID() *AppUpsertBulk {
+	return u.Update(func(s *AppUpsert) {
+		s.UpdateBotUserID()
+	})
+}
+
+// SetDefaultChannelID sets the "default_channel_id" field.
+func (u *AppUpsertBulk) SetDefaultChannelID(v uuid.UUID) *AppUpsertBulk {
+	return u.Update(func(s *AppUpsert) {
+		s.SetDefaultChannelID(v)
+	})
+}
+
+// UpdateDefaultChannelID sets the "default_channel_id" field to the value that was provided on create.
+func (u *AppUpsertBulk) UpdateDefaultChannelID() *AppUpsertBulk {
+	return u.Update(func(s *AppUpsert) {
+		s.UpdateDefaultChannelID()
+	})
+}
+
+// ClearDefaultChannelID clears the value of the "default_channel_id" field.
+func (u *AppUpsertBulk) ClearDefaultChannelID() *AppUpsertBulk {
+	return u.Update(func(s *AppUpsert) {
+		s.ClearDefaultChannelID()
+	})
 }
 
 // SetName sets the "name" field.

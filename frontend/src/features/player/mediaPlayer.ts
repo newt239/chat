@@ -13,7 +13,7 @@ type PlayerTrack = {
   durationSeconds: number;
 };
 
-type PlayerState = {
+export type PlayerState = {
   track: PlayerTrack | null;
   isPlaying: boolean;
   position: number;

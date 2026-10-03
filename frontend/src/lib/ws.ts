@@ -3,6 +3,7 @@ import { create, fromJsonString, toJsonString } from "@bufbuild/protobuf";
 import { ClientEventSchema, ServerEventSchema } from "#/gen/chat/v1/event_pb";
 import { logger } from "#/lib/logger";
 import { navigateTo } from "#/lib/navigation";
+import { refreshOrSignOut } from "#/lib/session";
 
 import type { ServerEvent } from "#/gen/chat/v1/event_pb";
 
@@ -13,21 +14,18 @@ type WsEventType = ServerEventOneof["case"];
 type WsEventPayload<K extends WsEventType> = Extract<ServerEventOneof, { case: K }>["value"];
 
 const WS_BC_NAME = "ws-control";
-const WS_RECONNECT_DELAY = 2_000; // 初期遅延: 2秒
-const WS_MAX_RECONNECT_DELAY = 30_000; // 最大遅延: 30秒
-const WS_MAX_RECONNECT_ATTEMPTS = 5; // 最大再接続試行回数
+const WS_RECONNECT_DELAY = 2_000;
+const WS_MAX_RECONNECT_DELAY = 30_000;
+const WS_MAX_RECONNECT_ATTEMPTS = 5;
 // サーバーの停止（1001 Going Away）では他のレプリカへすぐつなぎ直す。一斉に来ないよう散らす
 const WS_GOING_AWAY_DELAY_MAX = 1_000;
+// サーバーが閉じるときのコード。4401 は認証の失効、4403 はワークスペースから外されたとき
+const WS_CLOSE_UNAUTHENTICATED = 4401;
+const WS_CLOSE_FORBIDDEN = 4403;
 
-/** サーバWebSocketエンドポイント取得 例: ws://localhost:8080/ws?token=xxxx&workspaceId=xxxx */
-const getWsUrl = (token: string, workspaceId: string): string => {
+const getWsUrl = (ticket: string) => {
   const base = import.meta.env.VITE_WS_URL ?? "ws://localhost:8080";
-  return `${base}/ws?token=${encodeURIComponent(token)}&workspaceId=${encodeURIComponent(workspaceId)}`;
-};
-
-type WsClientOptions = {
-  // 隠れている間も切断しない。プッシュ通知の代わりに新着を OS の通知で出すデスクトップアプリ向け
-  keepAliveWhenHidden?: boolean;
+  return `${base}/ws?ticket=${encodeURIComponent(ticket)}`;
 };
 
 const parseServerEvent = (data: string) => {
@@ -42,15 +40,12 @@ const parseServerEvent = (data: string) => {
 export class WsClient {
   private ws: WebSocket | null = null;
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  private reconnectDelay = WS_RECONNECT_DELAY;
   private reconnectAttempts = 0;
-  private shouldStopReconnecting = false;
-
-  private readonly token: string;
-  private readonly workspaceId: string;
-  private readonly bc: BroadcastChannel;
-  private readonly keepAliveWhenHidden: boolean;
+  // チケットの取得を待つ間に切断や再接続が起きたら、古い接続の続きを捨てる
+  private connectionId = 0;
   private isActiveLeader = false;
+  private isClosed = false;
+  private readonly bc = new BroadcastChannel(WS_BC_NAME);
   // 同じチャンネルを複数の画面が購読するため参照数で持ち、再接続時に送り直す
   private readonly joinedChannels = new Map<string, number>();
   private viewingChannelId = "";
@@ -79,17 +74,25 @@ export class WsClient {
     unreadCount: new Set(),
   };
 
-  public constructor(
-    token: string,
-    workspaceId: string,
-    { keepAliveWhenHidden = false }: WsClientOptions = {},
-  ) {
-    this.token = token;
-    this.workspaceId = workspaceId;
+  // 接続のたびに 1 回限りのチケットを発行する
+  private readonly issueTicket: () => Promise<string>;
+  // 隠れている間も切断しない。プッシュ通知の代わりに OS の通知を出すデスクトップアプリ向け
+  private readonly keepAliveWhenHidden: boolean;
+
+  public constructor(issueTicket: () => Promise<string>, keepAliveWhenHidden: boolean) {
+    this.issueTicket = issueTicket;
     this.keepAliveWhenHidden = keepAliveWhenHidden;
-    this.bc = new BroadcastChannel(WS_BC_NAME);
-    this.listenBroadcast();
-    this.initTabActivityControl();
+    // 他タブが接続を始めたらリーダーを譲る
+    this.bc.addEventListener("message", () => {
+      this.disconnect();
+    });
+    window.addEventListener("visibilitychange", this.handleVisibility, false);
+    window.addEventListener("focus", this.handleFocus, false);
+    window.addEventListener("online", this.handleFocus, false);
+    window.addEventListener("beforeunload", this.handleUnload, false);
+    if (keepAliveWhenHidden || (document.visibilityState === "visible" && document.hasFocus())) {
+      this.becomeLeaderAndConnect();
+    }
   }
 
   /** サーバーイベントを購読中のハンドラへ配る（WebSocket の message ハンドラ） */
@@ -162,9 +165,6 @@ export class WsClient {
         break;
       }
       case "error": {
-        if (oneof.value.code === "401") {
-          navigateTo({ to: "/login" });
-        }
         this.emit(oneof.case, oneof.value);
         break;
       }
@@ -202,32 +202,27 @@ export class WsClient {
     this.handlers[type].delete(cb);
   }
 
-  private connect() {
-    if (this.shouldStopReconnecting) {
-      logger.info("WebSocket再接続を停止しました", this.workspaceId);
-      return;
-    }
-
-    const url = getWsUrl(this.token, this.workspaceId);
-    logger.info("WebSocket接続開始:", url);
+  private async connect() {
+    const id = ++this.connectionId;
     try {
-      this.ws = new WebSocket(url);
+      const ticket = await this.issueTicket();
+      if (id !== this.connectionId || !this.isActiveLeader) {
+        return;
+      }
+      this.ws = new WebSocket(getWsUrl(ticket));
       this.ws.addEventListener("open", this.onOpen);
       this.ws.addEventListener("close", this.onClose);
-      this.ws.addEventListener("error", this.onError);
       this.ws.addEventListener("message", this.eventDispatcher);
     } catch (error) {
-      logger.error("WebSocket接続作成時エラー:", error);
-      this.handleConnectionFailure("接続作成エラー", error);
+      if (id === this.connectionId) {
+        logger.warn("WebSocketに接続できませんでした", error);
+        this.scheduleReconnect(false);
+      }
     }
   }
 
   private readonly onOpen = () => {
-    logger.info("WebSocket接続が開きました", this.workspaceId);
-    // 接続成功時は再接続試行回数をリセット
     this.reconnectAttempts = 0;
-    this.reconnectDelay = WS_RECONNECT_DELAY;
-    this.shouldStopReconnecting = false;
     for (const channelId of this.joinedChannels.keys()) {
       this.send({ case: "joinChannel", value: { channelId } });
     }
@@ -242,111 +237,52 @@ export class WsClient {
     this.hasOpened = true;
   };
 
+  // error のあとには必ず close が来るため、失敗はここでだけ数える
   private readonly onClose = (event: CloseEvent) => {
-    logger.info("WebSocket接続が閉じました", {
-      code: event.code,
-      reason: event.reason,
-      wasClean: event.wasClean,
-      workspaceId: this.workspaceId,
-    });
-    // リーダーの場合のみ再接続を試みる
-    if (this.isActiveLeader && !this.shouldStopReconnecting) {
-      // 正常終了（1000）の場合は再接続を試みない
-      if (event.code === 1000) {
-        logger.info("WebSocket正常終了のため再接続しません", this.workspaceId);
-        return;
-      }
-      // 認証エラー（1008）の場合は再接続を停止
-      if (event.code === 1008) {
-        logger.error("WebSocket認証エラーのため再接続を停止します", this.workspaceId);
-        this.shouldStopReconnecting = true;
-        return;
-      }
-      if (event.code === 1001) {
-        this.reconnectDelay = Math.random() * WS_GOING_AWAY_DELAY_MAX;
-      }
-      this.handleConnectionFailure("接続が閉じられました", event);
-    }
-  };
-
-  private readonly onError = (event: Event) => {
-    const errorInfo = this.getErrorInfo(event);
-    logger.error("WebSocketエラーが発生しました", {
-      error: errorInfo,
-      readyState: this.ws?.readyState,
-      workspaceId: this.workspaceId,
-    });
-    // リーダーの場合のみ再接続を試みる
-    if (this.isActiveLeader && !this.shouldStopReconnecting) {
-      this.handleConnectionFailure("WebSocketエラー", event);
-    }
-  };
-
-  private handleConnectionFailure(context: string, error: unknown) {
-    if (this.shouldStopReconnecting) {
+    logger.info("WebSocket接続が閉じました", { code: event.code, reason: event.reason });
+    this.ws = null;
+    if (!this.isActiveLeader || event.code === 1000) {
       return;
     }
+    if (event.code === WS_CLOSE_FORBIDDEN) {
+      this.close();
+      navigateTo({ to: "/app" });
+      return;
+    }
+    if (event.code === WS_CLOSE_UNAUTHENTICATED) {
+      refreshOrSignOut().then(
+        () => {
+          void this.connect();
+        },
+        () => {
+          this.scheduleReconnect(false);
+        },
+      );
+      return;
+    }
+    this.scheduleReconnect(event.code === 1001);
+  };
 
+  /** 指数バックオフ（2, 4, 8, 16 秒、最大 30 秒）でつなぎ直す。上限に達したらリーダーを降り、focus か online で再開する */
+  private scheduleReconnect(isGoingAway: boolean) {
+    if (!this.isActiveLeader || this.reconnectTimeoutId !== null) {
+      return;
+    }
     this.reconnectAttempts += 1;
-
     if (this.reconnectAttempts >= WS_MAX_RECONNECT_ATTEMPTS) {
-      logger.error("WebSocket最大再接続試行回数に達しました", {
-        attempts: this.reconnectAttempts,
-        context,
-        error: this.getErrorInfo(error),
-        workspaceId: this.workspaceId,
-      });
-      this.shouldStopReconnecting = true;
+      logger.error("WebSocketの再接続を諦めました", { attempts: this.reconnectAttempts });
+      this.disconnect();
       return;
     }
-
-    logger.info("WebSocket再接続を試みます", {
-      attempt: this.reconnectAttempts,
-      context,
-      delay: this.reconnectDelay,
-      error: this.getErrorInfo(error),
-      maxAttempts: WS_MAX_RECONNECT_ATTEMPTS,
-      workspaceId: this.workspaceId,
-    });
-
-    this.tryReconnect();
-  }
-
-  private tryReconnect() {
-    if (this.reconnectTimeoutId) {
-      return;
-    }
-    if (!this.isActiveLeader) {
-      return;
-    }
-    if (this.shouldStopReconnecting) {
-      return;
-    }
-
-    this.reconnectTimeoutId = setTimeout(() => {
-      this.reconnectTimeoutId = null;
-      if (this.isActiveLeader && !this.shouldStopReconnecting) {
-        // 指数バックオフ: 2秒, 4秒, 8秒, 16秒, 最大30秒
-        this.reconnectDelay = Math.min(
-          WS_RECONNECT_DELAY * 2 ** (this.reconnectAttempts - 1),
-          WS_MAX_RECONNECT_DELAY,
-        );
-        this.connect();
-      }
-    }, this.reconnectDelay);
-  }
-
-  private getErrorInfo(event: unknown): string {
-    if (event instanceof ErrorEvent) {
-      return event.message;
-    }
-    if (event instanceof CloseEvent) {
-      return `CloseEvent: code=${event.code}, reason=${event.reason}`;
-    }
-    if (event instanceof Error) {
-      return event.message;
-    }
-    return JSON.stringify(event);
+    this.reconnectTimeoutId = setTimeout(
+      () => {
+        this.reconnectTimeoutId = null;
+        void this.connect();
+      },
+      isGoingAway
+        ? Math.random() * WS_GOING_AWAY_DELAY_MAX
+        : Math.min(WS_RECONNECT_DELAY * 2 ** (this.reconnectAttempts - 1), WS_MAX_RECONNECT_DELAY),
+    );
   }
 
   public joinChannel(channelId: string) {
@@ -386,49 +322,29 @@ export class WsClient {
   /** 接続を閉じる。タブが見えるようになればまたつなぎ直せるよう、イベントの監視は続ける */
   private disconnect() {
     this.isActiveLeader = false;
+    this.connectionId += 1;
     if (this.ws) {
       this.ws.removeEventListener("open", this.onOpen);
       this.ws.removeEventListener("close", this.onClose);
-      this.ws.removeEventListener("error", this.onError);
       this.ws.removeEventListener("message", this.eventDispatcher);
       this.ws.close();
       this.ws = null;
     }
-    if (this.reconnectTimeoutId) {
+    if (this.reconnectTimeoutId !== null) {
       clearTimeout(this.reconnectTimeoutId);
       this.reconnectTimeoutId = null;
     }
     this.reconnectAttempts = 0;
-    this.reconnectDelay = WS_RECONNECT_DELAY;
   }
 
   public close() {
-    this.shouldStopReconnecting = true;
+    this.isClosed = true;
     this.disconnect();
     window.removeEventListener("visibilitychange", this.handleVisibility, false);
     window.removeEventListener("focus", this.handleFocus, false);
+    window.removeEventListener("online", this.handleFocus, false);
     window.removeEventListener("beforeunload", this.handleUnload, false);
     this.bc.close();
-  }
-
-  private listenBroadcast() {
-    // 他タブが接続を開始したら自分はリーダー権を放棄
-    this.bc.addEventListener("message", () => {
-      this.disconnect();
-    });
-  }
-
-  private initTabActivityControl() {
-    window.addEventListener("visibilitychange", this.handleVisibility, false);
-    window.addEventListener("focus", this.handleFocus, false);
-    window.addEventListener("beforeunload", this.handleUnload, false);
-    // 初回ロード時、ページが可視状態であれば接続
-    if (
-      this.keepAliveWhenHidden ||
-      (document.visibilityState === "visible" && document.hasFocus())
-    ) {
-      this.becomeLeaderAndConnect();
-    }
   }
 
   private readonly handleVisibility = () => {
@@ -440,9 +356,7 @@ export class WsClient {
   };
 
   private readonly handleFocus = () => {
-    if (!this.isActiveLeader) {
-      this.becomeLeaderAndConnect();
-    }
+    this.becomeLeaderAndConnect();
   };
 
   private readonly handleUnload = () => {
@@ -450,13 +364,11 @@ export class WsClient {
   };
 
   private becomeLeaderAndConnect() {
-    if (!this.isActiveLeader) {
-      this.isActiveLeader = true;
-      this.shouldStopReconnecting = false;
-      this.reconnectAttempts = 0;
-      this.reconnectDelay = WS_RECONNECT_DELAY;
-      this.bc.postMessage({ type: "ws_active" });
-      this.connect();
+    if (this.isActiveLeader || this.isClosed) {
+      return;
     }
+    this.isActiveLeader = true;
+    this.bc.postMessage({ type: "ws_active" });
+    void this.connect();
   }
 }

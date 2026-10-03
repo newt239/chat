@@ -31,9 +31,45 @@ func (_u *ChannelCategoryItemUpdate) Where(ps ...predicate.ChannelCategoryItem) 
 	return _u
 }
 
-// SetCategoryID sets the "category" edge to the ChannelCategory entity by ID.
-func (_u *ChannelCategoryItemUpdate) SetCategoryID(id uuid.UUID) *ChannelCategoryItemUpdate {
-	_u.mutation.SetCategoryID(id)
+// SetCategoryID sets the "category_id" field.
+func (_u *ChannelCategoryItemUpdate) SetCategoryID(v uuid.UUID) *ChannelCategoryItemUpdate {
+	_u.mutation.SetCategoryID(v)
+	return _u
+}
+
+// SetNillableCategoryID sets the "category_id" field if the given value is not nil.
+func (_u *ChannelCategoryItemUpdate) SetNillableCategoryID(v *uuid.UUID) *ChannelCategoryItemUpdate {
+	if v != nil {
+		_u.SetCategoryID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *ChannelCategoryItemUpdate) SetUserID(v uuid.UUID) *ChannelCategoryItemUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ChannelCategoryItemUpdate) SetNillableUserID(v *uuid.UUID) *ChannelCategoryItemUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (_u *ChannelCategoryItemUpdate) SetChannelID(v uuid.UUID) *ChannelCategoryItemUpdate {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *ChannelCategoryItemUpdate) SetNillableChannelID(v *uuid.UUID) *ChannelCategoryItemUpdate {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
 	return _u
 }
 
@@ -42,21 +78,9 @@ func (_u *ChannelCategoryItemUpdate) SetCategory(v *ChannelCategory) *ChannelCat
 	return _u.SetCategoryID(v.ID)
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ChannelCategoryItemUpdate) SetUserID(id uuid.UUID) *ChannelCategoryItemUpdate {
-	_u.mutation.SetUserID(id)
-	return _u
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *ChannelCategoryItemUpdate) SetUser(v *User) *ChannelCategoryItemUpdate {
 	return _u.SetUserID(v.ID)
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *ChannelCategoryItemUpdate) SetChannelID(id uuid.UUID) *ChannelCategoryItemUpdate {
-	_u.mutation.SetChannelID(id)
-	return _u
 }
 
 // SetChannel sets the "channel" edge to the Channel entity.
@@ -247,9 +271,45 @@ type ChannelCategoryItemUpdateOne struct {
 	mutation *ChannelCategoryItemMutation
 }
 
-// SetCategoryID sets the "category" edge to the ChannelCategory entity by ID.
-func (_u *ChannelCategoryItemUpdateOne) SetCategoryID(id uuid.UUID) *ChannelCategoryItemUpdateOne {
-	_u.mutation.SetCategoryID(id)
+// SetCategoryID sets the "category_id" field.
+func (_u *ChannelCategoryItemUpdateOne) SetCategoryID(v uuid.UUID) *ChannelCategoryItemUpdateOne {
+	_u.mutation.SetCategoryID(v)
+	return _u
+}
+
+// SetNillableCategoryID sets the "category_id" field if the given value is not nil.
+func (_u *ChannelCategoryItemUpdateOne) SetNillableCategoryID(v *uuid.UUID) *ChannelCategoryItemUpdateOne {
+	if v != nil {
+		_u.SetCategoryID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *ChannelCategoryItemUpdateOne) SetUserID(v uuid.UUID) *ChannelCategoryItemUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ChannelCategoryItemUpdateOne) SetNillableUserID(v *uuid.UUID) *ChannelCategoryItemUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (_u *ChannelCategoryItemUpdateOne) SetChannelID(v uuid.UUID) *ChannelCategoryItemUpdateOne {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *ChannelCategoryItemUpdateOne) SetNillableChannelID(v *uuid.UUID) *ChannelCategoryItemUpdateOne {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
 	return _u
 }
 
@@ -258,21 +318,9 @@ func (_u *ChannelCategoryItemUpdateOne) SetCategory(v *ChannelCategory) *Channel
 	return _u.SetCategoryID(v.ID)
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ChannelCategoryItemUpdateOne) SetUserID(id uuid.UUID) *ChannelCategoryItemUpdateOne {
-	_u.mutation.SetUserID(id)
-	return _u
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *ChannelCategoryItemUpdateOne) SetUser(v *User) *ChannelCategoryItemUpdateOne {
 	return _u.SetUserID(v.ID)
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *ChannelCategoryItemUpdateOne) SetChannelID(id uuid.UUID) *ChannelCategoryItemUpdateOne {
-	_u.mutation.SetChannelID(id)
-	return _u
 }
 
 // SetChannel sets the "channel" edge to the Channel entity.

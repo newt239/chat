@@ -30,21 +30,37 @@ func (_u *UserThreadFollowUpdate) Where(ps ...predicate.UserThreadFollow) *UserT
 	return _u
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *UserThreadFollowUpdate) SetUserID(id uuid.UUID) *UserThreadFollowUpdate {
-	_u.mutation.SetUserID(id)
+// SetUserID sets the "user_id" field.
+func (_u *UserThreadFollowUpdate) SetUserID(v uuid.UUID) *UserThreadFollowUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *UserThreadFollowUpdate) SetNillableUserID(v *uuid.UUID) *UserThreadFollowUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetThreadID sets the "thread_id" field.
+func (_u *UserThreadFollowUpdate) SetThreadID(v uuid.UUID) *UserThreadFollowUpdate {
+	_u.mutation.SetThreadID(v)
+	return _u
+}
+
+// SetNillableThreadID sets the "thread_id" field if the given value is not nil.
+func (_u *UserThreadFollowUpdate) SetNillableThreadID(v *uuid.UUID) *UserThreadFollowUpdate {
+	if v != nil {
+		_u.SetThreadID(*v)
+	}
 	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
 func (_u *UserThreadFollowUpdate) SetUser(v *User) *UserThreadFollowUpdate {
 	return _u.SetUserID(v.ID)
-}
-
-// SetThreadID sets the "thread" edge to the Message entity by ID.
-func (_u *UserThreadFollowUpdate) SetThreadID(id uuid.UUID) *UserThreadFollowUpdate {
-	_u.mutation.SetThreadID(id)
-	return _u
 }
 
 // SetThread sets the "thread" edge to the Message entity.
@@ -197,21 +213,37 @@ type UserThreadFollowUpdateOne struct {
 	mutation *UserThreadFollowMutation
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *UserThreadFollowUpdateOne) SetUserID(id uuid.UUID) *UserThreadFollowUpdateOne {
-	_u.mutation.SetUserID(id)
+// SetUserID sets the "user_id" field.
+func (_u *UserThreadFollowUpdateOne) SetUserID(v uuid.UUID) *UserThreadFollowUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *UserThreadFollowUpdateOne) SetNillableUserID(v *uuid.UUID) *UserThreadFollowUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetThreadID sets the "thread_id" field.
+func (_u *UserThreadFollowUpdateOne) SetThreadID(v uuid.UUID) *UserThreadFollowUpdateOne {
+	_u.mutation.SetThreadID(v)
+	return _u
+}
+
+// SetNillableThreadID sets the "thread_id" field if the given value is not nil.
+func (_u *UserThreadFollowUpdateOne) SetNillableThreadID(v *uuid.UUID) *UserThreadFollowUpdateOne {
+	if v != nil {
+		_u.SetThreadID(*v)
+	}
 	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
 func (_u *UserThreadFollowUpdateOne) SetUser(v *User) *UserThreadFollowUpdateOne {
 	return _u.SetUserID(v.ID)
-}
-
-// SetThreadID sets the "thread" edge to the Message entity by ID.
-func (_u *UserThreadFollowUpdateOne) SetThreadID(id uuid.UUID) *UserThreadFollowUpdateOne {
-	_u.mutation.SetThreadID(id)
-	return _u
 }
 
 // SetThread sets the "thread" edge to the Message entity.

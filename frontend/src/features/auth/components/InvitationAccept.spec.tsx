@@ -16,7 +16,7 @@ afterEach(() => {
 describe("InvitationAccept", () => {
   test("招待先を表示し、パスワードを設定して参加できる", async () => {
     vi.stubEnv("VITE_GOOGLE_OAUTH_CLIENT_ID", "");
-    const signUp = vi.fn(() => ({ accessToken: "a", refreshToken: "r" }));
+    const signUp = vi.fn(() => ({ accessToken: "a", user: { id: "u1" } }));
     await renderWithProviders(<InvitationAccept token="t1" />, "/app/ws1", (routes) => {
       routes.rpc(InvitationService.method.getInvitation, ({ token }) => {
         expect(token).toBe("t1");

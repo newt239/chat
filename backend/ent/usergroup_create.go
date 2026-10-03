@@ -28,6 +28,18 @@ type UserGroupCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_c *UserGroupCreate) SetWorkspaceID(v string) *UserGroupCreate {
+	_c.mutation.SetWorkspaceID(v)
+	return _c
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (_c *UserGroupCreate) SetCreatedByID(v uuid.UUID) *UserGroupCreate {
+	_c.mutation.SetCreatedByID(v)
+	return _c
+}
+
 // SetName sets the "name" field.
 func (_c *UserGroupCreate) SetName(v string) *UserGroupCreate {
 	_c.mutation.SetName(v)
@@ -90,21 +102,9 @@ func (_c *UserGroupCreate) SetNillableID(v *uuid.UUID) *UserGroupCreate {
 	return _c
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_c *UserGroupCreate) SetWorkspaceID(id string) *UserGroupCreate {
-	_c.mutation.SetWorkspaceID(id)
-	return _c
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_c *UserGroupCreate) SetWorkspace(v *Workspace) *UserGroupCreate {
 	return _c.SetWorkspaceID(v.ID)
-}
-
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_c *UserGroupCreate) SetCreatedByID(id uuid.UUID) *UserGroupCreate {
-	_c.mutation.SetCreatedByID(id)
-	return _c
 }
 
 // SetCreatedBy sets the "created_by" edge to the User entity.
@@ -193,6 +193,12 @@ func (_c *UserGroupCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *UserGroupCreate) check() error {
+	if _, ok := _c.mutation.WorkspaceID(); !ok {
+		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "UserGroup.workspace_id"`)}
+	}
+	if _, ok := _c.mutation.CreatedByID(); !ok {
+		return &ValidationError{Name: "created_by_id", err: errors.New(`ent: missing required field "UserGroup.created_by_id"`)}
+	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "UserGroup.name"`)}
 	}
@@ -279,7 +285,7 @@ func (_c *UserGroupCreate) createSpec() (*UserGroup, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_group_workspace = &nodes[0]
+		_node.WorkspaceID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.CreatedByIDs(); len(nodes) > 0 {
@@ -296,7 +302,7 @@ func (_c *UserGroupCreate) createSpec() (*UserGroup, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_group_created_by = &nodes[0]
+		_node.CreatedByID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.MembersIDs(); len(nodes) > 0 {
@@ -338,7 +344,7 @@ func (_c *UserGroupCreate) createSpec() (*UserGroup, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.UserGroup.Create().
-//		SetName(v).
+//		SetWorkspaceID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -347,7 +353,7 @@ func (_c *UserGroupCreate) createSpec() (*UserGroup, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserGroupUpsert) {
-//			SetName(v+v).
+//			SetWorkspaceID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *UserGroupCreate) OnConflict(opts ...sql.ConflictOption) *UserGroupUpsertOne {
@@ -382,6 +388,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *UserGroupUpsert) SetWorkspaceID(v string) *UserGroupUpsert {
+	u.Set(usergroup.FieldWorkspaceID, v)
+	return u
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *UserGroupUpsert) UpdateWorkspaceID() *UserGroupUpsert {
+	u.SetExcluded(usergroup.FieldWorkspaceID)
+	return u
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *UserGroupUpsert) SetCreatedByID(v uuid.UUID) *UserGroupUpsert {
+	u.Set(usergroup.FieldCreatedByID, v)
+	return u
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *UserGroupUpsert) UpdateCreatedByID() *UserGroupUpsert {
+	u.SetExcluded(usergroup.FieldCreatedByID)
+	return u
+}
 
 // SetName sets the "name" field.
 func (u *UserGroupUpsert) SetName(v string) *UserGroupUpsert {
@@ -474,6 +504,34 @@ func (u *UserGroupUpsertOne) Update(set func(*UserGroupUpsert)) *UserGroupUpsert
 		set(&UserGroupUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *UserGroupUpsertOne) SetWorkspaceID(v string) *UserGroupUpsertOne {
+	return u.Update(func(s *UserGroupUpsert) {
+		s.SetWorkspaceID(v)
+	})
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *UserGroupUpsertOne) UpdateWorkspaceID() *UserGroupUpsertOne {
+	return u.Update(func(s *UserGroupUpsert) {
+		s.UpdateWorkspaceID()
+	})
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *UserGroupUpsertOne) SetCreatedByID(v uuid.UUID) *UserGroupUpsertOne {
+	return u.Update(func(s *UserGroupUpsert) {
+		s.SetCreatedByID(v)
+	})
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *UserGroupUpsertOne) UpdateCreatedByID() *UserGroupUpsertOne {
+	return u.Update(func(s *UserGroupUpsert) {
+		s.UpdateCreatedByID()
+	})
 }
 
 // SetName sets the "name" field.
@@ -661,7 +719,7 @@ func (_c *UserGroupCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserGroupUpsert) {
-//			SetName(v+v).
+//			SetWorkspaceID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *UserGroupCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserGroupUpsertBulk {
@@ -741,6 +799,34 @@ func (u *UserGroupUpsertBulk) Update(set func(*UserGroupUpsert)) *UserGroupUpser
 		set(&UserGroupUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *UserGroupUpsertBulk) SetWorkspaceID(v string) *UserGroupUpsertBulk {
+	return u.Update(func(s *UserGroupUpsert) {
+		s.SetWorkspaceID(v)
+	})
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *UserGroupUpsertBulk) UpdateWorkspaceID() *UserGroupUpsertBulk {
+	return u.Update(func(s *UserGroupUpsert) {
+		s.UpdateWorkspaceID()
+	})
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *UserGroupUpsertBulk) SetCreatedByID(v uuid.UUID) *UserGroupUpsertBulk {
+	return u.Update(func(s *UserGroupUpsert) {
+		s.SetCreatedByID(v)
+	})
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *UserGroupUpsertBulk) UpdateCreatedByID() *UserGroupUpsertBulk {
+	return u.Update(func(s *UserGroupUpsert) {
+		s.UpdateCreatedByID()
+	})
 }
 
 // SetName sets the "name" field.

@@ -27,7 +27,6 @@ type WorkspaceMemberQuery struct {
 	predicates    []predicate.WorkspaceMember
 	withWorkspace *WorkspaceQuery
 	withUser      *UserQuery
-	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *WorkspaceMemberQuery) WithUser(opts ...func(*UserQuery)) *WorkspaceMem
 // Example:
 //
 //	var v []struct {
-//		Role string `json:"role,omitempty"`
+//		WorkspaceID string `json:"workspace_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.WorkspaceMember.Query().
-//		GroupBy(workspacemember.FieldRole).
+//		GroupBy(workspacemember.FieldWorkspaceID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *WorkspaceMemberQuery) GroupBy(field string, fields ...string) *WorkspaceMemberGroupBy {
@@ -359,11 +358,11 @@ func (_q *WorkspaceMemberQuery) GroupBy(field string, fields ...string) *Workspa
 // Example:
 //
 //	var v []struct {
-//		Role string `json:"role,omitempty"`
+//		WorkspaceID string `json:"workspace_id,omitempty"`
 //	}
 //
 //	client.WorkspaceMember.Query().
-//		Select(workspacemember.FieldRole).
+//		Select(workspacemember.FieldWorkspaceID).
 //		Scan(ctx, &v)
 func (_q *WorkspaceMemberQuery) Select(fields ...string) *WorkspaceMemberSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *WorkspaceMemberQuery) prepareQuery(ctx context.Context) error {
 func (_q *WorkspaceMemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*WorkspaceMember, error) {
 	var (
 		nodes       = []*WorkspaceMember{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withWorkspace != nil,
 			_q.withUser != nil,
 		}
 	)
-	if _q.withWorkspace != nil || _q.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, workspacemember.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*WorkspaceMember).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *WorkspaceMemberQuery) loadWorkspace(ctx context.Context, query *Worksp
 	ids := make([]string, 0, len(nodes))
 	nodeids := make(map[string][]*WorkspaceMember)
 	for i := range nodes {
-		if nodes[i].workspace_member_workspace == nil {
-			continue
-		}
-		fk := *nodes[i].workspace_member_workspace
+		fk := nodes[i].WorkspaceID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *WorkspaceMemberQuery) loadWorkspace(ctx context.Context, query *Worksp
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "workspace_member_workspace" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "workspace_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *WorkspaceMemberQuery) loadUser(ctx context.Context, query *UserQuery, 
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*WorkspaceMember)
 	for i := range nodes {
-		if nodes[i].workspace_member_user == nil {
-			continue
-		}
-		fk := *nodes[i].workspace_member_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *WorkspaceMemberQuery) loadUser(ctx context.Context, query *UserQuery, 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "workspace_member_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *WorkspaceMemberQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != workspacemember.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withWorkspace != nil {
+			_spec.Node.AddColumnOnce(workspacemember.FieldWorkspaceID)
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(workspacemember.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

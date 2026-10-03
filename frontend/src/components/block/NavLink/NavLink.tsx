@@ -2,7 +2,8 @@ import { createLink } from "@tanstack/react-router";
 import { Link as AriaLink } from "react-aria-components";
 
 import { focusRing, withBaseClassName } from "#/components/ui/styles/styles";
-import { navItemClassName } from "#/features/layout/utils/navTone";
+
+import { navItemClassName } from "./navTone";
 
 import type { LinkProps } from "react-aria-components";
 

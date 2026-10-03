@@ -5,6 +5,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -15,20 +16,20 @@ type Message struct {
 	ent.Schema
 }
 
+func (Message) Annotations() []schema.Annotation {
+	return []schema.Annotation{entsql.Annotation{Table: "message"}}
+}
+
 func (Message) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
-		// 外部キーをフィールドとして公開し、ID を得るためだけに関連を読み込まずに済ませる（列名は従来のまま）
 		field.UUID("channel_id", uuid.UUID{}).
-			StorageKey("message_channel").
 			Immutable(),
 		field.UUID("user_id", uuid.UUID{}).
-			StorageKey("message_user").
 			Immutable(),
 		field.UUID("parent_id", uuid.UUID{}).
-			StorageKey("message_parent").
 			Optional().
 			Nillable().
 			Immutable(),
@@ -43,13 +44,6 @@ func (Message) Fields() []ent.Field {
 			Optional(),
 		field.UUID("deleted_by", uuid.UUID{}).
 			Optional(),
-		// アプリが投稿ごとに指定した表示名とアイコン
-		field.String("sender_name").
-			Optional().
-			Nillable(),
-		field.String("sender_avatar_url").
-			Optional().
-			Nillable(),
 		// 共有された位置情報。緯度と経度は両方そろって設定される
 		field.Float("location_latitude").
 			Optional().

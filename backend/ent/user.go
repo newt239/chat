@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/newt239/chat/ent/user"
+	"github.com/newt239/chat/ent/userpreference"
 )
 
 // User is the model entity for the User schema.
@@ -29,34 +29,12 @@ type User struct {
 	DisplayName string `json:"display_name,omitempty"`
 	// Bio holds the value of the "bio" field.
 	Bio string `json:"bio,omitempty"`
-	// Links holds the value of the "links" field.
-	Links []string `json:"links,omitempty"`
 	// AvatarURL holds the value of the "avatar_url" field.
 	AvatarURL string `json:"avatar_url,omitempty"`
-	// IsBot holds the value of the "is_bot" field.
-	IsBot bool `json:"is_bot,omitempty"`
+	// IsApp holds the value of the "is_app" field.
+	IsApp bool `json:"is_app,omitempty"`
 	// IsOfficial holds the value of the "is_official" field.
 	IsOfficial bool `json:"is_official,omitempty"`
-	// ThemeHue holds the value of the "theme_hue" field.
-	ThemeHue int `json:"theme_hue,omitempty"`
-	// ThemeChroma holds the value of the "theme_chroma" field.
-	ThemeChroma float64 `json:"theme_chroma,omitempty"`
-	// ThemeSidebar holds the value of the "theme_sidebar" field.
-	ThemeSidebar user.ThemeSidebar `json:"theme_sidebar,omitempty"`
-	// ColorMode holds the value of the "color_mode" field.
-	ColorMode user.ColorMode `json:"color_mode,omitempty"`
-	// Locale holds the value of the "locale" field.
-	Locale string `json:"locale,omitempty"`
-	// NotificationLevel holds the value of the "notification_level" field.
-	NotificationLevel user.NotificationLevel `json:"notification_level,omitempty"`
-	// Timezone holds the value of the "timezone" field.
-	Timezone string `json:"timezone,omitempty"`
-	// TimezoneAutoUpdate holds the value of the "timezone_auto_update" field.
-	TimezoneAutoUpdate bool `json:"timezone_auto_update,omitempty"`
-	// ChannelSortOrder holds the value of the "channel_sort_order" field.
-	ChannelSortOrder user.ChannelSortOrder `json:"channel_sort_order,omitempty"`
-	// HideJoinMessages holds the value of the "hide_join_messages" field.
-	HideJoinMessages bool `json:"hide_join_messages,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -95,9 +73,13 @@ type UserEdges struct {
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// ChannelReadStates holds the value of the channel_read_states edge.
 	ChannelReadStates []*ChannelReadState `json:"channel_read_states,omitempty"`
+	// Preference holds the value of the preference edge.
+	Preference *UserPreference `json:"preference,omitempty"`
+	// Links holds the value of the links edge.
+	Links []*UserLink `json:"links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [13]bool
+	loadedTypes [15]bool
 }
 
 // SessionsOrErr returns the Sessions value or an error if the edge
@@ -217,20 +199,34 @@ func (e UserEdges) ChannelReadStatesOrErr() ([]*ChannelReadState, error) {
 	return nil, &NotLoadedError{edge: "channel_read_states"}
 }
 
+// PreferenceOrErr returns the Preference value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) PreferenceOrErr() (*UserPreference, error) {
+	if e.Preference != nil {
+		return e.Preference, nil
+	} else if e.loadedTypes[13] {
+		return nil, &NotFoundError{label: userpreference.Label}
+	}
+	return nil, &NotLoadedError{edge: "preference"}
+}
+
+// LinksOrErr returns the Links value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) LinksOrErr() ([]*UserLink, error) {
+	if e.loadedTypes[14] {
+		return e.Links, nil
+	}
+	return nil, &NotLoadedError{edge: "links"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldLinks:
-			values[i] = new([]byte)
-		case user.FieldIsBot, user.FieldIsOfficial, user.FieldTimezoneAutoUpdate, user.FieldHideJoinMessages:
+		case user.FieldIsApp, user.FieldIsOfficial:
 			values[i] = new(sql.NullBool)
-		case user.FieldThemeChroma:
-			values[i] = new(sql.NullFloat64)
-		case user.FieldThemeHue:
-			values[i] = new(sql.NullInt64)
-		case user.FieldEmail, user.FieldPasswordHash, user.FieldGoogleSub, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL, user.FieldThemeSidebar, user.FieldColorMode, user.FieldLocale, user.FieldNotificationLevel, user.FieldTimezone, user.FieldChannelSortOrder:
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldGoogleSub, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -288,91 +284,23 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Bio = value.String
 			}
-		case user.FieldLinks:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field links", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Links); err != nil {
-					return fmt.Errorf("unmarshal field links: %w", err)
-				}
-			}
 		case user.FieldAvatarURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field avatar_url", values[i])
 			} else if value.Valid {
 				_m.AvatarURL = value.String
 			}
-		case user.FieldIsBot:
+		case user.FieldIsApp:
 			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_bot", values[i])
+				return fmt.Errorf("unexpected type %T for field is_app", values[i])
 			} else if value.Valid {
-				_m.IsBot = value.Bool
+				_m.IsApp = value.Bool
 			}
 		case user.FieldIsOfficial:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_official", values[i])
 			} else if value.Valid {
 				_m.IsOfficial = value.Bool
-			}
-		case user.FieldThemeHue:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field theme_hue", values[i])
-			} else if value.Valid {
-				_m.ThemeHue = int(value.Int64)
-			}
-		case user.FieldThemeChroma:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field theme_chroma", values[i])
-			} else if value.Valid {
-				_m.ThemeChroma = value.Float64
-			}
-		case user.FieldThemeSidebar:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field theme_sidebar", values[i])
-			} else if value.Valid {
-				_m.ThemeSidebar = user.ThemeSidebar(value.String)
-			}
-		case user.FieldColorMode:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field color_mode", values[i])
-			} else if value.Valid {
-				_m.ColorMode = user.ColorMode(value.String)
-			}
-		case user.FieldLocale:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field locale", values[i])
-			} else if value.Valid {
-				_m.Locale = value.String
-			}
-		case user.FieldNotificationLevel:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field notification_level", values[i])
-			} else if value.Valid {
-				_m.NotificationLevel = user.NotificationLevel(value.String)
-			}
-		case user.FieldTimezone:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field timezone", values[i])
-			} else if value.Valid {
-				_m.Timezone = value.String
-			}
-		case user.FieldTimezoneAutoUpdate:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field timezone_auto_update", values[i])
-			} else if value.Valid {
-				_m.TimezoneAutoUpdate = value.Bool
-			}
-		case user.FieldChannelSortOrder:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_sort_order", values[i])
-			} else if value.Valid {
-				_m.ChannelSortOrder = user.ChannelSortOrder(value.String)
-			}
-		case user.FieldHideJoinMessages:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field hide_join_messages", values[i])
-			} else if value.Valid {
-				_m.HideJoinMessages = value.Bool
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -464,6 +392,16 @@ func (_m *User) QueryChannelReadStates() *ChannelReadStateQuery {
 	return NewUserClient(_m.config).QueryChannelReadStates(_m)
 }
 
+// QueryPreference queries the "preference" edge of the User entity.
+func (_m *User) QueryPreference() *UserPreferenceQuery {
+	return NewUserClient(_m.config).QueryPreference(_m)
+}
+
+// QueryLinks queries the "links" edge of the User entity.
+func (_m *User) QueryLinks() *UserLinkQuery {
+	return NewUserClient(_m.config).QueryLinks(_m)
+}
+
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -504,47 +442,14 @@ func (_m *User) String() string {
 	builder.WriteString("bio=")
 	builder.WriteString(_m.Bio)
 	builder.WriteString(", ")
-	builder.WriteString("links=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Links))
-	builder.WriteString(", ")
 	builder.WriteString("avatar_url=")
 	builder.WriteString(_m.AvatarURL)
 	builder.WriteString(", ")
-	builder.WriteString("is_bot=")
-	builder.WriteString(fmt.Sprintf("%v", _m.IsBot))
+	builder.WriteString("is_app=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsApp))
 	builder.WriteString(", ")
 	builder.WriteString("is_official=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsOfficial))
-	builder.WriteString(", ")
-	builder.WriteString("theme_hue=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ThemeHue))
-	builder.WriteString(", ")
-	builder.WriteString("theme_chroma=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ThemeChroma))
-	builder.WriteString(", ")
-	builder.WriteString("theme_sidebar=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ThemeSidebar))
-	builder.WriteString(", ")
-	builder.WriteString("color_mode=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ColorMode))
-	builder.WriteString(", ")
-	builder.WriteString("locale=")
-	builder.WriteString(_m.Locale)
-	builder.WriteString(", ")
-	builder.WriteString("notification_level=")
-	builder.WriteString(fmt.Sprintf("%v", _m.NotificationLevel))
-	builder.WriteString(", ")
-	builder.WriteString("timezone=")
-	builder.WriteString(_m.Timezone)
-	builder.WriteString(", ")
-	builder.WriteString("timezone_auto_update=")
-	builder.WriteString(fmt.Sprintf("%v", _m.TimezoneAutoUpdate))
-	builder.WriteString(", ")
-	builder.WriteString("channel_sort_order=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ChannelSortOrder))
-	builder.WriteString(", ")
-	builder.WriteString("hide_join_messages=")
-	builder.WriteString(fmt.Sprintf("%v", _m.HideJoinMessages))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

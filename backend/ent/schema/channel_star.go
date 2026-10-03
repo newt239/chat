@@ -26,6 +26,8 @@ func (ChannelStar) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
+		field.UUID("user_id", uuid.UUID{}),
+		field.UUID("channel_id", uuid.UUID{}),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -35,10 +37,12 @@ func (ChannelStar) Fields() []ent.Field {
 func (ChannelStar) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).
+			Field("user_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("channel", Channel.Type).
+			Field("channel_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
@@ -47,7 +51,7 @@ func (ChannelStar) Edges() []ent.Edge {
 
 func (ChannelStar) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Edges("user", "channel").
+		index.Fields("user_id", "channel_id").
 			Unique(),
 	}
 }

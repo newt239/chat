@@ -12,21 +12,21 @@ import {
   IconUser,
 } from "@tabler/icons-react";
 import { useParams } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { NavLink } from "#/components/block/NavLink/NavLink";
+import { mobileNavTone, navItemClassName } from "#/components/block/NavLink/navTone";
 import { PageHeader } from "#/components/block/PageHeader/PageHeader";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { useLogout } from "#/features/auth/hooks/useLogout";
 import { InstallAppRow } from "#/features/layout/components/InstallAppRow";
-import { mobileNavTone, navItemClassName } from "#/features/layout/utils/navTone";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
-import { useIsWorkspaceAdmin } from "#/features/workspace/hooks/useIsWorkspaceAdmin";
+import { useMe } from "#/hooks/useMe";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { isAdminRole } from "#/lib/isAdminRole";
 import { isTauri } from "#/lib/platform/platform";
-import { userAtom } from "#/providers/store/auth";
 
 import type { SettingsSection } from "#/features/settings/schemas";
 
@@ -43,8 +43,8 @@ const rowClassName = cn(navItemClassName, focusRing);
 export const MePage = () => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
-  const user = useAtomValue(userAtom);
-  const isAdmin = useIsWorkspaceAdmin(workspaceId);
+  const { data: user } = useMe();
+  const isAdmin = isAdminRole(useMyWorkspaceRole(workspaceId).data);
   const logout = useLogout();
   const params = { workspaceId };
 
@@ -56,7 +56,7 @@ export const MePage = () => {
           <NavLink to="." search={openPanel({ profile: user.id })} className="h-auto gap-3 py-3">
             <Avatar name={user.displayName} src={user.avatarUrl} size={52} presence="online" />
             <span className="flex min-w-0 flex-1 flex-col">
-              <b className="truncate text-[16px]">{user.displayName}</b>
+              <b className="truncate text-title">{user.displayName}</b>
               <span className="truncate text-caption text-muted">{user.email}</span>
             </span>
             <IconChevronRight aria-hidden />

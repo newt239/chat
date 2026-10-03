@@ -15,9 +15,9 @@ type ScheduledMessageRepository interface {
 	// Reschedule は本文と日時を変え、予約中に戻します
 	Reschedule(ctx context.Context, id string, body string, scheduledAt time.Time) error
 	Delete(ctx context.Context, id string) error
-	// ClaimDue は期限の来た予約を最大 limit 件、送信中にして返します。
+	// ClaimDue は staleBefore より前から送信中のままの予約を失敗に戻し、期限の来た予約を最大 limit 件、送信中にして返します。
 	// 行ロックを SKIP LOCKED で取るため、複数のサーバーが同時に動いても同じ予約を二重に取り出さない
-	ClaimDue(ctx context.Context, now time.Time, limit int) ([]*entity.ScheduledMessage, error)
+	ClaimDue(ctx context.Context, now, staleBefore time.Time, limit int) ([]*entity.ScheduledMessage, error)
 	// Claim は予約中か失敗した予約を 1 件だけ送信中にします。取り出せなければ nil を返します
 	Claim(ctx context.Context, id string) (*entity.ScheduledMessage, error)
 	MarkSent(ctx context.Context, id string, messageID string) error

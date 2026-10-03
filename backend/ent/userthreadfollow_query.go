@@ -27,7 +27,6 @@ type UserThreadFollowQuery struct {
 	predicates []predicate.UserThreadFollow
 	withUser   *UserQuery
 	withThread *MessageQuery
-	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *UserThreadFollowQuery) WithThread(opts ...func(*MessageQuery)) *UserTh
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.UserThreadFollow.Query().
-//		GroupBy(userthreadfollow.FieldCreatedAt).
+//		GroupBy(userthreadfollow.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *UserThreadFollowQuery) GroupBy(field string, fields ...string) *UserThreadFollowGroupBy {
@@ -359,11 +358,11 @@ func (_q *UserThreadFollowQuery) GroupBy(field string, fields ...string) *UserTh
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.UserThreadFollow.Query().
-//		Select(userthreadfollow.FieldCreatedAt).
+//		Select(userthreadfollow.FieldUserID).
 //		Scan(ctx, &v)
 func (_q *UserThreadFollowQuery) Select(fields ...string) *UserThreadFollowSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *UserThreadFollowQuery) prepareQuery(ctx context.Context) error {
 func (_q *UserThreadFollowQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*UserThreadFollow, error) {
 	var (
 		nodes       = []*UserThreadFollow{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withUser != nil,
 			_q.withThread != nil,
 		}
 	)
-	if _q.withUser != nil || _q.withThread != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, userthreadfollow.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*UserThreadFollow).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *UserThreadFollowQuery) loadUser(ctx context.Context, query *UserQuery,
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*UserThreadFollow)
 	for i := range nodes {
-		if nodes[i].user_thread_follow_user == nil {
-			continue
-		}
-		fk := *nodes[i].user_thread_follow_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *UserThreadFollowQuery) loadUser(ctx context.Context, query *UserQuery,
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_thread_follow_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *UserThreadFollowQuery) loadThread(ctx context.Context, query *MessageQ
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*UserThreadFollow)
 	for i := range nodes {
-		if nodes[i].user_thread_follow_thread == nil {
-			continue
-		}
-		fk := *nodes[i].user_thread_follow_thread
+		fk := nodes[i].ThreadID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *UserThreadFollowQuery) loadThread(ctx context.Context, query *MessageQ
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_thread_follow_thread" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "thread_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *UserThreadFollowQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != userthreadfollow.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(userthreadfollow.FieldUserID)
+		}
+		if _q.withThread != nil {
+			_spec.Node.AddColumnOnce(userthreadfollow.FieldThreadID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

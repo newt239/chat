@@ -2,9 +2,16 @@ import { create, toJsonString } from "@bufbuild/protobuf";
 import { afterEach, describe, expect, test, vi } from "vite-plus/test";
 
 import { ServerEventSchema } from "#/gen/chat/v1/event_pb";
+import { navigateTo } from "#/lib/navigation";
+import { refreshOrSignOut } from "#/lib/session";
 import { WsClient } from "#/lib/ws";
 
 import type { MessageInitShape } from "@bufbuild/protobuf";
+
+vi.mock("#/lib/session", () => ({ refreshOrSignOut: vi.fn(() => Promise.resolve("token")) }));
+vi.mock("#/lib/navigation", () => ({ navigateTo: vi.fn() }));
+
+const issueTicket = () => Promise.resolve("ticket1");
 
 const serverEvent = (event: MessageInitShape<typeof ServerEventSchema>["event"]) =>
   new MessageEvent("message", {
@@ -18,7 +25,7 @@ const newMessageEvent = serverEvent({
 
 describe("WsClient のイベント購読", () => {
   test("購読したイベントだけにペイロードが届く", () => {
-    const client = new WsClient("token", "ws1");
+    const client = new WsClient(issueTicket, false);
     const received: string[] = [];
     const other: string[] = [];
 
@@ -37,7 +44,7 @@ describe("WsClient のイベント購読", () => {
   });
 
   test("戻り値を呼ぶと購読が解除される", () => {
-    const client = new WsClient("token", "ws1");
+    const client = new WsClient(issueTicket, false);
     const received: string[] = [];
 
     const unsubscribe = client.on("newMessage", (payload) => {
@@ -53,7 +60,7 @@ describe("WsClient のイベント購読", () => {
   });
 
   test("形式が不正なイベントはハンドラを呼ばない", () => {
-    const client = new WsClient("token", "ws1");
+    const client = new WsClient(issueTicket, false);
     let called = false;
 
     client.on("typing", () => {
@@ -71,14 +78,21 @@ type Listener = (event: CloseEvent) => void;
 
 /** 生成数・送信内容・イベントリスナーを記録する WebSocket に差し替える */
 const stubWebSocket = () => {
-  const state = { created: 0, listeners: new Map<string, Listener[]>(), sent: [] as string[] };
+  const state = {
+    created: 0,
+    listeners: new Map<string, Listener[]>(),
+    sent: [] as string[],
+    urls: [] as string[],
+  };
   vi.stubGlobal(
     "WebSocket",
     class {
       public static readonly OPEN = 1;
       public readonly readyState = 1;
-      public constructor() {
+      public constructor(url: string) {
         state.created += 1;
+        state.urls.push(url);
+        state.listeners.clear();
       }
       public addEventListener(type: string, listener: Listener) {
         state.listeners.set(type, [...(state.listeners.get(type) ?? []), listener]);
@@ -98,10 +112,13 @@ const stubWebSocket = () => {
   return { fire, state };
 };
 
-const setupSocket = () => {
+const setupSocket = async () => {
   const { fire, state } = stubWebSocket();
-  const client = new WsClient("token", "ws1");
+  const client = new WsClient(issueTicket, false);
   globalThis.dispatchEvent(new Event("focus"));
+  await vi.waitFor(() => {
+    expect(state.created).toBe(1);
+  });
   return {
     client,
     open: () => {
@@ -116,8 +133,8 @@ describe("WsClient の購読と閲覧の送信", () => {
     vi.unstubAllGlobals();
   });
 
-  test("同じチャンネルは最後の購読解除でだけ leaveChannel を送る", () => {
-    const { client, sent } = setupSocket();
+  test("同じチャンネルは最後の購読解除でだけ leaveChannel を送る", async () => {
+    const { client, sent } = await setupSocket();
     client.joinChannel("ch1");
     client.joinChannel("ch1");
     client.leaveChannel("ch1");
@@ -127,8 +144,8 @@ describe("WsClient の購読と閲覧の送信", () => {
     client.close();
   });
 
-  test("接続し直すと購読中のチャンネルと閲覧中のチャンネルを送り直す", () => {
-    const { client, open, sent } = setupSocket();
+  test("接続し直すと購読中のチャンネルと閲覧中のチャンネルを送り直す", async () => {
+    const { client, open, sent } = await setupSocket();
     client.joinChannel("ch1");
     client.viewChannel("ch1");
     sent.length = 0;
@@ -147,8 +164,8 @@ describe("WsClient の再接続", () => {
     vi.useRealTimers();
   });
 
-  test("最初の接続では呼ばず、つなぎ直したときだけ onReconnect を呼ぶ", () => {
-    const { client, open } = setupSocket();
+  test("最初の接続では呼ばず、つなぎ直したときだけ onReconnect を呼ぶ", async () => {
+    const { client, open } = await setupSocket();
     let reconnected = 0;
     client.onReconnect(() => {
       reconnected += 1;
@@ -160,41 +177,102 @@ describe("WsClient の再接続", () => {
     client.close();
   });
 
-  test("タブを隠して戻すとつなぎ直す", () => {
+  test("チケットを付けて接続する", async () => {
     const { state } = stubWebSocket();
-    const client = new WsClient("token", "ws1");
+    const client = new WsClient(issueTicket, true);
+    await vi.waitFor(() => {
+      expect(state.urls).toEqual(["ws://localhost:8080/ws?ticket=ticket1"]);
+    });
+    client.close();
+  });
+
+  test("タブを隠して戻すとつなぎ直す", async () => {
+    const { state } = stubWebSocket();
+    const client = new WsClient(issueTicket, false);
     globalThis.dispatchEvent(new Event("focus"));
-    expect(state.created).toBe(1);
+    await vi.waitFor(() => {
+      expect(state.created).toBe(1);
+    });
 
     vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
     globalThis.dispatchEvent(new Event("visibilitychange"));
     vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
     globalThis.dispatchEvent(new Event("visibilitychange"));
-    expect(state.created).toBe(2);
+    await vi.waitFor(() => {
+      expect(state.created).toBe(2);
+    });
     client.close();
   });
 
-  test("keepAliveWhenHidden なら隠れても切断しない", () => {
+  test("keepAliveWhenHidden なら隠れても切断しない", async () => {
     const { state } = stubWebSocket();
-    const client = new WsClient("token", "ws1", { keepAliveWhenHidden: true });
-    expect(state.created).toBe(1);
+    const client = new WsClient(issueTicket, true);
+    await vi.waitFor(() => {
+      expect(state.created).toBe(1);
+    });
 
     vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
     globalThis.dispatchEvent(new Event("visibilitychange"));
     vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
     globalThis.dispatchEvent(new Event("visibilitychange"));
+    await Promise.resolve();
     expect(state.created).toBe(1);
     client.close();
   });
 
-  test("サーバーの停止で閉じられたら 1 秒以内につなぎ直す", () => {
+  test("サーバーの停止で閉じられたら 1 秒以内につなぎ直す", async () => {
     vi.useFakeTimers();
     const { fire, state } = stubWebSocket();
-    const client = new WsClient("token", "ws1");
-    globalThis.dispatchEvent(new Event("focus"));
+    const client = new WsClient(issueTicket, true);
+    await vi.advanceTimersByTimeAsync(0);
     fire("close", new CloseEvent("close", { code: 1001 }));
-    vi.advanceTimersByTime(1_000);
+    await vi.advanceTimersByTimeAsync(1_000);
     expect(state.created).toBe(2);
+    client.close();
+  });
+
+  test("認証の失効（4401）ではトークンを取り直してつなぎ直す", async () => {
+    const { fire, state } = stubWebSocket();
+    const client = new WsClient(issueTicket, true);
+    await vi.waitFor(() => {
+      expect(state.created).toBe(1);
+    });
+    fire("close", new CloseEvent("close", { code: 4401 }));
+    await vi.waitFor(() => {
+      expect(state.created).toBe(2);
+    });
+    expect(refreshOrSignOut).toHaveBeenCalledOnce();
+    client.close();
+  });
+
+  test("ワークスペースから外されたら（4403）つなぎ直さずワークスペース一覧へ移る", async () => {
+    vi.useFakeTimers();
+    const { fire, state } = stubWebSocket();
+    const client = new WsClient(issueTicket, true);
+    await vi.advanceTimersByTimeAsync(0);
+    fire("close", new CloseEvent("close", { code: 4403 }));
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(state.created).toBe(1);
+    expect(navigateTo).toHaveBeenCalledWith({ to: "/app" });
+    client.close();
+  });
+
+  test("上限まで失敗したら諦め、オンラインに戻ったらつなぎ直す", async () => {
+    vi.useFakeTimers();
+    const { fire, state } = stubWebSocket();
+    const client = new WsClient(issueTicket, true);
+    await vi.advanceTimersByTimeAsync(0);
+    for (let attempt = 0; attempt < 5; attempt++) {
+      fire("close", new CloseEvent("close", { code: 1006 }));
+      await vi.advanceTimersByTimeAsync(30_000);
+    }
+    const { created } = state;
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(state.created).toBe(created);
+
+    globalThis.dispatchEvent(new Event("online"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(state.created).toBe(created + 1);
     client.close();
   });
 });

@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import { skipToken, useQuery } from "@connectrpc/connect-query";
 
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
@@ -14,13 +12,11 @@ export const useChannelThreadMetadata = (channelId: string | null, includeDescen
     { select: (res) => res.messages },
   );
 
-  return useMemo(() => {
-    const map = new Map<string, ThreadMetadata>();
-    for (const message of messages ?? []) {
-      if (message.threadMetadata) {
-        map.set(message.id, message.threadMetadata);
-      }
+  const map = new Map<string, ThreadMetadata>();
+  for (const message of messages ?? []) {
+    if (message.threadMetadata) {
+      map.set(message.id, message.threadMetadata);
     }
-    return map;
-  }, [messages]);
+  }
+  return map;
 };

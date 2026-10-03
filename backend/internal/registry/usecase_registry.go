@@ -26,6 +26,7 @@ import (
 	polluc "github.com/newt239/chat/internal/usecase/poll"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
+	realtimeuc "github.com/newt239/chat/internal/usecase/realtime"
 	scheduledmessageuc "github.com/newt239/chat/internal/usecase/scheduledmessage"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
 	"github.com/newt239/chat/internal/usecase/searchindex"
@@ -64,7 +65,16 @@ func (r *UseCaseRegistry) NewAuthUseCase() authuc.AuthUseCase {
 		r.infrastructureRegistry.NewGoogleOAuth(),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
+		r.infrastructureRegistry.NewNotificationService(),
 		r.infrastructureRegistry.NewAuthSettings(),
+	)
+}
+
+func (r *UseCaseRegistry) NewRealtimeUseCase() *realtimeuc.Interactor {
+	return realtimeuc.NewInteractor(
+		r.infrastructureRegistry.NewTicketStore(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewSessionRepository(),
 	)
 }
 
@@ -92,7 +102,7 @@ func (r *UseCaseRegistry) NewAdminUseCase() *adminuc.Interactor {
 		r.domainRegistry.NewInsightRepository(),
 		r.domainRegistry.NewPermissionService(),
 		r.NewAuditRecorder(),
-		r.infrastructureRegistry.NewTransactionManager(),
+		r.infrastructureRegistry.NewNotificationService(),
 	)
 }
 
@@ -105,8 +115,8 @@ func (r *UseCaseRegistry) NewWorkspaceUseCase() workspaceuc.WorkspaceUseCase {
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewUserNoteRepository(),
-		r.domainRegistry.NewPermissionService(),
 		r.NewAuditRecorder(),
+		r.infrastructureRegistry.NewNotificationService(),
 	)
 }
 
@@ -123,6 +133,8 @@ func (r *UseCaseRegistry) NewChannelUseCase() channeluc.ChannelUseCase {
 		r.domainRegistry.NewChannelAccessService(),
 		r.domainRegistry.NewPermissionService(),
 		r.NewAuditRecorder(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }
 
@@ -133,6 +145,10 @@ func (r *UseCaseRegistry) NewChannelMemberUseCase() channelmemberuc.ChannelMembe
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.NewSystemMessageUseCase(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.infrastructureRegistry.NewTransactionManager(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }
 
@@ -161,25 +177,10 @@ func (r *UseCaseRegistry) NewAppUseCase() *appuc.Interactor {
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewMessageRepository(),
 		r.domainRegistry.NewChannelAccessService(),
-		messageuc.NewMessageCreator(
-			r.domainRegistry.NewMessageRepository(),
-			r.domainRegistry.NewMessageUserMentionRepository(),
-			r.domainRegistry.NewMessageGroupMentionRepository(),
-			r.domainRegistry.NewMessageLinkRepository(),
-			r.domainRegistry.NewThreadRepository(),
-			r.domainRegistry.NewAttachmentRepository(),
-			r.domainRegistry.NewPollRepository(),
-			r.infrastructureRegistry.NewNotificationService(),
-			r.infrastructureRegistry.NewMentionService(),
-			r.infrastructureRegistry.NewLinkProcessingService(),
-			r.infrastructureRegistry.NewTransactionManager(),
-			r.NewMessageOutputBuilder(),
-			r.domainRegistry.NewChannelAccessService(),
-			r.NewSearchIndexer(),
-			r.newMessageObservers(),
-		),
+		r.NewMessageCreator(),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }
 
@@ -221,30 +222,64 @@ func (r *UseCaseRegistry) newMessageObservers() []messageuc.NewMessageObserver {
 	}
 }
 
-func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
-	return messageuc.NewMessageUseCase(
-		r.domainRegistry.NewMessageRepository(),
-		r.domainRegistry.NewSystemMessageRepository(),
-		r.domainRegistry.NewChannelRepository(),
-		r.domainRegistry.NewChannelMemberRepository(),
-		r.domainRegistry.NewWorkspaceRepository(),
-		r.domainRegistry.NewUserRepository(),
+// NewContentRecorder は投稿と編集で共有する、本文のメンションとリンクの保存役です
+func (r *UseCaseRegistry) NewContentRecorder() *messageuc.ContentRecorder {
+	return messageuc.NewContentRecorder(
+		r.infrastructureRegistry.NewMentionService(),
 		r.domainRegistry.NewMessageUserMentionRepository(),
 		r.domainRegistry.NewMessageGroupMentionRepository(),
+		r.infrastructureRegistry.NewLinkProcessingService(),
 		r.domainRegistry.NewMessageLinkRepository(),
+	)
+}
+
+func (r *UseCaseRegistry) NewMessageCreator() *messageuc.MessageCreator {
+	return messageuc.NewMessageCreator(
+		r.domainRegistry.NewMessageRepository(),
 		r.domainRegistry.NewThreadRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
 		r.domainRegistry.NewPollRepository(),
-		r.NewMessageOutputBuilder(),
 		r.infrastructureRegistry.NewNotificationService(),
-		r.infrastructureRegistry.NewMentionService(),
-		r.infrastructureRegistry.NewLinkProcessingService(),
+		r.NewContentRecorder(),
 		r.infrastructureRegistry.NewTransactionManager(),
+		r.NewMessageOutputBuilder(),
 		r.domainRegistry.NewChannelAccessService(),
-		r.domainRegistry.NewPermissionService(),
-		r.infrastructureRegistry.NewLogger(),
 		r.NewSearchIndexer(),
 		r.newMessageObservers(),
+	)
+}
+
+func (r *UseCaseRegistry) NewMessageUpdater() *messageuc.MessageUpdater {
+	return messageuc.NewMessageUpdater(
+		r.domainRegistry.NewMessageRepository(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.NewContentRecorder(),
+		r.infrastructureRegistry.NewTransactionManager(),
+		r.NewMessageOutputBuilder(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.NewSearchIndexer(),
+	)
+}
+
+func (r *UseCaseRegistry) NewMessageDeleter() *messageuc.MessageDeleter {
+	return messageuc.NewMessageDeleter(
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.domainRegistry.NewPermissionService(),
+		r.NewSearchIndexer(),
+	)
+}
+
+func (r *UseCaseRegistry) NewMessageLister() *messageuc.MessageLister {
+	return messageuc.NewMessageLister(
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewSystemMessageRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewThreadRepository(),
+		r.NewMessageOutputBuilder(),
+		r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
@@ -279,8 +314,9 @@ func (r *UseCaseRegistry) NewScheduledMessageUseCase() *scheduledmessageuc.Inter
 		r.domainRegistry.NewScheduledMessageRepository(),
 		r.domainRegistry.NewMessageRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
+		r.domainRegistry.NewSessionRepository(),
 		r.domainRegistry.NewChannelAccessService(),
-		r.NewMessageUseCase(),
+		r.NewMessageCreator(),
 		r.infrastructureRegistry.NewLogger(),
 	)
 }
@@ -297,7 +333,6 @@ func (r *UseCaseRegistry) NewSearchIndexer() *searchindex.Indexer {
 func (r *UseCaseRegistry) NewSystemMessageUseCase() systemmsguc.UseCase {
 	return systemmsguc.New(
 		r.domainRegistry.NewSystemMessageRepository(),
-		r.domainRegistry.NewChannelRepository(),
 		r.infrastructureRegistry.NewNotificationService(),
 	)
 }
@@ -305,9 +340,6 @@ func (r *UseCaseRegistry) NewSystemMessageUseCase() systemmsguc.UseCase {
 func (r *UseCaseRegistry) NewReadStateUseCase() readstateuc.ReadStateUseCase {
 	return readstateuc.NewReadStateInteractor(
 		r.domainRegistry.NewReadStateRepository(),
-		r.domainRegistry.NewChannelRepository(),
-		r.domainRegistry.NewChannelMemberRepository(),
-		r.domainRegistry.NewWorkspaceRepository(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.domainRegistry.NewChannelAccessService(),
 	)
@@ -316,9 +348,6 @@ func (r *UseCaseRegistry) NewReadStateUseCase() readstateuc.ReadStateUseCase {
 func (r *UseCaseRegistry) NewReactionUseCase() reactionuc.ReactionUseCase {
 	return reactionuc.NewReactionInteractor(
 		r.domainRegistry.NewMessageRepository(),
-		r.domainRegistry.NewChannelRepository(),
-		r.domainRegistry.NewChannelMemberRepository(),
-		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.domainRegistry.NewChannelAccessService(),
@@ -350,9 +379,7 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 	return pinuc.NewPinInteractor(
 		r.domainRegistry.NewPinRepository(),
 		r.domainRegistry.NewMessageRepository(),
-		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
-		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.NewMessageOutputBuilder(),
@@ -360,6 +387,7 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 		r.NewSystemMessageUseCase(),
 		r.domainRegistry.NewPermissionService(),
 		r.NewSearchIndexer(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }
 
@@ -425,6 +453,7 @@ func (r *UseCaseRegistry) NewUserUseCase() useruc.UseCase {
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewSessionRepository(),
 		r.infrastructureRegistry.NewPasswordService(),
+		r.infrastructureRegistry.NewNotificationService(),
 	)
 }
 
@@ -457,7 +486,6 @@ func (r *UseCaseRegistry) NewImageUseCase() *imageuc.Interactor {
 	return imageuc.NewInteractor(
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.infrastructureRegistry.NewStorageService(),
-		r.infrastructureRegistry.NewStorageConfig(),
 		r.infrastructureRegistry.config.Storage.PublicBaseURL,
 	)
 }
@@ -469,7 +497,6 @@ func (r *UseCaseRegistry) NewCustomEmojiUseCase() *customemojiuc.Interactor {
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewPermissionService(),
 		r.infrastructureRegistry.NewStorageService(),
-		r.infrastructureRegistry.NewStorageConfig(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.NewAuditRecorder(),
 		r.infrastructureRegistry.NewLogger(),

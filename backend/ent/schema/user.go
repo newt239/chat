@@ -4,14 +4,19 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
 type User struct {
 	ent.Schema
+}
+
+func (User) Annotations() []schema.Annotation {
+	return []schema.Annotation{entsql.Annotation{Table: "user"}}
 }
 
 func (User) Fields() []ent.Field {
@@ -33,44 +38,13 @@ func (User) Fields() []ent.Field {
 			NotEmpty(),
 		field.String("bio").
 			Optional(),
-		// プロフィールに載せるリンクの URL。並び順のまま保存する
-		field.Strings("links").
-			Optional(),
 		field.String("avatar_url").
 			Optional(),
 		// アプリの投稿名義。ログインできず、ワークスペースのメンバーにもならない
-		field.Bool("is_bot").
+		field.Bool("is_app").
 			Default(false),
 		// 公式アプリの投稿名義。この名義の投稿は誰も削除・編集できない
 		field.Bool("is_official").
-			Default(false),
-		// 表示設定。既定値は Jade プリセット・システムに合わせる・日本語
-		field.Int("theme_hue").
-			Default(168),
-		field.Float("theme_chroma").
-			Default(0.12),
-		field.Enum("theme_sidebar").
-			Values("tinted", "light").
-			Default("tinted"),
-		field.Enum("color_mode").
-			Values("light", "dark", "system").
-			Default("system"),
-		field.String("locale").
-			Default("ja"),
-		field.Enum("notification_level").
-			Values("all", "mentions", "none").
-			Default("mentions"),
-		// IANA のタイムゾーン名。空は未設定
-		field.String("timezone").
-			Default(""),
-		// 端末のタイムゾーンが変わったら尋ねずに更新する
-		field.Bool("timezone_auto_update").
-			Default(false),
-		field.Enum("channel_sort_order").
-			Values("default", "recent_activity").
-			Default("default"),
-		// チャンネルへの参加・追加のシステムメッセージを隠す
-		field.Bool("hide_join_messages").
 			Default(false),
 		field.Time("created_at").
 			Default(time.Now).
@@ -109,11 +83,10 @@ func (User) Edges() []ent.Edge {
 			Ref("uploader"),
 		edge.From("channel_read_states", ChannelReadState.Type).
 			Ref("user"),
-	}
-}
-
-func (User) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("email"),
+		edge.To("preference", UserPreference.Type).
+			Unique().
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.From("links", UserLink.Type).
+			Ref("user"),
 	}
 }

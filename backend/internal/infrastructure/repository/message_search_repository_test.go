@@ -59,7 +59,11 @@ func newSearchFixture(t *testing.T, client *ent.Client) *searchFixture {
 	}
 
 	newChannel := func(name string, private bool, members ...*ent.User) {
-		ch := client.Channel.Create().SetName(name).SetIsPrivate(private).SetWorkspaceID(f.workspaceID).SetCreatedBy(f.bob).SaveX(ctx)
+		channelType := entity.ChannelTypePublic
+		if private {
+			channelType = entity.ChannelTypePrivate
+		}
+		ch := client.Channel.Create().SetName(name).SetChannelType(string(channelType)).SetWorkspaceID(f.workspaceID).SetCreatedBy(f.bob).SaveX(ctx)
 		for _, m := range members {
 			client.ChannelMember.Create().SetChannel(ch).SetUser(m).SaveX(ctx)
 		}

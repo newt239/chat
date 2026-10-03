@@ -6,9 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelstar"
-	"github.com/newt239/chat/ent/user"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
@@ -35,19 +33,18 @@ func (r *channelStarRepository) SetStarred(ctx context.Context, userID string, c
 	client := transaction.ResolveClient(ctx, r.client)
 	if !starred {
 		_, err = client.ChannelStar.Delete().
-			Where(channelstar.HasUserWith(user.ID(uid)), channelstar.HasChannelWith(channel.ID(cid))).
+			Where(channelstar.UserID(uid), channelstar.ChannelID(cid)).
 			Exec(ctx)
 		return err
 	}
+	// 付与済みでも結果は同じなので成功とみなす
 	err = client.ChannelStar.Create().
 		SetUserID(uid).
 		SetChannelID(cid).
+		OnConflictColumns(channelstar.FieldUserID, channelstar.FieldChannelID).
+		DoNothing().
 		Exec(ctx)
-	// 付与済みの場合は一意制約違反になるが、結果は同じなので成功とみなす
-	if ent.IsConstraintError(err) {
-		return nil
-	}
-	return err
+	return ignoreConflict(err)
 }
 
 func (r *channelStarRepository) FindStarredChannelIDs(ctx context.Context, userID string, channelIDs []string) (map[string]bool, error) {
@@ -66,7 +63,7 @@ func (r *channelStarRepository) FindStarredChannelIDs(ctx context.Context, userI
 
 	client := transaction.ResolveClient(ctx, r.client)
 	starredIDs, err := client.ChannelStar.Query().
-		Where(channelstar.HasUserWith(user.ID(uid)), channelstar.HasChannelWith(channel.IDIn(cids...))).
+		Where(channelstar.UserID(uid), channelstar.ChannelIDIn(cids...)).
 		QueryChannel().
 		IDs(ctx)
 	if err != nil {

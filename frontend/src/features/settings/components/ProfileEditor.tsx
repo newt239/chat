@@ -1,6 +1,6 @@
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
+import { useMe } from "#/hooks/useMe";
 
-import { useMe } from "../hooks/useMe";
 import { ProfileForm } from "./ProfileForm";
 import { TimezoneSettings } from "./TimezoneSettings";
 

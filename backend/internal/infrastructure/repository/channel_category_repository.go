@@ -4,11 +4,8 @@ import (
 	"context"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelcategory"
 	"github.com/newt239/chat/ent/channelcategoryitem"
-	"github.com/newt239/chat/ent/user"
-	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -24,7 +21,7 @@ func NewChannelCategoryRepository(client *ent.Client) domainrepository.ChannelCa
 }
 
 func withCategoryEdges(q *ent.ChannelCategoryQuery) *ent.ChannelCategoryQuery {
-	return q.WithUser().WithWorkspace().WithItems(func(iq *ent.ChannelCategoryItemQuery) { iq.WithChannel() })
+	return q.WithItems()
 }
 
 func (r *channelCategoryRepository) FindByID(ctx context.Context, id string) (*entity.ChannelCategory, error) {
@@ -51,8 +48,8 @@ func (r *channelCategoryRepository) FindByUser(ctx context.Context, userID strin
 	client := transaction.ResolveClient(ctx, r.client)
 	categories, err := withCategoryEdges(client.ChannelCategory.Query().
 		Where(
-			channelcategory.HasUserWith(user.ID(uid)),
-			channelcategory.HasWorkspaceWith(workspace.ID(workspaceID)),
+			channelcategory.UserID(uid),
+			channelcategory.WorkspaceID(workspaceID),
 		)).
 		Order(ent.Asc(channelcategory.FieldPosition), ent.Asc(channelcategory.FieldCreatedAt)).
 		All(ctx)
@@ -100,7 +97,7 @@ func (r *channelCategoryRepository) Delete(ctx context.Context, id string) error
 	}
 	client := transaction.ResolveClient(ctx, r.client)
 	if _, err := client.ChannelCategoryItem.Delete().
-		Where(channelcategoryitem.HasCategoryWith(channelcategory.ID(categoryID))).
+		Where(channelcategoryitem.CategoryID(categoryID)).
 		Exec(ctx); err != nil {
 		return err
 	}
@@ -133,8 +130,8 @@ func (r *channelCategoryRepository) SetChannel(ctx context.Context, userID strin
 	client := transaction.ResolveClient(ctx, r.client)
 	if _, err := client.ChannelCategoryItem.Delete().
 		Where(
-			channelcategoryitem.HasUserWith(user.ID(uid)),
-			channelcategoryitem.HasChannelWith(channel.ID(cid)),
+			channelcategoryitem.UserID(uid),
+			channelcategoryitem.ChannelID(cid),
 		).
 		Exec(ctx); err != nil {
 		return err
@@ -155,21 +152,15 @@ func (r *channelCategoryRepository) SetChannel(ctx context.Context, userID strin
 
 func channelCategoryToEntity(category *ent.ChannelCategory) *entity.ChannelCategory {
 	result := &entity.ChannelCategory{
-		ID:         category.ID.String(),
-		Name:       category.Name,
-		Position:   category.Position,
-		ChannelIDs: make([]string, 0, len(category.Edges.Items)),
-	}
-	if category.Edges.User != nil {
-		result.UserID = category.Edges.User.ID.String()
-	}
-	if category.Edges.Workspace != nil {
-		result.WorkspaceID = category.Edges.Workspace.ID
+		ID:          category.ID.String(),
+		Name:        category.Name,
+		Position:    category.Position,
+		UserID:      category.UserID.String(),
+		WorkspaceID: category.WorkspaceID,
+		ChannelIDs:  make([]string, 0, len(category.Edges.Items)),
 	}
 	for _, item := range category.Edges.Items {
-		if item.Edges.Channel != nil {
-			result.ChannelIDs = append(result.ChannelIDs, item.Edges.Channel.ID.String())
-		}
+		result.ChannelIDs = append(result.ChannelIDs, item.ChannelID.String())
 	}
 	return result
 }

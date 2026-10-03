@@ -16,6 +16,8 @@ const (
 	Label = "push_token"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldToken holds the string denoting the token field in the database.
 	FieldToken = "token"
 	// FieldPlatform holds the string denoting the platform field in the database.
@@ -34,14 +36,15 @@ const (
 	UserTable = "push_token"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "push_token_user"
+	UserColumn = "user_id"
 )
 
 // Columns holds all SQL columns for pushtoken fields.
 var Columns = []string{
 	FieldID,
+	FieldUserID,
 	FieldToken,
 	FieldPlatform,
 	FieldUserAgent,
@@ -49,21 +52,10 @@ var Columns = []string{
 	FieldCreatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "push_token"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"push_token_user",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -113,6 +105,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByToken orders the results by the token field.

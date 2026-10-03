@@ -1,3 +1,4 @@
+import { skipToken, useQuery } from "@connectrpc/connect-query";
 import { IconExternalLink } from "@tabler/icons-react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
@@ -10,10 +11,12 @@ import { ChannelMemberPanel } from "#/features/channel/components/ChannelMemberP
 import { UserProfilePanel } from "#/features/member/components/UserProfilePanel";
 import { PinnedPanel } from "#/features/pin/components/PinnedPanel";
 import { ProfileEditor } from "#/features/settings/components/ProfileEditor";
+import { ThreadFollowButton } from "#/features/thread/components/ThreadFollowButton";
 import { ThreadPanel } from "#/features/thread/components/ThreadPanel";
 import { UserGroupPanel } from "#/features/userGroup/components/UserGroupPanel";
+import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
 import { isTauri } from "#/lib/platform/platform";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { closePanel } from "../utils/overlaySearch";
 import { workspaceRoute } from "../utils/workspaceRoute";
@@ -24,9 +27,14 @@ export const useRightPanel = (workspaceId: string) => {
   const navigate = useNavigate();
   const { channelId, messageId } = useParams({ strict: false });
   const { group, panel, profile } = workspaceRoute.useSearch();
-  const myId = useAtomValue(userAtom)?.id;
+  const myId = useAtomValue(myUserIdAtom);
   const channelPanel = channelId === undefined ? undefined : panel;
   const isThreadOpen = messageId !== undefined && channelId !== undefined;
+  const { data: isFollowingThread } = useQuery(
+    ThreadService.method.getThreadMetadata,
+    isThreadOpen ? { messageId } : skipToken,
+    { select: (res) => res.metadata?.isFollowing ?? false },
+  );
 
   const close = () => {
     if (
@@ -81,7 +89,7 @@ export const useRightPanel = (workspaceId: string) => {
           title: t("shell.rightPanel.members"),
         },
         pins: {
-          body: <PinnedPanel channelId={channelId} />,
+          body: <PinnedPanel workspaceId={workspaceId} channelId={channelId} />,
           extra: null,
           key: `pins-${channelId}`,
           title: t("shell.rightPanel.pins"),
@@ -91,19 +99,26 @@ export const useRightPanel = (workspaceId: string) => {
     if (isThreadOpen) {
       return {
         body: <ThreadPanel workspaceId={workspaceId} channelId={channelId} threadId={messageId} />,
-        extra: isTauri ? null : (
-          <Tooltip content={t("shell.openInNewTab")}>
-            <LinkButton
-              variant="ghost"
-              aria-label={t("shell.openInNewTab")}
-              className="size-[30px] px-0 [&_svg]:size-4"
-              to="/app/$workspaceId/$channelId/thread/$messageId"
-              params={{ channelId, messageId, workspaceId }}
-              target="_blank"
-            >
-              <IconExternalLink aria-hidden />
-            </LinkButton>
-          </Tooltip>
+        extra: (
+          <>
+            {isFollowingThread !== undefined && (
+              <ThreadFollowButton threadId={messageId} isFollowing={isFollowingThread} />
+            )}
+            {!isTauri && (
+              <Tooltip content={t("shell.openInNewTab")}>
+                <LinkButton
+                  variant="ghost"
+                  aria-label={t("shell.openInNewTab")}
+                  className="size-7.5 px-0 [&_svg]:size-4"
+                  to="/app/$workspaceId/$channelId/thread/$messageId"
+                  params={{ channelId, messageId, workspaceId }}
+                  target="_blank"
+                >
+                  <IconExternalLink aria-hidden />
+                </LinkButton>
+              </Tooltip>
+            )}
+          </>
         ),
         key: `thread-${messageId}`,
         title: t("shell.rightPanel.thread"),

@@ -26,6 +26,18 @@ type MessageGroupMentionCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetMessageID sets the "message_id" field.
+func (_c *MessageGroupMentionCreate) SetMessageID(v uuid.UUID) *MessageGroupMentionCreate {
+	_c.mutation.SetMessageID(v)
+	return _c
+}
+
+// SetGroupID sets the "group_id" field.
+func (_c *MessageGroupMentionCreate) SetGroupID(v uuid.UUID) *MessageGroupMentionCreate {
+	_c.mutation.SetGroupID(v)
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *MessageGroupMentionCreate) SetCreatedAt(v time.Time) *MessageGroupMentionCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -54,21 +66,9 @@ func (_c *MessageGroupMentionCreate) SetNillableID(v *uuid.UUID) *MessageGroupMe
 	return _c
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_c *MessageGroupMentionCreate) SetMessageID(id uuid.UUID) *MessageGroupMentionCreate {
-	_c.mutation.SetMessageID(id)
-	return _c
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_c *MessageGroupMentionCreate) SetMessage(v *Message) *MessageGroupMentionCreate {
 	return _c.SetMessageID(v.ID)
-}
-
-// SetGroupID sets the "group" edge to the UserGroup entity by ID.
-func (_c *MessageGroupMentionCreate) SetGroupID(id uuid.UUID) *MessageGroupMentionCreate {
-	_c.mutation.SetGroupID(id)
-	return _c
 }
 
 // SetGroup sets the "group" edge to the UserGroup entity.
@@ -123,6 +123,12 @@ func (_c *MessageGroupMentionCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *MessageGroupMentionCreate) check() error {
+	if _, ok := _c.mutation.MessageID(); !ok {
+		return &ValidationError{Name: "message_id", err: errors.New(`ent: missing required field "MessageGroupMention.message_id"`)}
+	}
+	if _, ok := _c.mutation.GroupID(); !ok {
+		return &ValidationError{Name: "group_id", err: errors.New(`ent: missing required field "MessageGroupMention.group_id"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "MessageGroupMention.created_at"`)}
 	}
@@ -186,7 +192,7 @@ func (_c *MessageGroupMentionCreate) createSpec() (*MessageGroupMention, *sqlgra
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_group_mention_message = &nodes[0]
+		_node.MessageID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.GroupIDs(); len(nodes) > 0 {
@@ -203,7 +209,7 @@ func (_c *MessageGroupMentionCreate) createSpec() (*MessageGroupMention, *sqlgra
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_group_mention_group = &nodes[0]
+		_node.GroupID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -213,7 +219,7 @@ func (_c *MessageGroupMentionCreate) createSpec() (*MessageGroupMention, *sqlgra
 // of the `INSERT` statement. For example:
 //
 //	client.MessageGroupMention.Create().
-//		SetCreatedAt(v).
+//		SetMessageID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -222,7 +228,7 @@ func (_c *MessageGroupMentionCreate) createSpec() (*MessageGroupMention, *sqlgra
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageGroupMentionUpsert) {
-//			SetCreatedAt(v+v).
+//			SetMessageID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageGroupMentionCreate) OnConflict(opts ...sql.ConflictOption) *MessageGroupMentionUpsertOne {
@@ -257,6 +263,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageGroupMentionUpsert) SetMessageID(v uuid.UUID) *MessageGroupMentionUpsert {
+	u.Set(messagegroupmention.FieldMessageID, v)
+	return u
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageGroupMentionUpsert) UpdateMessageID() *MessageGroupMentionUpsert {
+	u.SetExcluded(messagegroupmention.FieldMessageID)
+	return u
+}
+
+// SetGroupID sets the "group_id" field.
+func (u *MessageGroupMentionUpsert) SetGroupID(v uuid.UUID) *MessageGroupMentionUpsert {
+	u.Set(messagegroupmention.FieldGroupID, v)
+	return u
+}
+
+// UpdateGroupID sets the "group_id" field to the value that was provided on create.
+func (u *MessageGroupMentionUpsert) UpdateGroupID() *MessageGroupMentionUpsert {
+	u.SetExcluded(messagegroupmention.FieldGroupID)
+	return u
+}
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
@@ -307,6 +337,34 @@ func (u *MessageGroupMentionUpsertOne) Update(set func(*MessageGroupMentionUpser
 		set(&MessageGroupMentionUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageGroupMentionUpsertOne) SetMessageID(v uuid.UUID) *MessageGroupMentionUpsertOne {
+	return u.Update(func(s *MessageGroupMentionUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageGroupMentionUpsertOne) UpdateMessageID() *MessageGroupMentionUpsertOne {
+	return u.Update(func(s *MessageGroupMentionUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// SetGroupID sets the "group_id" field.
+func (u *MessageGroupMentionUpsertOne) SetGroupID(v uuid.UUID) *MessageGroupMentionUpsertOne {
+	return u.Update(func(s *MessageGroupMentionUpsert) {
+		s.SetGroupID(v)
+	})
+}
+
+// UpdateGroupID sets the "group_id" field to the value that was provided on create.
+func (u *MessageGroupMentionUpsertOne) UpdateGroupID() *MessageGroupMentionUpsertOne {
+	return u.Update(func(s *MessageGroupMentionUpsert) {
+		s.UpdateGroupID()
+	})
 }
 
 // Exec executes the query.
@@ -445,7 +503,7 @@ func (_c *MessageGroupMentionCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageGroupMentionUpsert) {
-//			SetCreatedAt(v+v).
+//			SetMessageID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageGroupMentionCreateBulk) OnConflict(opts ...sql.ConflictOption) *MessageGroupMentionUpsertBulk {
@@ -525,6 +583,34 @@ func (u *MessageGroupMentionUpsertBulk) Update(set func(*MessageGroupMentionUpse
 		set(&MessageGroupMentionUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageGroupMentionUpsertBulk) SetMessageID(v uuid.UUID) *MessageGroupMentionUpsertBulk {
+	return u.Update(func(s *MessageGroupMentionUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageGroupMentionUpsertBulk) UpdateMessageID() *MessageGroupMentionUpsertBulk {
+	return u.Update(func(s *MessageGroupMentionUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// SetGroupID sets the "group_id" field.
+func (u *MessageGroupMentionUpsertBulk) SetGroupID(v uuid.UUID) *MessageGroupMentionUpsertBulk {
+	return u.Update(func(s *MessageGroupMentionUpsert) {
+		s.SetGroupID(v)
+	})
+}
+
+// UpdateGroupID sets the "group_id" field to the value that was provided on create.
+func (u *MessageGroupMentionUpsertBulk) UpdateGroupID() *MessageGroupMentionUpsertBulk {
+	return u.Update(func(s *MessageGroupMentionUpsert) {
+		s.UpdateGroupID()
+	})
 }
 
 // Exec executes the query.

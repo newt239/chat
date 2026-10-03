@@ -7,15 +7,14 @@ import {
   formatRelativeTime,
   formatTime,
   formatWeekday,
-} from "@chat/i18n";
+} from "@chat/i18n/format";
 import { getLocalTimeZone } from "@internationalized/date";
-import { useAtomValue } from "jotai";
 
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 
 /** 表示言語と、プロフィールのタイムゾーン（未設定なら端末のタイムゾーン）で日時を書式化する */
 export const useDateFormat = () => {
-  const { locale, timezone } = useAtomValue(preferencesAtom);
+  const { locale, timezone } = usePreferences();
   const timeZone = timezone || getLocalTimeZone();
   return {
     formatDate: (date: Date) => formatDate(date, locale, timeZone),

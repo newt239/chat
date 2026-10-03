@@ -31,6 +31,34 @@ func (_u *ChannelCategoryUpdate) Where(ps ...predicate.ChannelCategory) *Channel
 	return _u
 }
 
+// SetUserID sets the "user_id" field.
+func (_u *ChannelCategoryUpdate) SetUserID(v uuid.UUID) *ChannelCategoryUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ChannelCategoryUpdate) SetNillableUserID(v *uuid.UUID) *ChannelCategoryUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (_u *ChannelCategoryUpdate) SetWorkspaceID(v string) *ChannelCategoryUpdate {
+	_u.mutation.SetWorkspaceID(v)
+	return _u
+}
+
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_u *ChannelCategoryUpdate) SetNillableWorkspaceID(v *string) *ChannelCategoryUpdate {
+	if v != nil {
+		_u.SetWorkspaceID(*v)
+	}
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *ChannelCategoryUpdate) SetName(v string) *ChannelCategoryUpdate {
 	_u.mutation.SetName(v)
@@ -66,21 +94,9 @@ func (_u *ChannelCategoryUpdate) AddPosition(v int) *ChannelCategoryUpdate {
 	return _u
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ChannelCategoryUpdate) SetUserID(id uuid.UUID) *ChannelCategoryUpdate {
-	_u.mutation.SetUserID(id)
-	return _u
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *ChannelCategoryUpdate) SetUser(v *User) *ChannelCategoryUpdate {
 	return _u.SetUserID(v.ID)
-}
-
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *ChannelCategoryUpdate) SetWorkspaceID(id string) *ChannelCategoryUpdate {
-	_u.mutation.SetWorkspaceID(id)
-	return _u
 }
 
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
@@ -328,6 +344,34 @@ type ChannelCategoryUpdateOne struct {
 	mutation *ChannelCategoryMutation
 }
 
+// SetUserID sets the "user_id" field.
+func (_u *ChannelCategoryUpdateOne) SetUserID(v uuid.UUID) *ChannelCategoryUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ChannelCategoryUpdateOne) SetNillableUserID(v *uuid.UUID) *ChannelCategoryUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (_u *ChannelCategoryUpdateOne) SetWorkspaceID(v string) *ChannelCategoryUpdateOne {
+	_u.mutation.SetWorkspaceID(v)
+	return _u
+}
+
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_u *ChannelCategoryUpdateOne) SetNillableWorkspaceID(v *string) *ChannelCategoryUpdateOne {
+	if v != nil {
+		_u.SetWorkspaceID(*v)
+	}
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *ChannelCategoryUpdateOne) SetName(v string) *ChannelCategoryUpdateOne {
 	_u.mutation.SetName(v)
@@ -363,21 +407,9 @@ func (_u *ChannelCategoryUpdateOne) AddPosition(v int) *ChannelCategoryUpdateOne
 	return _u
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ChannelCategoryUpdateOne) SetUserID(id uuid.UUID) *ChannelCategoryUpdateOne {
-	_u.mutation.SetUserID(id)
-	return _u
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *ChannelCategoryUpdateOne) SetUser(v *User) *ChannelCategoryUpdateOne {
 	return _u.SetUserID(v.ID)
-}
-
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *ChannelCategoryUpdateOne) SetWorkspaceID(id string) *ChannelCategoryUpdateOne {
-	_u.mutation.SetWorkspaceID(id)
-	return _u
 }
 
 // SetWorkspace sets the "workspace" edge to the Workspace entity.

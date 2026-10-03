@@ -18,11 +18,11 @@ export const PendingLocation = ({ location, onRemove }: PendingLocationProps) =>
   return (
     <div className="mx-2 mt-2 flex w-fit max-w-[calc(100%-16px)] items-center gap-2 rounded-md border border-border bg-sunken py-1 pr-1 pl-2 font-sans">
       <IconMapPin aria-hidden className="size-4 shrink-0 text-accent-text" />
-      <span className="flex min-w-0 flex-col leading-[1.3]">
+      <span className="flex min-w-0 flex-col leading-snug">
         <span className="truncate text-xs font-medium">
           {location.label ?? t("location.card.title")}
         </span>
-        <span className="truncate font-mono text-[11px] text-muted tabular-nums">
+        <span className="truncate font-mono text-caption text-muted tabular-nums">
           {formatCoordinates(location)}
         </span>
       </span>

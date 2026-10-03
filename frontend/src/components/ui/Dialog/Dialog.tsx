@@ -10,9 +10,9 @@ import { useIsMobile } from "#/hooks/useMediaQuery";
 import { DialogFrame } from "./DialogFrame";
 
 const widths = {
-  lg: "md:max-w-[900px]",
-  md: "md:max-w-[600px]",
-  sm: "md:max-w-[440px]",
+  lg: "md:max-w-225",
+  md: "md:max-w-150",
+  sm: "md:max-w-110",
 };
 
 type DialogProps = {
@@ -44,7 +44,7 @@ export const Dialog = ({
       role="dialog"
       className={widths[size]}
     >
-      <header className="flex items-center gap-2 pt-3 pr-2.5 pl-[18px] md:pt-4">
+      <header className="flex items-center gap-2 pt-3 pr-2.5 pl-4.5 md:pt-4">
         <Heading slot="title" className="m-0 min-w-0 flex-1 truncate text-base font-bold">
           {title}
         </Heading>
@@ -57,11 +57,11 @@ export const Dialog = ({
           <IconX />
         </IconButton>
       </header>
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-[18px] pt-2.5 pb-1 text-[13.5px]">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4.5 pt-2.5 pb-1 text-body-sm">
         {children}
       </div>
       {footer && (
-        <footer className="flex justify-end gap-2 px-[18px] pt-3.5 pb-[max(16px,env(safe-area-inset-bottom))]">
+        <footer className="flex justify-end gap-2 px-4.5 pt-3.5 pb-[max(16px,env(safe-area-inset-bottom))]">
           {footer}
         </footer>
       )}

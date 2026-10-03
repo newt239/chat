@@ -1,13 +1,13 @@
 package websocket
 
 import (
-	"log"
-
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
+	"github.com/newt239/chat/internal/infrastructure/logger"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	customemojiuc "github.com/newt239/chat/internal/usecase/customemoji"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
@@ -19,7 +19,7 @@ import (
 func encodeServerEvent(event *chatv1.ServerEvent) []byte {
 	data, err := protojson.Marshal(event)
 	if err != nil {
-		log.Printf("[WebSocket] イベントのエンコードに失敗しました: %v", err)
+		logger.Get().Error("イベントのエンコードに失敗しました", zap.Error(err))
 		return nil
 	}
 	return data
@@ -36,8 +36,34 @@ func NewNotifier(hub *Hub) *Notifier {
 
 func (n *Notifier) broadcastToSubscribers(workspaceID, channelID string, event *chatv1.ServerEvent) {
 	if data := encodeServerEvent(event); data != nil {
-		n.hub.BroadcastToChannelSubscribers(workspaceID, channelID, data)
+		n.hub.BroadcastToChannel(workspaceID, channelID, data, "")
 	}
+}
+
+func (n *Notifier) broadcastToUsers(workspaceID string, userIDs []string, event *chatv1.ServerEvent) {
+	if data := encodeServerEvent(event); data != nil {
+		n.hub.BroadcastToUsers(workspaceID, userIDs, data)
+	}
+}
+
+// RevokeChannel はチャンネルを見られなくなった接続の購読を外します。userID が空なら購読者全員を確かめ直します
+func (n *Notifier) RevokeChannel(workspaceID, channelID, userID string) {
+	n.hub.RevokeChannel(workspaceID, channelID, userID)
+}
+
+// CloseWorkspaceUser はワークスペースから外されたか停止されたユーザーの接続を 4403 で切ります
+func (n *Notifier) CloseWorkspaceUser(workspaceID, userID string) {
+	n.hub.CloseWorkspaceUser(workspaceID, userID)
+}
+
+// CloseSession はログアウトしたセッションの接続を 4401 で切ります
+func (n *Notifier) CloseSession(sessionID string) {
+	n.hub.CloseSession(sessionID)
+}
+
+// CloseUser はパスワード変更やアカウント削除で全セッションを失効させたユーザーの接続を 4401 で切ります
+func (n *Notifier) CloseUser(userID string) {
+	n.hub.CloseUser(userID)
 }
 
 func (n *Notifier) NotifyNewMessage(workspaceID, channelID string, message messageuc.MessageOutput) {
@@ -65,74 +91,42 @@ func (n *Notifier) NotifyDeletedMessage(workspaceID, channelID string, deletion 
 
 func (n *Notifier) NotifyReactionAdded(workspaceID, channelID string, reaction reactionuc.ReactionNotification) {
 	n.broadcastToSubscribers(workspaceID, channelID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_ReactionAdded{
-		ReactionAdded: reactionEvent(channelID, reaction),
+		ReactionAdded: presenter.ReactionEvent(channelID, reaction),
 	}})
 }
 
 func (n *Notifier) NotifyReactionRemoved(workspaceID, channelID string, reaction reactionuc.ReactionNotification) {
 	n.broadcastToSubscribers(workspaceID, channelID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_ReactionRemoved{
-		ReactionRemoved: reactionEvent(channelID, reaction),
+		ReactionRemoved: presenter.ReactionEvent(channelID, reaction),
 	}})
-}
-
-func reactionEvent(channelID string, reaction reactionuc.ReactionNotification) *chatv1.ReactionEvent {
-	event := &chatv1.ReactionEvent{ChannelId: channelID, MessageId: reaction.MessageID, UserId: reaction.UserID, Emoji: reaction.Emoji}
-	if reaction.User != nil {
-		event.User = &chatv1.UserSummary{Id: reaction.User.ID, DisplayName: reaction.User.DisplayName, AvatarUrl: reaction.User.AvatarURL}
-		event.CreatedAt = timestamppb.New(reaction.CreatedAt)
-	}
-	return event
 }
 
 func (n *Notifier) NotifyUnreadCount(workspaceID, userID, channelID string, unreadCount, mentionCount int) {
 	event := &chatv1.ServerEvent{Event: &chatv1.ServerEvent_UnreadCount{
 		UnreadCount: &chatv1.UnreadCountEvent{ChannelId: channelID, UnreadCount: int32(unreadCount), HasMention: mentionCount > 0, MentionCount: int32(mentionCount)},
 	}}
-	if data := encodeServerEvent(event); data != nil {
-		n.hub.BroadcastToUser(workspaceID, userID, data)
-	}
+	n.broadcastToUsers(workspaceID, []string{userID}, event)
 }
 
 // ピンの件数はチャンネルを開いていないユーザーにも表示するため、購読者ではなく参加者全員に送る
 
-func (n *Notifier) NotifyPinCreated(workspaceID, channelID string, pin pinuc.PinNotification) {
-	n.broadcastToChannel(workspaceID, channelID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_PinCreated{
-		PinCreated: pinEvent(channelID, pin),
+func (n *Notifier) NotifyPinCreated(workspaceID, channelID string, memberIDs []string, pin pinuc.PinNotification) {
+	n.broadcastToUsers(workspaceID, memberIDs, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_PinCreated{
+		PinCreated: presenter.PinEvent(channelID, pin),
 	}})
 }
 
-func (n *Notifier) NotifyPinDeleted(workspaceID, channelID string, pin pinuc.PinNotification) {
-	n.broadcastToChannel(workspaceID, channelID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_PinDeleted{
-		PinDeleted: pinEvent(channelID, pin),
+func (n *Notifier) NotifyPinDeleted(workspaceID, channelID string, memberIDs []string, pin pinuc.PinNotification) {
+	n.broadcastToUsers(workspaceID, memberIDs, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_PinDeleted{
+		PinDeleted: presenter.PinEvent(channelID, pin),
 	}})
-}
-
-func pinEvent(channelID string, pin pinuc.PinNotification) *chatv1.PinEvent {
-	event := &chatv1.PinEvent{ChannelId: channelID, MessageId: pin.MessageID, PinnedBy: pin.PinnedBy, PinnedAt: timestamppb.New(pin.PinnedAt)}
-	if pin.PinnedByUser != nil {
-		event.PinnedByUser = presenter.UserSummary(*pin.PinnedByUser)
-	}
-	return event
-}
-
-func (n *Notifier) broadcastToChannel(workspaceID, channelID string, event *chatv1.ServerEvent) {
-	if data := encodeServerEvent(event); data != nil {
-		n.hub.BroadcastToChannel(workspaceID, channelID, data, "")
-	}
 }
 
 func (n *Notifier) NotifySystemMessageCreated(workspaceID, channelID string, message *entity.SystemMessage) {
 	n.broadcastToSubscribers(workspaceID, channelID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_SystemMessageCreated{
 		SystemMessageCreated: &chatv1.SystemMessageEvent{
 			ChannelId: channelID,
-			Message: presenter.SystemMessage(messageuc.SystemMessageOutput{
-				ID:        message.ID,
-				ChannelID: message.ChannelID,
-				Kind:      string(message.Kind),
-				Payload:   message.Payload,
-				ActorID:   message.ActorID,
-				CreatedAt: message.CreatedAt,
-			}),
+			Message:   presenter.SystemMessage(messageuc.NewSystemMessageOutput(message)),
 		},
 	}})
 }

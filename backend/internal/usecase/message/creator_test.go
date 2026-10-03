@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -31,12 +32,12 @@ func TestVerifyAttachments(t *testing.T) {
 		{
 			name:        "本人のものでない添付は拒否する",
 			attachments: []*entity.Attachment{},
-			wantErr:     ErrAttachmentNotFound,
+			wantErr:     domerr.ErrAttachmentNotFound,
 		},
 		{
 			name:        "別チャンネル宛の添付は拒否する",
 			attachments: []*entity.Attachment{{ID: "a1", ChannelID: "other"}},
-			wantErr:     ErrAttachmentNotFound,
+			wantErr:     domerr.ErrAttachmentNotFound,
 		},
 		{
 			name:        "同じチャンネル宛の自分の添付は許可する",

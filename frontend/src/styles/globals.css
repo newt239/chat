@@ -4,7 +4,6 @@
    inline にすることでユーティリティが変数を直接参照し、テーマ切り替えが即座に反映される */
 @theme inline {
   --color-*: initial;
-  --color-white: #fff;
 
   --color-bg: var(--c-bg);
   --color-surface: var(--c-surface);
@@ -46,6 +45,7 @@
   --color-side-active: var(--c-side-active);
   --color-side-active-fg: var(--c-side-active-fg);
 
+  --radius-xs: var(--r-xs);
   --radius-sm: var(--r-sm);
   --radius-md: var(--r-md);
   --radius-lg: var(--r-lg);
@@ -57,12 +57,18 @@
   --shadow-lg: var(--sh-lg);
   --shadow-xl: var(--sh-xl);
 
+  --text-heading: var(--t-heading-size);
+  --text-heading--line-height: var(--t-heading-line);
+  --text-heading--font-weight: var(--t-heading-weight);
   --text-title: var(--t-title-size);
   --text-title--line-height: var(--t-title-line);
   --text-title--font-weight: var(--t-title-weight);
   --text-body: var(--t-body-size);
   --text-body--line-height: var(--t-body-line);
   --text-body--font-weight: var(--t-body-weight);
+  --text-body-sm: var(--t-body-sm-size);
+  --text-body-sm--line-height: var(--t-body-sm-line);
+  --text-body-sm--font-weight: var(--t-body-sm-weight);
   --text-body-strong: var(--t-body-strong-size);
   --text-body-strong--line-height: var(--t-body-strong-line);
   --text-body-strong--font-weight: var(--t-body-strong-weight);
@@ -75,6 +81,17 @@
   --text-mono: var(--t-mono-size);
   --text-mono--line-height: var(--t-mono-line);
   --text-mono--font-weight: var(--t-mono-weight);
+  --text-emoji: var(--t-emoji-size);
+  --text-emoji--line-height: var(--t-emoji-line);
+  --text-emoji--font-weight: var(--t-emoji-weight);
+
+  --leading-tight: var(--lh-tight);
+  --leading-snug: var(--lh-snug);
+  --leading-normal: var(--lh-normal);
+  --leading-relaxed: var(--lh-relaxed);
+
+  --tracking-tight: var(--ls-tight);
+  --tracking-wide: var(--ls-wide);
 
   --font-sans: var(--ff-sans);
   --font-mono: var(--ff-mono);
@@ -105,6 +122,15 @@
       transform: scale(0.98);
     }
   }
+}
+
+/* 重なり順。ダイアログなどの全面の重なりの上に通知を出す */
+@utility z-overlay {
+  z-index: 300;
+}
+
+@utility z-toast {
+  z-index: 400;
 }
 
 @custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));

@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/newt239/chat/internal/usecase/systemmessage"
+
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/internal/domain/entity"
@@ -45,7 +47,7 @@ func (r *fakeChannelRepo) FindLastMessageAtBatch(_ context.Context, _ []string) 
 func (r *fakeChannelRepo) FindBrowsableChannels(ctx context.Context, _ string, userID string) ([]*entity.Channel, error) {
 	var result []*entity.Channel
 	for _, ch := range r.channels {
-		if !ch.IsPrivate || r.members.joined[ch.ID][userID] {
+		if !ch.IsPrivate() || r.members.joined[ch.ID][userID] {
 			result = append(result, ch)
 		}
 	}
@@ -133,6 +135,16 @@ func (r *fakeMemberRepo) AddMember(_ context.Context, m *entity.ChannelMember) e
 
 func (r *fakeMemberRepo) IsMember(_ context.Context, channelID, userID string) (bool, error) {
 	return r.joined[channelID][userID], nil
+}
+
+func (r *fakeMemberRepo) FindJoinedChannelIDs(_ context.Context, userID string, channelIDs []string) (map[string]bool, error) {
+	result := map[string]bool{}
+	for _, id := range channelIDs {
+		if r.joined[id][userID] {
+			result[id] = true
+		}
+	}
+	return result, nil
 }
 
 type fakeStarRepo struct {
@@ -227,7 +239,26 @@ type fixture struct {
 	mutes       *fakeMuteRepo
 	permissions *stubPermissionRepo
 	recorder    *audittest.Recorder
+	revoker     *stubRevoker
 }
+
+type stubSystemMessages struct{}
+
+func (stubSystemMessages) Create(context.Context, systemmessage.CreateInput) (*entity.SystemMessage, error) {
+	return &entity.SystemMessage{}, nil
+}
+
+type stubRevoker struct{ revoked []string }
+
+func (r *stubRevoker) RevokeChannel(_, channelID, userID string) {
+	r.revoked = append(r.revoked, channelID+"/"+userID)
+}
+
+type nopLogger struct {
+	domainservice.Logger
+}
+
+func (nopLogger) Warn(string, ...domainservice.LogField) {}
 
 func newFixture() *fixture {
 	members := &fakeMemberRepo{joined: map[string]map[string]bool{}}
@@ -239,8 +270,9 @@ func newFixture() *fixture {
 	permissions := &stubPermissionRepo{}
 	recorder := &audittest.Recorder{}
 	permissionSvc := domainservice.NewPermissionService(workspaces, permissions)
-	uc := NewChannelInteractor(channels, members, stars, mutes, workspaces, stubReadStateRepo{}, stubTxManager{}, nil, access, permissionSvc, recorder)
-	return &fixture{uc: uc, channels: channels, members: members, stars: stars, mutes: mutes, permissions: permissions, recorder: recorder}
+	revoker := &stubRevoker{}
+	uc := NewChannelInteractor(channels, members, stars, mutes, workspaces, stubReadStateRepo{}, stubTxManager{}, stubSystemMessages{}, access, permissionSvc, recorder, revoker, nopLogger{})
+	return &fixture{uc: uc, channels: channels, members: members, stars: stars, mutes: mutes, permissions: permissions, recorder: recorder, revoker: revoker}
 }
 
 func (f *fixture) create(t *testing.T, userID, name string, isPrivate bool) *ChannelOutput {
@@ -305,7 +337,7 @@ func TestCreateChannelUnderInaccessiblePrivateParent(t *testing.T) {
 
 	_, err := f.uc.CreateChannel(context.Background(), CreateChannelInput{WorkspaceID: workspaceID, UserID: memberID, Name: "secret/child", IsPrivate: true})
 
-	if !errors.Is(err, ErrUnauthorized) {
+	if !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("閲覧できない非公開チャンネルの下に作成できています: %v", err)
 	}
 }
@@ -352,8 +384,8 @@ func TestSetArchived(t *testing.T) {
 	}{
 		{name: "作成者はアーカイブできる", userID: memberID},
 		{name: "管理者はアーカイブできる", userID: adminID},
-		{name: "作成者以外のメンバーはアーカイブできない", userID: guestID, wantErr: ErrUnauthorized},
-		{name: "DM はアーカイブできない", userID: memberID, dm: true, wantErr: ErrCannotArchiveDM},
+		{name: "作成者以外のメンバーはアーカイブできない", userID: guestID, wantErr: domerr.ErrUnauthorized},
+		{name: "DM はアーカイブできない", userID: memberID, dm: true, wantErr: ErrCannotModifyDM},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -468,7 +500,7 @@ func TestSearchBrowsableChannels(t *testing.T) {
 		t.Fatalf("ページから求めた条件が正しくありません: %+v", f.channels.lastFilter)
 	}
 
-	if _, err := f.uc.SearchBrowsableChannels(context.Background(), SearchBrowsableChannelsInput{WorkspaceID: workspaceID, UserID: "44444444-4444-4444-4444-444444444444", Page: 1, PerPage: 20}); !errors.Is(err, ErrUnauthorized) {
+	if _, err := f.uc.SearchBrowsableChannels(context.Background(), SearchBrowsableChannelsInput{WorkspaceID: workspaceID, UserID: "44444444-4444-4444-4444-444444444444", Page: 1, PerPage: 20}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("ワークスペース外のユーザーが検索できています: %v", err)
 	}
 }
@@ -550,5 +582,52 @@ func TestListAndGetChannelIncludeMuted(t *testing.T) {
 	got, err := f.uc.GetChannel(ctx, GetChannelInput{ChannelID: random.ID, UserID: adminID})
 	if err != nil || !got.IsMuted {
 		t.Fatalf("GetChannel がミュート状態を返していません: %+v %v", got, err)
+	}
+}
+
+func TestUpdateChannelPermissionAndPrivacy(t *testing.T) {
+	tests := []struct {
+		name        string
+		userID      string
+		dm          bool
+		wantErr     error
+		wantRevoked bool
+	}{
+		{name: "作成者は非公開にでき、参加していない接続の配信を止める", userID: memberID, wantRevoked: true},
+		{name: "管理者は非公開にできる", userID: adminID, wantRevoked: true},
+		{name: "作成者以外のメンバーは変更できない", userID: guestID, wantErr: domerr.ErrUnauthorized},
+		{name: "DM は変更できない", userID: memberID, dm: true, wantErr: ErrCannotModifyDM},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture()
+			ch := f.create(t, memberID, "room", false)
+			if tt.dm {
+				f.channels.channels[ch.ID].Type = entity.ChannelTypeDM
+			}
+
+			_, err := f.uc.UpdateChannel(context.Background(), UpdateChannelInput{ChannelID: ch.ID, UserID: tt.userID, IsPrivate: new(true)})
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
+			}
+			if got := len(f.revoker.revoked) == 1; got != tt.wantRevoked {
+				t.Errorf("配信の停止が期待と異なります: %v", f.revoker.revoked)
+			}
+			if tt.wantErr == nil && f.channels.channels[ch.ID].Type != entity.ChannelTypePrivate {
+				t.Errorf("非公開になっていません: %s", f.channels.channels[ch.ID].Type)
+			}
+		})
+	}
+}
+
+func TestDeleteChannelRevokesSubscriptions(t *testing.T) {
+	f := newFixture()
+	ch := f.create(t, adminID, "room", false)
+
+	if err := f.uc.DeleteChannel(context.Background(), DeleteChannelInput{ChannelID: ch.ID, UserID: adminID}); err != nil {
+		t.Fatalf("削除できません: %v", err)
+	}
+	if !slices.Equal(f.revoker.revoked, []string{ch.ID + "/"}) {
+		t.Errorf("削除したチャンネルの配信を止めていません: %v", f.revoker.revoked)
 	}
 }

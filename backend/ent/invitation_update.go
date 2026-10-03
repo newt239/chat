@@ -31,6 +31,34 @@ func (_u *InvitationUpdate) Where(ps ...predicate.Invitation) *InvitationUpdate 
 	return _u
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_u *InvitationUpdate) SetWorkspaceID(v string) *InvitationUpdate {
+	_u.mutation.SetWorkspaceID(v)
+	return _u
+}
+
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_u *InvitationUpdate) SetNillableWorkspaceID(v *string) *InvitationUpdate {
+	if v != nil {
+		_u.SetWorkspaceID(*v)
+	}
+	return _u
+}
+
+// SetInvitedByID sets the "invited_by_id" field.
+func (_u *InvitationUpdate) SetInvitedByID(v uuid.UUID) *InvitationUpdate {
+	_u.mutation.SetInvitedByID(v)
+	return _u
+}
+
+// SetNillableInvitedByID sets the "invited_by_id" field if the given value is not nil.
+func (_u *InvitationUpdate) SetNillableInvitedByID(v *uuid.UUID) *InvitationUpdate {
+	if v != nil {
+		_u.SetInvitedByID(*v)
+	}
+	return _u
+}
+
 // SetEmail sets the "email" field.
 func (_u *InvitationUpdate) SetEmail(v string) *InvitationUpdate {
 	_u.mutation.SetEmail(v)
@@ -107,21 +135,9 @@ func (_u *InvitationUpdate) ClearAcceptedAt() *InvitationUpdate {
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *InvitationUpdate) SetWorkspaceID(id string) *InvitationUpdate {
-	_u.mutation.SetWorkspaceID(id)
-	return _u
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *InvitationUpdate) SetWorkspace(v *Workspace) *InvitationUpdate {
 	return _u.SetWorkspaceID(v.ID)
-}
-
-// SetInvitedByID sets the "invited_by" edge to the User entity by ID.
-func (_u *InvitationUpdate) SetInvitedByID(id uuid.UUID) *InvitationUpdate {
-	_u.mutation.SetInvitedByID(id)
-	return _u
 }
 
 // SetInvitedBy sets the "invited_by" edge to the User entity.
@@ -307,6 +323,34 @@ type InvitationUpdateOne struct {
 	mutation *InvitationMutation
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_u *InvitationUpdateOne) SetWorkspaceID(v string) *InvitationUpdateOne {
+	_u.mutation.SetWorkspaceID(v)
+	return _u
+}
+
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_u *InvitationUpdateOne) SetNillableWorkspaceID(v *string) *InvitationUpdateOne {
+	if v != nil {
+		_u.SetWorkspaceID(*v)
+	}
+	return _u
+}
+
+// SetInvitedByID sets the "invited_by_id" field.
+func (_u *InvitationUpdateOne) SetInvitedByID(v uuid.UUID) *InvitationUpdateOne {
+	_u.mutation.SetInvitedByID(v)
+	return _u
+}
+
+// SetNillableInvitedByID sets the "invited_by_id" field if the given value is not nil.
+func (_u *InvitationUpdateOne) SetNillableInvitedByID(v *uuid.UUID) *InvitationUpdateOne {
+	if v != nil {
+		_u.SetInvitedByID(*v)
+	}
+	return _u
+}
+
 // SetEmail sets the "email" field.
 func (_u *InvitationUpdateOne) SetEmail(v string) *InvitationUpdateOne {
 	_u.mutation.SetEmail(v)
@@ -383,21 +427,9 @@ func (_u *InvitationUpdateOne) ClearAcceptedAt() *InvitationUpdateOne {
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *InvitationUpdateOne) SetWorkspaceID(id string) *InvitationUpdateOne {
-	_u.mutation.SetWorkspaceID(id)
-	return _u
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *InvitationUpdateOne) SetWorkspace(v *Workspace) *InvitationUpdateOne {
 	return _u.SetWorkspaceID(v.ID)
-}
-
-// SetInvitedByID sets the "invited_by" edge to the User entity by ID.
-func (_u *InvitationUpdateOne) SetInvitedByID(id uuid.UUID) *InvitationUpdateOne {
-	_u.mutation.SetInvitedByID(id)
-	return _u
 }
 
 // SetInvitedBy sets the "invited_by" edge to the User entity.

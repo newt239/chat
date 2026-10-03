@@ -19,6 +19,8 @@ type Session struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// RefreshTokenHash holds the value of the "refresh_token_hash" field.
 	RefreshTokenHash string `json:"refresh_token_hash,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
@@ -34,7 +36,6 @@ type Session struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SessionQuery when eager-loading is set.
 	Edges        SessionEdges `json:"edges"`
-	session_user *uuid.UUID
 	selectValues sql.SelectValues
 }
 
@@ -67,10 +68,8 @@ func (*Session) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case session.FieldExpiresAt, session.FieldRevokedAt, session.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case session.FieldID:
+		case session.FieldID, session.FieldUserID:
 			values[i] = new(uuid.UUID)
-		case session.ForeignKeys[0]: // session_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -91,6 +90,12 @@ func (_m *Session) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
+			}
+		case session.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
 			}
 		case session.FieldRefreshTokenHash:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -127,13 +132,6 @@ func (_m *Session) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case session.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field session_user", values[i])
-			} else if value.Valid {
-				_m.session_user = new(uuid.UUID)
-				*_m.session_user = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -176,6 +174,9 @@ func (_m *Session) String() string {
 	var builder strings.Builder
 	builder.WriteString("Session(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
 	builder.WriteString("refresh_token_hash=")
 	builder.WriteString(_m.RefreshTokenHash)
 	builder.WriteString(", ")

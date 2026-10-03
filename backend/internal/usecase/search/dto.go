@@ -1,9 +1,10 @@
 package search
 
 import (
-	"errors"
+	"fmt"
 	"time"
 
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
@@ -22,10 +23,8 @@ const (
 )
 
 var (
-	ErrInvalidQuery      = errors.New("検索キーワードか絞り込み条件を指定してください")
-	ErrInvalidDateRange  = errors.New("期間の開始は終了より前にしてください")
-	ErrWorkspaceNotFound = errors.New("ワークスペースが見つかりません")
-	ErrUnauthorized      = errors.New("このワークスペースを検索する権限がありません")
+	ErrInvalidQuery     = fmt.Errorf("%w: 検索キーワードか絞り込み条件を指定してください", domerr.ErrValidation)
+	ErrInvalidDateRange = fmt.Errorf("%w: 期間の開始は終了より前にしてください", domerr.ErrValidation)
 )
 
 // MessageFilter はメッセージ検索の絞り込み条件です（条件はすべて AND）

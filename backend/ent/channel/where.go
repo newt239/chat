@@ -56,6 +56,16 @@ func IDLTE(id uuid.UUID) predicate.Channel {
 	return predicate.Channel(sql.FieldLTE(FieldID, id))
 }
 
+// WorkspaceID applies equality check predicate on the "workspace_id" field. It's identical to WorkspaceIDEQ.
+func WorkspaceID(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldEQ(FieldWorkspaceID, v))
+}
+
+// CreatedByID applies equality check predicate on the "created_by_id" field. It's identical to CreatedByIDEQ.
+func CreatedByID(v uuid.UUID) predicate.Channel {
+	return predicate.Channel(sql.FieldEQ(FieldCreatedByID, v))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldName, v))
@@ -64,11 +74,6 @@ func Name(v string) predicate.Channel {
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
 func Description(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldDescription, v))
-}
-
-// IsPrivate applies equality check predicate on the "is_private" field. It's identical to IsPrivateEQ.
-func IsPrivate(v bool) predicate.Channel {
-	return predicate.Channel(sql.FieldEQ(FieldIsPrivate, v))
 }
 
 // ChannelType applies equality check predicate on the "channel_type" field. It's identical to ChannelTypeEQ.
@@ -86,6 +91,11 @@ func ParentID(v uuid.UUID) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldParentID, v))
 }
 
+// DmKey applies equality check predicate on the "dm_key" field. It's identical to DmKeyEQ.
+func DmKey(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldEQ(FieldDmKey, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldCreatedAt, v))
@@ -94,6 +104,91 @@ func CreatedAt(v time.Time) predicate.Channel {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// WorkspaceIDEQ applies the EQ predicate on the "workspace_id" field.
+func WorkspaceIDEQ(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldEQ(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDNEQ applies the NEQ predicate on the "workspace_id" field.
+func WorkspaceIDNEQ(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldNEQ(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDIn applies the In predicate on the "workspace_id" field.
+func WorkspaceIDIn(vs ...string) predicate.Channel {
+	return predicate.Channel(sql.FieldIn(FieldWorkspaceID, vs...))
+}
+
+// WorkspaceIDNotIn applies the NotIn predicate on the "workspace_id" field.
+func WorkspaceIDNotIn(vs ...string) predicate.Channel {
+	return predicate.Channel(sql.FieldNotIn(FieldWorkspaceID, vs...))
+}
+
+// WorkspaceIDGT applies the GT predicate on the "workspace_id" field.
+func WorkspaceIDGT(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldGT(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDGTE applies the GTE predicate on the "workspace_id" field.
+func WorkspaceIDGTE(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldGTE(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDLT applies the LT predicate on the "workspace_id" field.
+func WorkspaceIDLT(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldLT(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDLTE applies the LTE predicate on the "workspace_id" field.
+func WorkspaceIDLTE(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldLTE(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDContains applies the Contains predicate on the "workspace_id" field.
+func WorkspaceIDContains(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldContains(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDHasPrefix applies the HasPrefix predicate on the "workspace_id" field.
+func WorkspaceIDHasPrefix(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldHasPrefix(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDHasSuffix applies the HasSuffix predicate on the "workspace_id" field.
+func WorkspaceIDHasSuffix(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldHasSuffix(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDEqualFold applies the EqualFold predicate on the "workspace_id" field.
+func WorkspaceIDEqualFold(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldEqualFold(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDContainsFold applies the ContainsFold predicate on the "workspace_id" field.
+func WorkspaceIDContainsFold(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldContainsFold(FieldWorkspaceID, v))
+}
+
+// CreatedByIDEQ applies the EQ predicate on the "created_by_id" field.
+func CreatedByIDEQ(v uuid.UUID) predicate.Channel {
+	return predicate.Channel(sql.FieldEQ(FieldCreatedByID, v))
+}
+
+// CreatedByIDNEQ applies the NEQ predicate on the "created_by_id" field.
+func CreatedByIDNEQ(v uuid.UUID) predicate.Channel {
+	return predicate.Channel(sql.FieldNEQ(FieldCreatedByID, v))
+}
+
+// CreatedByIDIn applies the In predicate on the "created_by_id" field.
+func CreatedByIDIn(vs ...uuid.UUID) predicate.Channel {
+	return predicate.Channel(sql.FieldIn(FieldCreatedByID, vs...))
+}
+
+// CreatedByIDNotIn applies the NotIn predicate on the "created_by_id" field.
+func CreatedByIDNotIn(vs ...uuid.UUID) predicate.Channel {
+	return predicate.Channel(sql.FieldNotIn(FieldCreatedByID, vs...))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -236,16 +331,6 @@ func DescriptionContainsFold(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// IsPrivateEQ applies the EQ predicate on the "is_private" field.
-func IsPrivateEQ(v bool) predicate.Channel {
-	return predicate.Channel(sql.FieldEQ(FieldIsPrivate, v))
-}
-
-// IsPrivateNEQ applies the NEQ predicate on the "is_private" field.
-func IsPrivateNEQ(v bool) predicate.Channel {
-	return predicate.Channel(sql.FieldNEQ(FieldIsPrivate, v))
-}
-
 // ChannelTypeEQ applies the EQ predicate on the "channel_type" field.
 func ChannelTypeEQ(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldChannelType, v))
@@ -299,16 +384,6 @@ func ChannelTypeHasPrefix(v string) predicate.Channel {
 // ChannelTypeHasSuffix applies the HasSuffix predicate on the "channel_type" field.
 func ChannelTypeHasSuffix(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldHasSuffix(FieldChannelType, v))
-}
-
-// ChannelTypeIsNil applies the IsNil predicate on the "channel_type" field.
-func ChannelTypeIsNil() predicate.Channel {
-	return predicate.Channel(sql.FieldIsNull(FieldChannelType))
-}
-
-// ChannelTypeNotNil applies the NotNil predicate on the "channel_type" field.
-func ChannelTypeNotNil() predicate.Channel {
-	return predicate.Channel(sql.FieldNotNull(FieldChannelType))
 }
 
 // ChannelTypeEqualFold applies the EqualFold predicate on the "channel_type" field.
@@ -399,6 +474,81 @@ func ParentIDIsNil() predicate.Channel {
 // ParentIDNotNil applies the NotNil predicate on the "parent_id" field.
 func ParentIDNotNil() predicate.Channel {
 	return predicate.Channel(sql.FieldNotNull(FieldParentID))
+}
+
+// DmKeyEQ applies the EQ predicate on the "dm_key" field.
+func DmKeyEQ(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldEQ(FieldDmKey, v))
+}
+
+// DmKeyNEQ applies the NEQ predicate on the "dm_key" field.
+func DmKeyNEQ(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldNEQ(FieldDmKey, v))
+}
+
+// DmKeyIn applies the In predicate on the "dm_key" field.
+func DmKeyIn(vs ...string) predicate.Channel {
+	return predicate.Channel(sql.FieldIn(FieldDmKey, vs...))
+}
+
+// DmKeyNotIn applies the NotIn predicate on the "dm_key" field.
+func DmKeyNotIn(vs ...string) predicate.Channel {
+	return predicate.Channel(sql.FieldNotIn(FieldDmKey, vs...))
+}
+
+// DmKeyGT applies the GT predicate on the "dm_key" field.
+func DmKeyGT(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldGT(FieldDmKey, v))
+}
+
+// DmKeyGTE applies the GTE predicate on the "dm_key" field.
+func DmKeyGTE(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldGTE(FieldDmKey, v))
+}
+
+// DmKeyLT applies the LT predicate on the "dm_key" field.
+func DmKeyLT(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldLT(FieldDmKey, v))
+}
+
+// DmKeyLTE applies the LTE predicate on the "dm_key" field.
+func DmKeyLTE(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldLTE(FieldDmKey, v))
+}
+
+// DmKeyContains applies the Contains predicate on the "dm_key" field.
+func DmKeyContains(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldContains(FieldDmKey, v))
+}
+
+// DmKeyHasPrefix applies the HasPrefix predicate on the "dm_key" field.
+func DmKeyHasPrefix(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldHasPrefix(FieldDmKey, v))
+}
+
+// DmKeyHasSuffix applies the HasSuffix predicate on the "dm_key" field.
+func DmKeyHasSuffix(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldHasSuffix(FieldDmKey, v))
+}
+
+// DmKeyIsNil applies the IsNil predicate on the "dm_key" field.
+func DmKeyIsNil() predicate.Channel {
+	return predicate.Channel(sql.FieldIsNull(FieldDmKey))
+}
+
+// DmKeyNotNil applies the NotNil predicate on the "dm_key" field.
+func DmKeyNotNil() predicate.Channel {
+	return predicate.Channel(sql.FieldNotNull(FieldDmKey))
+}
+
+// DmKeyEqualFold applies the EqualFold predicate on the "dm_key" field.
+func DmKeyEqualFold(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldEqualFold(FieldDmKey, v))
+}
+
+// DmKeyContainsFold applies the ContainsFold predicate on the "dm_key" field.
+func DmKeyContainsFold(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldContainsFold(FieldDmKey, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

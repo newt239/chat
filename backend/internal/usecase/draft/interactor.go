@@ -2,16 +2,14 @@ package draft
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
-
-var ErrParentMessageNotFound = errors.New("返信先のメッセージが見つかりません")
 
 type SaveInput struct {
 	Target domainrepository.DraftTarget
@@ -71,8 +69,8 @@ func (i *Interactor) ensureTarget(ctx context.Context, target domainrepository.D
 	if err != nil {
 		return fmt.Errorf("failed to load parent message: %w", err)
 	}
-	if parent == nil || parent.ChannelID != target.ChannelID || parent.DeletedAt != nil {
-		return ErrParentMessageNotFound
+	if !parent.CanBeRepliedIn(target.ChannelID) {
+		return domerr.ErrParentMessageNotFound
 	}
 	return nil
 }

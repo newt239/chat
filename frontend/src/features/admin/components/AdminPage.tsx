@@ -15,8 +15,8 @@ import { AdminMembersTab } from "#/features/admin/components/AdminMembersTab";
 import { AdminOverviewTab } from "#/features/admin/components/AdminOverviewTab";
 import { AdminPermissionsTab } from "#/features/admin/components/AdminPermissionsTab";
 import { useAdminMembers, usePermissions } from "#/features/admin/hooks/useAdminQueries";
-import { useMyWorkspaceRole } from "#/features/admin/hooks/useMyWorkspaceRole";
 import { adminTabValues } from "#/features/admin/schemas";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
 
 import type { adminSearchSchema } from "#/features/admin/schemas";
 
@@ -103,7 +103,7 @@ export const AdminPage = () => {
           <TabPanel
             key={value}
             id={value}
-            className="overflow-y-auto px-[18px] pt-4 pb-6 max-md:px-3.5 max-md:pt-3"
+            className="overflow-y-auto px-4.5 pt-4 pb-6 max-md:px-3.5 max-md:pt-3"
           >
             {renderTab(value)}
           </TabPanel>

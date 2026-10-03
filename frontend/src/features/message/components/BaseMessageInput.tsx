@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { Form, TextArea, TextField } from "react-aria-components";
@@ -11,7 +11,6 @@ import { useExecuteCommand } from "#/features/command/hooks/useExecuteCommand";
 import { findCommand, unescapeCommand } from "#/features/command/utils/commands";
 import { useDraftAutosave } from "#/features/draft/hooks/useDraftAutosave";
 import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
-import { useLinkPreview } from "#/features/link/hooks/useLinkPreview";
 import { LocationShareDialog } from "#/features/location/components/LocationShareDialog";
 import { PendingLocation } from "#/features/location/components/PendingLocation";
 import { PollComposerDialog } from "#/features/poll/components/PollComposerDialog";
@@ -65,7 +64,11 @@ export const BaseMessageInput = ({
   const [isPollOpen, setIsPollOpen] = useState(false);
   const [isRecorderOpen, setIsRecorderOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { previews, addPreview, removePreview, clearPreviews } = useLinkPreview();
+  // 本文の URL ごとにプレビューを出す。閉じたものは本文に残っていても出さない
+  const [dismissedUrls, setDismissedUrls] = useState<string[]>([]);
+  const previewUrls = [...new Set(body.match(urlPattern))].filter(
+    (url) => !dismissedUrls.includes(url),
+  );
   const {
     pendingAttachments,
     uploadFile,
@@ -96,24 +99,11 @@ export const BaseMessageInput = ({
     setBody((current) => (current === "" ? decode(draftBody) : current));
   }, [draftBody, isCodecReady, decode]);
 
-  const handleBodyChange = useCallback(
-    (next: string) => {
-      setBody(next);
-      notifyTyping();
-      saveDraft(encode(next));
-
-      const urls: string[] = next.match(urlPattern) ?? [];
-      for (const url of urls) {
-        void addPreview(url);
-      }
-      for (const preview of previews) {
-        if (!urls.includes(preview.url)) {
-          removePreview(preview.url);
-        }
-      }
-    },
-    [addPreview, previews, removePreview, notifyTyping, saveDraft, encode],
-  );
+  const handleBodyChange = (next: string) => {
+    setBody(next);
+    notifyTyping();
+    saveDraft(encode(next));
+  };
 
   const replaceSelection = (next: { text: string; selection: Selection }) => {
     handleBodyChange(next.text);
@@ -188,7 +178,7 @@ export const BaseMessageInput = ({
     setBody("");
     setLocation(undefined);
     setIsPreview(false);
-    clearPreviews();
+    setDismissedUrls([]);
     clearAttachments();
   };
 
@@ -235,7 +225,7 @@ export const BaseMessageInput = ({
         event.preventDefault();
         handleSubmit();
       }}
-      className="shrink-0 px-[18px] pb-3 font-sans max-md:px-2.5 max-md:pb-2"
+      className="shrink-0 px-4.5 pb-3 font-sans max-md:px-2.5 max-md:pb-2"
     >
       {targetPicker}
       <div className="relative rounded-lg border border-border-strong bg-surface focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
@@ -312,18 +302,18 @@ export const BaseMessageInput = ({
                   start: event.currentTarget.selectionStart,
                 });
               }}
-              className="block max-h-[180px] min-h-[38px] w-full resize-none border-0 bg-transparent px-3 pt-[9px] pb-0.5 font-sans text-body leading-[1.6] text-text outline-none [field-sizing:content] placeholder:text-subtle"
+              className="block max-h-45 min-h-9.5 w-full resize-none border-0 bg-transparent px-3 pt-2.25 pb-0.5 font-sans text-body leading-relaxed text-text outline-none [field-sizing:content] placeholder:text-subtle"
             />
           </TextField>
         )}
-        {previews.length > 0 && (
+        {previewUrls.length > 0 && (
           <div className="flex flex-col gap-2 px-3 py-2">
-            {previews.map((preview) => (
+            {previewUrls.map((url) => (
               <LinkPreviewCard
-                key={preview.url}
-                preview={preview}
+                key={url}
+                url={url}
                 onRemove={() => {
-                  removePreview(preview.url);
+                  setDismissedUrls((prev) => [...prev, url]);
                 }}
               />
             ))}

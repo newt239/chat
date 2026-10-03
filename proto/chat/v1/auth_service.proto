@@ -34,7 +34,8 @@ message LoginRequest {
 
 message LoginResponse {
   string access_token = 1;
-  string refresh_token = 2;
+  // ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+  optional string refresh_token = 2;
   User user = 3;
 }
 
@@ -47,7 +48,8 @@ message LoginWithGoogleRequest {
 
 message LoginWithGoogleResponse {
   string access_token = 1;
-  string refresh_token = 2;
+  // ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+  optional string refresh_token = 2;
   User user = 3;
 }
 
@@ -64,7 +66,8 @@ message LoginWithGoogleCodeRequest {
 
 message LoginWithGoogleCodeResponse {
   string access_token = 1;
-  string refresh_token = 2;
+  // ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+  optional string refresh_token = 2;
   User user = 3;
 }
 
@@ -79,7 +82,8 @@ message SignUpWithInvitationRequest {
 
 message SignUpWithInvitationResponse {
   string access_token = 1;
-  string refresh_token = 2;
+  // ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+  optional string refresh_token = 2;
   User user = 3;
 }
 
@@ -95,17 +99,20 @@ message SignUpRequest {
 
 message SignUpResponse {
   string access_token = 1;
-  string refresh_token = 2;
+  // ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+  optional string refresh_token = 2;
   User user = 3;
 }
 
 message RefreshRequest {
-  string refresh_token = 1 [(buf.validate.field).string.min_len = 1];
+  // ネイティブアプリだけが送る。ブラウザは Cookie を使う
+  optional string refresh_token = 1 [(buf.validate.field).string.min_len = 1];
 }
 
 message RefreshResponse {
   string access_token = 1;
-  string refresh_token = 2;
+  // ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+  optional string refresh_token = 2;
   User user = 3;
 }
 

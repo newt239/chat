@@ -1,24 +1,27 @@
-import { formatBytes, formatDate, formatMonthDay, formatNumber, formatWeekday } from "@chat/i18n";
+import {
+  formatBytes,
+  formatDate,
+  formatMonthDay,
+  formatNumber,
+  formatWeekday,
+} from "@chat/i18n/format";
 import { IconHash, IconLock, IconShieldCheck } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Link } from "#/components/ui/Link/Link";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
-import { useMyWorkspaceRole } from "#/features/admin/hooks/useMyWorkspaceRole";
-import { isAdminRole } from "#/features/admin/utils/isAdminRole";
 import { useInsights } from "#/features/insights/hooks/useInsights";
 import { isoWeekdayLabel, parseLocalDate, toHeatmapGrid } from "#/features/insights/utils/chart";
 import { StorageCategory } from "#/gen/chat/v1/insight_service_pb";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { usePreferences } from "#/hooks/usePreferences";
+import { isAdminRole } from "#/lib/isAdminRole";
 
 import { BarChart } from "./BarChart";
 import { ChartCard } from "./ChartCard";
 import { HBarList } from "./HBarList";
 import { Heatmap } from "./Heatmap";
 import { InsightsKpis } from "./InsightsKpis";
-
-import type { BarDatum } from "./BarChart";
 
 import type { ChannelActivity } from "#/gen/chat/v1/insight_service_pb";
 
@@ -39,7 +42,7 @@ type InsightsDashboardProps = {
 
 export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   // 集計の日付はサーバーがプロフィールのタイムゾーンで区切った暦日で、端末の 0 時として読むため端末のタイムゾーンで書式化する
   const { data: insights, error } = useInsights(workspaceId);
   const { data: myRole } = useMyWorkspaceRole(workspaceId);
@@ -53,7 +56,7 @@ export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
   }
   if (insights === undefined) {
     return (
-      <div className="flex flex-col gap-3.5 p-[18px]">
+      <div className="flex flex-col gap-3.5 p-4.5">
         <Skeleton className="h-24 w-full rounded-xl" />
         <Skeleton className="h-56 w-full rounded-xl" />
         <Skeleton className="h-56 w-full rounded-xl" />
@@ -64,7 +67,7 @@ export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
   const count = (value: number) => formatNumber(value, locale);
   const countTooltip = (label: string, value: number, isPartial: boolean) =>
     `${t("insights.tooltip.count", { label, value: count(value) })}${isPartial ? t("insights.tooltip.partial") : ""}`;
-  const toBars = (days: readonly { date: string; value: number }[]): BarDatum[] =>
+  const toBars = (days: readonly { date: string; value: number }[]) =>
     days.map((day, index) => {
       const date = parseLocalDate(day.date);
       const isPartial = index === days.length - 1;
@@ -109,7 +112,7 @@ export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
     t(`insights.charts.storage.categories.${storageCategoryKeys[category]}`);
 
   return (
-    <div className="flex flex-col gap-3.5 px-[18px] pt-4 pb-6 max-md:px-3.5 max-md:pt-3">
+    <div className="flex flex-col gap-3.5 px-4.5 pt-4 pb-6 max-md:px-3.5 max-md:pt-3">
       <InsightsKpis insights={insights} />
       <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
         <ChartCard

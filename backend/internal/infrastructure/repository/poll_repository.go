@@ -85,7 +85,7 @@ func (r *pollRepository) FindByMessageIDs(ctx context.Context, messageIDs []stri
 	if len(messageIDs) == 0 {
 		return result, nil
 	}
-	ids, err := parseUUIDs(messageIDs, "message ID")
+	ids, err := utils.ParseUUIDs(messageIDs, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (r *pollRepository) FindVotesByPollIDs(ctx context.Context, pollIDs []strin
 	if len(pollIDs) == 0 {
 		return []*entity.PollVote{}, nil
 	}
-	ids, err := parseUUIDs(pollIDs, "poll ID")
+	ids, err := utils.ParseUUIDs(pollIDs, "poll ID")
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func (r *pollRepository) ReplaceVotes(ctx context.Context, pollID, userID string
 	if err != nil {
 		return err
 	}
-	options, err := parseUUIDs(optionIDs, "option ID")
+	options, err := utils.ParseUUIDs(optionIDs, "option ID")
 	if err != nil {
 		return err
 	}

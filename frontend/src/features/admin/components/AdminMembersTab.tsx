@@ -1,23 +1,22 @@
 import { useState } from "react";
 
-import { formatBytes, formatNumber } from "@chat/i18n";
-import { IconSearch } from "@tabler/icons-react";
+import { formatBytes, formatNumber } from "@chat/i18n/format";
 import { useAtomValue } from "jotai";
-import { Input, SearchField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { SearchField } from "#/components/ui/SearchField/SearchField";
 import { Select } from "#/components/ui/Select/Select";
 import { cn } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";
 import { summarizeUserAgent } from "#/features/admin/utils/userAgent";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
+import { useWorkspaceMemberActions } from "#/features/workspace/hooks/useWorkspaceMemberActions";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { MemberSuspendButton } from "./MemberSuspendButton";
 import { RoleSelect } from "./RoleSelect";
@@ -52,8 +51,8 @@ type AdminMembersTabProps = {
 export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) => {
   const { t } = useTranslation();
   const { formatDateTime, formatRelativeTime, locale } = useDateFormat();
-  const myId = useAtomValue(userAtom)?.id;
-  const { updateRole } = useAdminActions();
+  const myId = useAtomValue(myUserIdAtom);
+  const { updateRole } = useWorkspaceMemberActions();
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const now = new Date();
@@ -72,15 +71,9 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
         <SearchField
           value={query}
           onChange={setQuery}
-          aria-label={t("admin.members.search")}
-          className="flex h-[34px] min-w-0 flex-[1_1_200px] items-center gap-2 rounded-md border border-border-strong bg-surface px-2.5 text-muted data-focus-within:border-accent data-focus-within:ring-3 data-focus-within:ring-accent-soft"
-        >
-          <IconSearch aria-hidden className="size-[15px] shrink-0" />
-          <Input
-            placeholder={t("admin.members.search")}
-            className="h-full min-w-0 flex-1 border-0 bg-transparent font-sans text-[13.5px] text-text outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden"
-          />
-        </SearchField>
+          label={t("admin.members.search")}
+          className="flex-1 basis-50"
+        />
         <Select
           label={t("admin.members.columns.role")}
           className="w-40"
@@ -127,7 +120,7 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
                           {member.displayName}
                           {isMe && t("admin.members.you")}
                         </span>
-                        <small className="text-[11.5px] text-muted">{member.email}</small>
+                        <small className="text-caption text-muted">{member.email}</small>
                       </div>
                     </div>
                   </td>
@@ -159,11 +152,11 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
                     )}
                   </td>
                   <td className={tableClassNames.cell}>
-                    <span className="inline-flex items-center gap-[5px] text-[12.5px]">
+                    <span className="inline-flex items-center gap-1.25 text-label font-normal">
                       <i
                         aria-hidden
                         className={cn(
-                          "block size-[7px] rounded-full",
+                          "block size-1.75 rounded-full",
                           isSuspended ? "bg-danger" : "bg-success",
                         )}
                       />

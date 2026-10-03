@@ -26,9 +26,9 @@ export const MessageListCard = ({ workspaceId, message, children }: MessageListC
   const { parentId } = message;
 
   return (
-    <article className="rounded-[10px] border border-border bg-surface font-sans text-text">
-      <header className="flex items-center gap-1.5 rounded-t-[10px] border-b border-border bg-sunken py-1.5 pr-2 pl-3 text-xs text-muted">
-        {label && <b className="max-w-[50%] truncate font-semibold text-text">{label}</b>}
+    <article className="rounded-lg border border-border bg-surface font-sans text-text">
+      <header className="flex items-center gap-1.5 rounded-t-lg border-b border-border bg-sunken py-1.5 pr-2 pl-3 text-xs text-muted">
+        {label && <b className="max-w-1/2 truncate font-semibold text-text">{label}</b>}
         <span className="min-w-0 flex-1 truncate">
           {formatDateTime(toDate(message.createdAt))}
           {parentId !== undefined && ` · ${t("search.inThread")}`}

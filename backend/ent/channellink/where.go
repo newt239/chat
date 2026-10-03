@@ -56,6 +56,16 @@ func IDLTE(id uuid.UUID) predicate.ChannelLink {
 	return predicate.ChannelLink(sql.FieldLTE(FieldID, id))
 }
 
+// ChannelID applies equality check predicate on the "channel_id" field. It's identical to ChannelIDEQ.
+func ChannelID(v uuid.UUID) predicate.ChannelLink {
+	return predicate.ChannelLink(sql.FieldEQ(FieldChannelID, v))
+}
+
+// CreatedByID applies equality check predicate on the "created_by_id" field. It's identical to CreatedByIDEQ.
+func CreatedByID(v uuid.UUID) predicate.ChannelLink {
+	return predicate.ChannelLink(sql.FieldEQ(FieldCreatedByID, v))
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.ChannelLink {
 	return predicate.ChannelLink(sql.FieldEQ(FieldTitle, v))
@@ -79,6 +89,46 @@ func CreatedAt(v time.Time) predicate.ChannelLink {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.ChannelLink {
 	return predicate.ChannelLink(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// ChannelIDEQ applies the EQ predicate on the "channel_id" field.
+func ChannelIDEQ(v uuid.UUID) predicate.ChannelLink {
+	return predicate.ChannelLink(sql.FieldEQ(FieldChannelID, v))
+}
+
+// ChannelIDNEQ applies the NEQ predicate on the "channel_id" field.
+func ChannelIDNEQ(v uuid.UUID) predicate.ChannelLink {
+	return predicate.ChannelLink(sql.FieldNEQ(FieldChannelID, v))
+}
+
+// ChannelIDIn applies the In predicate on the "channel_id" field.
+func ChannelIDIn(vs ...uuid.UUID) predicate.ChannelLink {
+	return predicate.ChannelLink(sql.FieldIn(FieldChannelID, vs...))
+}
+
+// ChannelIDNotIn applies the NotIn predicate on the "channel_id" field.
+func ChannelIDNotIn(vs ...uuid.UUID) predicate.ChannelLink {
+	return predicate.ChannelLink(sql.FieldNotIn(FieldChannelID, vs...))
+}
+
+// CreatedByIDEQ applies the EQ predicate on the "created_by_id" field.
+func CreatedByIDEQ(v uuid.UUID) predicate.ChannelLink {
+	return predicate.ChannelLink(sql.FieldEQ(FieldCreatedByID, v))
+}
+
+// CreatedByIDNEQ applies the NEQ predicate on the "created_by_id" field.
+func CreatedByIDNEQ(v uuid.UUID) predicate.ChannelLink {
+	return predicate.ChannelLink(sql.FieldNEQ(FieldCreatedByID, v))
+}
+
+// CreatedByIDIn applies the In predicate on the "created_by_id" field.
+func CreatedByIDIn(vs ...uuid.UUID) predicate.ChannelLink {
+	return predicate.ChannelLink(sql.FieldIn(FieldCreatedByID, vs...))
+}
+
+// CreatedByIDNotIn applies the NotIn predicate on the "created_by_id" field.
+func CreatedByIDNotIn(vs ...uuid.UUID) predicate.ChannelLink {
+	return predicate.ChannelLink(sql.FieldNotIn(FieldCreatedByID, vs...))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.

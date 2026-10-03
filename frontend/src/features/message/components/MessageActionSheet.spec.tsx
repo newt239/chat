@@ -18,14 +18,13 @@ const message = create(MessageSchema, {
 
 const renderSheet = async () => {
   const handlers = {
+    handleClose: vi.fn<() => void>(),
     handleDelete: vi.fn<() => void>(),
-    handleOpenChange: vi.fn<(isOpen: boolean) => void>(),
     handleReact: vi.fn<(emoji: string) => void>(),
   };
   await renderWithProviders(
     <MessageActionSheet
-      isOpen
-      onOpenChange={handlers.handleOpenChange}
+      onClose={handlers.handleClose}
       message={message}
       actions={[
         {
@@ -67,7 +66,7 @@ describe("MessageActionSheet", () => {
 
     await userEvent.click(await screen.findByRole("button", { name: "🎉 でリアクション" }));
     expect(handlers.handleReact).toHaveBeenCalledWith("🎉");
-    expect(handlers.handleOpenChange).toHaveBeenLastCalledWith(false);
+    expect(handlers.handleClose).toHaveBeenCalledOnce();
 
     await userEvent.click(screen.getByRole("menuitem", { name: "メッセージを削除" }));
     expect(handlers.handleDelete).toHaveBeenCalledOnce();

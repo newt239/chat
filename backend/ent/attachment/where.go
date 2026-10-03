@@ -56,6 +56,21 @@ func IDLTE(id uuid.UUID) predicate.Attachment {
 	return predicate.Attachment(sql.FieldLTE(FieldID, id))
 }
 
+// MessageID applies equality check predicate on the "message_id" field. It's identical to MessageIDEQ.
+func MessageID(v uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldMessageID, v))
+}
+
+// UploaderID applies equality check predicate on the "uploader_id" field. It's identical to UploaderIDEQ.
+func UploaderID(v uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldUploaderID, v))
+}
+
+// ChannelID applies equality check predicate on the "channel_id" field. It's identical to ChannelIDEQ.
+func ChannelID(v uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldChannelID, v))
+}
+
 // FileName applies equality check predicate on the "file_name" field. It's identical to FileNameEQ.
 func FileName(v string) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldFileName, v))
@@ -124,6 +139,76 @@ func ExpiresAt(v time.Time) predicate.Attachment {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// MessageIDEQ applies the EQ predicate on the "message_id" field.
+func MessageIDEQ(v uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldMessageID, v))
+}
+
+// MessageIDNEQ applies the NEQ predicate on the "message_id" field.
+func MessageIDNEQ(v uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNEQ(FieldMessageID, v))
+}
+
+// MessageIDIn applies the In predicate on the "message_id" field.
+func MessageIDIn(vs ...uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldIn(FieldMessageID, vs...))
+}
+
+// MessageIDNotIn applies the NotIn predicate on the "message_id" field.
+func MessageIDNotIn(vs ...uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotIn(FieldMessageID, vs...))
+}
+
+// MessageIDIsNil applies the IsNil predicate on the "message_id" field.
+func MessageIDIsNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldIsNull(FieldMessageID))
+}
+
+// MessageIDNotNil applies the NotNil predicate on the "message_id" field.
+func MessageIDNotNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotNull(FieldMessageID))
+}
+
+// UploaderIDEQ applies the EQ predicate on the "uploader_id" field.
+func UploaderIDEQ(v uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldUploaderID, v))
+}
+
+// UploaderIDNEQ applies the NEQ predicate on the "uploader_id" field.
+func UploaderIDNEQ(v uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNEQ(FieldUploaderID, v))
+}
+
+// UploaderIDIn applies the In predicate on the "uploader_id" field.
+func UploaderIDIn(vs ...uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldIn(FieldUploaderID, vs...))
+}
+
+// UploaderIDNotIn applies the NotIn predicate on the "uploader_id" field.
+func UploaderIDNotIn(vs ...uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotIn(FieldUploaderID, vs...))
+}
+
+// ChannelIDEQ applies the EQ predicate on the "channel_id" field.
+func ChannelIDEQ(v uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldChannelID, v))
+}
+
+// ChannelIDNEQ applies the NEQ predicate on the "channel_id" field.
+func ChannelIDNEQ(v uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNEQ(FieldChannelID, v))
+}
+
+// ChannelIDIn applies the In predicate on the "channel_id" field.
+func ChannelIDIn(vs ...uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldIn(FieldChannelID, vs...))
+}
+
+// ChannelIDNotIn applies the NotIn predicate on the "channel_id" field.
+func ChannelIDNotIn(vs ...uuid.UUID) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotIn(FieldChannelID, vs...))
 }
 
 // FileNameEQ applies the EQ predicate on the "file_name" field.

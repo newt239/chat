@@ -16,11 +16,11 @@ const (
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
 	// FieldChannelID holds the string denoting the channel_id field in the database.
-	FieldChannelID = "message_channel"
+	FieldChannelID = "channel_id"
 	// FieldUserID holds the string denoting the user_id field in the database.
-	FieldUserID = "message_user"
+	FieldUserID = "user_id"
 	// FieldParentID holds the string denoting the parent_id field in the database.
-	FieldParentID = "message_parent"
+	FieldParentID = "parent_id"
 	// FieldBody holds the string denoting the body field in the database.
 	FieldBody = "body"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -31,10 +31,6 @@ const (
 	FieldDeletedAt = "deleted_at"
 	// FieldDeletedBy holds the string denoting the deleted_by field in the database.
 	FieldDeletedBy = "deleted_by"
-	// FieldSenderName holds the string denoting the sender_name field in the database.
-	FieldSenderName = "sender_name"
-	// FieldSenderAvatarURL holds the string denoting the sender_avatar_url field in the database.
-	FieldSenderAvatarURL = "sender_avatar_url"
 	// FieldLocationLatitude holds the string denoting the location_latitude field in the database.
 	FieldLocationLatitude = "location_latitude"
 	// FieldLocationLongitude holds the string denoting the location_longitude field in the database.
@@ -74,92 +70,92 @@ const (
 	// EdgeThreadReadStates holds the string denoting the thread_read_states edge name in mutations.
 	EdgeThreadReadStates = "thread_read_states"
 	// Table holds the table name of the message in the database.
-	Table = "messages"
+	Table = "message"
 	// ChannelTable is the table that holds the channel relation/edge.
-	ChannelTable = "messages"
+	ChannelTable = "message"
 	// ChannelInverseTable is the table name for the Channel entity.
 	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	ChannelInverseTable = "channels"
+	ChannelInverseTable = "channel"
 	// ChannelColumn is the table column denoting the channel relation/edge.
-	ChannelColumn = "message_channel"
+	ChannelColumn = "channel_id"
 	// UserTable is the table that holds the user relation/edge.
-	UserTable = "messages"
+	UserTable = "message"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "message_user"
+	UserColumn = "user_id"
 	// ParentTable is the table that holds the parent relation/edge.
-	ParentTable = "messages"
+	ParentTable = "message"
 	// ParentColumn is the table column denoting the parent relation/edge.
-	ParentColumn = "message_parent"
+	ParentColumn = "parent_id"
 	// RepliesTable is the table that holds the replies relation/edge.
-	RepliesTable = "messages"
+	RepliesTable = "message"
 	// RepliesColumn is the table column denoting the replies relation/edge.
-	RepliesColumn = "message_parent"
+	RepliesColumn = "parent_id"
 	// ReactionsTable is the table that holds the reactions relation/edge.
-	ReactionsTable = "message_reactions"
+	ReactionsTable = "message_reaction"
 	// ReactionsInverseTable is the table name for the MessageReaction entity.
 	// It exists in this package in order to avoid circular dependency with the "messagereaction" package.
-	ReactionsInverseTable = "message_reactions"
+	ReactionsInverseTable = "message_reaction"
 	// ReactionsColumn is the table column denoting the reactions relation/edge.
-	ReactionsColumn = "message_reaction_message"
+	ReactionsColumn = "message_id"
 	// BookmarksTable is the table that holds the bookmarks relation/edge.
-	BookmarksTable = "message_bookmarks"
+	BookmarksTable = "message_bookmark"
 	// BookmarksInverseTable is the table name for the MessageBookmark entity.
 	// It exists in this package in order to avoid circular dependency with the "messagebookmark" package.
-	BookmarksInverseTable = "message_bookmarks"
+	BookmarksInverseTable = "message_bookmark"
 	// BookmarksColumn is the table column denoting the bookmarks relation/edge.
-	BookmarksColumn = "message_bookmark_message"
+	BookmarksColumn = "message_id"
 	// UserMentionsTable is the table that holds the user_mentions relation/edge.
-	UserMentionsTable = "message_user_mentions"
+	UserMentionsTable = "message_user_mention"
 	// UserMentionsInverseTable is the table name for the MessageUserMention entity.
 	// It exists in this package in order to avoid circular dependency with the "messageusermention" package.
-	UserMentionsInverseTable = "message_user_mentions"
+	UserMentionsInverseTable = "message_user_mention"
 	// UserMentionsColumn is the table column denoting the user_mentions relation/edge.
-	UserMentionsColumn = "message_user_mention_message"
+	UserMentionsColumn = "message_id"
 	// GroupMentionsTable is the table that holds the group_mentions relation/edge.
-	GroupMentionsTable = "message_group_mentions"
+	GroupMentionsTable = "message_group_mention"
 	// GroupMentionsInverseTable is the table name for the MessageGroupMention entity.
 	// It exists in this package in order to avoid circular dependency with the "messagegroupmention" package.
-	GroupMentionsInverseTable = "message_group_mentions"
+	GroupMentionsInverseTable = "message_group_mention"
 	// GroupMentionsColumn is the table column denoting the group_mentions relation/edge.
-	GroupMentionsColumn = "message_group_mention_message"
+	GroupMentionsColumn = "message_id"
 	// LinksTable is the table that holds the links relation/edge.
-	LinksTable = "message_links"
+	LinksTable = "message_link"
 	// LinksInverseTable is the table name for the MessageLink entity.
 	// It exists in this package in order to avoid circular dependency with the "messagelink" package.
-	LinksInverseTable = "message_links"
+	LinksInverseTable = "message_link"
 	// LinksColumn is the table column denoting the links relation/edge.
-	LinksColumn = "message_link_message"
+	LinksColumn = "message_id"
 	// AttachmentsTable is the table that holds the attachments relation/edge.
-	AttachmentsTable = "attachments"
+	AttachmentsTable = "attachment"
 	// AttachmentsInverseTable is the table name for the Attachment entity.
 	// It exists in this package in order to avoid circular dependency with the "attachment" package.
-	AttachmentsInverseTable = "attachments"
+	AttachmentsInverseTable = "attachment"
 	// AttachmentsColumn is the table column denoting the attachments relation/edge.
-	AttachmentsColumn = "attachment_message"
+	AttachmentsColumn = "message_id"
 	// PinsTable is the table that holds the pins relation/edge.
-	PinsTable = "message_pins"
+	PinsTable = "message_pin"
 	// PinsInverseTable is the table name for the MessagePin entity.
 	// It exists in this package in order to avoid circular dependency with the "messagepin" package.
-	PinsInverseTable = "message_pins"
+	PinsInverseTable = "message_pin"
 	// PinsColumn is the table column denoting the pins relation/edge.
-	PinsColumn = "message_pin_message"
+	PinsColumn = "message_id"
 	// UserThreadFollowsTable is the table that holds the user_thread_follows relation/edge.
-	UserThreadFollowsTable = "user_thread_follows"
+	UserThreadFollowsTable = "user_thread_follow"
 	// UserThreadFollowsInverseTable is the table name for the UserThreadFollow entity.
 	// It exists in this package in order to avoid circular dependency with the "userthreadfollow" package.
-	UserThreadFollowsInverseTable = "user_thread_follows"
+	UserThreadFollowsInverseTable = "user_thread_follow"
 	// UserThreadFollowsColumn is the table column denoting the user_thread_follows relation/edge.
-	UserThreadFollowsColumn = "user_thread_follow_thread"
+	UserThreadFollowsColumn = "thread_id"
 	// ThreadReadStatesTable is the table that holds the thread_read_states relation/edge.
-	ThreadReadStatesTable = "thread_read_states"
+	ThreadReadStatesTable = "thread_read_state"
 	// ThreadReadStatesInverseTable is the table name for the ThreadReadState entity.
 	// It exists in this package in order to avoid circular dependency with the "threadreadstate" package.
-	ThreadReadStatesInverseTable = "thread_read_states"
+	ThreadReadStatesInverseTable = "thread_read_state"
 	// ThreadReadStatesColumn is the table column denoting the thread_read_states relation/edge.
-	ThreadReadStatesColumn = "thread_read_state_thread"
+	ThreadReadStatesColumn = "thread_id"
 )
 
 // Columns holds all SQL columns for message fields.
@@ -173,8 +169,6 @@ var Columns = []string{
 	FieldEditedAt,
 	FieldDeletedAt,
 	FieldDeletedBy,
-	FieldSenderName,
-	FieldSenderAvatarURL,
 	FieldLocationLatitude,
 	FieldLocationLongitude,
 	FieldLocationAccuracy,
@@ -250,16 +244,6 @@ func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByDeletedBy orders the results by the deleted_by field.
 func ByDeletedBy(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeletedBy, opts...).ToFunc()
-}
-
-// BySenderName orders the results by the sender_name field.
-func BySenderName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSenderName, opts...).ToFunc()
-}
-
-// BySenderAvatarURL orders the results by the sender_avatar_url field.
-func BySenderAvatarURL(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSenderAvatarURL, opts...).ToFunc()
 }
 
 // ByLocationLatitude orders the results by the location_latitude field.

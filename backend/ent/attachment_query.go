@@ -29,7 +29,6 @@ type AttachmentQuery struct {
 	withMessage  *MessageQuery
 	withUploader *UserQuery
 	withChannel  *ChannelQuery
-	withFKs      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -372,12 +371,12 @@ func (_q *AttachmentQuery) WithChannel(opts ...func(*ChannelQuery)) *AttachmentQ
 // Example:
 //
 //	var v []struct {
-//		FileName string `json:"file_name,omitempty"`
+//		MessageID uuid.UUID `json:"message_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Attachment.Query().
-//		GroupBy(attachment.FieldFileName).
+//		GroupBy(attachment.FieldMessageID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *AttachmentQuery) GroupBy(field string, fields ...string) *AttachmentGroupBy {
@@ -395,11 +394,11 @@ func (_q *AttachmentQuery) GroupBy(field string, fields ...string) *AttachmentGr
 // Example:
 //
 //	var v []struct {
-//		FileName string `json:"file_name,omitempty"`
+//		MessageID uuid.UUID `json:"message_id,omitempty"`
 //	}
 //
 //	client.Attachment.Query().
-//		Select(attachment.FieldFileName).
+//		Select(attachment.FieldMessageID).
 //		Scan(ctx, &v)
 func (_q *AttachmentQuery) Select(fields ...string) *AttachmentSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -443,7 +442,6 @@ func (_q *AttachmentQuery) prepareQuery(ctx context.Context) error {
 func (_q *AttachmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Attachment, error) {
 	var (
 		nodes       = []*Attachment{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
 			_q.withMessage != nil,
@@ -451,12 +449,6 @@ func (_q *AttachmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*A
 			_q.withChannel != nil,
 		}
 	)
-	if _q.withMessage != nil || _q.withUploader != nil || _q.withChannel != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, attachment.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Attachment).scanValues(nil, columns)
 	}
@@ -500,10 +492,10 @@ func (_q *AttachmentQuery) loadMessage(ctx context.Context, query *MessageQuery,
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Attachment)
 	for i := range nodes {
-		if nodes[i].attachment_message == nil {
+		if nodes[i].MessageID == nil {
 			continue
 		}
-		fk := *nodes[i].attachment_message
+		fk := *nodes[i].MessageID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -520,7 +512,7 @@ func (_q *AttachmentQuery) loadMessage(ctx context.Context, query *MessageQuery,
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "attachment_message" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "message_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -532,10 +524,7 @@ func (_q *AttachmentQuery) loadUploader(ctx context.Context, query *UserQuery, n
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Attachment)
 	for i := range nodes {
-		if nodes[i].attachment_uploader == nil {
-			continue
-		}
-		fk := *nodes[i].attachment_uploader
+		fk := nodes[i].UploaderID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -552,7 +541,7 @@ func (_q *AttachmentQuery) loadUploader(ctx context.Context, query *UserQuery, n
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "attachment_uploader" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "uploader_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -564,10 +553,7 @@ func (_q *AttachmentQuery) loadChannel(ctx context.Context, query *ChannelQuery,
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Attachment)
 	for i := range nodes {
-		if nodes[i].attachment_channel == nil {
-			continue
-		}
-		fk := *nodes[i].attachment_channel
+		fk := nodes[i].ChannelID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -584,7 +570,7 @@ func (_q *AttachmentQuery) loadChannel(ctx context.Context, query *ChannelQuery,
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "attachment_channel" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "channel_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -617,6 +603,15 @@ func (_q *AttachmentQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != attachment.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withMessage != nil {
+			_spec.Node.AddColumnOnce(attachment.FieldMessageID)
+		}
+		if _q.withUploader != nil {
+			_spec.Node.AddColumnOnce(attachment.FieldUploaderID)
+		}
+		if _q.withChannel != nil {
+			_spec.Node.AddColumnOnce(attachment.FieldChannelID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

@@ -38,7 +38,6 @@ type ChannelQuery struct {
 	withReadStates  *ChannelReadStateQuery
 	withParent      *ChannelQuery
 	withChildren    *ChannelQuery
-	withFKs         bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -551,12 +550,12 @@ func (_q *ChannelQuery) WithChildren(opts ...func(*ChannelQuery)) *ChannelQuery 
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		WorkspaceID string `json:"workspace_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Channel.Query().
-//		GroupBy(channel.FieldName).
+//		GroupBy(channel.FieldWorkspaceID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *ChannelQuery) GroupBy(field string, fields ...string) *ChannelGroupBy {
@@ -574,11 +573,11 @@ func (_q *ChannelQuery) GroupBy(field string, fields ...string) *ChannelGroupBy 
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		WorkspaceID string `json:"workspace_id,omitempty"`
 //	}
 //
 //	client.Channel.Query().
-//		Select(channel.FieldName).
+//		Select(channel.FieldWorkspaceID).
 //		Scan(ctx, &v)
 func (_q *ChannelQuery) Select(fields ...string) *ChannelSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -622,7 +621,6 @@ func (_q *ChannelQuery) prepareQuery(ctx context.Context) error {
 func (_q *ChannelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Channel, error) {
 	var (
 		nodes       = []*Channel{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [8]bool{
 			_q.withWorkspace != nil,
@@ -635,12 +633,6 @@ func (_q *ChannelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chan
 			_q.withChildren != nil,
 		}
 	)
-	if _q.withWorkspace != nil || _q.withCreatedBy != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, channel.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Channel).scanValues(nil, columns)
 	}
@@ -719,10 +711,7 @@ func (_q *ChannelQuery) loadWorkspace(ctx context.Context, query *WorkspaceQuery
 	ids := make([]string, 0, len(nodes))
 	nodeids := make(map[string][]*Channel)
 	for i := range nodes {
-		if nodes[i].channel_workspace == nil {
-			continue
-		}
-		fk := *nodes[i].channel_workspace
+		fk := nodes[i].WorkspaceID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -739,7 +728,7 @@ func (_q *ChannelQuery) loadWorkspace(ctx context.Context, query *WorkspaceQuery
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_workspace" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "workspace_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -751,10 +740,7 @@ func (_q *ChannelQuery) loadCreatedBy(ctx context.Context, query *UserQuery, nod
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Channel)
 	for i := range nodes {
-		if nodes[i].channel_created_by == nil {
-			continue
-		}
-		fk := *nodes[i].channel_created_by
+		fk := nodes[i].CreatedByID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -771,7 +757,7 @@ func (_q *ChannelQuery) loadCreatedBy(ctx context.Context, query *UserQuery, nod
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_created_by" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "created_by_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -789,7 +775,9 @@ func (_q *ChannelQuery) loadMembers(ctx context.Context, query *ChannelMemberQue
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(channelmember.FieldChannelID)
+	}
 	query.Where(predicate.ChannelMember(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(channel.MembersColumn), fks...))
 	}))
@@ -798,13 +786,10 @@ func (_q *ChannelQuery) loadMembers(ctx context.Context, query *ChannelMemberQue
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.channel_member_channel
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "channel_member_channel" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.ChannelID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "channel_member_channel" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "channel_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -850,7 +835,9 @@ func (_q *ChannelQuery) loadAttachments(ctx context.Context, query *AttachmentQu
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(attachment.FieldChannelID)
+	}
 	query.Where(predicate.Attachment(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(channel.AttachmentsColumn), fks...))
 	}))
@@ -859,13 +846,10 @@ func (_q *ChannelQuery) loadAttachments(ctx context.Context, query *AttachmentQu
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.attachment_channel
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "attachment_channel" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.ChannelID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "attachment_channel" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "channel_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -881,7 +865,9 @@ func (_q *ChannelQuery) loadReadStates(ctx context.Context, query *ChannelReadSt
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(channelreadstate.FieldChannelID)
+	}
 	query.Where(predicate.ChannelReadState(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(channel.ReadStatesColumn), fks...))
 	}))
@@ -890,13 +876,10 @@ func (_q *ChannelQuery) loadReadStates(ctx context.Context, query *ChannelReadSt
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.channel_read_state_channel
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "channel_read_state_channel" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.ChannelID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "channel_read_state_channel" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "channel_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -944,7 +927,6 @@ func (_q *ChannelQuery) loadChildren(ctx context.Context, query *ChannelQuery, n
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(channel.FieldParentID)
 	}
@@ -993,6 +975,12 @@ func (_q *ChannelQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != channel.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withWorkspace != nil {
+			_spec.Node.AddColumnOnce(channel.FieldWorkspaceID)
+		}
+		if _q.withCreatedBy != nil {
+			_spec.Node.AddColumnOnce(channel.FieldCreatedByID)
 		}
 		if _q.withParent != nil {
 			_spec.Node.AddColumnOnce(channel.FieldParentID)

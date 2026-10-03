@@ -19,7 +19,7 @@ export const YouTubeCard = ({ url, ogp, video }: YouTubeCardProps) => {
   const thumbnail = ogp.imageUrl ?? `https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`;
 
   return (
-    <div className="w-[min(420px,100%)] overflow-hidden rounded-[10px] border border-border bg-surface font-sans">
+    <div className="w-105 max-w-full overflow-hidden rounded-lg border border-border bg-surface font-sans">
       <Link
         href={url}
         target="_blank"
@@ -32,14 +32,14 @@ export const YouTubeCard = ({ url, ogp, video }: YouTubeCardProps) => {
           <IconPlayerPlayFilled aria-hidden />
         </span>
         {video.durationSeconds !== undefined && (
-          <span className="absolute right-2 bottom-2 rounded-[4px] bg-media/75 px-[5px] py-px font-mono text-[11px] font-medium text-media-fg">
+          <span className="absolute right-2 bottom-2 rounded-sm bg-media/75 px-1.25 py-px font-mono text-caption font-medium text-media-fg">
             {formatDuration(video.durationSeconds)}
           </span>
         )}
       </Link>
       <div className="flex flex-col gap-0.5 px-3 pt-2 pb-2.5">
-        <span className="flex items-center gap-1.5 text-[11.5px] text-muted">
-          <i aria-hidden className="block size-3.5 shrink-0 rounded-[3px] bg-danger" />
+        <span className="flex items-center gap-1.5 text-caption text-muted">
+          <i aria-hidden className="block size-3.5 shrink-0 rounded-sm bg-danger" />
           <span className="truncate">
             {[t("link.youtube.site"), video.channelName].filter(Boolean).join(" · ")}
           </span>
@@ -48,7 +48,7 @@ export const YouTubeCard = ({ url, ogp, video }: YouTubeCardProps) => {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className={`cursor-pointer rounded-sm text-[13.5px] leading-[1.45] font-semibold text-accent-text no-underline data-hovered:underline ${focusRing}`}
+          className={`cursor-pointer rounded-sm text-body-sm leading-normal font-semibold text-accent-text no-underline data-hovered:underline ${focusRing}`}
         >
           {ogp.title ?? url}
         </Link>

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -42,7 +43,7 @@ func (i *interactor) Update(ctx context.Context, input UpdateInput) (*Output, er
 		return nil, fmt.Errorf("failed to load target user: %w", err)
 	}
 	if target == nil {
-		return nil, entity.ErrUserNotFound
+		return nil, domerr.ErrUserNotFound
 	}
 
 	note := &entity.UserNote{

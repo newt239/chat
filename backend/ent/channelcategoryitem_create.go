@@ -26,6 +26,24 @@ type ChannelCategoryItemCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetCategoryID sets the "category_id" field.
+func (_c *ChannelCategoryItemCreate) SetCategoryID(v uuid.UUID) *ChannelCategoryItemCreate {
+	_c.mutation.SetCategoryID(v)
+	return _c
+}
+
+// SetUserID sets the "user_id" field.
+func (_c *ChannelCategoryItemCreate) SetUserID(v uuid.UUID) *ChannelCategoryItemCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
+// SetChannelID sets the "channel_id" field.
+func (_c *ChannelCategoryItemCreate) SetChannelID(v uuid.UUID) *ChannelCategoryItemCreate {
+	_c.mutation.SetChannelID(v)
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ChannelCategoryItemCreate) SetID(v uuid.UUID) *ChannelCategoryItemCreate {
 	_c.mutation.SetID(v)
@@ -40,32 +58,14 @@ func (_c *ChannelCategoryItemCreate) SetNillableID(v *uuid.UUID) *ChannelCategor
 	return _c
 }
 
-// SetCategoryID sets the "category" edge to the ChannelCategory entity by ID.
-func (_c *ChannelCategoryItemCreate) SetCategoryID(id uuid.UUID) *ChannelCategoryItemCreate {
-	_c.mutation.SetCategoryID(id)
-	return _c
-}
-
 // SetCategory sets the "category" edge to the ChannelCategory entity.
 func (_c *ChannelCategoryItemCreate) SetCategory(v *ChannelCategory) *ChannelCategoryItemCreate {
 	return _c.SetCategoryID(v.ID)
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *ChannelCategoryItemCreate) SetUserID(id uuid.UUID) *ChannelCategoryItemCreate {
-	_c.mutation.SetUserID(id)
-	return _c
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_c *ChannelCategoryItemCreate) SetUser(v *User) *ChannelCategoryItemCreate {
 	return _c.SetUserID(v.ID)
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_c *ChannelCategoryItemCreate) SetChannelID(id uuid.UUID) *ChannelCategoryItemCreate {
-	_c.mutation.SetChannelID(id)
-	return _c
 }
 
 // SetChannel sets the "channel" edge to the Channel entity.
@@ -116,6 +116,15 @@ func (_c *ChannelCategoryItemCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *ChannelCategoryItemCreate) check() error {
+	if _, ok := _c.mutation.CategoryID(); !ok {
+		return &ValidationError{Name: "category_id", err: errors.New(`ent: missing required field "ChannelCategoryItem.category_id"`)}
+	}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "ChannelCategoryItem.user_id"`)}
+	}
+	if _, ok := _c.mutation.ChannelID(); !ok {
+		return &ValidationError{Name: "channel_id", err: errors.New(`ent: missing required field "ChannelCategoryItem.channel_id"`)}
+	}
 	if len(_c.mutation.CategoryIDs()) == 0 {
 		return &ValidationError{Name: "category", err: errors.New(`ent: missing required edge "ChannelCategoryItem.category"`)}
 	}
@@ -175,7 +184,7 @@ func (_c *ChannelCategoryItemCreate) createSpec() (*ChannelCategoryItem, *sqlgra
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_category_items = &nodes[0]
+		_node.CategoryID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
@@ -192,7 +201,7 @@ func (_c *ChannelCategoryItemCreate) createSpec() (*ChannelCategoryItem, *sqlgra
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_category_item_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ChannelIDs(); len(nodes) > 0 {
@@ -209,7 +218,7 @@ func (_c *ChannelCategoryItemCreate) createSpec() (*ChannelCategoryItem, *sqlgra
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_category_item_channel = &nodes[0]
+		_node.ChannelID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -219,11 +228,17 @@ func (_c *ChannelCategoryItemCreate) createSpec() (*ChannelCategoryItem, *sqlgra
 // of the `INSERT` statement. For example:
 //
 //	client.ChannelCategoryItem.Create().
+//		SetCategoryID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
 //			sql.ResolveWithNewValues(),
 //		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ChannelCategoryItemUpsert) {
+//			SetCategoryID(v+v).
+//		}).
 //		Exec(ctx)
 func (_c *ChannelCategoryItemCreate) OnConflict(opts ...sql.ConflictOption) *ChannelCategoryItemUpsertOne {
 	_c.conflict = opts
@@ -257,6 +272,42 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetCategoryID sets the "category_id" field.
+func (u *ChannelCategoryItemUpsert) SetCategoryID(v uuid.UUID) *ChannelCategoryItemUpsert {
+	u.Set(channelcategoryitem.FieldCategoryID, v)
+	return u
+}
+
+// UpdateCategoryID sets the "category_id" field to the value that was provided on create.
+func (u *ChannelCategoryItemUpsert) UpdateCategoryID() *ChannelCategoryItemUpsert {
+	u.SetExcluded(channelcategoryitem.FieldCategoryID)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelCategoryItemUpsert) SetUserID(v uuid.UUID) *ChannelCategoryItemUpsert {
+	u.Set(channelcategoryitem.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelCategoryItemUpsert) UpdateUserID() *ChannelCategoryItemUpsert {
+	u.SetExcluded(channelcategoryitem.FieldUserID)
+	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelCategoryItemUpsert) SetChannelID(v uuid.UUID) *ChannelCategoryItemUpsert {
+	u.Set(channelcategoryitem.FieldChannelID, v)
+	return u
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelCategoryItemUpsert) UpdateChannelID() *ChannelCategoryItemUpsert {
+	u.SetExcluded(channelcategoryitem.FieldChannelID)
+	return u
+}
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
@@ -304,6 +355,48 @@ func (u *ChannelCategoryItemUpsertOne) Update(set func(*ChannelCategoryItemUpser
 		set(&ChannelCategoryItemUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetCategoryID sets the "category_id" field.
+func (u *ChannelCategoryItemUpsertOne) SetCategoryID(v uuid.UUID) *ChannelCategoryItemUpsertOne {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.SetCategoryID(v)
+	})
+}
+
+// UpdateCategoryID sets the "category_id" field to the value that was provided on create.
+func (u *ChannelCategoryItemUpsertOne) UpdateCategoryID() *ChannelCategoryItemUpsertOne {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.UpdateCategoryID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelCategoryItemUpsertOne) SetUserID(v uuid.UUID) *ChannelCategoryItemUpsertOne {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelCategoryItemUpsertOne) UpdateUserID() *ChannelCategoryItemUpsertOne {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelCategoryItemUpsertOne) SetChannelID(v uuid.UUID) *ChannelCategoryItemUpsertOne {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelCategoryItemUpsertOne) UpdateChannelID() *ChannelCategoryItemUpsertOne {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.UpdateChannelID()
+	})
 }
 
 // Exec executes the query.
@@ -439,6 +532,11 @@ func (_c *ChannelCategoryItemCreateBulk) ExecX(ctx context.Context) {
 //			// the was proposed for insertion.
 //			sql.ResolveWithNewValues(),
 //		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ChannelCategoryItemUpsert) {
+//			SetCategoryID(v+v).
+//		}).
 //		Exec(ctx)
 func (_c *ChannelCategoryItemCreateBulk) OnConflict(opts ...sql.ConflictOption) *ChannelCategoryItemUpsertBulk {
 	_c.conflict = opts
@@ -514,6 +612,48 @@ func (u *ChannelCategoryItemUpsertBulk) Update(set func(*ChannelCategoryItemUpse
 		set(&ChannelCategoryItemUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetCategoryID sets the "category_id" field.
+func (u *ChannelCategoryItemUpsertBulk) SetCategoryID(v uuid.UUID) *ChannelCategoryItemUpsertBulk {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.SetCategoryID(v)
+	})
+}
+
+// UpdateCategoryID sets the "category_id" field to the value that was provided on create.
+func (u *ChannelCategoryItemUpsertBulk) UpdateCategoryID() *ChannelCategoryItemUpsertBulk {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.UpdateCategoryID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelCategoryItemUpsertBulk) SetUserID(v uuid.UUID) *ChannelCategoryItemUpsertBulk {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelCategoryItemUpsertBulk) UpdateUserID() *ChannelCategoryItemUpsertBulk {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelCategoryItemUpsertBulk) SetChannelID(v uuid.UUID) *ChannelCategoryItemUpsertBulk {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelCategoryItemUpsertBulk) UpdateChannelID() *ChannelCategoryItemUpsertBulk {
+	return u.Update(func(s *ChannelCategoryItemUpsert) {
+		s.UpdateChannelID()
+	})
 }
 
 // Exec executes the query.

@@ -23,7 +23,7 @@ import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
 import { ALL_REACTIONS_TAB } from "#/features/reaction/utils/reactionTabs";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 import { toDate } from "#/lib/timestamp";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useLongPress } from "../hooks/useLongPress";
 import { useMessageActions } from "../hooks/useMessageActions";
@@ -40,11 +40,9 @@ import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
 type MessageItemProps = {
   message: Message;
-  currentUserId: string | null;
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
   threadMetadata?: ThreadMetadata;
-  onOpenThread?: (messageId: string) => void;
   isHighlighted?: boolean;
   // 親チャンネルの集約表示で、子孫チャンネルのメッセージに付けるチップ
   channelChip?: ReactNode;
@@ -52,16 +50,14 @@ type MessageItemProps = {
 
 export const MessageItem = ({
   message,
-  currentUserId,
   onCopyLink,
   onCreateThread,
   threadMetadata,
-  onOpenThread,
   isHighlighted = false,
   channelChip = null,
 }: MessageItemProps) => {
   const { t } = useTranslation();
-  const currentUser = useAtomValue(userAtom);
+  const myId = useAtomValue(myUserIdAtom);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const ownsOverlay = useOwnsMessageOverlay(message.id);
@@ -101,10 +97,10 @@ export const MessageItem = ({
   const isMentioned =
     message.mentionsChannel ||
     message.mentionsHere ||
-    message.mentions.some((mention) => mention.userId === currentUserId);
+    message.mentions.some((mention) => mention.userId === myId);
 
   const { actions, isBookmarked, toggleBookmark } = useMessageMenuActions({
-    isAuthor: message.userId === currentUserId,
+    isAuthor: message.userId === myId,
     message,
     onCopyLink: () => {
       onCopyLink(message.id);
@@ -121,14 +117,13 @@ export const MessageItem = ({
     onViewReactions: () => {
       setReactionTab(ALL_REACTIONS_TAB);
     },
+    threadMetadata,
   });
 
   const react = (emoji: string) => {
     toggleReaction(
       emoji,
-      message.reactions.some(
-        (reaction) => reaction.emoji === emoji && reaction.user?.id === currentUser?.id,
-      ),
+      message.reactions.some((reaction) => reaction.emoji === emoji && reaction.user?.id === myId),
     );
   };
 
@@ -137,8 +132,8 @@ export const MessageItem = ({
   };
 
   const displayName = useDisplayName()(message.userId, message.user?.displayName ?? "");
-  // アプリの投稿はプロフィールを持たないボットユーザー名義なので、プロフィールを開かない
-  const isBot = message.user?.isBot ?? false;
+  // アプリの投稿者はプロフィールを持たないため開かない
+  const isApp = message.user?.isApp ?? false;
   const avatar = (
     <Avatar name={displayName} src={message.user?.avatarUrl} size={isMobile ? 34 : 32} />
   );
@@ -165,7 +160,7 @@ export const MessageItem = ({
       {...longPressProps}
       data-message-id={message.id}
       className={cn(
-        "relative flex gap-2.5 px-[18px] py-1.5 font-sans text-text",
+        "relative flex gap-2.5 px-4.5 py-1.5 font-sans text-text",
         (isHovered || isOverlayOpen) && "bg-hover",
         isMobile && "select-none [-webkit-touch-callout:none]",
         isPressed && "bg-hover",
@@ -179,7 +174,7 @@ export const MessageItem = ({
         "transition-colors motion-reduce:transition-none",
       )}
     >
-      {isBot ? (
+      {isApp ? (
         <span className="mt-0.5 self-start">{avatar}</span>
       ) : (
         <Button
@@ -191,20 +186,20 @@ export const MessageItem = ({
         </Button>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.25">
         {message.pin && (
-          <span className="-mb-0.5 inline-flex items-center gap-1 self-start text-[11px] font-semibold text-accent-text [&_svg]:size-3">
+          <span className="-mb-0.5 inline-flex items-center gap-1 self-start text-caption font-semibold text-accent-text [&_svg]:size-3">
             <IconPin aria-hidden />
             {t("pin.label", {
               name:
-                message.pin.pinnedBy?.id === currentUserId
+                message.pin.pinnedBy?.id === myId
                   ? t("reaction.names.you")
                   : (message.pin.pinnedBy?.displayName ?? ""),
             })}
           </span>
         )}
-        <div className="flex flex-wrap items-baseline gap-[7px] leading-[1.3]">
-          {isBot ? (
+        <div className="flex flex-wrap items-baseline gap-1.75 leading-snug">
+          {isApp ? (
             <>
               <span className="text-sm font-bold text-text">{displayName}</span>
               <Badge tone="tag" className="self-center">
@@ -222,7 +217,7 @@ export const MessageItem = ({
           <MessageTime date={createdAt} />
           {channelChip}
           {message.editedAt && !message.isDeleted && (
-            <span className="text-[11px] text-subtle">{t("message.edited")}</span>
+            <span className="text-caption text-subtle">{t("message.edited")}</span>
           )}
           {isBookmarked && (
             <IconBookmarkFilled
@@ -254,7 +249,7 @@ export const MessageItem = ({
           <MessageLocationCard location={message.location} />
         )}
         {!message.isDeleted && message.poll && (
-          <MessagePollCard poll={message.poll} isAuthor={message.userId === currentUserId} />
+          <MessagePollCard poll={message.poll} isAuthor={message.userId === myId} />
         )}
         {!message.isDeleted && <MessageAttachments message={message} />}
 
@@ -264,11 +259,11 @@ export const MessageItem = ({
           onOpenList={setReactionTab}
         />
 
-        {threadMetadata && threadMetadata.replyCount > 0 && onOpenThread && (
+        {threadMetadata && threadMetadata.replyCount > 0 && (
           <ThreadMetadataPreview
             metadata={threadMetadata}
             onPress={() => {
-              onOpenThread(message.id);
+              onCreateThread(message.id);
             }}
           />
         )}
@@ -287,13 +282,10 @@ export const MessageItem = ({
         />
       )}
 
-      {isMobile && (
+      {isMobile && isSheetOpen && (
         <MessageActionSheet
-          isOpen={isSheetOpen}
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              void navigate({ search: closeDialog, to: "." });
-            }
+          onClose={() => {
+            void navigate({ search: closeDialog, to: "." });
           }}
           message={message}
           actions={actions}
@@ -311,7 +303,7 @@ export const MessageItem = ({
         tone="danger"
         isPending={isDeleting}
         onConfirm={() => {
-          void handleDelete(message.id).then(() => {
+          void handleDelete(message).then(() => {
             setIsDeleteOpen(false);
           });
         }}

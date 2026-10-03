@@ -14,7 +14,7 @@ const setup = async (parentId: string | null = null) => {
   const createChannel = vi.fn<(req: CreateChannelRequest) => void>();
   const onClose = vi.fn<() => void>();
   const { router } = await renderWithProviders(
-    <CreateChannelModal workspaceId="ws1" parentId={parentId} opened onClose={onClose} />,
+    <CreateChannelModal workspaceId="ws1" parentId={parentId} onClose={onClose} />,
     "/app/ws1",
     (routes) => {
       routes.rpc(ChannelService.method.listChannels, () => ({
@@ -71,8 +71,8 @@ describe("CreateChannelModal", () => {
     expect(createChannel).not.toHaveBeenCalled();
   });
 
-  test("作成したら閉じてチャンネルを開く", async () => {
-    const { createChannel, nameField, onClose, router } = await setup();
+  test("作成したらチャンネルを開く", async () => {
+    const { createChannel, nameField, router } = await setup();
     await userEvent.type(nameField, "dev/frontend");
     await userEvent.click(screen.getByRole("switch", { name: "非公開にする" }));
     await userEvent.click(screen.getByRole("button", { name: "作成" }));
@@ -80,7 +80,7 @@ describe("CreateChannelModal", () => {
     await waitFor(() => {
       expect(router.state.location.pathname).toBe("/app/ws1/c2");
     });
-    expect(onClose).toHaveBeenCalled();
+    expect(router.state.location.search).toEqual({});
     expect(createChannel).toHaveBeenCalledWith(
       expect.objectContaining({ isPrivate: true, name: "dev/frontend", workspaceId: "ws1" }),
     );

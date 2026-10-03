@@ -6,7 +6,6 @@ import (
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/app"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
@@ -24,10 +23,7 @@ func NewAppRepository(client *ent.Client) domainrepository.AppRepository {
 }
 
 func (r *appRepository) query(ctx context.Context) *ent.AppQuery {
-	return transaction.ResolveClient(ctx, r.client).App.Query().
-		WithCreatedBy().
-		WithBotUser().
-		WithDefaultChannel()
+	return transaction.ResolveClient(ctx, r.client).App.Query()
 }
 
 func (r *appRepository) find(ctx context.Context, query *ent.AppQuery) ([]*entity.App, error) {
@@ -75,7 +71,7 @@ func (r *appRepository) FindByChannelID(ctx context.Context, channelID string) (
 		return nil, err
 	}
 	return r.find(ctx, r.query(ctx).Where(app.HasBotUserWith(
-		user.HasChannelMembersWith(channelmember.HasChannelWith(channel.ID(cid))),
+		user.HasChannelMembersWith(channelmember.ChannelID(cid)),
 	)))
 }
 
@@ -177,7 +173,7 @@ func (r *appRepository) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	if _, err := client.ChannelMember.Delete().Where(channelmember.HasUserWith(user.ID(botID))).Exec(ctx); err != nil {
+	if _, err := client.ChannelMember.Delete().Where(channelmember.UserID(botID)).Exec(ctx); err != nil {
 		return err
 	}
 	return client.App.DeleteOneID(appID).Exec(ctx)
@@ -193,30 +189,23 @@ func permissionStrings(permissions []entity.AppPermission) []string {
 
 func appToEntity(a *ent.App) *entity.App {
 	result := &entity.App{
-		ID:             a.ID.String(),
-		WorkspaceID:    a.WorkspaceID,
-		Name:           a.Name,
-		Description:    a.Description,
-		AvatarURL:      a.AvatarURL,
-		TokenHash:      a.TokenHash,
-		OutgoingURL:    a.OutgoingURL,
-		OutgoingSecret: a.OutgoingSecret,
-		IsOfficial:     a.IsOfficial,
-		LastUsedAt:     a.LastUsedAt,
-		CreatedAt:      a.CreatedAt,
+		ID:               a.ID.String(),
+		WorkspaceID:      a.WorkspaceID,
+		Name:             a.Name,
+		Description:      a.Description,
+		AvatarURL:        a.AvatarURL,
+		TokenHash:        a.TokenHash,
+		OutgoingURL:      a.OutgoingURL,
+		OutgoingSecret:   a.OutgoingSecret,
+		IsOfficial:       a.IsOfficial,
+		LastUsedAt:       a.LastUsedAt,
+		CreatedBy:        a.CreatedByID.String(),
+		BotUserID:        a.BotUserID.String(),
+		DefaultChannelID: utils.UUIDPtrToStringPtr(a.DefaultChannelID),
+		CreatedAt:        a.CreatedAt,
 	}
 	for _, p := range a.Permissions {
 		result.Permissions = append(result.Permissions, entity.AppPermission(p))
-	}
-	if a.Edges.CreatedBy != nil {
-		result.CreatedBy = a.Edges.CreatedBy.ID.String()
-	}
-	if a.Edges.BotUser != nil {
-		result.BotUserID = a.Edges.BotUser.ID.String()
-	}
-	if a.Edges.DefaultChannel != nil {
-		id := a.Edges.DefaultChannel.ID.String()
-		result.DefaultChannelID = &id
 	}
 	return result
 }

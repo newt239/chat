@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, test } from "vite-plus/test";
 
 import { GetInsightsResponseSchema } from "#/gen/chat/v1/insight_service_pb";
+import { QueryWrapper } from "#/test/QueryWrapper";
 
 import { InsightsKpis } from "./InsightsKpis";
 
@@ -22,6 +23,7 @@ describe("InsightsKpis", () => {
           storageBytes: { current: 2048n, previous: 1024n },
         })}
       />,
+      { wrapper: QueryWrapper },
     );
     expect(screen.getByText("/ 4 人")).toBeInTheDocument();
     expect(screen.getByText("+50% 前期比")).toBeInTheDocument();
@@ -41,6 +43,7 @@ describe("InsightsKpis", () => {
           messageCount: { current: 5n, previous: 0n },
         })}
       />,
+      { wrapper: QueryWrapper },
     );
     expect(screen.queryByText(/% 前期比/)).not.toBeInTheDocument();
   });

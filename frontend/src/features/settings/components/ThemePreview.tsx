@@ -1,8 +1,8 @@
-import { buildTokens } from "@chat/design-tokens";
+import { buildTokens } from "@chat/design-tokens/theme";
 
 import { useColorMode } from "#/providers/theme/colorMode";
 
-import type { ThemeInput } from "@chat/design-tokens";
+import type { ThemeInput } from "@chat/design-tokens/theme";
 
 type ThemePreviewProps = {
   theme: ThemeInput;
@@ -13,7 +13,7 @@ export const ThemePreview = ({ theme }: ThemePreviewProps) => {
   const tokens = buildTokens(theme, useColorMode());
   return (
     <span aria-hidden className="flex h-16 overflow-hidden">
-      <span className="flex w-[34%] flex-col gap-1.5 p-2" style={{ background: tokens.side }}>
+      <span className="flex w-1/3 flex-col gap-1.5 p-2" style={{ background: tokens.side }}>
         {[70, 90, 60].map((width, index) => (
           <i
             key={width}

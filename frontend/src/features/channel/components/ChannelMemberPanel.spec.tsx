@@ -6,7 +6,6 @@ import { describe, expect, test } from "vite-plus/test";
 import { ChannelMemberSchema, ChannelMemberService } from "#/gen/chat/v1/channel_member_service_pb";
 import { WorkspaceMemberSchema, WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 import { channelViewersAtom } from "#/providers/store/ui";
-import { syncCurrentWorkspaceAtom } from "#/providers/store/workspace";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { ChannelMemberPanel } from "./ChannelMemberPanel";
@@ -51,7 +50,6 @@ describe("ChannelMemberPanel", () => {
         }));
       },
     );
-    store.set(syncCurrentWorkspaceAtom, "ws1");
     store.set(channelViewersAtom, { c1: ["u-bob"] });
 
     const viewing = await screen.findByRole("region", { name: "いま閲覧中" });

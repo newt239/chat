@@ -56,9 +56,59 @@ func IDLTE(id uuid.UUID) predicate.UserThreadFollow {
 	return predicate.UserThreadFollow(sql.FieldLTE(FieldID, id))
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.UserThreadFollow {
+	return predicate.UserThreadFollow(sql.FieldEQ(FieldUserID, v))
+}
+
+// ThreadID applies equality check predicate on the "thread_id" field. It's identical to ThreadIDEQ.
+func ThreadID(v uuid.UUID) predicate.UserThreadFollow {
+	return predicate.UserThreadFollow(sql.FieldEQ(FieldThreadID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.UserThreadFollow {
 	return predicate.UserThreadFollow(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.UserThreadFollow {
+	return predicate.UserThreadFollow(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.UserThreadFollow {
+	return predicate.UserThreadFollow(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.UserThreadFollow {
+	return predicate.UserThreadFollow(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.UserThreadFollow {
+	return predicate.UserThreadFollow(sql.FieldNotIn(FieldUserID, vs...))
+}
+
+// ThreadIDEQ applies the EQ predicate on the "thread_id" field.
+func ThreadIDEQ(v uuid.UUID) predicate.UserThreadFollow {
+	return predicate.UserThreadFollow(sql.FieldEQ(FieldThreadID, v))
+}
+
+// ThreadIDNEQ applies the NEQ predicate on the "thread_id" field.
+func ThreadIDNEQ(v uuid.UUID) predicate.UserThreadFollow {
+	return predicate.UserThreadFollow(sql.FieldNEQ(FieldThreadID, v))
+}
+
+// ThreadIDIn applies the In predicate on the "thread_id" field.
+func ThreadIDIn(vs ...uuid.UUID) predicate.UserThreadFollow {
+	return predicate.UserThreadFollow(sql.FieldIn(FieldThreadID, vs...))
+}
+
+// ThreadIDNotIn applies the NotIn predicate on the "thread_id" field.
+func ThreadIDNotIn(vs ...uuid.UUID) predicate.UserThreadFollow {
+	return predicate.UserThreadFollow(sql.FieldNotIn(FieldThreadID, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

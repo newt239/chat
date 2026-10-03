@@ -8,7 +8,6 @@ import { UserPreferencesSchema } from "#/gen/chat/v1/user_pb";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
-import { useSyncPreferences } from "./usePreferences";
 import { useTimezoneSync } from "./useTimezoneSync";
 
 import type { UserPreferences } from "#/gen/chat/v1/user_pb";
@@ -16,9 +15,7 @@ import type { UserPreferences } from "#/gen/chat/v1/user_pb";
 const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const otherTimezone = deviceTimezone === "Asia/Tokyo" ? "Europe/London" : "Asia/Tokyo";
 
-// アプリと同じく、アカウントの設定を読み込んだ後に確かめる
 const Probe = () => {
-  useSyncPreferences();
   useTimezoneSync();
   return <ToastRegion />;
 };

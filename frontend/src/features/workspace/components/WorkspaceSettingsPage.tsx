@@ -3,13 +3,13 @@ import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
-import { isAdminRole } from "#/features/admin/utils/isAdminRole";
 import { CustomEmojiSettings } from "#/features/customEmoji/components/CustomEmojiSettings";
 import { SettingsLayout } from "#/features/settings/components/SettingsLayout";
 import { SettingsNavLink } from "#/features/settings/components/SettingsNavLink";
+import { isAdminRole } from "#/lib/isAdminRole";
 
 import { useWorkspaces } from "../hooks/useWorkspace";
-import { isWorkspaceSettingsSection, workspaceSettingsSections } from "../schemas";
+import { findWorkspaceSettingsSection, workspaceSettingsSections } from "../schemas";
 import { WorkspaceGeneralSettings } from "./WorkspaceGeneralSettings";
 import { WorkspaceMemberManager } from "./WorkspaceMemberManager";
 
@@ -26,7 +26,7 @@ const workspaceSettingsRoute = getRouteApi("/app/$workspaceId/workspace-settings
 export const WorkspaceSettingsPage = () => {
   const { t } = useTranslation();
   const { section, workspaceId } = workspaceSettingsRoute.useParams();
-  const current = isWorkspaceSettingsSection(section) ? section : "general";
+  const current = findWorkspaceSettingsSection(section) ?? "general";
   const { data: workspaces } = useWorkspaces();
   const workspace = workspaces?.find((candidate) => candidate.id === workspaceId);
 

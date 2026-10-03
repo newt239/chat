@@ -21,6 +21,11 @@ vi.stubGlobal(
   },
 );
 
+// jsdom は Web Locks API を実装していないため、ロックを取らずにそのまま実行する
+Object.defineProperty(navigator, "locks", {
+  value: { request: <T>(_name: string, callback: () => T) => Promise.resolve(callback()) },
+});
+
 // Node 26 の組み込み localStorage が jsdom のものを覆い隠し、未設定だと undefined になるため
 const memoryStorage = new Map<string, string>();
 vi.stubGlobal("localStorage", {

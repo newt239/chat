@@ -30,6 +30,9 @@ import (
 	"github.com/newt239/chat/ent/customemoji"
 	"github.com/newt239/chat/ent/draft"
 	"github.com/newt239/chat/ent/invitation"
+	"github.com/newt239/chat/ent/linkpreview"
+	"github.com/newt239/chat/ent/linkpreviewxpost"
+	"github.com/newt239/chat/ent/linkpreviewyoutube"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
@@ -49,7 +52,9 @@ import (
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/userlink"
 	"github.com/newt239/chat/ent/usernote"
+	"github.com/newt239/chat/ent/userpreference"
 	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
@@ -91,6 +96,12 @@ type Client struct {
 	Draft *DraftClient
 	// Invitation is the client for interacting with the Invitation builders.
 	Invitation *InvitationClient
+	// LinkPreview is the client for interacting with the LinkPreview builders.
+	LinkPreview *LinkPreviewClient
+	// LinkPreviewXPost is the client for interacting with the LinkPreviewXPost builders.
+	LinkPreviewXPost *LinkPreviewXPostClient
+	// LinkPreviewYoutube is the client for interacting with the LinkPreviewYoutube builders.
+	LinkPreviewYoutube *LinkPreviewYoutubeClient
 	// Message is the client for interacting with the Message builders.
 	Message *MessageClient
 	// MessageBookmark is the client for interacting with the MessageBookmark builders.
@@ -129,8 +140,12 @@ type Client struct {
 	UserGroup *UserGroupClient
 	// UserGroupMember is the client for interacting with the UserGroupMember builders.
 	UserGroupMember *UserGroupMemberClient
+	// UserLink is the client for interacting with the UserLink builders.
+	UserLink *UserLinkClient
 	// UserNote is the client for interacting with the UserNote builders.
 	UserNote *UserNoteClient
+	// UserPreference is the client for interacting with the UserPreference builders.
+	UserPreference *UserPreferenceClient
 	// UserThreadFollow is the client for interacting with the UserThreadFollow builders.
 	UserThreadFollow *UserThreadFollowClient
 	// Workspace is the client for interacting with the Workspace builders.
@@ -164,6 +179,9 @@ func (c *Client) init() {
 	c.CustomEmoji = NewCustomEmojiClient(c.config)
 	c.Draft = NewDraftClient(c.config)
 	c.Invitation = NewInvitationClient(c.config)
+	c.LinkPreview = NewLinkPreviewClient(c.config)
+	c.LinkPreviewXPost = NewLinkPreviewXPostClient(c.config)
+	c.LinkPreviewYoutube = NewLinkPreviewYoutubeClient(c.config)
 	c.Message = NewMessageClient(c.config)
 	c.MessageBookmark = NewMessageBookmarkClient(c.config)
 	c.MessageGroupMention = NewMessageGroupMentionClient(c.config)
@@ -183,7 +201,9 @@ func (c *Client) init() {
 	c.User = NewUserClient(c.config)
 	c.UserGroup = NewUserGroupClient(c.config)
 	c.UserGroupMember = NewUserGroupMemberClient(c.config)
+	c.UserLink = NewUserLinkClient(c.config)
 	c.UserNote = NewUserNoteClient(c.config)
+	c.UserPreference = NewUserPreferenceClient(c.config)
 	c.UserThreadFollow = NewUserThreadFollowClient(c.config)
 	c.Workspace = NewWorkspaceClient(c.config)
 	c.WorkspaceMember = NewWorkspaceMemberClient(c.config)
@@ -294,6 +314,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		CustomEmoji:         NewCustomEmojiClient(cfg),
 		Draft:               NewDraftClient(cfg),
 		Invitation:          NewInvitationClient(cfg),
+		LinkPreview:         NewLinkPreviewClient(cfg),
+		LinkPreviewXPost:    NewLinkPreviewXPostClient(cfg),
+		LinkPreviewYoutube:  NewLinkPreviewYoutubeClient(cfg),
 		Message:             NewMessageClient(cfg),
 		MessageBookmark:     NewMessageBookmarkClient(cfg),
 		MessageGroupMention: NewMessageGroupMentionClient(cfg),
@@ -313,7 +336,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		User:                NewUserClient(cfg),
 		UserGroup:           NewUserGroupClient(cfg),
 		UserGroupMember:     NewUserGroupMemberClient(cfg),
+		UserLink:            NewUserLinkClient(cfg),
 		UserNote:            NewUserNoteClient(cfg),
+		UserPreference:      NewUserPreferenceClient(cfg),
 		UserThreadFollow:    NewUserThreadFollowClient(cfg),
 		Workspace:           NewWorkspaceClient(cfg),
 		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
@@ -351,6 +376,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		CustomEmoji:         NewCustomEmojiClient(cfg),
 		Draft:               NewDraftClient(cfg),
 		Invitation:          NewInvitationClient(cfg),
+		LinkPreview:         NewLinkPreviewClient(cfg),
+		LinkPreviewXPost:    NewLinkPreviewXPostClient(cfg),
+		LinkPreviewYoutube:  NewLinkPreviewYoutubeClient(cfg),
 		Message:             NewMessageClient(cfg),
 		MessageBookmark:     NewMessageBookmarkClient(cfg),
 		MessageGroupMention: NewMessageGroupMentionClient(cfg),
@@ -370,7 +398,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		User:                NewUserClient(cfg),
 		UserGroup:           NewUserGroupClient(cfg),
 		UserGroupMember:     NewUserGroupMemberClient(cfg),
+		UserLink:            NewUserLinkClient(cfg),
 		UserNote:            NewUserNoteClient(cfg),
+		UserPreference:      NewUserPreferenceClient(cfg),
 		UserThreadFollow:    NewUserThreadFollowClient(cfg),
 		Workspace:           NewWorkspaceClient(cfg),
 		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
@@ -407,12 +437,13 @@ func (c *Client) Use(hooks ...Hook) {
 		c.App, c.Attachment, c.AuditLog, c.Channel, c.ChannelCategory,
 		c.ChannelCategoryItem, c.ChannelLink, c.ChannelMember, c.ChannelMute,
 		c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation,
-		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
-		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.Poll, c.PollOption,
-		c.PollVote, c.PushToken, c.Reminder, c.ScheduledMessage, c.Session,
-		c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember,
-		c.UserNote, c.UserThreadFollow, c.Workspace, c.WorkspaceMember,
-		c.WorkspacePermission,
+		c.LinkPreview, c.LinkPreviewXPost, c.LinkPreviewYoutube, c.Message,
+		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
+		c.MessageReaction, c.MessageUserMention, c.Poll, c.PollOption, c.PollVote,
+		c.PushToken, c.Reminder, c.ScheduledMessage, c.Session, c.SystemMessage,
+		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserLink,
+		c.UserNote, c.UserPreference, c.UserThreadFollow, c.Workspace,
+		c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Use(hooks...)
 	}
@@ -425,12 +456,13 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.App, c.Attachment, c.AuditLog, c.Channel, c.ChannelCategory,
 		c.ChannelCategoryItem, c.ChannelLink, c.ChannelMember, c.ChannelMute,
 		c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation,
-		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
-		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.Poll, c.PollOption,
-		c.PollVote, c.PushToken, c.Reminder, c.ScheduledMessage, c.Session,
-		c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember,
-		c.UserNote, c.UserThreadFollow, c.Workspace, c.WorkspaceMember,
-		c.WorkspacePermission,
+		c.LinkPreview, c.LinkPreviewXPost, c.LinkPreviewYoutube, c.Message,
+		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
+		c.MessageReaction, c.MessageUserMention, c.Poll, c.PollOption, c.PollVote,
+		c.PushToken, c.Reminder, c.ScheduledMessage, c.Session, c.SystemMessage,
+		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserLink,
+		c.UserNote, c.UserPreference, c.UserThreadFollow, c.Workspace,
+		c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -467,6 +499,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Draft.mutate(ctx, m)
 	case *InvitationMutation:
 		return c.Invitation.mutate(ctx, m)
+	case *LinkPreviewMutation:
+		return c.LinkPreview.mutate(ctx, m)
+	case *LinkPreviewXPostMutation:
+		return c.LinkPreviewXPost.mutate(ctx, m)
+	case *LinkPreviewYoutubeMutation:
+		return c.LinkPreviewYoutube.mutate(ctx, m)
 	case *MessageMutation:
 		return c.Message.mutate(ctx, m)
 	case *MessageBookmarkMutation:
@@ -505,8 +543,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.UserGroup.mutate(ctx, m)
 	case *UserGroupMemberMutation:
 		return c.UserGroupMember.mutate(ctx, m)
+	case *UserLinkMutation:
+		return c.UserLink.mutate(ctx, m)
 	case *UserNoteMutation:
 		return c.UserNote.mutate(ctx, m)
+	case *UserPreferenceMutation:
+		return c.UserPreference.mutate(ctx, m)
 	case *UserThreadFollowMutation:
 		return c.UserThreadFollow.mutate(ctx, m)
 	case *WorkspaceMutation:
@@ -2974,6 +3016,485 @@ func (c *InvitationClient) mutate(ctx context.Context, m *InvitationMutation) (V
 	}
 }
 
+// LinkPreviewClient is a client for the LinkPreview schema.
+type LinkPreviewClient struct {
+	config
+}
+
+// NewLinkPreviewClient returns a client for the LinkPreview from the given config.
+func NewLinkPreviewClient(c config) *LinkPreviewClient {
+	return &LinkPreviewClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `linkpreview.Hooks(f(g(h())))`.
+func (c *LinkPreviewClient) Use(hooks ...Hook) {
+	c.hooks.LinkPreview = append(c.hooks.LinkPreview, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `linkpreview.Intercept(f(g(h())))`.
+func (c *LinkPreviewClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LinkPreview = append(c.inters.LinkPreview, interceptors...)
+}
+
+// Create returns a builder for creating a LinkPreview entity.
+func (c *LinkPreviewClient) Create() *LinkPreviewCreate {
+	mutation := newLinkPreviewMutation(c.config, OpCreate)
+	return &LinkPreviewCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LinkPreview entities.
+func (c *LinkPreviewClient) CreateBulk(builders ...*LinkPreviewCreate) *LinkPreviewCreateBulk {
+	return &LinkPreviewCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LinkPreviewClient) MapCreateBulk(slice any, setFunc func(*LinkPreviewCreate, int)) *LinkPreviewCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LinkPreviewCreateBulk{err: fmt.Errorf("calling to LinkPreviewClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LinkPreviewCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LinkPreviewCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LinkPreview.
+func (c *LinkPreviewClient) Update() *LinkPreviewUpdate {
+	mutation := newLinkPreviewMutation(c.config, OpUpdate)
+	return &LinkPreviewUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LinkPreviewClient) UpdateOne(_m *LinkPreview) *LinkPreviewUpdateOne {
+	mutation := newLinkPreviewMutation(c.config, OpUpdateOne, withLinkPreview(_m))
+	return &LinkPreviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LinkPreviewClient) UpdateOneID(id uuid.UUID) *LinkPreviewUpdateOne {
+	mutation := newLinkPreviewMutation(c.config, OpUpdateOne, withLinkPreviewID(id))
+	return &LinkPreviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LinkPreview.
+func (c *LinkPreviewClient) Delete() *LinkPreviewDelete {
+	mutation := newLinkPreviewMutation(c.config, OpDelete)
+	return &LinkPreviewDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LinkPreviewClient) DeleteOne(_m *LinkPreview) *LinkPreviewDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LinkPreviewClient) DeleteOneID(id uuid.UUID) *LinkPreviewDeleteOne {
+	builder := c.Delete().Where(linkpreview.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LinkPreviewDeleteOne{builder}
+}
+
+// Query returns a query builder for LinkPreview.
+func (c *LinkPreviewClient) Query() *LinkPreviewQuery {
+	return &LinkPreviewQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLinkPreview},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LinkPreview entity by its id.
+func (c *LinkPreviewClient) Get(ctx context.Context, id uuid.UUID) (*LinkPreview, error) {
+	return c.Query().Where(linkpreview.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LinkPreviewClient) GetX(ctx context.Context, id uuid.UUID) *LinkPreview {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryYoutube queries the youtube edge of a LinkPreview.
+func (c *LinkPreviewClient) QueryYoutube(_m *LinkPreview) *LinkPreviewYoutubeQuery {
+	query := (&LinkPreviewYoutubeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(linkpreview.Table, linkpreview.FieldID, id),
+			sqlgraph.To(linkpreviewyoutube.Table, linkpreviewyoutube.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, linkpreview.YoutubeTable, linkpreview.YoutubeColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryXPost queries the x_post edge of a LinkPreview.
+func (c *LinkPreviewClient) QueryXPost(_m *LinkPreview) *LinkPreviewXPostQuery {
+	query := (&LinkPreviewXPostClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(linkpreview.Table, linkpreview.FieldID, id),
+			sqlgraph.To(linkpreviewxpost.Table, linkpreviewxpost.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, linkpreview.XPostTable, linkpreview.XPostColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMessageLinks queries the message_links edge of a LinkPreview.
+func (c *LinkPreviewClient) QueryMessageLinks(_m *LinkPreview) *MessageLinkQuery {
+	query := (&MessageLinkClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(linkpreview.Table, linkpreview.FieldID, id),
+			sqlgraph.To(messagelink.Table, messagelink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, linkpreview.MessageLinksTable, linkpreview.MessageLinksColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LinkPreviewClient) Hooks() []Hook {
+	return c.hooks.LinkPreview
+}
+
+// Interceptors returns the client interceptors.
+func (c *LinkPreviewClient) Interceptors() []Interceptor {
+	return c.inters.LinkPreview
+}
+
+func (c *LinkPreviewClient) mutate(ctx context.Context, m *LinkPreviewMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LinkPreviewCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LinkPreviewUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LinkPreviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LinkPreviewDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LinkPreview mutation op: %q", m.Op())
+	}
+}
+
+// LinkPreviewXPostClient is a client for the LinkPreviewXPost schema.
+type LinkPreviewXPostClient struct {
+	config
+}
+
+// NewLinkPreviewXPostClient returns a client for the LinkPreviewXPost from the given config.
+func NewLinkPreviewXPostClient(c config) *LinkPreviewXPostClient {
+	return &LinkPreviewXPostClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `linkpreviewxpost.Hooks(f(g(h())))`.
+func (c *LinkPreviewXPostClient) Use(hooks ...Hook) {
+	c.hooks.LinkPreviewXPost = append(c.hooks.LinkPreviewXPost, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `linkpreviewxpost.Intercept(f(g(h())))`.
+func (c *LinkPreviewXPostClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LinkPreviewXPost = append(c.inters.LinkPreviewXPost, interceptors...)
+}
+
+// Create returns a builder for creating a LinkPreviewXPost entity.
+func (c *LinkPreviewXPostClient) Create() *LinkPreviewXPostCreate {
+	mutation := newLinkPreviewXPostMutation(c.config, OpCreate)
+	return &LinkPreviewXPostCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LinkPreviewXPost entities.
+func (c *LinkPreviewXPostClient) CreateBulk(builders ...*LinkPreviewXPostCreate) *LinkPreviewXPostCreateBulk {
+	return &LinkPreviewXPostCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LinkPreviewXPostClient) MapCreateBulk(slice any, setFunc func(*LinkPreviewXPostCreate, int)) *LinkPreviewXPostCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LinkPreviewXPostCreateBulk{err: fmt.Errorf("calling to LinkPreviewXPostClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LinkPreviewXPostCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LinkPreviewXPostCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LinkPreviewXPost.
+func (c *LinkPreviewXPostClient) Update() *LinkPreviewXPostUpdate {
+	mutation := newLinkPreviewXPostMutation(c.config, OpUpdate)
+	return &LinkPreviewXPostUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LinkPreviewXPostClient) UpdateOne(_m *LinkPreviewXPost) *LinkPreviewXPostUpdateOne {
+	mutation := newLinkPreviewXPostMutation(c.config, OpUpdateOne, withLinkPreviewXPost(_m))
+	return &LinkPreviewXPostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LinkPreviewXPostClient) UpdateOneID(id uuid.UUID) *LinkPreviewXPostUpdateOne {
+	mutation := newLinkPreviewXPostMutation(c.config, OpUpdateOne, withLinkPreviewXPostID(id))
+	return &LinkPreviewXPostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LinkPreviewXPost.
+func (c *LinkPreviewXPostClient) Delete() *LinkPreviewXPostDelete {
+	mutation := newLinkPreviewXPostMutation(c.config, OpDelete)
+	return &LinkPreviewXPostDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LinkPreviewXPostClient) DeleteOne(_m *LinkPreviewXPost) *LinkPreviewXPostDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LinkPreviewXPostClient) DeleteOneID(id uuid.UUID) *LinkPreviewXPostDeleteOne {
+	builder := c.Delete().Where(linkpreviewxpost.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LinkPreviewXPostDeleteOne{builder}
+}
+
+// Query returns a query builder for LinkPreviewXPost.
+func (c *LinkPreviewXPostClient) Query() *LinkPreviewXPostQuery {
+	return &LinkPreviewXPostQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLinkPreviewXPost},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LinkPreviewXPost entity by its id.
+func (c *LinkPreviewXPostClient) Get(ctx context.Context, id uuid.UUID) (*LinkPreviewXPost, error) {
+	return c.Query().Where(linkpreviewxpost.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LinkPreviewXPostClient) GetX(ctx context.Context, id uuid.UUID) *LinkPreviewXPost {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryLinkPreview queries the link_preview edge of a LinkPreviewXPost.
+func (c *LinkPreviewXPostClient) QueryLinkPreview(_m *LinkPreviewXPost) *LinkPreviewQuery {
+	query := (&LinkPreviewClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(linkpreviewxpost.Table, linkpreviewxpost.FieldID, id),
+			sqlgraph.To(linkpreview.Table, linkpreview.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, linkpreviewxpost.LinkPreviewTable, linkpreviewxpost.LinkPreviewColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LinkPreviewXPostClient) Hooks() []Hook {
+	return c.hooks.LinkPreviewXPost
+}
+
+// Interceptors returns the client interceptors.
+func (c *LinkPreviewXPostClient) Interceptors() []Interceptor {
+	return c.inters.LinkPreviewXPost
+}
+
+func (c *LinkPreviewXPostClient) mutate(ctx context.Context, m *LinkPreviewXPostMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LinkPreviewXPostCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LinkPreviewXPostUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LinkPreviewXPostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LinkPreviewXPostDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LinkPreviewXPost mutation op: %q", m.Op())
+	}
+}
+
+// LinkPreviewYoutubeClient is a client for the LinkPreviewYoutube schema.
+type LinkPreviewYoutubeClient struct {
+	config
+}
+
+// NewLinkPreviewYoutubeClient returns a client for the LinkPreviewYoutube from the given config.
+func NewLinkPreviewYoutubeClient(c config) *LinkPreviewYoutubeClient {
+	return &LinkPreviewYoutubeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `linkpreviewyoutube.Hooks(f(g(h())))`.
+func (c *LinkPreviewYoutubeClient) Use(hooks ...Hook) {
+	c.hooks.LinkPreviewYoutube = append(c.hooks.LinkPreviewYoutube, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `linkpreviewyoutube.Intercept(f(g(h())))`.
+func (c *LinkPreviewYoutubeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LinkPreviewYoutube = append(c.inters.LinkPreviewYoutube, interceptors...)
+}
+
+// Create returns a builder for creating a LinkPreviewYoutube entity.
+func (c *LinkPreviewYoutubeClient) Create() *LinkPreviewYoutubeCreate {
+	mutation := newLinkPreviewYoutubeMutation(c.config, OpCreate)
+	return &LinkPreviewYoutubeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LinkPreviewYoutube entities.
+func (c *LinkPreviewYoutubeClient) CreateBulk(builders ...*LinkPreviewYoutubeCreate) *LinkPreviewYoutubeCreateBulk {
+	return &LinkPreviewYoutubeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LinkPreviewYoutubeClient) MapCreateBulk(slice any, setFunc func(*LinkPreviewYoutubeCreate, int)) *LinkPreviewYoutubeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LinkPreviewYoutubeCreateBulk{err: fmt.Errorf("calling to LinkPreviewYoutubeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LinkPreviewYoutubeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LinkPreviewYoutubeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LinkPreviewYoutube.
+func (c *LinkPreviewYoutubeClient) Update() *LinkPreviewYoutubeUpdate {
+	mutation := newLinkPreviewYoutubeMutation(c.config, OpUpdate)
+	return &LinkPreviewYoutubeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LinkPreviewYoutubeClient) UpdateOne(_m *LinkPreviewYoutube) *LinkPreviewYoutubeUpdateOne {
+	mutation := newLinkPreviewYoutubeMutation(c.config, OpUpdateOne, withLinkPreviewYoutube(_m))
+	return &LinkPreviewYoutubeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LinkPreviewYoutubeClient) UpdateOneID(id uuid.UUID) *LinkPreviewYoutubeUpdateOne {
+	mutation := newLinkPreviewYoutubeMutation(c.config, OpUpdateOne, withLinkPreviewYoutubeID(id))
+	return &LinkPreviewYoutubeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LinkPreviewYoutube.
+func (c *LinkPreviewYoutubeClient) Delete() *LinkPreviewYoutubeDelete {
+	mutation := newLinkPreviewYoutubeMutation(c.config, OpDelete)
+	return &LinkPreviewYoutubeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LinkPreviewYoutubeClient) DeleteOne(_m *LinkPreviewYoutube) *LinkPreviewYoutubeDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LinkPreviewYoutubeClient) DeleteOneID(id uuid.UUID) *LinkPreviewYoutubeDeleteOne {
+	builder := c.Delete().Where(linkpreviewyoutube.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LinkPreviewYoutubeDeleteOne{builder}
+}
+
+// Query returns a query builder for LinkPreviewYoutube.
+func (c *LinkPreviewYoutubeClient) Query() *LinkPreviewYoutubeQuery {
+	return &LinkPreviewYoutubeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLinkPreviewYoutube},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LinkPreviewYoutube entity by its id.
+func (c *LinkPreviewYoutubeClient) Get(ctx context.Context, id uuid.UUID) (*LinkPreviewYoutube, error) {
+	return c.Query().Where(linkpreviewyoutube.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LinkPreviewYoutubeClient) GetX(ctx context.Context, id uuid.UUID) *LinkPreviewYoutube {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryLinkPreview queries the link_preview edge of a LinkPreviewYoutube.
+func (c *LinkPreviewYoutubeClient) QueryLinkPreview(_m *LinkPreviewYoutube) *LinkPreviewQuery {
+	query := (&LinkPreviewClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(linkpreviewyoutube.Table, linkpreviewyoutube.FieldID, id),
+			sqlgraph.To(linkpreview.Table, linkpreview.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, linkpreviewyoutube.LinkPreviewTable, linkpreviewyoutube.LinkPreviewColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LinkPreviewYoutubeClient) Hooks() []Hook {
+	return c.hooks.LinkPreviewYoutube
+}
+
+// Interceptors returns the client interceptors.
+func (c *LinkPreviewYoutubeClient) Interceptors() []Interceptor {
+	return c.inters.LinkPreviewYoutube
+}
+
+func (c *LinkPreviewYoutubeClient) mutate(ctx context.Context, m *LinkPreviewYoutubeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LinkPreviewYoutubeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LinkPreviewYoutubeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LinkPreviewYoutubeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LinkPreviewYoutubeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LinkPreviewYoutube mutation op: %q", m.Op())
+	}
+}
+
 // MessageClient is a client for the Message schema.
 type MessageClient struct {
 	config
@@ -3762,6 +4283,22 @@ func (c *MessageLinkClient) QueryMessage(_m *MessageLink) *MessageQuery {
 			sqlgraph.From(messagelink.Table, messagelink.FieldID, id),
 			sqlgraph.To(message.Table, message.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, messagelink.MessageTable, messagelink.MessageColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLinkPreview queries the link_preview edge of a MessageLink.
+func (c *MessageLinkClient) QueryLinkPreview(_m *MessageLink) *LinkPreviewQuery {
+	query := (&LinkPreviewClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(messagelink.Table, messagelink.FieldID, id),
+			sqlgraph.To(linkpreview.Table, linkpreview.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, messagelink.LinkPreviewTable, messagelink.LinkPreviewColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -6106,6 +6643,38 @@ func (c *UserClient) QueryChannelReadStates(_m *User) *ChannelReadStateQuery {
 	return query
 }
 
+// QueryPreference queries the preference edge of a User.
+func (c *UserClient) QueryPreference(_m *User) *UserPreferenceQuery {
+	query := (&UserPreferenceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(userpreference.Table, userpreference.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.PreferenceTable, user.PreferenceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLinks queries the links edge of a User.
+func (c *UserClient) QueryLinks(_m *User) *UserLinkQuery {
+	query := (&UserLinkClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(userlink.Table, userlink.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.LinksTable, user.LinksColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -6493,6 +7062,155 @@ func (c *UserGroupMemberClient) mutate(ctx context.Context, m *UserGroupMemberMu
 	}
 }
 
+// UserLinkClient is a client for the UserLink schema.
+type UserLinkClient struct {
+	config
+}
+
+// NewUserLinkClient returns a client for the UserLink from the given config.
+func NewUserLinkClient(c config) *UserLinkClient {
+	return &UserLinkClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `userlink.Hooks(f(g(h())))`.
+func (c *UserLinkClient) Use(hooks ...Hook) {
+	c.hooks.UserLink = append(c.hooks.UserLink, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `userlink.Intercept(f(g(h())))`.
+func (c *UserLinkClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserLink = append(c.inters.UserLink, interceptors...)
+}
+
+// Create returns a builder for creating a UserLink entity.
+func (c *UserLinkClient) Create() *UserLinkCreate {
+	mutation := newUserLinkMutation(c.config, OpCreate)
+	return &UserLinkCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserLink entities.
+func (c *UserLinkClient) CreateBulk(builders ...*UserLinkCreate) *UserLinkCreateBulk {
+	return &UserLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserLinkClient) MapCreateBulk(slice any, setFunc func(*UserLinkCreate, int)) *UserLinkCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserLinkCreateBulk{err: fmt.Errorf("calling to UserLinkClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserLinkCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserLink.
+func (c *UserLinkClient) Update() *UserLinkUpdate {
+	mutation := newUserLinkMutation(c.config, OpUpdate)
+	return &UserLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserLinkClient) UpdateOne(_m *UserLink) *UserLinkUpdateOne {
+	mutation := newUserLinkMutation(c.config, OpUpdateOne, withUserLink(_m))
+	return &UserLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserLinkClient) UpdateOneID(id uuid.UUID) *UserLinkUpdateOne {
+	mutation := newUserLinkMutation(c.config, OpUpdateOne, withUserLinkID(id))
+	return &UserLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserLink.
+func (c *UserLinkClient) Delete() *UserLinkDelete {
+	mutation := newUserLinkMutation(c.config, OpDelete)
+	return &UserLinkDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserLinkClient) DeleteOne(_m *UserLink) *UserLinkDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserLinkClient) DeleteOneID(id uuid.UUID) *UserLinkDeleteOne {
+	builder := c.Delete().Where(userlink.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserLinkDeleteOne{builder}
+}
+
+// Query returns a query builder for UserLink.
+func (c *UserLinkClient) Query() *UserLinkQuery {
+	return &UserLinkQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserLink},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserLink entity by its id.
+func (c *UserLinkClient) Get(ctx context.Context, id uuid.UUID) (*UserLink, error) {
+	return c.Query().Where(userlink.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserLinkClient) GetX(ctx context.Context, id uuid.UUID) *UserLink {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a UserLink.
+func (c *UserLinkClient) QueryUser(_m *UserLink) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(userlink.Table, userlink.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, userlink.UserTable, userlink.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserLinkClient) Hooks() []Hook {
+	return c.hooks.UserLink
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserLinkClient) Interceptors() []Interceptor {
+	return c.inters.UserLink
+}
+
+func (c *UserLinkClient) mutate(ctx context.Context, m *UserLinkMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserLinkCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserLinkDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserLink mutation op: %q", m.Op())
+	}
+}
+
 // UserNoteClient is a client for the UserNote schema.
 type UserNoteClient struct {
 	config
@@ -6655,6 +7373,155 @@ func (c *UserNoteClient) mutate(ctx context.Context, m *UserNoteMutation) (Value
 		return (&UserNoteDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown UserNote mutation op: %q", m.Op())
+	}
+}
+
+// UserPreferenceClient is a client for the UserPreference schema.
+type UserPreferenceClient struct {
+	config
+}
+
+// NewUserPreferenceClient returns a client for the UserPreference from the given config.
+func NewUserPreferenceClient(c config) *UserPreferenceClient {
+	return &UserPreferenceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `userpreference.Hooks(f(g(h())))`.
+func (c *UserPreferenceClient) Use(hooks ...Hook) {
+	c.hooks.UserPreference = append(c.hooks.UserPreference, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `userpreference.Intercept(f(g(h())))`.
+func (c *UserPreferenceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserPreference = append(c.inters.UserPreference, interceptors...)
+}
+
+// Create returns a builder for creating a UserPreference entity.
+func (c *UserPreferenceClient) Create() *UserPreferenceCreate {
+	mutation := newUserPreferenceMutation(c.config, OpCreate)
+	return &UserPreferenceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserPreference entities.
+func (c *UserPreferenceClient) CreateBulk(builders ...*UserPreferenceCreate) *UserPreferenceCreateBulk {
+	return &UserPreferenceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserPreferenceClient) MapCreateBulk(slice any, setFunc func(*UserPreferenceCreate, int)) *UserPreferenceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserPreferenceCreateBulk{err: fmt.Errorf("calling to UserPreferenceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserPreferenceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserPreferenceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserPreference.
+func (c *UserPreferenceClient) Update() *UserPreferenceUpdate {
+	mutation := newUserPreferenceMutation(c.config, OpUpdate)
+	return &UserPreferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserPreferenceClient) UpdateOne(_m *UserPreference) *UserPreferenceUpdateOne {
+	mutation := newUserPreferenceMutation(c.config, OpUpdateOne, withUserPreference(_m))
+	return &UserPreferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserPreferenceClient) UpdateOneID(id uuid.UUID) *UserPreferenceUpdateOne {
+	mutation := newUserPreferenceMutation(c.config, OpUpdateOne, withUserPreferenceID(id))
+	return &UserPreferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserPreference.
+func (c *UserPreferenceClient) Delete() *UserPreferenceDelete {
+	mutation := newUserPreferenceMutation(c.config, OpDelete)
+	return &UserPreferenceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserPreferenceClient) DeleteOne(_m *UserPreference) *UserPreferenceDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserPreferenceClient) DeleteOneID(id uuid.UUID) *UserPreferenceDeleteOne {
+	builder := c.Delete().Where(userpreference.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserPreferenceDeleteOne{builder}
+}
+
+// Query returns a query builder for UserPreference.
+func (c *UserPreferenceClient) Query() *UserPreferenceQuery {
+	return &UserPreferenceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserPreference},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserPreference entity by its id.
+func (c *UserPreferenceClient) Get(ctx context.Context, id uuid.UUID) (*UserPreference, error) {
+	return c.Query().Where(userpreference.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserPreferenceClient) GetX(ctx context.Context, id uuid.UUID) *UserPreference {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a UserPreference.
+func (c *UserPreferenceClient) QueryUser(_m *UserPreference) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(userpreference.Table, userpreference.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, userpreference.UserTable, userpreference.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserPreferenceClient) Hooks() []Hook {
+	return c.hooks.UserPreference
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserPreferenceClient) Interceptors() []Interceptor {
+	return c.inters.UserPreference
+}
+
+func (c *UserPreferenceClient) mutate(ctx context.Context, m *UserPreferenceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserPreferenceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserPreferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserPreferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserPreferenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserPreference mutation op: %q", m.Op())
 	}
 }
 
@@ -7323,20 +8190,23 @@ type (
 	hooks struct {
 		App, Attachment, AuditLog, Channel, ChannelCategory, ChannelCategoryItem,
 		ChannelLink, ChannelMember, ChannelMute, ChannelReadState, ChannelStar,
-		CustomEmoji, Draft, Invitation, Message, MessageBookmark, MessageGroupMention,
-		MessageLink, MessagePin, MessageReaction, MessageUserMention, Poll, PollOption,
-		PollVote, PushToken, Reminder, ScheduledMessage, Session, SystemMessage,
-		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
-		Workspace, WorkspaceMember, WorkspacePermission []ent.Hook
+		CustomEmoji, Draft, Invitation, LinkPreview, LinkPreviewXPost,
+		LinkPreviewYoutube, Message, MessageBookmark, MessageGroupMention, MessageLink,
+		MessagePin, MessageReaction, MessageUserMention, Poll, PollOption, PollVote,
+		PushToken, Reminder, ScheduledMessage, Session, SystemMessage, ThreadReadState,
+		User, UserGroup, UserGroupMember, UserLink, UserNote, UserPreference,
+		UserThreadFollow, Workspace, WorkspaceMember, WorkspacePermission []ent.Hook
 	}
 	inters struct {
 		App, Attachment, AuditLog, Channel, ChannelCategory, ChannelCategoryItem,
 		ChannelLink, ChannelMember, ChannelMute, ChannelReadState, ChannelStar,
-		CustomEmoji, Draft, Invitation, Message, MessageBookmark, MessageGroupMention,
-		MessageLink, MessagePin, MessageReaction, MessageUserMention, Poll, PollOption,
-		PollVote, PushToken, Reminder, ScheduledMessage, Session, SystemMessage,
-		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
-		Workspace, WorkspaceMember, WorkspacePermission []ent.Interceptor
+		CustomEmoji, Draft, Invitation, LinkPreview, LinkPreviewXPost,
+		LinkPreviewYoutube, Message, MessageBookmark, MessageGroupMention, MessageLink,
+		MessagePin, MessageReaction, MessageUserMention, Poll, PollOption, PollVote,
+		PushToken, Reminder, ScheduledMessage, Session, SystemMessage, ThreadReadState,
+		User, UserGroup, UserGroupMember, UserLink, UserNote, UserPreference,
+		UserThreadFollow, Workspace, WorkspaceMember,
+		WorkspacePermission []ent.Interceptor
 	}
 )
 

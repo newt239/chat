@@ -28,9 +28,9 @@ export const MentionList = ({ workspaceId }: MentionListProps) => {
   }, hasNextPage && !isFetchingNextPage);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-[18px] py-3 max-md:px-2.5">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4.5 py-3 max-md:px-2.5">
       {isLoading ? (
-        <Skeleton className="h-32 w-full rounded-[10px]" />
+        <Skeleton className="h-32 w-full rounded-lg" />
       ) : isError ? (
         <p role="alert" className="m-0 p-4 text-caption text-danger">
           {t("inbox.mention.failed")}
@@ -47,7 +47,7 @@ export const MentionList = ({ workspaceId }: MentionListProps) => {
         ))
       )}
       <div ref={loadMoreRef}>
-        {isFetchingNextPage && <Skeleton className="h-32 w-full rounded-[10px]" />}
+        {isFetchingNextPage && <Skeleton className="h-32 w-full rounded-lg" />}
       </div>
     </div>
   );

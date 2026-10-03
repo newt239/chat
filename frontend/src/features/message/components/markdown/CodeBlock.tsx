@@ -65,14 +65,14 @@ export const CodeBlock = ({ children }: CodeBlockProps) => {
   };
 
   return (
-    <div className="my-1 max-w-[660px] overflow-hidden rounded-md border border-border bg-sunken">
-      <div className="flex items-center gap-2 border-b border-border py-[3px] pr-1 pl-2.5 font-mono text-[11px] text-muted">
+    <div className="my-1 max-w-165 overflow-hidden rounded-md border border-border bg-sunken">
+      <div className="flex items-center gap-2 border-b border-border py-0.75 pr-1 pl-2.5 font-mono text-caption text-muted">
         <span>{language}</span>
         <span className="flex-1 text-subtle">{t("codeBlock.lines", { count: lineCount })}</span>
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 px-2 font-sans text-[11px]"
+          className="h-6 px-2 font-sans text-caption"
           onPress={() => {
             void copy();
           }}
@@ -84,7 +84,7 @@ export const CodeBlock = ({ children }: CodeBlockProps) => {
         className={cn(
           "overflow-x-auto px-3 py-2 font-mono text-mono text-text [&_pre]:m-0 [&_pre]:bg-transparent!",
           isCollapsed &&
-            "max-h-[220px] overflow-hidden [mask-image:linear-gradient(black_70%,transparent)]",
+            "max-h-55 overflow-hidden [mask-image:linear-gradient(black_70%,transparent)]",
         )}
       >
         {highlighted ? (

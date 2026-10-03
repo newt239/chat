@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/audit/audittest"
 )
 
@@ -21,6 +22,13 @@ type stubWorkspaceRepo struct {
 }
 
 func (r *stubWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
+	if m := r.members[userID]; m != nil && m.SuspendedAt == nil {
+		return m, nil
+	}
+	return nil, nil
+}
+
+func (r *stubWorkspaceRepo) FindMemberIncludingSuspended(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
 	return r.members[userID], nil
 }
 
@@ -47,26 +55,16 @@ func (stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error)
 	return &entity.User{ID: id, DisplayName: "name-" + id}, nil
 }
 
-type stubPermissionRepo struct {
-	domainrepository.PermissionRepository
-	overrides []entity.PermissionOverride
-}
-
-func (r *stubPermissionRepo) FindOverrides(context.Context, string) ([]entity.PermissionOverride, error) {
-	return r.overrides, nil
-}
-
 type fixture struct {
 	uc       WorkspaceUseCase
 	repo     *stubWorkspaceRepo
 	recorder *audittest.Recorder
 }
 
-func newFixture(members map[string]*entity.WorkspaceMember, overrides ...entity.PermissionOverride) fixture {
+func newFixture(members map[string]*entity.WorkspaceMember) fixture {
 	repo := &stubWorkspaceRepo{members: members}
 	recorder := &audittest.Recorder{}
-	permissionSvc := domainservice.NewPermissionService(repo, &stubPermissionRepo{overrides: overrides})
-	return fixture{uc: NewWorkspaceInteractor(repo, stubUserRepo{}, nil, permissionSvc, recorder), repo: repo, recorder: recorder}
+	return fixture{uc: NewWorkspaceInteractor(repo, stubUserRepo{}, nil, recorder, stubCloser{}), repo: repo, recorder: recorder}
 }
 
 func newInteractor(members map[string]*entity.WorkspaceMember) (WorkspaceUseCase, *stubWorkspaceRepo) {
@@ -119,7 +117,7 @@ func TestUpdateMemberRole(t *testing.T) {
 				"target": member(entity.WorkspaceRoleMember),
 			},
 			input:   UpdateMemberRoleInput{UpdaterID: "user", UserID: "target", Role: "admin"},
-			wantErr: ErrUnauthorized,
+			wantErr: domerr.ErrUnauthorized,
 		},
 		{
 			name: "admin は member を admin に昇格できる",
@@ -194,7 +192,7 @@ func TestSignupEnabledWorkspace(t *testing.T) {
 			info, err := f.uc.GetSignupInfo(context.Background(), "ws")
 			_, joinErr := f.uc.JoinPublicWorkspace(context.Background(), JoinPublicWorkspaceInput{WorkspaceID: "ws", UserID: "u1"})
 			if tt.wantErr {
-				if !errors.Is(err, ErrWorkspaceNotFound) || joinErr == nil || len(f.repo.members) != 0 {
+				if !errors.Is(err, domerr.ErrWorkspaceNotFound) || joinErr == nil || len(f.repo.members) != 0 {
 					t.Errorf("登録を許可していないのに情報を返したか参加できました: err=%v joinErr=%v", err, joinErr)
 				}
 				return
@@ -206,5 +204,23 @@ func TestSignupEnabledWorkspace(t *testing.T) {
 				t.Errorf("返した情報か参加したロールが期待と異なります: %+v %+v", info, f.repo.members["u1"])
 			}
 		})
+	}
+}
+
+type stubCloser struct{}
+
+func (stubCloser) CloseWorkspaceUser(string, string) {}
+
+func TestSuspendedMemberCannotRejoin(t *testing.T) {
+	suspended := member(entity.WorkspaceRoleMember)
+	suspended.SuspendedAt = new(time.Now())
+	repo := &stubWorkspaceRepo{members: map[string]*entity.WorkspaceMember{"bob": suspended}, workspace: &entity.Workspace{ID: "ws", IsPublic: true}}
+	uc := NewWorkspaceInteractor(repo, stubUserRepo{}, nil, &audittest.Recorder{}, stubCloser{})
+
+	if _, err := uc.JoinPublicWorkspace(context.Background(), JoinPublicWorkspaceInput{WorkspaceID: "ws", UserID: "bob"}); !errors.Is(err, domerr.ErrAlreadyMember) {
+		t.Fatalf("停止中のメンバーが参加し直せています: %v", err)
+	}
+	if repo.members["bob"].SuspendedAt == nil {
+		t.Error("参加し直しで停止が解けています")
 	}
 }

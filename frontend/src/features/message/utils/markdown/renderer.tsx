@@ -1,5 +1,3 @@
-import type { ReactNode } from "react";
-
 import * as prod from "react/jsx-runtime";
 import rehypeReact from "rehype-react";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
@@ -31,24 +29,23 @@ const customSchema = {
   },
 };
 
-// hiddenUrls のリンクは本文に出さない（引用カードで表示するメッセージへのリンクなど）
-export const renderMarkdown = (content: string, hiddenUrls: readonly string[]): ReactNode => {
-  const processor = unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkHideLinks, hiddenUrls)
-    .use(remarkMention)
-    .use(remarkCustomEmoji)
-    .use(remarkRehype)
-    .use(rehypeSanitize, customSchema)
-    .use(rehypeReact, {
-      ...prod,
-      components: {
-        a: LinkComponent,
-        pre: CodeBlock,
-        span: MarkdownSpan,
-      },
-    });
+const processor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkHideLinks)
+  .use(remarkMention)
+  .use(remarkCustomEmoji)
+  .use(remarkRehype)
+  .use(rehypeSanitize, customSchema)
+  .use(rehypeReact, {
+    ...prod,
+    components: {
+      a: LinkComponent,
+      pre: CodeBlock,
+      span: MarkdownSpan,
+    },
+  });
 
-  return processor.processSync(content).result;
-};
+// hiddenUrls のリンクは本文に出さない（引用カードで表示するメッセージへのリンクなど）
+export const renderMarkdown = (content: string, hiddenUrls: readonly string[]) =>
+  processor.processSync({ data: { hiddenUrls }, value: content }).result;

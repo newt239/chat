@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -29,8 +28,6 @@ func (r *channelLinkRepository) FindByID(ctx context.Context, id string) (*entit
 	client := transaction.ResolveClient(ctx, r.client)
 	link, err := client.ChannelLink.Query().
 		Where(channellink.ID(linkID)).
-		WithChannel().
-		WithCreatedBy().
 		Only(ctx)
 	if ent.IsNotFound(err) {
 		return nil, nil
@@ -49,9 +46,7 @@ func (r *channelLinkRepository) FindByChannelID(ctx context.Context, channelID s
 
 	client := transaction.ResolveClient(ctx, r.client)
 	links, err := client.ChannelLink.Query().
-		Where(channellink.HasChannelWith(channel.ID(cid))).
-		WithChannel().
-		WithCreatedBy().
+		Where(channellink.ChannelID(cid)).
 		Order(ent.Asc(channellink.FieldPosition), ent.Asc(channellink.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
@@ -142,14 +137,10 @@ func channelLinkToEntity(link *ent.ChannelLink) *entity.ChannelLink {
 		Title:     link.Title,
 		URL:       link.URL,
 		Position:  link.Position,
+		ChannelID: link.ChannelID.String(),
+		CreatedBy: link.CreatedByID.String(),
 		CreatedAt: link.CreatedAt,
 		UpdatedAt: link.UpdatedAt,
-	}
-	if link.Edges.Channel != nil {
-		result.ChannelID = link.Edges.Channel.ID.String()
-	}
-	if link.Edges.CreatedBy != nil {
-		result.CreatedBy = link.Edges.CreatedBy.ID.String()
 	}
 	return result
 }

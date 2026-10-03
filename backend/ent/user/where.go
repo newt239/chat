@@ -86,44 +86,14 @@ func AvatarURL(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAvatarURL, v))
 }
 
-// IsBot applies equality check predicate on the "is_bot" field. It's identical to IsBotEQ.
-func IsBot(v bool) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldIsBot, v))
+// IsApp applies equality check predicate on the "is_app" field. It's identical to IsAppEQ.
+func IsApp(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsApp, v))
 }
 
 // IsOfficial applies equality check predicate on the "is_official" field. It's identical to IsOfficialEQ.
 func IsOfficial(v bool) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldIsOfficial, v))
-}
-
-// ThemeHue applies equality check predicate on the "theme_hue" field. It's identical to ThemeHueEQ.
-func ThemeHue(v int) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldThemeHue, v))
-}
-
-// ThemeChroma applies equality check predicate on the "theme_chroma" field. It's identical to ThemeChromaEQ.
-func ThemeChroma(v float64) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldThemeChroma, v))
-}
-
-// Locale applies equality check predicate on the "locale" field. It's identical to LocaleEQ.
-func Locale(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldLocale, v))
-}
-
-// Timezone applies equality check predicate on the "timezone" field. It's identical to TimezoneEQ.
-func Timezone(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldTimezone, v))
-}
-
-// TimezoneAutoUpdate applies equality check predicate on the "timezone_auto_update" field. It's identical to TimezoneAutoUpdateEQ.
-func TimezoneAutoUpdate(v bool) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldTimezoneAutoUpdate, v))
-}
-
-// HideJoinMessages applies equality check predicate on the "hide_join_messages" field. It's identical to HideJoinMessagesEQ.
-func HideJoinMessages(v bool) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldHideJoinMessages, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -481,16 +451,6 @@ func BioContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldBio, v))
 }
 
-// LinksIsNil applies the IsNil predicate on the "links" field.
-func LinksIsNil() predicate.User {
-	return predicate.User(sql.FieldIsNull(FieldLinks))
-}
-
-// LinksNotNil applies the NotNil predicate on the "links" field.
-func LinksNotNil() predicate.User {
-	return predicate.User(sql.FieldNotNull(FieldLinks))
-}
-
 // AvatarURLEQ applies the EQ predicate on the "avatar_url" field.
 func AvatarURLEQ(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAvatarURL, v))
@@ -566,14 +526,14 @@ func AvatarURLContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldAvatarURL, v))
 }
 
-// IsBotEQ applies the EQ predicate on the "is_bot" field.
-func IsBotEQ(v bool) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldIsBot, v))
+// IsAppEQ applies the EQ predicate on the "is_app" field.
+func IsAppEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsApp, v))
 }
 
-// IsBotNEQ applies the NEQ predicate on the "is_bot" field.
-func IsBotNEQ(v bool) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldIsBot, v))
+// IsAppNEQ applies the NEQ predicate on the "is_app" field.
+func IsAppNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldIsApp, v))
 }
 
 // IsOfficialEQ applies the EQ predicate on the "is_official" field.
@@ -584,316 +544,6 @@ func IsOfficialEQ(v bool) predicate.User {
 // IsOfficialNEQ applies the NEQ predicate on the "is_official" field.
 func IsOfficialNEQ(v bool) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldIsOfficial, v))
-}
-
-// ThemeHueEQ applies the EQ predicate on the "theme_hue" field.
-func ThemeHueEQ(v int) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldThemeHue, v))
-}
-
-// ThemeHueNEQ applies the NEQ predicate on the "theme_hue" field.
-func ThemeHueNEQ(v int) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldThemeHue, v))
-}
-
-// ThemeHueIn applies the In predicate on the "theme_hue" field.
-func ThemeHueIn(vs ...int) predicate.User {
-	return predicate.User(sql.FieldIn(FieldThemeHue, vs...))
-}
-
-// ThemeHueNotIn applies the NotIn predicate on the "theme_hue" field.
-func ThemeHueNotIn(vs ...int) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldThemeHue, vs...))
-}
-
-// ThemeHueGT applies the GT predicate on the "theme_hue" field.
-func ThemeHueGT(v int) predicate.User {
-	return predicate.User(sql.FieldGT(FieldThemeHue, v))
-}
-
-// ThemeHueGTE applies the GTE predicate on the "theme_hue" field.
-func ThemeHueGTE(v int) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldThemeHue, v))
-}
-
-// ThemeHueLT applies the LT predicate on the "theme_hue" field.
-func ThemeHueLT(v int) predicate.User {
-	return predicate.User(sql.FieldLT(FieldThemeHue, v))
-}
-
-// ThemeHueLTE applies the LTE predicate on the "theme_hue" field.
-func ThemeHueLTE(v int) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldThemeHue, v))
-}
-
-// ThemeChromaEQ applies the EQ predicate on the "theme_chroma" field.
-func ThemeChromaEQ(v float64) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldThemeChroma, v))
-}
-
-// ThemeChromaNEQ applies the NEQ predicate on the "theme_chroma" field.
-func ThemeChromaNEQ(v float64) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldThemeChroma, v))
-}
-
-// ThemeChromaIn applies the In predicate on the "theme_chroma" field.
-func ThemeChromaIn(vs ...float64) predicate.User {
-	return predicate.User(sql.FieldIn(FieldThemeChroma, vs...))
-}
-
-// ThemeChromaNotIn applies the NotIn predicate on the "theme_chroma" field.
-func ThemeChromaNotIn(vs ...float64) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldThemeChroma, vs...))
-}
-
-// ThemeChromaGT applies the GT predicate on the "theme_chroma" field.
-func ThemeChromaGT(v float64) predicate.User {
-	return predicate.User(sql.FieldGT(FieldThemeChroma, v))
-}
-
-// ThemeChromaGTE applies the GTE predicate on the "theme_chroma" field.
-func ThemeChromaGTE(v float64) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldThemeChroma, v))
-}
-
-// ThemeChromaLT applies the LT predicate on the "theme_chroma" field.
-func ThemeChromaLT(v float64) predicate.User {
-	return predicate.User(sql.FieldLT(FieldThemeChroma, v))
-}
-
-// ThemeChromaLTE applies the LTE predicate on the "theme_chroma" field.
-func ThemeChromaLTE(v float64) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldThemeChroma, v))
-}
-
-// ThemeSidebarEQ applies the EQ predicate on the "theme_sidebar" field.
-func ThemeSidebarEQ(v ThemeSidebar) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldThemeSidebar, v))
-}
-
-// ThemeSidebarNEQ applies the NEQ predicate on the "theme_sidebar" field.
-func ThemeSidebarNEQ(v ThemeSidebar) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldThemeSidebar, v))
-}
-
-// ThemeSidebarIn applies the In predicate on the "theme_sidebar" field.
-func ThemeSidebarIn(vs ...ThemeSidebar) predicate.User {
-	return predicate.User(sql.FieldIn(FieldThemeSidebar, vs...))
-}
-
-// ThemeSidebarNotIn applies the NotIn predicate on the "theme_sidebar" field.
-func ThemeSidebarNotIn(vs ...ThemeSidebar) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldThemeSidebar, vs...))
-}
-
-// ColorModeEQ applies the EQ predicate on the "color_mode" field.
-func ColorModeEQ(v ColorMode) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldColorMode, v))
-}
-
-// ColorModeNEQ applies the NEQ predicate on the "color_mode" field.
-func ColorModeNEQ(v ColorMode) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldColorMode, v))
-}
-
-// ColorModeIn applies the In predicate on the "color_mode" field.
-func ColorModeIn(vs ...ColorMode) predicate.User {
-	return predicate.User(sql.FieldIn(FieldColorMode, vs...))
-}
-
-// ColorModeNotIn applies the NotIn predicate on the "color_mode" field.
-func ColorModeNotIn(vs ...ColorMode) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldColorMode, vs...))
-}
-
-// LocaleEQ applies the EQ predicate on the "locale" field.
-func LocaleEQ(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldLocale, v))
-}
-
-// LocaleNEQ applies the NEQ predicate on the "locale" field.
-func LocaleNEQ(v string) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldLocale, v))
-}
-
-// LocaleIn applies the In predicate on the "locale" field.
-func LocaleIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldIn(FieldLocale, vs...))
-}
-
-// LocaleNotIn applies the NotIn predicate on the "locale" field.
-func LocaleNotIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldLocale, vs...))
-}
-
-// LocaleGT applies the GT predicate on the "locale" field.
-func LocaleGT(v string) predicate.User {
-	return predicate.User(sql.FieldGT(FieldLocale, v))
-}
-
-// LocaleGTE applies the GTE predicate on the "locale" field.
-func LocaleGTE(v string) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldLocale, v))
-}
-
-// LocaleLT applies the LT predicate on the "locale" field.
-func LocaleLT(v string) predicate.User {
-	return predicate.User(sql.FieldLT(FieldLocale, v))
-}
-
-// LocaleLTE applies the LTE predicate on the "locale" field.
-func LocaleLTE(v string) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldLocale, v))
-}
-
-// LocaleContains applies the Contains predicate on the "locale" field.
-func LocaleContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldLocale, v))
-}
-
-// LocaleHasPrefix applies the HasPrefix predicate on the "locale" field.
-func LocaleHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldLocale, v))
-}
-
-// LocaleHasSuffix applies the HasSuffix predicate on the "locale" field.
-func LocaleHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldLocale, v))
-}
-
-// LocaleEqualFold applies the EqualFold predicate on the "locale" field.
-func LocaleEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldLocale, v))
-}
-
-// LocaleContainsFold applies the ContainsFold predicate on the "locale" field.
-func LocaleContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldLocale, v))
-}
-
-// NotificationLevelEQ applies the EQ predicate on the "notification_level" field.
-func NotificationLevelEQ(v NotificationLevel) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldNotificationLevel, v))
-}
-
-// NotificationLevelNEQ applies the NEQ predicate on the "notification_level" field.
-func NotificationLevelNEQ(v NotificationLevel) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldNotificationLevel, v))
-}
-
-// NotificationLevelIn applies the In predicate on the "notification_level" field.
-func NotificationLevelIn(vs ...NotificationLevel) predicate.User {
-	return predicate.User(sql.FieldIn(FieldNotificationLevel, vs...))
-}
-
-// NotificationLevelNotIn applies the NotIn predicate on the "notification_level" field.
-func NotificationLevelNotIn(vs ...NotificationLevel) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldNotificationLevel, vs...))
-}
-
-// TimezoneEQ applies the EQ predicate on the "timezone" field.
-func TimezoneEQ(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldTimezone, v))
-}
-
-// TimezoneNEQ applies the NEQ predicate on the "timezone" field.
-func TimezoneNEQ(v string) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldTimezone, v))
-}
-
-// TimezoneIn applies the In predicate on the "timezone" field.
-func TimezoneIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldIn(FieldTimezone, vs...))
-}
-
-// TimezoneNotIn applies the NotIn predicate on the "timezone" field.
-func TimezoneNotIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldTimezone, vs...))
-}
-
-// TimezoneGT applies the GT predicate on the "timezone" field.
-func TimezoneGT(v string) predicate.User {
-	return predicate.User(sql.FieldGT(FieldTimezone, v))
-}
-
-// TimezoneGTE applies the GTE predicate on the "timezone" field.
-func TimezoneGTE(v string) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldTimezone, v))
-}
-
-// TimezoneLT applies the LT predicate on the "timezone" field.
-func TimezoneLT(v string) predicate.User {
-	return predicate.User(sql.FieldLT(FieldTimezone, v))
-}
-
-// TimezoneLTE applies the LTE predicate on the "timezone" field.
-func TimezoneLTE(v string) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldTimezone, v))
-}
-
-// TimezoneContains applies the Contains predicate on the "timezone" field.
-func TimezoneContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldTimezone, v))
-}
-
-// TimezoneHasPrefix applies the HasPrefix predicate on the "timezone" field.
-func TimezoneHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldTimezone, v))
-}
-
-// TimezoneHasSuffix applies the HasSuffix predicate on the "timezone" field.
-func TimezoneHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldTimezone, v))
-}
-
-// TimezoneEqualFold applies the EqualFold predicate on the "timezone" field.
-func TimezoneEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldTimezone, v))
-}
-
-// TimezoneContainsFold applies the ContainsFold predicate on the "timezone" field.
-func TimezoneContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldTimezone, v))
-}
-
-// TimezoneAutoUpdateEQ applies the EQ predicate on the "timezone_auto_update" field.
-func TimezoneAutoUpdateEQ(v bool) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldTimezoneAutoUpdate, v))
-}
-
-// TimezoneAutoUpdateNEQ applies the NEQ predicate on the "timezone_auto_update" field.
-func TimezoneAutoUpdateNEQ(v bool) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldTimezoneAutoUpdate, v))
-}
-
-// ChannelSortOrderEQ applies the EQ predicate on the "channel_sort_order" field.
-func ChannelSortOrderEQ(v ChannelSortOrder) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldChannelSortOrder, v))
-}
-
-// ChannelSortOrderNEQ applies the NEQ predicate on the "channel_sort_order" field.
-func ChannelSortOrderNEQ(v ChannelSortOrder) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldChannelSortOrder, v))
-}
-
-// ChannelSortOrderIn applies the In predicate on the "channel_sort_order" field.
-func ChannelSortOrderIn(vs ...ChannelSortOrder) predicate.User {
-	return predicate.User(sql.FieldIn(FieldChannelSortOrder, vs...))
-}
-
-// ChannelSortOrderNotIn applies the NotIn predicate on the "channel_sort_order" field.
-func ChannelSortOrderNotIn(vs ...ChannelSortOrder) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldChannelSortOrder, vs...))
-}
-
-// HideJoinMessagesEQ applies the EQ predicate on the "hide_join_messages" field.
-func HideJoinMessagesEQ(v bool) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldHideJoinMessages, v))
-}
-
-// HideJoinMessagesNEQ applies the NEQ predicate on the "hide_join_messages" field.
-func HideJoinMessagesNEQ(v bool) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldHideJoinMessages, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -1267,6 +917,52 @@ func HasChannelReadStates() predicate.User {
 func HasChannelReadStatesWith(preds ...predicate.ChannelReadState) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newChannelReadStatesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasPreference applies the HasEdge predicate on the "preference" edge.
+func HasPreference() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, PreferenceTable, PreferenceColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPreferenceWith applies the HasEdge predicate on the "preference" edge with a given conditions (other predicates).
+func HasPreferenceWith(preds ...predicate.UserPreference) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newPreferenceStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasLinks applies the HasEdge predicate on the "links" edge.
+func HasLinks() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, LinksTable, LinksColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLinksWith applies the HasEdge predicate on the "links" edge with a given conditions (other predicates).
+func HasLinksWith(preds ...predicate.UserLink) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newLinksStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -3,7 +3,7 @@ import {
   formatSearchQuery,
   hasSearchConditions,
   searchHasValues,
-} from "@chat/search-query";
+} from "@chat/search-query/query";
 import { getRouteApi } from "@tanstack/react-router";
 import { Button, ToggleButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -17,7 +17,7 @@ import { SearchFilterPicker } from "./SearchFilterPicker";
 
 import type { SearchParams } from "#/features/search/schemas";
 
-import type { SearchIs, SearchQuery } from "@chat/search-query";
+import type { SearchIs, SearchQuery } from "@chat/search-query/query";
 
 const searchRoute = getRouteApi("/app/$workspaceId/search");
 
@@ -55,7 +55,7 @@ export const SearchFilterBar = () => {
     <div
       role="group"
       aria-label={t("search.filters.label")}
-      className="flex shrink-0 gap-1.5 overflow-x-auto px-[18px] pb-2.5 [scrollbar-width:none] md:flex-wrap"
+      className="flex shrink-0 gap-1.5 overflow-x-auto px-4.5 pb-2.5 [scrollbar-width:none] md:flex-wrap"
     >
       <SearchFilterPicker
         label={t("search.filters.from")}
@@ -153,7 +153,7 @@ export const SearchFilterBar = () => {
               subs: true,
             });
           }}
-          className={`h-[30px] shrink-0 cursor-pointer rounded-md px-2 font-sans text-xs font-semibold whitespace-nowrap text-accent-text data-hovered:bg-hover ${focusRing}`}
+          className={`h-7.5 shrink-0 cursor-pointer rounded-md px-2 font-sans text-xs font-semibold whitespace-nowrap text-accent-text data-hovered:bg-hover ${focusRing}`}
         >
           {t("search.filters.clear")}
         </Button>

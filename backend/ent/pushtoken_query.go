@@ -25,7 +25,6 @@ type PushTokenQuery struct {
 	inters     []Interceptor
 	predicates []predicate.PushToken
 	withUser   *UserQuery
-	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -300,12 +299,12 @@ func (_q *PushTokenQuery) WithUser(opts ...func(*UserQuery)) *PushTokenQuery {
 // Example:
 //
 //	var v []struct {
-//		Token string `json:"token,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.PushToken.Query().
-//		GroupBy(pushtoken.FieldToken).
+//		GroupBy(pushtoken.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *PushTokenQuery) GroupBy(field string, fields ...string) *PushTokenGroupBy {
@@ -323,11 +322,11 @@ func (_q *PushTokenQuery) GroupBy(field string, fields ...string) *PushTokenGrou
 // Example:
 //
 //	var v []struct {
-//		Token string `json:"token,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.PushToken.Query().
-//		Select(pushtoken.FieldToken).
+//		Select(pushtoken.FieldUserID).
 //		Scan(ctx, &v)
 func (_q *PushTokenQuery) Select(fields ...string) *PushTokenSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -371,18 +370,11 @@ func (_q *PushTokenQuery) prepareQuery(ctx context.Context) error {
 func (_q *PushTokenQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*PushToken, error) {
 	var (
 		nodes       = []*PushToken{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [1]bool{
 			_q.withUser != nil,
 		}
 	)
-	if _q.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, pushtoken.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*PushToken).scanValues(nil, columns)
 	}
@@ -414,10 +406,7 @@ func (_q *PushTokenQuery) loadUser(ctx context.Context, query *UserQuery, nodes 
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*PushToken)
 	for i := range nodes {
-		if nodes[i].push_token_user == nil {
-			continue
-		}
-		fk := *nodes[i].push_token_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -434,7 +423,7 @@ func (_q *PushTokenQuery) loadUser(ctx context.Context, query *UserQuery, nodes 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "push_token_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -467,6 +456,9 @@ func (_q *PushTokenQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != pushtoken.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(pushtoken.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

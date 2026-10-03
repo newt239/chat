@@ -16,7 +16,7 @@ type ContextMenuProps = {
   className?: string;
 };
 
-const pointOf = (event: MouseEvent<HTMLDivElement>): Point => {
+const pointOf = (event: MouseEvent<HTMLDivElement>) => {
   // キーボードから開いた場合は座標が 0 になるため、対象の左上に出す
   if (event.clientX === 0 && event.clientY === 0) {
     const rect = event.currentTarget.getBoundingClientRect();

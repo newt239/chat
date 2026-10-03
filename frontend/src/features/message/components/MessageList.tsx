@@ -3,9 +3,11 @@ import type { ReactNode } from "react";
 
 import { IconArrowDown, IconLoader2 } from "@tabler/icons-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useHighlightedMessage } from "../hooks/useHighlightedMessage";
 import { findRowIndex } from "../utils/timelineRows";
@@ -20,7 +22,6 @@ type Direction = "older" | "newer";
 
 type MessageListProps = {
   rows: TimelineRow[];
-  currentUserId: string | null;
   // 開いたときにスクロールしてハイライトするメッセージ
   targetMessageId: string | null;
   hasOlder: boolean;
@@ -50,7 +51,6 @@ const firstMessageKey = (rows: readonly TimelineRow[]) =>
 /** タイムラインを画面に見えている行だけ描画する。最下部に追従し、端に近づくと前後を読み込む */
 export const MessageList = ({
   rows,
-  currentUserId,
   targetMessageId,
   hasOlder,
   hasNewer,
@@ -62,6 +62,7 @@ export const MessageList = ({
   renderMessage,
   header,
 }: MessageListProps) => {
+  const myId = useAtomValue(myUserIdAtom);
   const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
   // TanStack Virtual は React Compiler と併用できないため、このコンポーネントはメモ化されない
@@ -77,6 +78,7 @@ export const MessageList = ({
     paddingStart: 32,
   });
 
+  // コンパイラがメモ化しないため、一覧が変わったときだけ useHighlightedMessage が試し直すよう手で安定させる
   const scrollToMessage = useCallback(
     (messageId: string) => {
       const index = findRowIndex(rows, messageId);
@@ -156,10 +158,10 @@ export const MessageList = ({
       }
     }
     // 自分の投稿は上を読んでいても最下部へ移る
-    if (isAppended && lastRow?.kind === "user" && lastRow.message.userId === currentUserId) {
+    if (isAppended && lastRow?.kind === "user" && lastRow.message.userId === myId) {
       isAtBottomRef.current = true;
     }
-  }, [rows, virtualizer, currentUserId]);
+  }, [rows, virtualizer, myId]);
 
   // 新着や画像の読み込みで高さが変わっても、最下部にいれば最下部に留まる
   const totalSize = virtualizer.getTotalSize();

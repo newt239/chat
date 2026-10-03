@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    "./format": "./src/format.ts",
+    "./i18n": "./src/i18n.ts",
+    "./messages": "./src/messages.ts"
   },
   "scripts": {
     "codecheck": "pnpm run typecheck && pnpm run lint && pnpm run format && pnpm run test",

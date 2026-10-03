@@ -26,6 +26,8 @@ func (UserNote) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
+		field.UUID("owner_id", uuid.UUID{}),
+		field.UUID("target_id", uuid.UUID{}),
 		field.String("nickname").
 			Optional().
 			Nillable(),
@@ -41,10 +43,12 @@ func (UserNote) Fields() []ent.Field {
 func (UserNote) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("owner", User.Type).
+			Field("owner_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("target", User.Type).
+			Field("target_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
@@ -53,7 +57,7 @@ func (UserNote) Edges() []ent.Edge {
 
 func (UserNote) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Edges("owner", "target").
+		index.Fields("owner_id", "target_id").
 			Unique(),
 	}
 }

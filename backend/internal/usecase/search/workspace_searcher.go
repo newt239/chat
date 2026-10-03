@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
@@ -73,7 +74,7 @@ func (s *WorkspaceSearcher) SearchWorkspace(ctx context.Context, input Workspace
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
 	}
 	if workspace == nil {
-		return nil, ErrWorkspaceNotFound
+		return nil, domerr.ErrWorkspaceNotFound
 	}
 
 	member, err := s.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.RequesterID)
@@ -81,7 +82,7 @@ func (s *WorkspaceSearcher) SearchWorkspace(ctx context.Context, input Workspace
 		return nil, fmt.Errorf("failed to verify membership: %w", err)
 	}
 	if member == nil {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	out := &WorkspaceSearchOutput{
@@ -291,7 +292,7 @@ func (s *WorkspaceSearcher) searchChannels(
 			WorkspaceID: ch.WorkspaceID,
 			Name:        ch.Name,
 			Description: ch.Description,
-			IsPrivate:   ch.IsPrivate,
+			IsPrivate:   ch.IsPrivate(),
 			CreatedBy:   ch.CreatedBy,
 			CreatedAt:   ch.CreatedAt,
 			UpdatedAt:   ch.UpdatedAt,
@@ -386,7 +387,7 @@ func (s *WorkspaceSearcher) searchUsers(
 	for _, m := range members {
 		info := workspaceuc.MemberInfo{
 			UserID:   m.UserID,
-			Role:     string(m.Role),
+			Role:     m.Role,
 			JoinedAt: m.JoinedAt,
 		}
 		if user, exists := userMap[m.UserID]; exists && user != nil {

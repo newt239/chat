@@ -1,10 +1,7 @@
-import { useParams } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
-import { useMembers } from "#/features/member/hooks/useMembers";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 
 import { useTypingUsers } from "../hooks/useTypingUsers";
 
@@ -15,9 +12,7 @@ type TypingIndicatorProps = {
 // 入力欄の真上に重ねて出し、表示の有無で入力欄の位置が動かないようにする
 export const TypingIndicator = ({ channelId }: TypingIndicatorProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
-  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
-  const { data: members } = useMembers(workspaceId);
+  const { locale } = usePreferences();
   const displayName = useDisplayName();
   const userIds = useTypingUsers(channelId);
 
@@ -25,19 +20,13 @@ export const TypingIndicator = ({ channelId }: TypingIndicatorProps) => {
     return null;
   }
 
-  const names = userIds.map((userId) =>
-    displayName(
-      userId,
-      members?.find((member) => member.userId === userId)?.displayName ??
-        t("message.typing.someone"),
-    ),
-  );
+  const names = userIds.map((userId) => displayName(userId, t("message.typing.someone")));
   const list = new Intl.ListFormat(locale).format(names.slice(0, 2));
 
   return (
     <div
       aria-live="polite"
-      className="absolute inset-x-0 bottom-full flex h-[18px] items-center gap-1.5 bg-surface px-5 font-sans text-[11.5px] text-muted"
+      className="absolute inset-x-0 bottom-full flex h-4.5 items-center gap-1.5 bg-surface px-5 font-sans text-caption text-muted"
     >
       <span aria-hidden className="inline-flex gap-0.5">
         {[0, 1, 2].map((index) => (

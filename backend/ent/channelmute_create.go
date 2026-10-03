@@ -26,6 +26,18 @@ type ChannelMuteCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetUserID sets the "user_id" field.
+func (_c *ChannelMuteCreate) SetUserID(v uuid.UUID) *ChannelMuteCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
+// SetChannelID sets the "channel_id" field.
+func (_c *ChannelMuteCreate) SetChannelID(v uuid.UUID) *ChannelMuteCreate {
+	_c.mutation.SetChannelID(v)
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ChannelMuteCreate) SetCreatedAt(v time.Time) *ChannelMuteCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -54,21 +66,9 @@ func (_c *ChannelMuteCreate) SetNillableID(v *uuid.UUID) *ChannelMuteCreate {
 	return _c
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *ChannelMuteCreate) SetUserID(id uuid.UUID) *ChannelMuteCreate {
-	_c.mutation.SetUserID(id)
-	return _c
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_c *ChannelMuteCreate) SetUser(v *User) *ChannelMuteCreate {
 	return _c.SetUserID(v.ID)
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_c *ChannelMuteCreate) SetChannelID(id uuid.UUID) *ChannelMuteCreate {
-	_c.mutation.SetChannelID(id)
-	return _c
 }
 
 // SetChannel sets the "channel" edge to the Channel entity.
@@ -123,6 +123,12 @@ func (_c *ChannelMuteCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *ChannelMuteCreate) check() error {
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "ChannelMute.user_id"`)}
+	}
+	if _, ok := _c.mutation.ChannelID(); !ok {
+		return &ValidationError{Name: "channel_id", err: errors.New(`ent: missing required field "ChannelMute.channel_id"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "ChannelMute.created_at"`)}
 	}
@@ -186,7 +192,7 @@ func (_c *ChannelMuteCreate) createSpec() (*ChannelMute, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_mute_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ChannelIDs(); len(nodes) > 0 {
@@ -203,7 +209,7 @@ func (_c *ChannelMuteCreate) createSpec() (*ChannelMute, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_mute_channel = &nodes[0]
+		_node.ChannelID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -213,7 +219,7 @@ func (_c *ChannelMuteCreate) createSpec() (*ChannelMute, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.ChannelMute.Create().
-//		SetCreatedAt(v).
+//		SetUserID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -222,7 +228,7 @@ func (_c *ChannelMuteCreate) createSpec() (*ChannelMute, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelMuteUpsert) {
-//			SetCreatedAt(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelMuteCreate) OnConflict(opts ...sql.ConflictOption) *ChannelMuteUpsertOne {
@@ -257,6 +263,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelMuteUpsert) SetUserID(v uuid.UUID) *ChannelMuteUpsert {
+	u.Set(channelmute.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelMuteUpsert) UpdateUserID() *ChannelMuteUpsert {
+	u.SetExcluded(channelmute.FieldUserID)
+	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelMuteUpsert) SetChannelID(v uuid.UUID) *ChannelMuteUpsert {
+	u.Set(channelmute.FieldChannelID, v)
+	return u
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelMuteUpsert) UpdateChannelID() *ChannelMuteUpsert {
+	u.SetExcluded(channelmute.FieldChannelID)
+	return u
+}
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
@@ -307,6 +337,34 @@ func (u *ChannelMuteUpsertOne) Update(set func(*ChannelMuteUpsert)) *ChannelMute
 		set(&ChannelMuteUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelMuteUpsertOne) SetUserID(v uuid.UUID) *ChannelMuteUpsertOne {
+	return u.Update(func(s *ChannelMuteUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelMuteUpsertOne) UpdateUserID() *ChannelMuteUpsertOne {
+	return u.Update(func(s *ChannelMuteUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelMuteUpsertOne) SetChannelID(v uuid.UUID) *ChannelMuteUpsertOne {
+	return u.Update(func(s *ChannelMuteUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelMuteUpsertOne) UpdateChannelID() *ChannelMuteUpsertOne {
+	return u.Update(func(s *ChannelMuteUpsert) {
+		s.UpdateChannelID()
+	})
 }
 
 // Exec executes the query.
@@ -445,7 +503,7 @@ func (_c *ChannelMuteCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelMuteUpsert) {
-//			SetCreatedAt(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelMuteCreateBulk) OnConflict(opts ...sql.ConflictOption) *ChannelMuteUpsertBulk {
@@ -525,6 +583,34 @@ func (u *ChannelMuteUpsertBulk) Update(set func(*ChannelMuteUpsert)) *ChannelMut
 		set(&ChannelMuteUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelMuteUpsertBulk) SetUserID(v uuid.UUID) *ChannelMuteUpsertBulk {
+	return u.Update(func(s *ChannelMuteUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelMuteUpsertBulk) UpdateUserID() *ChannelMuteUpsertBulk {
+	return u.Update(func(s *ChannelMuteUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelMuteUpsertBulk) SetChannelID(v uuid.UUID) *ChannelMuteUpsertBulk {
+	return u.Update(func(s *ChannelMuteUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelMuteUpsertBulk) UpdateChannelID() *ChannelMuteUpsertBulk {
+	return u.Update(func(s *ChannelMuteUpsert) {
+		s.UpdateChannelID()
+	})
 }
 
 // Exec executes the query.

@@ -20,14 +20,16 @@ type ChannelMute struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
+	// ChannelID holds the value of the "channel_id" field.
+	ChannelID uuid.UUID `json:"channel_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ChannelMuteQuery when eager-loading is set.
-	Edges                ChannelMuteEdges `json:"edges"`
-	channel_mute_user    *uuid.UUID
-	channel_mute_channel *uuid.UUID
-	selectValues         sql.SelectValues
+	Edges        ChannelMuteEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // ChannelMuteEdges holds the relations/edges for other nodes in the graph.
@@ -70,12 +72,8 @@ func (*ChannelMute) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case channelmute.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case channelmute.FieldID:
+		case channelmute.FieldID, channelmute.FieldUserID, channelmute.FieldChannelID:
 			values[i] = new(uuid.UUID)
-		case channelmute.ForeignKeys[0]: // channel_mute_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case channelmute.ForeignKeys[1]: // channel_mute_channel
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -97,25 +95,23 @@ func (_m *ChannelMute) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case channelmute.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
+		case channelmute.FieldChannelID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_id", values[i])
+			} else if value != nil {
+				_m.ChannelID = *value
+			}
 		case channelmute.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case channelmute.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_mute_user", values[i])
-			} else if value.Valid {
-				_m.channel_mute_user = new(uuid.UUID)
-				*_m.channel_mute_user = *value.S.(*uuid.UUID)
-			}
-		case channelmute.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_mute_channel", values[i])
-			} else if value.Valid {
-				_m.channel_mute_channel = new(uuid.UUID)
-				*_m.channel_mute_channel = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -163,6 +159,12 @@ func (_m *ChannelMute) String() string {
 	var builder strings.Builder
 	builder.WriteString("ChannelMute(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
+	builder.WriteString("channel_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChannelID))
+	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')

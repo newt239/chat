@@ -8,7 +8,7 @@ const EMOJI_ONLY =
 const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 
 // 絵文字だけの短い投稿は大きく表示する。登録済みのカスタム絵文字も 1 文字の絵文字として数える
-export const isJumboEmoji = (body: string, customEmojiNames?: ReadonlyMap<string, unknown>) => {
+export const isJumboEmoji = (body: string, customEmojiNames?: ReadonlyMap<string, object>) => {
   const replaced =
     customEmojiNames === undefined
       ? body

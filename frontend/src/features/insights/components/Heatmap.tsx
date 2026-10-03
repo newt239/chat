@@ -1,12 +1,11 @@
 import { useState } from "react";
 
-import { formatNumber } from "@chat/i18n";
-import { useAtomValue } from "jotai";
+import { formatNumber } from "@chat/i18n/format";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "#/components/ui/styles/styles";
 import { isoWeekdayLabel } from "#/features/insights/utils/chart";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 
 type HeatmapProps = {
   // 7（月〜日）× 24 時間の平均値
@@ -26,7 +25,7 @@ const colorOf = (ratio: number) =>
 
 export const Heatmap = ({ grid, ariaLabel }: HeatmapProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   const [hovered, setHovered] = useState<{ weekday: number; hour: number } | null>(null);
   const max = Math.max(0, ...grid.flat());
   const hoveredValue = hovered === null ? undefined : grid[hovered.weekday - 1]?.[hovered.hour];
@@ -36,7 +35,7 @@ export const Heatmap = ({ grid, ariaLabel }: HeatmapProps) => {
       <div
         role="img"
         aria-label={ariaLabel}
-        className="grid grid-cols-[20px_repeat(24,minmax(0,1fr))] gap-0.5 font-mono text-[10px] text-subtle"
+        className="grid grid-cols-[20px_repeat(24,minmax(0,1fr))] gap-0.5 font-mono text-caption text-subtle"
         onPointerLeave={() => {
           setHovered(null);
         }}
@@ -51,7 +50,7 @@ export const Heatmap = ({ grid, ariaLabel }: HeatmapProps) => {
               <i
                 key={`${weekday}-${hour}`}
                 className={cn(
-                  "block aspect-square min-w-0 rounded-[2px]",
+                  "block aspect-square min-w-0 rounded-xs",
                   hovered?.weekday === weekday &&
                     hovered.hour === hour &&
                     "outline-2 -outline-offset-1 outline-text outline-solid",
@@ -71,7 +70,7 @@ export const Heatmap = ({ grid, ariaLabel }: HeatmapProps) => {
           ))}
         </div>
       </div>
-      <div className="flex flex-wrap justify-between gap-2.5 text-[11.5px] text-muted tabular-nums">
+      <div className="flex flex-wrap justify-between gap-2.5 text-caption text-muted tabular-nums">
         <span aria-live="polite">
           {hovered === null || hoveredValue === undefined
             ? t("insights.charts.heatmap.hint")
@@ -81,12 +80,12 @@ export const Heatmap = ({ grid, ariaLabel }: HeatmapProps) => {
                 weekday: isoWeekdayLabel(hovered.weekday, locale),
               })}
         </span>
-        <span aria-hidden className="flex items-center gap-[3px] text-[11px]">
+        <span aria-hidden className="flex items-center gap-0.75 text-caption">
           {t("insights.charts.heatmap.less")}
           {LEGEND_STEPS.map((step) => (
             <i
               key={step}
-              className="block h-2.5 w-3.5 rounded-[2px]"
+              className="block h-2.5 w-3.5 rounded-xs"
               style={{ background: colorOf(step) }}
             />
           ))}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { pickRecordingMimeType, recordingFile } from "../utils/recordingFormat";
 
@@ -88,11 +88,11 @@ export const useVoiceRecorder = () => {
     };
   }, []);
 
-  const stop = useCallback(() => {
+  const stop = () => {
     if (recorderRef.current?.state === "recording") {
       recorderRef.current.stop();
     }
-  }, []);
+  };
 
   return { state, stop };
 };

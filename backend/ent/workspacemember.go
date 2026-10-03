@@ -20,6 +20,10 @@ type WorkspaceMember struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// WorkspaceID holds the value of the "workspace_id" field.
+	WorkspaceID string `json:"workspace_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// Role holds the value of the "role" field.
 	Role string `json:"role,omitempty"`
 	// JoinedAt holds the value of the "joined_at" field.
@@ -28,10 +32,8 @@ type WorkspaceMember struct {
 	SuspendedAt *time.Time `json:"suspended_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkspaceMemberQuery when eager-loading is set.
-	Edges                      WorkspaceMemberEdges `json:"edges"`
-	workspace_member_workspace *string
-	workspace_member_user      *uuid.UUID
-	selectValues               sql.SelectValues
+	Edges        WorkspaceMemberEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // WorkspaceMemberEdges holds the relations/edges for other nodes in the graph.
@@ -72,16 +74,12 @@ func (*WorkspaceMember) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case workspacemember.FieldRole:
+		case workspacemember.FieldWorkspaceID, workspacemember.FieldRole:
 			values[i] = new(sql.NullString)
 		case workspacemember.FieldJoinedAt, workspacemember.FieldSuspendedAt:
 			values[i] = new(sql.NullTime)
-		case workspacemember.FieldID:
+		case workspacemember.FieldID, workspacemember.FieldUserID:
 			values[i] = new(uuid.UUID)
-		case workspacemember.ForeignKeys[0]: // workspace_member_workspace
-			values[i] = new(sql.NullString)
-		case workspacemember.ForeignKeys[1]: // workspace_member_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -103,6 +101,18 @@ func (_m *WorkspaceMember) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case workspacemember.FieldWorkspaceID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
+			} else if value.Valid {
+				_m.WorkspaceID = value.String
+			}
+		case workspacemember.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
 		case workspacemember.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
@@ -121,20 +131,6 @@ func (_m *WorkspaceMember) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.SuspendedAt = new(time.Time)
 				*_m.SuspendedAt = value.Time
-			}
-		case workspacemember.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field workspace_member_workspace", values[i])
-			} else if value.Valid {
-				_m.workspace_member_workspace = new(string)
-				*_m.workspace_member_workspace = value.String
-			}
-		case workspacemember.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field workspace_member_user", values[i])
-			} else if value.Valid {
-				_m.workspace_member_user = new(uuid.UUID)
-				*_m.workspace_member_user = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -182,6 +178,12 @@ func (_m *WorkspaceMember) String() string {
 	var builder strings.Builder
 	builder.WriteString("WorkspaceMember(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("workspace_id=")
+	builder.WriteString(_m.WorkspaceID)
+	builder.WriteString(", ")
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(_m.Role)
 	builder.WriteString(", ")

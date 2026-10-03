@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
@@ -114,7 +115,7 @@ func TestNormalizeChoiceRemovesDuplicates(t *testing.T) {
 
 func TestCloseRequiresAuthorOrAdmin(t *testing.T) {
 	i, _ := newInteractor(&entity.Poll{ID: pollID, MessageID: messageID})
-	if _, err := i.Close(context.Background(), CloseInput{PollID: pollID, UserID: voterID}); !errors.Is(err, ErrUnauthorized) {
+	if _, err := i.Close(context.Background(), CloseInput{PollID: pollID, UserID: voterID}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("作成者と管理者以外の締め切りを拒否していません: %v", err)
 	}
 }

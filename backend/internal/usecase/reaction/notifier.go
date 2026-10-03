@@ -1,6 +1,10 @@
 package reaction
 
-import "time"
+import (
+	"time"
+
+	"github.com/newt239/chat/internal/usecase/message"
+)
 
 // Notifier はリアクションの変更をチャンネルの参加者へ配信します
 type Notifier interface {
@@ -14,6 +18,6 @@ type ReactionNotification struct {
 	UserID    string
 	Emoji     string
 	// 追加のときのみ設定される
-	User      *UserInfo
+	User      *message.UserInfo
 	CreatedAt time.Time
 }

@@ -114,11 +114,11 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
           {...suggestion.inputProps}
           ref={textareaRef}
           onSelect={syncCursor}
-          className="min-h-[60px] w-full resize-y rounded-md border border-accent bg-surface px-2.5 py-1.5 font-sans text-body text-text ring-3 ring-accent-soft outline-none"
+          className="min-h-15 w-full resize-y rounded-md border border-accent bg-surface px-2.5 py-1.5 font-sans text-body text-text ring-3 ring-accent-soft outline-none"
         />
       </TextField>
       {error && <p className="m-0 text-caption text-danger">{error}</p>}
-      <div className="flex items-center justify-end gap-1.5 text-[11.5px] text-subtle">
+      <div className="flex items-center justify-end gap-1.5 text-caption text-subtle">
         <span className="flex-1">{t("message.edit.hint")}</span>
         <Button variant="secondary" size="sm" onPress={onClose} isDisabled={isSaving}>
           {t("common.cancel")}

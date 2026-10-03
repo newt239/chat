@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"context"
+	"errors"
 
 	"github.com/newt239/chat/ent"
 )
@@ -23,4 +24,19 @@ func ResolveClient(ctx context.Context, client *ent.Client) *ent.Client {
 		return tx.Client()
 	}
 	return client
+}
+
+// WithTx はトランザクション中ならそのまま、そうでなければ新しいトランザクションで fn を実行します
+func WithTx(ctx context.Context, client *ent.Client, fn func(*ent.Client) error) error {
+	if tx, ok := txFromContext(ctx); ok {
+		return fn(tx.Client())
+	}
+	tx, err := client.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	if err := fn(tx.Client()); err != nil {
+		return errors.Join(err, tx.Rollback())
+	}
+	return tx.Commit()
 }

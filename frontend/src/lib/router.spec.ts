@@ -1,7 +1,7 @@
 import { createMemoryHistory, createRouter } from "@tanstack/react-router";
-import { beforeEach, describe, expect, test } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vite-plus/test";
 
-import { clearAuthAtom } from "#/providers/store/auth";
+import { sessionAtom } from "#/providers/store/auth";
 import { store } from "#/providers/store/store";
 import { routeTree } from "#/routeTree.gen";
 
@@ -47,7 +47,17 @@ describe("routeTree", () => {
 
 describe("認証ガード", () => {
   beforeEach(() => {
-    store.set(clearAuthAtom);
+    store.set(sessionAtom, null);
+    // Cookie のリフレッシュトークンがない状態として、Refresh に Unauthenticated を返す
+    vi.spyOn(globalThis, "fetch").mockImplementation(() =>
+      Promise.resolve(
+        Response.json({ code: "unauthenticated", message: "no session" }, { status: 401 }),
+      ),
+    );
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   test.each(["/", "/app", "/app/ws1/ch1"])(

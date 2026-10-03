@@ -2,12 +2,14 @@ package repository
 
 import (
 	"context"
+	stdsql "database/sql"
+	"errors"
+	"time"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
@@ -21,7 +23,7 @@ func NewChannelMemberRepository(client *ent.Client) domainrepository.ChannelMemb
 	return &channelMemberRepository{client: client}
 }
 
-func (r *channelMemberRepository) FindByChannelAndUser(ctx context.Context, channelID, userID string) (*entity.ChannelMember, error) {
+func (r *channelMemberRepository) FindMember(ctx context.Context, channelID, userID string) (*entity.ChannelMember, error) {
 	cid, err := utils.ParseUUID(channelID, "channel ID")
 	if err != nil {
 		return nil, err
@@ -35,13 +37,9 @@ func (r *channelMemberRepository) FindByChannelAndUser(ctx context.Context, chan
 	client := transaction.ResolveClient(ctx, r.client)
 	cm, err := client.ChannelMember.Query().
 		Where(
-			channelmember.HasChannelWith(channel.ID(cid)),
-			channelmember.HasUserWith(user.ID(uid)),
+			channelmember.ChannelID(cid),
+			channelmember.UserID(uid),
 		).
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -66,32 +64,22 @@ func (r *channelMemberRepository) AddMember(ctx context.Context, member *entity.
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	_, err = client.ChannelMember.Create().
+	if member.JoinedAt.IsZero() {
+		member.JoinedAt = time.Now()
+	}
+	err = client.ChannelMember.Create().
 		SetChannelID(cid).
 		SetUserID(uid).
 		SetRole(string(member.Role)).
-		Save(ctx)
-	if err != nil {
-		return err
+		SetJoinedAt(member.JoinedAt).
+		OnConflictColumns(channelmember.FieldChannelID, channelmember.FieldUserID).
+		DoNothing().
+		Exec(ctx)
+	// 衝突して挿入しなかったときは RETURNING が行を返さない
+	if errors.Is(err, stdsql.ErrNoRows) {
+		return domerr.ErrAlreadyMember
 	}
-
-	// Load edges
-	cm, err := client.ChannelMember.Query().
-		Where(
-			channelmember.HasChannelWith(channel.ID(cid)),
-			channelmember.HasUserWith(user.ID(uid)),
-		).
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-
-	*member = *utils.ChannelMemberToEntity(cm)
-	return nil
+	return err
 }
 
 func (r *channelMemberRepository) RemoveMember(ctx context.Context, channelID, userID string) error {
@@ -108,8 +96,8 @@ func (r *channelMemberRepository) RemoveMember(ctx context.Context, channelID, u
 	client := transaction.ResolveClient(ctx, r.client)
 	_, err = client.ChannelMember.Delete().
 		Where(
-			channelmember.HasChannelWith(channel.ID(cid)),
-			channelmember.HasUserWith(user.ID(uid)),
+			channelmember.ChannelID(cid),
+			channelmember.UserID(uid),
 		).
 		Exec(ctx)
 
@@ -124,11 +112,7 @@ func (r *channelMemberRepository) FindMembers(ctx context.Context, channelID str
 
 	client := transaction.ResolveClient(ctx, r.client)
 	members, err := client.ChannelMember.Query().
-		Where(channelmember.HasChannelWith(channel.ID(cid))).
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
+		Where(channelmember.ChannelID(cid)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -156,8 +140,8 @@ func (r *channelMemberRepository) IsMember(ctx context.Context, channelID, userI
 	client := transaction.ResolveClient(ctx, r.client)
 	exists, err := client.ChannelMember.Query().
 		Where(
-			channelmember.HasChannelWith(channel.ID(cid)),
-			channelmember.HasUserWith(user.ID(uid)),
+			channelmember.ChannelID(cid),
+			channelmember.UserID(uid),
 		).
 		Exist(ctx)
 
@@ -173,7 +157,7 @@ func (r *channelMemberRepository) CountAdmins(ctx context.Context, channelID str
 	client := transaction.ResolveClient(ctx, r.client)
 	count, err := client.ChannelMember.Query().
 		Where(
-			channelmember.HasChannelWith(channel.ID(cid)),
+			channelmember.ChannelID(cid),
 			channelmember.RoleEQ(string(entity.ChannelRoleAdmin)),
 		).
 		Count(ctx)
@@ -195,11 +179,74 @@ func (r *channelMemberRepository) UpdateMemberRole(ctx context.Context, channelI
 	client := transaction.ResolveClient(ctx, r.client)
 	_, err = client.ChannelMember.Update().
 		Where(
-			channelmember.HasChannelWith(channel.ID(cid)),
-			channelmember.HasUserWith(user.ID(uid)),
+			channelmember.ChannelID(cid),
+			channelmember.UserID(uid),
 		).
 		SetRole(string(role)).
 		Save(ctx)
 
 	return err
+}
+
+func (r *channelMemberRepository) FindJoinedChannelIDs(ctx context.Context, userID string, channelIDs []string) (map[string]bool, error) {
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return nil, err
+	}
+	cids, err := utils.ParseUUIDs(channelIDs, "channel ID")
+	if err != nil {
+		return nil, err
+	}
+	members, err := transaction.ResolveClient(ctx, r.client).ChannelMember.Query().
+		Where(channelmember.UserID(uid), channelmember.ChannelIDIn(cids...)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]bool, len(members))
+	for _, m := range members {
+		result[m.ChannelID.String()] = true
+	}
+	return result, nil
+}
+
+func (r *channelMemberRepository) FindMemberIDsIn(ctx context.Context, channelID string, userIDs []string) (map[string]bool, error) {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
+	if err != nil {
+		return nil, err
+	}
+	uids, err := utils.ParseUUIDs(userIDs, "user ID")
+	if err != nil {
+		return nil, err
+	}
+	members, err := transaction.ResolveClient(ctx, r.client).ChannelMember.Query().
+		Where(channelmember.ChannelID(cid), channelmember.UserIDIn(uids...)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]bool, len(members))
+	for _, m := range members {
+		result[m.UserID.String()] = true
+	}
+	return result, nil
+}
+
+func (r *channelMemberRepository) FindMembersByChannelIDs(ctx context.Context, channelIDs []string) ([]*entity.ChannelMember, error) {
+	cids, err := utils.ParseUUIDs(channelIDs, "channel ID")
+	if err != nil {
+		return nil, err
+	}
+	members, err := transaction.ResolveClient(ctx, r.client).ChannelMember.Query().
+		Where(channelmember.ChannelIDIn(cids...)).
+		Order(ent.Asc(channelmember.FieldJoinedAt)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*entity.ChannelMember, 0, len(members))
+	for _, cm := range members {
+		result = append(result, utils.ChannelMemberToEntity(cm))
+	}
+	return result, nil
 }

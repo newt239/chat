@@ -30,6 +30,34 @@ func (_u *UserNoteUpdate) Where(ps ...predicate.UserNote) *UserNoteUpdate {
 	return _u
 }
 
+// SetOwnerID sets the "owner_id" field.
+func (_u *UserNoteUpdate) SetOwnerID(v uuid.UUID) *UserNoteUpdate {
+	_u.mutation.SetOwnerID(v)
+	return _u
+}
+
+// SetNillableOwnerID sets the "owner_id" field if the given value is not nil.
+func (_u *UserNoteUpdate) SetNillableOwnerID(v *uuid.UUID) *UserNoteUpdate {
+	if v != nil {
+		_u.SetOwnerID(*v)
+	}
+	return _u
+}
+
+// SetTargetID sets the "target_id" field.
+func (_u *UserNoteUpdate) SetTargetID(v uuid.UUID) *UserNoteUpdate {
+	_u.mutation.SetTargetID(v)
+	return _u
+}
+
+// SetNillableTargetID sets the "target_id" field if the given value is not nil.
+func (_u *UserNoteUpdate) SetNillableTargetID(v *uuid.UUID) *UserNoteUpdate {
+	if v != nil {
+		_u.SetTargetID(*v)
+	}
+	return _u
+}
+
 // SetNickname sets the "nickname" field.
 func (_u *UserNoteUpdate) SetNickname(v string) *UserNoteUpdate {
 	_u.mutation.SetNickname(v)
@@ -76,21 +104,9 @@ func (_u *UserNoteUpdate) SetUpdatedAt(v time.Time) *UserNoteUpdate {
 	return _u
 }
 
-// SetOwnerID sets the "owner" edge to the User entity by ID.
-func (_u *UserNoteUpdate) SetOwnerID(id uuid.UUID) *UserNoteUpdate {
-	_u.mutation.SetOwnerID(id)
-	return _u
-}
-
 // SetOwner sets the "owner" edge to the User entity.
 func (_u *UserNoteUpdate) SetOwner(v *User) *UserNoteUpdate {
 	return _u.SetOwnerID(v.ID)
-}
-
-// SetTargetID sets the "target" edge to the User entity by ID.
-func (_u *UserNoteUpdate) SetTargetID(id uuid.UUID) *UserNoteUpdate {
-	_u.mutation.SetTargetID(id)
-	return _u
 }
 
 // SetTarget sets the "target" edge to the User entity.
@@ -267,6 +283,34 @@ type UserNoteUpdateOne struct {
 	mutation *UserNoteMutation
 }
 
+// SetOwnerID sets the "owner_id" field.
+func (_u *UserNoteUpdateOne) SetOwnerID(v uuid.UUID) *UserNoteUpdateOne {
+	_u.mutation.SetOwnerID(v)
+	return _u
+}
+
+// SetNillableOwnerID sets the "owner_id" field if the given value is not nil.
+func (_u *UserNoteUpdateOne) SetNillableOwnerID(v *uuid.UUID) *UserNoteUpdateOne {
+	if v != nil {
+		_u.SetOwnerID(*v)
+	}
+	return _u
+}
+
+// SetTargetID sets the "target_id" field.
+func (_u *UserNoteUpdateOne) SetTargetID(v uuid.UUID) *UserNoteUpdateOne {
+	_u.mutation.SetTargetID(v)
+	return _u
+}
+
+// SetNillableTargetID sets the "target_id" field if the given value is not nil.
+func (_u *UserNoteUpdateOne) SetNillableTargetID(v *uuid.UUID) *UserNoteUpdateOne {
+	if v != nil {
+		_u.SetTargetID(*v)
+	}
+	return _u
+}
+
 // SetNickname sets the "nickname" field.
 func (_u *UserNoteUpdateOne) SetNickname(v string) *UserNoteUpdateOne {
 	_u.mutation.SetNickname(v)
@@ -313,21 +357,9 @@ func (_u *UserNoteUpdateOne) SetUpdatedAt(v time.Time) *UserNoteUpdateOne {
 	return _u
 }
 
-// SetOwnerID sets the "owner" edge to the User entity by ID.
-func (_u *UserNoteUpdateOne) SetOwnerID(id uuid.UUID) *UserNoteUpdateOne {
-	_u.mutation.SetOwnerID(id)
-	return _u
-}
-
 // SetOwner sets the "owner" edge to the User entity.
 func (_u *UserNoteUpdateOne) SetOwner(v *User) *UserNoteUpdateOne {
 	return _u.SetOwnerID(v.ID)
-}
-
-// SetTargetID sets the "target" edge to the User entity by ID.
-func (_u *UserNoteUpdateOne) SetTargetID(id uuid.UUID) *UserNoteUpdateOne {
-	_u.mutation.SetTargetID(id)
-	return _u
 }
 
 // SetTarget sets the "target" edge to the User entity.

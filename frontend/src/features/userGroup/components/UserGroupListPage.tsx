@@ -8,8 +8,9 @@ import { Link } from "#/components/ui/Link/Link";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { openDialog, openPanel } from "#/features/layout/utils/overlaySearch";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { isAdminRole } from "#/lib/isAdminRole";
 
-import { useCanManageUserGroups } from "../hooks/useCanManageUserGroups";
 import { useUserGroups } from "../hooks/useUserGroups";
 
 // ユーザーグループの一覧。押すと右パネル（モバイルでは全画面）で詳細と編集を開く
@@ -17,7 +18,7 @@ export const UserGroupListPage = () => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { data: groups, isLoading } = useUserGroups(workspaceId);
-  const canManage = useCanManageUserGroups(workspaceId);
+  const canManage = isAdminRole(useMyWorkspaceRole(workspaceId).data);
 
   return (
     <>
@@ -51,7 +52,7 @@ export const UserGroupListPage = () => {
                 >
                   <span className="text-sm font-bold text-accent-text">@{group.name}</span>
                   {group.description !== undefined && group.description.length > 0 && (
-                    <span className="line-clamp-2 text-[12.5px] text-muted">
+                    <span className="line-clamp-2 text-label font-normal text-muted">
                       {group.description}
                     </span>
                   )}
