@@ -140,12 +140,7 @@ func (r *channelRepository) Update(ctx context.Context, ch *entity.Channel) erro
 	} else {
 		builder.ClearDescription()
 	}
-	c, err := builder.Save(ctx)
-	if err != nil {
-		return err
-	}
-	ch.UpdatedAt = c.UpdatedAt
-	return nil
+	return builder.Exec(ctx)
 }
 
 func (r *channelRepository) FindAccessibleChannels(ctx context.Context, workspaceID, userID string) ([]*entity.Channel, error) {

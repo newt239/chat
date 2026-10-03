@@ -13,7 +13,7 @@ service AdminService {
   // 絞り込んだ監査ログを CSV で返す。書き出したこと自体も監査ログに残る
   rpc ExportAuditLogs(ExportAuditLogsRequest) returns (ExportAuditLogsResponse);
   rpc ListAdminMembers(ListAdminMembersRequest) returns (ListAdminMembersResponse);
-  // 停止するとリフレッシュトークンを失効させ、以降そのワークスペースの API を拒否する。投稿は残る
+  // 停止するとそのワークスペースの接続を切り、以降の API を拒否する。他のワークスペースで使えるようセッションは失効させない。投稿は残る
   rpc SuspendMember(SuspendMemberRequest) returns (SuspendMemberResponse);
   rpc ResumeMember(ResumeMemberRequest) returns (ResumeMemberResponse);
 }
@@ -105,8 +105,6 @@ message AdminMember {
   optional google.protobuf.Timestamp last_login_at = 8;
   string last_login_ip = 9;
   string last_login_user_agent = 10;
-  reserved 11;
-  reserved "two_factor_enabled";
   // 直近 30 日の投稿数
   int32 recent_message_count = 12;
   // アップロードした添付ファイルの合計サイズ

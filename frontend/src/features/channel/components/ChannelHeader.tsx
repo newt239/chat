@@ -1,4 +1,3 @@
-import { skipToken, useQuery } from "@connectrpc/connect-query";
 import {
   IconBellOff,
   IconNote,
@@ -27,9 +26,9 @@ import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { DMAvatar } from "#/features/channel/components/DMAvatar";
 import { dmName } from "#/features/channel/utils/dmName";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { useUserNote } from "#/features/member/hooks/useUserNote";
 import { usePinCount } from "#/features/pin/hooks/usePinnedMessages";
 import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
-import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 import { openPanel } from "#/lib/overlaySearch";
 
@@ -71,11 +70,8 @@ export const ChannelHeader = ({ workspaceId, channelId, channel, dm }: ChannelHe
   const isGroupDM = dm?.type === DirectMessageType.GROUP_DM;
   const [partner] = dm?.type === DirectMessageType.DM ? dm.members : [];
   // 1 対 1 の DM では相手に付けたメモをトピックの位置に出す
-  const { data: memo } = useQuery(
-    UserService.method.getUserNote,
-    partner ? { targetUserId: partner.userId } : skipToken,
-    { select: (res) => res.note?.memo ?? "" },
-  );
+  const { data: note } = useUserNote(partner?.userId ?? null);
+  const memo = note?.memo;
   const descendantsToggle = descendants.length > 0 && (
     <DescendantsToggle
       count={descendants.length}

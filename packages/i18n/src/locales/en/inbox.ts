@@ -7,10 +7,4 @@ export const inbox: Messages["inbox"] = {
     failed: "Couldn't load mentions",
     replyPlaceholder: "Reply to {{name}} in thread…",
   },
-  thread: {
-    open: "Open thread",
-    replyPlaceholder: "Reply…",
-    showMore: "Show {{count}} more replies",
-    unread: "{{count}} unread",
-  },
 };

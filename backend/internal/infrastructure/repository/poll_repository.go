@@ -54,7 +54,6 @@ func (r *pollRepository) Create(ctx context.Context, p *entity.Poll) error {
 			return err
 		}
 		p.ID = created.ID.String()
-		p.CreatedAt = created.CreatedAt
 		for i, o := range options {
 			p.Options[i].ID = o.ID.String()
 		}
@@ -157,7 +156,6 @@ func pollToEntity(p *ent.Poll) *entity.Poll {
 		Anonymous:     p.Anonymous,
 		ClosesAt:      p.ClosesAt,
 		ClosedAt:      p.ClosedAt,
-		CreatedAt:     p.CreatedAt,
 		Options: convertAll(p.Edges.Options, func(o *ent.PollOption) entity.PollOption {
 			return entity.PollOption{ID: o.ID.String(), Label: o.Label, StartsAt: o.StartsAt, AllDay: o.AllDay}
 		}),

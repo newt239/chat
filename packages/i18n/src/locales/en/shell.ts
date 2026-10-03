@@ -67,12 +67,6 @@ export const shell: Messages["shell"] = {
     home: "Home",
     me: "You",
   },
-  thread: {
-    emptyDescription: "Threads you post or reply in appear here",
-    emptyTitle: "No threads",
-    notFound: "Thread not found",
-    replyCount: "Replies: {{count}}",
-  },
   workspace: {
     create: "Create workspace",
     settings: "Workspace settings",

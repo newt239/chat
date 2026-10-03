@@ -79,6 +79,4 @@ message ReorderChannelLinksRequest {
   }];
 }
 
-message ReorderChannelLinksResponse {
-  repeated ChannelLink links = 1;
-}
+message ReorderChannelLinksResponse {}

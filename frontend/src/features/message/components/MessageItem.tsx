@@ -144,7 +144,8 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
     void navigate({ search: openPanel({ profile: message.userId }), to: "." });
   };
 
-  const displayName = useDisplayName()(message.userId, message.user?.displayName ?? "");
+  const nameOf = useDisplayName();
+  const displayName = nameOf(message.userId, message.user?.displayName ?? "");
   // アプリの投稿者はプロフィールを持たないため開かない
   const isApp = message.user?.isApp ?? false;
   const avatar = (
@@ -207,7 +208,7 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
               name:
                 message.pin.pinnedBy?.id === myId
                   ? t("reaction.names.you")
-                  : (message.pin.pinnedBy?.displayName ?? ""),
+                  : nameOf(message.pin.pinnedBy?.id ?? "", message.pin.pinnedBy?.displayName ?? ""),
             })}
           </span>
         )}
@@ -243,7 +244,9 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
         {message.isDeleted ? (
           <p className="m-0 text-body text-muted italic">
             {message.deletedBy
-              ? t("message.deletedBy", { name: message.deletedBy.displayName })
+              ? t("message.deletedBy", {
+                  name: nameOf(message.deletedBy.id, message.deletedBy.displayName),
+                })
               : t("message.deleted")}
           </p>
         ) : isEditing ? (
@@ -310,7 +313,7 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
         isOpen={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
         title={t("message.delete.title")}
-        confirmLabel={t("message.delete.confirm")}
+        confirmLabel={t("common.delete")}
         tone="danger"
         isPending={deleteMessage.isPending}
         onConfirm={() => {

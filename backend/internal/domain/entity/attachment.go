@@ -1,7 +1,5 @@
 package entity
 
-import "time"
-
 type AttachmentStatus string
 
 const (
@@ -19,8 +17,6 @@ type Attachment struct {
 	SizeBytes  int64
 	Media      MediaMetadata
 	StorageKey string
-	Status     AttachmentStatus
-	CreatedAt  time.Time
 }
 
 // MediaMetadata は画像・動画・音声の表示に使う寸法と再生時間です

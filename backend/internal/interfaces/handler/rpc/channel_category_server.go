@@ -41,11 +41,7 @@ func (s *ChannelCategoryServer) DeleteChannelCategory(ctx context.Context, req *
 }
 
 func (s *ChannelCategoryServer) ReorderChannelCategories(ctx context.Context, req *chatv1.ReorderChannelCategoriesRequest) (*chatv1.ReorderChannelCategoriesResponse, error) {
-	out, err := s.UC.Reorder(ctx, req.WorkspaceId, userIDFrom(ctx), req.CategoryIds)
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.ReorderChannelCategoriesResponse{Categories: presenter.ConvertAll(out, presenter.ChannelCategory)}, nil
+	return &chatv1.ReorderChannelCategoriesResponse{}, s.UC.Reorder(ctx, req.WorkspaceId, userIDFrom(ctx), req.CategoryIds)
 }
 
 func (s *ChannelCategoryServer) SetChannelCategory(ctx context.Context, req *chatv1.SetChannelCategoryRequest) (*chatv1.SetChannelCategoryResponse, error) {

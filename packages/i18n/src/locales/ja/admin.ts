@@ -103,7 +103,6 @@ export const admin = {
     never: "記録なし",
     remove: "外す",
     removeBody: "参加しているチャンネルからも外れます。もう一度参加するには招待が必要です。",
-    removeConfirm: "外す",
     removeLabel: "{{name}} をワークスペースから外す",
     removeTitle: "{{name}} をワークスペースから外しますか？",
     resume: "再開",

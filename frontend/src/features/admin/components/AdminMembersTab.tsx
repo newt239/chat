@@ -211,7 +211,7 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
           setRemoving(null);
         }}
         title={t("admin.members.removeTitle", { name: removing?.displayName ?? "" })}
-        confirmLabel={t("admin.members.removeConfirm")}
+        confirmLabel={t("admin.members.remove")}
         tone="danger"
         isPending={remove.isPending}
         onConfirm={() => {

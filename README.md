@@ -88,13 +88,15 @@ pnpm run proto:format && pnpm run proto:lint && pnpm run generate:proto
 
 ### バックエンド
 
-- Go 1.27
+- Go 1.26
 - Echo
 - Connect RPC (connect-go) + Protocol Buffers
 - WebSocket (gorilla/websocket)
 - ent (ORM)
 - PostgreSQL 18
 - Redis（WebSocket の配信などをレプリカ間で共有）
+- Meilisearch（メッセージの全文検索）
+- FCM（プッシュ通知）
 - Wasabi
 
 ### フロントエンド
@@ -170,6 +172,8 @@ chat/
 │   ├── src-tauri/    # Tauri のネイティブ側
 │   └── public/       # Static assets（PWA アイコンの元になる logo.svg）
 ├── packages/         # DOM に依存しない共有パッケージ（デザイントークン・i18n 辞書）
+├── infra/            # Terraform と Kubernetes のマニフェスト
+├── docs/             # インフラと Tauri の手順書
 ├── proto/            # Protocol Buffers の API 定義（buf で Go / TypeScript を生成）
 └── scripts/          # 開発用スクリプト
 ```
@@ -248,6 +252,13 @@ docker compose exec backend go run cmd/seed/main.go -messages 1000
 | frontend | packages の codecheck / typecheck / Oxlint / Oxfmt / knip / Vitest / ビルド |
 | backend | `go build` / `go test` / golangci-lint |
 | proto | buf lint と format の検査、生成物が最新かを再生成して差分検証 |
+
+`.github/workflows/` のほかのワークフローも、関係するファイルを変えた PR で動きます。
+
+| ワークフロー | 内容 |
+| --- | --- |
+| `tauri.yml` | Tauri アプリの 4 プラットフォームの署名なしデバッグビルド |
+| `terraform.yml` | Terraform の fmt / validate / TFLint / plan と kustomize build |
 
 依存関係の更新は Dependabot が月次でまとめて PR を作成し、`dependabot-auto-merge.yml` が自動マージします。
 

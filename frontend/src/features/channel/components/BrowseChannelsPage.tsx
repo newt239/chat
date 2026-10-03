@@ -124,7 +124,7 @@ export const BrowseChannelsPage = () => {
                   </span>
                 </div>
                 {channel.isMember ? (
-                  <Badge tone="accent">{t("channel.browse.joined")}</Badge>
+                  <Badge tone="accent">{t("channel.browse.membership.joined")}</Badge>
                 ) : (
                   <Button
                     size="sm"

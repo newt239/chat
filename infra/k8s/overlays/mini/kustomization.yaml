@@ -27,11 +27,11 @@ configMapGenerator:
       - GOOGLE_OAUTH_CLIENT_ID=
       - FIREBASE_PROJECT_ID=your-gcp-project-id
       - PASSWORD_AUTH_ENABLED=true
-      # Neon はアクセスがないと停止するので、アイドルの接続を早く閉じ、予約投稿の確認も間を空ける
+      # Neon はアクセスがないと停止するので、アイドルの接続を早く閉じ、予約投稿とリマインダーの確認も間を空ける
       - DB_MAX_OPEN_CONNS=5
       - DB_MAX_IDLE_CONNS=2
       - DB_CONN_MAX_IDLE_TIME=1m
-      - SCHEDULED_MESSAGE_DISPATCH_INTERVAL=15m
+      - DISPATCH_INTERVAL=15m
 
 # gitignore した env ファイルから作る（*.env.example を参照）
 secretGenerator:

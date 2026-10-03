@@ -104,8 +104,7 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 		} else {
 			builder.ClearAvatarURL()
 		}
-		u, err := builder.Save(ctx)
-		if err != nil {
+		if err := builder.Exec(ctx); err != nil {
 			return err
 		}
 
@@ -139,7 +138,6 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 			return err
 		}
 
-		usr.UpdatedAt = u.UpdatedAt
 		return nil
 	})
 }

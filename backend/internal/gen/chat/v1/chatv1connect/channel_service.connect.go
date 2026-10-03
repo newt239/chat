@@ -66,7 +66,7 @@ type ChannelServiceClient interface {
 	GetChannel(context.Context, *v1.GetChannelRequest) (*v1.GetChannelResponse, error)
 	UpdateChannel(context.Context, *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error)
 	SetChannelStarred(context.Context, *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error)
-	// 自分だけに効くミュート。通知の抑制はクライアントが is_muted を見て行う
+	// 自分だけに効くミュート。サーバーのプッシュ通知からも除外し、クライアントも is_muted を見て通知を抑える
 	SetChannelMuted(context.Context, *v1.SetChannelMutedRequest) (*v1.SetChannelMutedResponse, error)
 	// 参加していなくても閲覧できるチャンネル（公開と参加中の非公開）をすべて返す
 	ListBrowsableChannels(context.Context, *v1.ListBrowsableChannelsRequest) (*v1.ListBrowsableChannelsResponse, error)
@@ -227,7 +227,7 @@ type ChannelServiceHandler interface {
 	GetChannel(context.Context, *v1.GetChannelRequest) (*v1.GetChannelResponse, error)
 	UpdateChannel(context.Context, *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error)
 	SetChannelStarred(context.Context, *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error)
-	// 自分だけに効くミュート。通知の抑制はクライアントが is_muted を見て行う
+	// 自分だけに効くミュート。サーバーのプッシュ通知からも除外し、クライアントも is_muted を見て通知を抑える
 	SetChannelMuted(context.Context, *v1.SetChannelMutedRequest) (*v1.SetChannelMutedResponse, error)
 	// 参加していなくても閲覧できるチャンネル（公開と参加中の非公開）をすべて返す
 	ListBrowsableChannels(context.Context, *v1.ListBrowsableChannelsRequest) (*v1.ListBrowsableChannelsResponse, error)

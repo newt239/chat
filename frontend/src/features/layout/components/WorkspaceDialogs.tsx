@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from "@tanstack/react-router";
 
-import { AppDialogLoader } from "#/features/app/components/AppDialogLoader";
+import { AppDialog } from "#/features/app/components/AppDialog";
+import { useApps } from "#/features/app/hooks/useApps";
 import { ChannelCategoryDialog } from "#/features/channel/components/ChannelCategoryDialog";
 import { ChannelLinkDialog } from "#/features/channel/components/ChannelLinkDialog";
 import { CreateChannelModal } from "#/features/channel/components/CreateChannelModal";
@@ -33,6 +34,8 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
     isLinkDialog && channelId !== undefined ? channelId : null,
   );
   const editingLink = channelLinks?.links.find((candidate) => candidate.id === link);
+  const { data: apps } = useApps(dialog === "edit-app" ? workspaceId : null);
+  const editingApp = apps?.apps.find((candidate) => candidate.id === app && candidate.canManage);
 
   const close = () => {
     void navigate({ search: closeDialog, to: "." });
@@ -86,10 +89,11 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
             onClose={close}
           />
         )}
-      {(dialog === "add-app" || (dialog === "edit-app" && app !== undefined)) && (
-        <AppDialogLoader
+      {(dialog === "add-app" || (dialog === "edit-app" && editingApp)) && (
+        <AppDialog
+          key={dialog}
           workspaceId={workspaceId}
-          appId={dialog === "edit-app" ? (app ?? null) : null}
+          app={dialog === "edit-app" ? (editingApp ?? null) : null}
           initialChannelId={channelId ?? null}
           onClose={close}
         />

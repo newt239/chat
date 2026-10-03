@@ -43,7 +43,6 @@ func (r *pinRepository) Create(ctx context.Context, pin *entity.MessagePin) erro
 	if err != nil {
 		return err
 	}
-	pin.ID = mp.ID.String()
 	pin.PinnedAt = mp.CreatedAt
 	return nil
 }
@@ -100,7 +99,6 @@ func (r *pinRepository) FindByMessageIDs(ctx context.Context, messageIDs []strin
 
 func messagePinToEntity(mp *ent.MessagePin) *entity.MessagePin {
 	return &entity.MessagePin{
-		ID:        mp.ID.String(),
 		ChannelID: mp.ChannelID.String(),
 		MessageID: mp.MessageID.String(),
 		PinnedBy:  mp.PinnedByID.String(),

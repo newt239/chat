@@ -15,8 +15,6 @@ type ResolvedMentions struct {
 	GroupIDs []string
 	// グループ ID ごとの、解決した時点のメンバー
 	GroupMembers map[string][]string
-	Channel      bool
-	Here         bool
 }
 
 type MentionService interface {
@@ -49,7 +47,7 @@ func NewMentionService(
 
 func (s *mentionService) Resolve(ctx context.Context, body, workspaceID string, knownGroups []string) (*ResolvedMentions, error) {
 	tokens := entity.ParseMentionTokens(body)
-	resolved := &ResolvedMentions{GroupMembers: map[string][]string{}, Channel: tokens.Channel, Here: tokens.Here}
+	resolved := &ResolvedMentions{GroupMembers: map[string][]string{}}
 
 	if len(tokens.UserIDs) > 0 {
 		members, err := s.workspaceRepo.FindActiveMemberIDs(ctx, workspaceID, tokens.UserIDs)

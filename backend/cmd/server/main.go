@@ -91,7 +91,7 @@ func main() {
 	// 停止時に DB を閉じる前に終わりを待つ
 	var background sync.WaitGroup
 	runCtx, stopRun := context.WithCancel(ctx)
-	interval := cfg.ScheduledMessage.DispatchInterval
+	interval := cfg.DispatchInterval
 	background.Go(func() {
 		every(runCtx, interval, "scheduled_message", func(ctx context.Context) error {
 			_, err := app.ScheduledMessage.DispatchDue(ctx)

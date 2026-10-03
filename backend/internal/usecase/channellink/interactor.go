@@ -128,12 +128,11 @@ func (i *Interactor) Delete(ctx context.Context, linkID, userID string) error {
 	return nil
 }
 
-func (i *Interactor) Reorder(ctx context.Context, channelID, userID string, linkIDs []string) ([]*entity.ChannelLink, error) {
+func (i *Interactor) Reorder(ctx context.Context, channelID, userID string, linkIDs []string) error {
 	if err := i.ensureEditable(ctx, channelID, userID); err != nil {
-		return nil, err
+		return err
 	}
-	var reordered []*entity.ChannelLink
-	err := i.txManager.Do(ctx, func(txCtx context.Context) error {
+	return i.txManager.Do(ctx, func(txCtx context.Context) error {
 		links, err := i.linkRepo.FindByChannelID(txCtx, channelID)
 		if err != nil {
 			return fmt.Errorf("failed to load links: %w", err)
@@ -141,22 +140,15 @@ func (i *Interactor) Reorder(ctx context.Context, channelID, userID string, link
 		if len(links) != len(linkIDs) {
 			return ErrInvalidOrder
 		}
-		byID := make(map[string]*entity.ChannelLink, len(links))
+		byID := make(map[string]bool, len(links))
 		for _, link := range links {
-			byID[link.ID] = link
+			byID[link.ID] = true
 		}
-		for position, id := range linkIDs {
-			link, ok := byID[id]
-			if !ok {
+		for _, id := range linkIDs {
+			if !byID[id] {
 				return ErrInvalidOrder
 			}
-			link.Position = position
-			reordered = append(reordered, link)
 		}
 		return i.linkRepo.UpdatePositions(txCtx, linkIDs)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return reordered, nil
 }

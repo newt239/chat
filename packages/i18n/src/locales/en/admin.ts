@@ -107,7 +107,6 @@ export const admin: Messages["admin"] = {
     remove: "Remove",
     removeBody:
       "They will also leave the channels they joined. They need a new invitation to come back.",
-    removeConfirm: "Remove",
     removeLabel: "Remove {{name}} from the workspace",
     removeTitle: "Remove {{name}} from the workspace?",
     resume: "Resume",

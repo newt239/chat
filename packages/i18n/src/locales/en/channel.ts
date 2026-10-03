@@ -26,7 +26,6 @@ export const channel: Messages["channel"] = {
     },
     empty: "No channels found",
     join: "Join",
-    joined: "Joined",
     joinedToast: "Joined #{{name}}",
     memberCount: "{{count}} members",
     noDescription: "No description",

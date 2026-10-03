@@ -4,7 +4,6 @@ import "time"
 
 // MessagePin はチャンネル内のメッセージのピン留めを表します
 type MessagePin struct {
-	ID        string
 	ChannelID string
 	MessageID string
 	PinnedBy  string

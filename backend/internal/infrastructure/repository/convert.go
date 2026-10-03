@@ -159,8 +159,6 @@ func userToEntity(u *ent.User) *entity.User {
 		IsApp:        u.IsApp,
 		IsOfficial:   u.IsOfficial,
 		Preferences:  preferences,
-		CreatedAt:    u.CreatedAt,
-		UpdatedAt:    u.UpdatedAt,
 	}
 }
 
@@ -187,8 +185,6 @@ func workspaceToEntity(w *ent.Workspace) *entity.Workspace {
 		SignupEnabled:      w.SignupEnabled,
 		EmailSignupEnabled: w.EmailSignupEnabled,
 		CreatedBy:          w.CreatedByID.String(),
-		CreatedAt:          w.CreatedAt,
-		UpdatedAt:          w.UpdatedAt,
 	}
 }
 
@@ -211,7 +207,6 @@ func channelToEntity(c *ent.Channel) *entity.Channel {
 		ParentID:    optionalString(c.ParentID),
 		CreatedBy:   c.CreatedByID.String(),
 		CreatedAt:   c.CreatedAt,
-		UpdatedAt:   c.UpdatedAt,
 	}
 }
 
@@ -267,8 +262,6 @@ func attachmentToEntity(a *ent.Attachment) *entity.Attachment {
 		SizeBytes:  a.SizeBytes,
 		Media:      entity.MediaMetadata{Width: a.Width, Height: a.Height, DurationSeconds: a.DurationSeconds, Thumbnail: thumbnail},
 		StorageKey: a.StorageKey,
-		Status:     entity.AttachmentStatus(a.Status),
-		CreatedAt:  a.CreatedAt,
 	}
 }
 

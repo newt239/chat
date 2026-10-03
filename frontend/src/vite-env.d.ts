@@ -28,7 +28,3 @@ interface BeforeInstallPromptEvent extends Event {
 interface WindowEventMap {
   beforeinstallprompt: BeforeInstallPromptEvent;
 }
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}

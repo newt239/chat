@@ -11,5 +11,4 @@ type Reminder struct {
 	TargetChannelID *string
 	Text            string
 	RemindAt        time.Time
-	CreatedAt       time.Time
 }

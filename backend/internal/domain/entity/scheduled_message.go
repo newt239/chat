@@ -25,7 +25,6 @@ type ScheduledMessage struct {
 	Status        ScheduledMessageStatus
 	SentMessageID *string
 	FailureReason *string
-	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
 

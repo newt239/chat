@@ -951,7 +951,7 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x06_until\"P\n" +
 	"\x17ExportAuditLogsResponse\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\tR\acontent\x12\x1b\n" +
-	"\tfile_name\x18\x02 \x01(\tR\bfileName\"\x8f\x05\n" +
+	"\tfile_name\x18\x02 \x01(\tR\bfileName\"\xf5\x04\n" +
 	"\vAdminMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
@@ -970,7 +970,7 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\v_avatar_urlB\x0f\n" +
 	"\r_suspended_atB\x10\n" +
 	"\x0e_last_login_atB\x12\n" +
-	"\x10_last_message_atJ\x04\b\v\x10\fR\x12two_factor_enabled\"E\n" +
+	"\x10_last_message_at\"E\n" +
 	"\x17ListAdminMembersRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"J\n" +
 	"\x18ListAdminMembersResponse\x12.\n" +

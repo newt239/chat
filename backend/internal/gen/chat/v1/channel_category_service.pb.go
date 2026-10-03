@@ -498,7 +498,6 @@ func (x *ReorderChannelCategoriesRequest) GetCategoryIds() []string {
 
 type ReorderChannelCategoriesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Categories    []*ChannelCategory     `protobuf:"bytes,1,rep,name=categories,proto3" json:"categories,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -531,13 +530,6 @@ func (x *ReorderChannelCategoriesResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ReorderChannelCategoriesResponse.ProtoReflect.Descriptor instead.
 func (*ReorderChannelCategoriesResponse) Descriptor() ([]byte, []int) {
 	return file_chat_v1_channel_category_service_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *ReorderChannelCategoriesResponse) GetCategories() []*ChannelCategory {
-	if x != nil {
-		return x.Categories
-	}
-	return nil
 }
 
 type SetChannelCategoryRequest struct {
@@ -661,11 +653,8 @@ const file_chat_v1_channel_category_service_proto_rawDesc = "" +
 	"\x1dDeleteChannelCategoryResponse\"\x81\x01\n" +
 	"\x1fReorderChannelCategoriesRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x122\n" +
-	"\fcategory_ids\x18\x02 \x03(\tB\x0f\xbaH\f\x92\x01\t\x18\x01\"\x05r\x03\xb0\x01\x01R\vcategoryIds\"\\\n" +
-	" ReorderChannelCategoriesResponse\x128\n" +
-	"\n" +
-	"categories\x18\x01 \x03(\v2\x18.chat.v1.ChannelCategoryR\n" +
-	"categories\"\x84\x01\n" +
+	"\fcategory_ids\x18\x02 \x03(\tB\x0f\xbaH\f\x92\x01\t\x18\x01\"\x05r\x03\xb0\x01\x01R\vcategoryIds\"\"\n" +
+	" ReorderChannelCategoriesResponse\"\x84\x01\n" +
 	"\x19SetChannelCategoryRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12.\n" +
@@ -714,24 +703,23 @@ var file_chat_v1_channel_category_service_proto_depIdxs = []int32{
 	0,  // 0: chat.v1.ListChannelCategoriesResponse.categories:type_name -> chat.v1.ChannelCategory
 	0,  // 1: chat.v1.CreateChannelCategoryResponse.category:type_name -> chat.v1.ChannelCategory
 	0,  // 2: chat.v1.UpdateChannelCategoryResponse.category:type_name -> chat.v1.ChannelCategory
-	0,  // 3: chat.v1.ReorderChannelCategoriesResponse.categories:type_name -> chat.v1.ChannelCategory
-	1,  // 4: chat.v1.ChannelCategoryService.ListChannelCategories:input_type -> chat.v1.ListChannelCategoriesRequest
-	3,  // 5: chat.v1.ChannelCategoryService.CreateChannelCategory:input_type -> chat.v1.CreateChannelCategoryRequest
-	5,  // 6: chat.v1.ChannelCategoryService.UpdateChannelCategory:input_type -> chat.v1.UpdateChannelCategoryRequest
-	7,  // 7: chat.v1.ChannelCategoryService.DeleteChannelCategory:input_type -> chat.v1.DeleteChannelCategoryRequest
-	9,  // 8: chat.v1.ChannelCategoryService.ReorderChannelCategories:input_type -> chat.v1.ReorderChannelCategoriesRequest
-	11, // 9: chat.v1.ChannelCategoryService.SetChannelCategory:input_type -> chat.v1.SetChannelCategoryRequest
-	2,  // 10: chat.v1.ChannelCategoryService.ListChannelCategories:output_type -> chat.v1.ListChannelCategoriesResponse
-	4,  // 11: chat.v1.ChannelCategoryService.CreateChannelCategory:output_type -> chat.v1.CreateChannelCategoryResponse
-	6,  // 12: chat.v1.ChannelCategoryService.UpdateChannelCategory:output_type -> chat.v1.UpdateChannelCategoryResponse
-	8,  // 13: chat.v1.ChannelCategoryService.DeleteChannelCategory:output_type -> chat.v1.DeleteChannelCategoryResponse
-	10, // 14: chat.v1.ChannelCategoryService.ReorderChannelCategories:output_type -> chat.v1.ReorderChannelCategoriesResponse
-	12, // 15: chat.v1.ChannelCategoryService.SetChannelCategory:output_type -> chat.v1.SetChannelCategoryResponse
-	10, // [10:16] is the sub-list for method output_type
-	4,  // [4:10] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	1,  // 3: chat.v1.ChannelCategoryService.ListChannelCategories:input_type -> chat.v1.ListChannelCategoriesRequest
+	3,  // 4: chat.v1.ChannelCategoryService.CreateChannelCategory:input_type -> chat.v1.CreateChannelCategoryRequest
+	5,  // 5: chat.v1.ChannelCategoryService.UpdateChannelCategory:input_type -> chat.v1.UpdateChannelCategoryRequest
+	7,  // 6: chat.v1.ChannelCategoryService.DeleteChannelCategory:input_type -> chat.v1.DeleteChannelCategoryRequest
+	9,  // 7: chat.v1.ChannelCategoryService.ReorderChannelCategories:input_type -> chat.v1.ReorderChannelCategoriesRequest
+	11, // 8: chat.v1.ChannelCategoryService.SetChannelCategory:input_type -> chat.v1.SetChannelCategoryRequest
+	2,  // 9: chat.v1.ChannelCategoryService.ListChannelCategories:output_type -> chat.v1.ListChannelCategoriesResponse
+	4,  // 10: chat.v1.ChannelCategoryService.CreateChannelCategory:output_type -> chat.v1.CreateChannelCategoryResponse
+	6,  // 11: chat.v1.ChannelCategoryService.UpdateChannelCategory:output_type -> chat.v1.UpdateChannelCategoryResponse
+	8,  // 12: chat.v1.ChannelCategoryService.DeleteChannelCategory:output_type -> chat.v1.DeleteChannelCategoryResponse
+	10, // 13: chat.v1.ChannelCategoryService.ReorderChannelCategories:output_type -> chat.v1.ReorderChannelCategoriesResponse
+	12, // 14: chat.v1.ChannelCategoryService.SetChannelCategory:output_type -> chat.v1.SetChannelCategoryResponse
+	9,  // [9:15] is the sub-list for method output_type
+	3,  // [3:9] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_channel_category_service_proto_init() }

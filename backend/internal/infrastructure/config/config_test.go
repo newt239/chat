@@ -41,14 +41,14 @@ func TestDatabasePoolFromEnv(t *testing.T) {
 	}
 }
 
-func TestScheduledMessageDispatchInterval(t *testing.T) {
+func TestDispatchInterval(t *testing.T) {
 	cfg := Load()
-	if cfg.ScheduledMessage.DispatchInterval != 10*time.Second {
-		t.Errorf("既定値が 10 秒になっていません: %v", cfg.ScheduledMessage.DispatchInterval)
+	if cfg.DispatchInterval != 10*time.Second {
+		t.Errorf("既定値が 10 秒になっていません: %v", cfg.DispatchInterval)
 	}
-	t.Setenv("SCHEDULED_MESSAGE_DISPATCH_INTERVAL", "15m")
-	if cfg = Load(); cfg.ScheduledMessage.DispatchInterval != 15*time.Minute {
-		t.Errorf("環境変数が反映されていません: %v", cfg.ScheduledMessage.DispatchInterval)
+	t.Setenv("DISPATCH_INTERVAL", "15m")
+	if cfg = Load(); cfg.DispatchInterval != 15*time.Minute {
+		t.Errorf("環境変数が反映されていません: %v", cfg.DispatchInterval)
 	}
 }
 

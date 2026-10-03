@@ -45,7 +45,6 @@ func (r *linkRepository) CreateBulk(ctx context.Context, links []*entity.Message
 	}
 	for i, ml := range saved {
 		links[i].ID = ml.ID.String()
-		links[i].CreatedAt = ml.CreatedAt
 	}
 	return nil
 }
@@ -139,7 +138,6 @@ func (r *linkRepository) FindByMessageIDs(ctx context.Context, messageIDs []stri
 			OGP:             linkPreviewToOGP(ml.Edges.LinkPreview),
 			LinkPreviewID:   optionalString(ml.LinkPreviewID),
 			LinkedMessageID: optionalString(ml.LinkedMessageID),
-			CreatedAt:       ml.CreatedAt,
 		}
 	}), nil
 }

@@ -41,9 +41,5 @@ func (s *ChannelLinkServer) DeleteChannelLink(ctx context.Context, req *chatv1.D
 }
 
 func (s *ChannelLinkServer) ReorderChannelLinks(ctx context.Context, req *chatv1.ReorderChannelLinksRequest) (*chatv1.ReorderChannelLinksResponse, error) {
-	out, err := s.UC.Reorder(ctx, req.ChannelId, userIDFrom(ctx), req.LinkIds)
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.ReorderChannelLinksResponse{Links: presenter.ConvertAll(out, presenter.ChannelLink)}, nil
+	return &chatv1.ReorderChannelLinksResponse{}, s.UC.Reorder(ctx, req.ChannelId, userIDFrom(ctx), req.LinkIds)
 }

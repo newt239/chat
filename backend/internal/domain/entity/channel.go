@@ -50,7 +50,6 @@ type Channel struct {
 	ParentID    *string
 	CreatedBy   string
 	CreatedAt   time.Time
-	UpdatedAt   time.Time
 }
 
 // NewChannel は種別を省略したら公開にし、公開・非公開チャンネルの名前をパスとして正規化します
@@ -95,7 +94,6 @@ func (c *Channel) ChangeName(newName string) error {
 	}
 
 	c.Name = name
-	c.UpdatedAt = time.Now().UTC()
 	return nil
 }
 

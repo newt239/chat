@@ -29,7 +29,7 @@ export const useAdminActions = () => {
   };
 
   return {
-    // 失敗はフォームに出すため、トーストは出さない
+    // 失敗はフォームが招待専用の文言でトーストを出すため、共通の onError は付けない
     createInvitation: useMutation(InvitationService.method.createInvitation, {
       onSuccess: options.onSuccess,
     }),

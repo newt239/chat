@@ -94,7 +94,6 @@ func (r *appRepository) Create(ctx context.Context, a *entity.App) error {
 		return err
 	}
 	a.ID = created.ID.String()
-	a.CreatedAt = created.CreatedAt
 	return nil
 }
 
@@ -185,6 +184,5 @@ func appToEntity(a *ent.App) *entity.App {
 		BotUserID:        a.BotUserID.String(),
 		DefaultChannelID: optionalString(a.DefaultChannelID),
 		Permissions:      convertAll(a.Permissions, func(p string) entity.AppPermission { return entity.AppPermission(p) }),
-		CreatedAt:        a.CreatedAt,
 	}
 }

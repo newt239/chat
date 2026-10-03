@@ -53,7 +53,6 @@ export const message = {
   },
   delete: {
     body: "元に戻せません。",
-    confirm: "削除する",
     done: "メッセージを削除しました",
     failed: "メッセージを削除できませんでした",
     title: "メッセージを削除しますか？",

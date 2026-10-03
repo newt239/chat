@@ -24,7 +24,6 @@ export const channel = {
     },
     empty: "該当するチャンネルはありません",
     join: "参加",
-    joined: "参加中",
     joinedToast: "#{{name}} に参加しました",
     memberCount: "{{count}} 人",
     noDescription: "説明はありません",

@@ -213,7 +213,7 @@ flowchart LR
 | GCP の権限 | Pod はメタデータサーバー経由で VM の SA を使う（Workload Identity なし） |
 | イメージの取得 | CronJob が 30 分ごとに VM の SA のトークンで imagePullSecret を作り直す |
 | デプロイ | k3s の API は公開せず、IAP 経由の SSH で VM に入って `sudo k3s kubectl` を実行する |
-| 予約投稿 | Neon を止められるよう 15 分ごとにしか確かめないので、最大 15 分遅れる（「今すぐ送信」はすぐ送られる） |
+| 予約投稿・リマインダー | Neon を止められるよう `DISPATCH_INTERVAL=15m` で 15 分ごとにしか確かめないので、最大 15 分遅れる（予約投稿の「今すぐ送信」はすぐ送られる） |
 
 mini で確かめられないのは Cloud SQL Auth Proxy・External Secrets・Workload Identity で、これらは GKE の構成で確かめる。
 
@@ -295,7 +295,7 @@ gcloud compute ssh chat-mini --zone asia-northeast1-b --tunnel-through-iap \
 - [ ] 閲覧者一覧、既読と未読数
 - [ ] 添付ファイルのアップロードとダウンロード（Wasabi への署名付き URL）
 - [ ] 検索（Meilisearch）と、Meilisearch の PVC を消したあとのインデックスの作り直し
-- [ ] 予約投稿が一度だけ送られる（最大 15 分遅れる）
+- [ ] 予約投稿とリマインダーが一度だけ送られる（最大 15 分遅れる）
 - [ ] プッシュ通知（VM の SA の ADC で FCM に送る）
 - [ ] Webhook
 - [ ] backend の Pod を 1 つ削除したときに、クライアントがつなぎ直して配信が続く

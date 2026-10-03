@@ -51,21 +51,17 @@ func (r *customEmojiRepository) Create(ctx context.Context, e *entity.CustomEmoj
 	if err != nil {
 		return err
 	}
-	created, err := transaction.ResolveClient(ctx, r.client).CustomEmoji.Create().
+	err = transaction.ResolveClient(ctx, r.client).CustomEmoji.Create().
 		SetID(id).
 		SetWorkspaceID(e.WorkspaceID).
 		SetName(e.Name).
 		SetStorageKey(e.StorageKey).
 		SetCreatedBy(creatorID).
-		Save(ctx)
+		Exec(ctx)
 	if ent.IsConstraintError(err) {
 		return domerr.ErrCustomEmojiNameExists
 	}
-	if err != nil {
-		return err
-	}
-	e.CreatedAt = created.CreatedAt
-	return nil
+	return err
 }
 
 func (r *customEmojiRepository) Delete(ctx context.Context, id string) error {
@@ -87,6 +83,5 @@ func customEmojiToEntity(e *ent.CustomEmoji) *entity.CustomEmoji {
 		Name:        e.Name,
 		StorageKey:  e.StorageKey,
 		CreatedBy:   e.CreatedBy.String(),
-		CreatedAt:   e.CreatedAt,
 	}
 }

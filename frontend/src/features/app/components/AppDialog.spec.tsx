@@ -113,7 +113,7 @@ describe("AppDialog", () => {
     const { onClose, remove } = await setup(app);
     await userEvent.click(screen.getByRole("button", { name: "削除" }));
     await userEvent.click(
-      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "削除する" }),
+      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "削除" }),
     );
     await waitFor(() => {
       expect(remove).toHaveBeenCalledWith(expect.objectContaining({ appId: "a1" }));

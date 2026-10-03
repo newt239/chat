@@ -1,9 +1,5 @@
 package entity
 
-import (
-	"time"
-)
-
 // UnusablePasswordHash はパスワードでログインできないユーザー（Google アカウントのみ・ボット）に設定します
 const UnusablePasswordHash = "!"
 
@@ -21,8 +17,6 @@ type User struct {
 	// 公式アプリの投稿名義。この名義の投稿は誰も削除・編集できない
 	IsOfficial  bool
 	Preferences UserPreferences
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
 }
 
 type SidebarStyle string

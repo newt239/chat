@@ -151,7 +151,6 @@ func (i *Interactor) toOutputs(ctx context.Context, emojis []*entity.CustomEmoji
 			Name:      e.Name,
 			ImageURL:  url,
 			CreatedBy: messageuc.UserInfoOf(e.CreatedBy, creators),
-			CreatedAt: e.CreatedAt,
 			CanDelete: canDelete(e, viewer),
 		})
 	}

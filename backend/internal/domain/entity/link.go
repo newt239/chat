@@ -15,7 +15,6 @@ type MessageLink struct {
 	LinkPreviewID *string
 	// 同じワークスペースのメッセージへのリンクのときに設定される
 	LinkedMessageID *string
-	CreatedAt       time.Time
 }
 
 // LinkPreviewTTL を過ぎたプレビューは次に投稿されたときに取り直す

@@ -65,12 +65,6 @@ export const shell = {
     home: "ホーム",
     me: "自分",
   },
-  thread: {
-    emptyDescription: "投稿や返信をしたスレッドがここに並びます",
-    emptyTitle: "参加中のスレッドはありません",
-    notFound: "スレッドが見つかりません",
-    replyCount: "{{count}} 件の返信",
-  },
   workspace: {
     create: "ワークスペースを作成",
     settings: "ワークスペースの設定",

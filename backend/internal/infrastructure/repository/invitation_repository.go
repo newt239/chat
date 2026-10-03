@@ -42,7 +42,6 @@ func (r *invitationRepository) Create(ctx context.Context, inv *entity.Invitatio
 		return err
 	}
 	inv.ID = created.ID.String()
-	inv.CreatedAt = created.CreatedAt
 	return nil
 }
 
@@ -108,6 +107,5 @@ func invitationToEntity(i *ent.Invitation) *entity.Invitation {
 		AcceptedAt:  i.AcceptedAt,
 		WorkspaceID: i.WorkspaceID,
 		InvitedBy:   i.InvitedByID.String(),
-		CreatedAt:   i.CreatedAt,
 	}
 }

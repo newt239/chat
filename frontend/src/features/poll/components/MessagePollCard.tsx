@@ -11,6 +11,7 @@ import { Badge } from "#/components/ui/Badge/Badge";
 import { Button } from "#/components/ui/Button/Button";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { PollMode } from "#/gen/chat/v1/message_pb";
 import { PollService } from "#/gen/chat/v1/poll_service_pb";
@@ -32,6 +33,7 @@ export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
   const { t } = useTranslation();
   const { formatDateTime, formatDateWithWeekday, formatTime, locale } = useDateFormat();
   const { member } = useMentionDirectory();
+  const nameOf = useDisplayName();
   // 集計の変化はメッセージの更新として WebSocket で届く
   const close = useMutation(PollService.method.closePoll);
   const vote = useMutation(PollService.method.vote);
@@ -116,7 +118,7 @@ export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
                       return (
                         <Avatar
                           key={userId}
-                          name={voter?.nickname ?? voter?.displayName ?? ""}
+                          name={nameOf(userId, "")}
                           src={voter?.avatarUrl}
                           size={18}
                         />

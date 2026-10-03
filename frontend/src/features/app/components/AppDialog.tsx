@@ -259,7 +259,7 @@ export const AppDialog = ({ workspaceId, app, initialChannelId, onClose }: AppDi
           isOpen={isDeleteOpen}
           onOpenChange={setIsDeleteOpen}
           title={t("app.delete.title", { name: app.name })}
-          confirmLabel={t("app.delete.confirm")}
+          confirmLabel={t("common.delete")}
           tone="danger"
           isPending={remove.isPending}
           onConfirm={() => {

@@ -116,7 +116,7 @@ func TestCreateLinkPermission(t *testing.T) {
 }
 
 func TestReorderLinks(t *testing.T) {
-	uc, _ := newInteractor()
+	uc, repo := newInteractor()
 	ctx := context.Background()
 	for _, title := range []string{"a", "b", "c"} {
 		if _, err := uc.Create(ctx, LinkInput{ID: channelID, UserID: memberID, Title: title, URL: "https://example.com"}); err != nil {
@@ -124,15 +124,15 @@ func TestReorderLinks(t *testing.T) {
 		}
 	}
 
-	out, err := uc.Reorder(ctx, channelID, memberID, []string{"c", "a", "b"})
-	if err != nil {
+	if err := uc.Reorder(ctx, channelID, memberID, []string{"c", "a", "b"}); err != nil {
 		t.Fatalf("並び替えできません: %v", err)
 	}
+	out, _ := repo.FindByChannelID(ctx, channelID)
 	if out[0].ID != "c" || out[0].Position != 0 || out[2].ID != "b" {
 		t.Fatalf("並び順が反映されていません: %+v", out)
 	}
 
-	_, err = uc.Reorder(ctx, channelID, memberID, []string{"c", "a"})
+	err := uc.Reorder(ctx, channelID, memberID, []string{"c", "a"})
 	if !errors.Is(err, domerr.ErrValidation) {
 		t.Fatalf("一部のリンクだけの並び替えが拒否されていません: %v", err)
 	}

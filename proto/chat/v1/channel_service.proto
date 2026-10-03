@@ -11,7 +11,7 @@ service ChannelService {
   rpc GetChannel(GetChannelRequest) returns (GetChannelResponse);
   rpc UpdateChannel(UpdateChannelRequest) returns (UpdateChannelResponse);
   rpc SetChannelStarred(SetChannelStarredRequest) returns (SetChannelStarredResponse);
-  // 自分だけに効くミュート。通知の抑制はクライアントが is_muted を見て行う
+  // 自分だけに効くミュート。サーバーのプッシュ通知からも除外し、クライアントも is_muted を見て通知を抑える
   rpc SetChannelMuted(SetChannelMutedRequest) returns (SetChannelMutedResponse);
   // 参加していなくても閲覧できるチャンネル（公開と参加中の非公開）をすべて返す
   rpc ListBrowsableChannels(ListBrowsableChannelsRequest) returns (ListBrowsableChannelsResponse);

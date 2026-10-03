@@ -25,8 +25,8 @@ export const ThreadListPage = () => {
         ) : threads === undefined || threads.length === 0 ? (
           <EmptyState
             icon={<IconMessages />}
-            title={t("shell.thread.emptyTitle")}
-            description={t("shell.thread.emptyDescription")}
+            title={t("thread.list.emptyTitle")}
+            description={t("thread.list.emptyDescription")}
           />
         ) : (
           threads.map((thread) => (

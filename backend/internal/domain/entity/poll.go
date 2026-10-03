@@ -24,8 +24,7 @@ type Poll struct {
 	ClosesAt  *time.Time
 	ClosedAt  *time.Time
 	// 並び順
-	Options   []PollOption
-	CreatedAt time.Time
+	Options []PollOption
 }
 
 type PollOption struct {

@@ -71,9 +71,7 @@ message ReorderChannelCategoriesRequest {
   }];
 }
 
-message ReorderChannelCategoriesResponse {
-  repeated ChannelCategory categories = 1;
-}
+message ReorderChannelCategoriesResponse {}
 
 message SetChannelCategoryRequest {
   string channel_id = 1 [(buf.validate.field).string.uuid = true];

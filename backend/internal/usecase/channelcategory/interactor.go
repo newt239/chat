@@ -93,9 +93,8 @@ func (i *Interactor) Delete(ctx context.Context, categoryID, userID string) erro
 	return i.categoryRepo.Delete(ctx, categoryID)
 }
 
-func (i *Interactor) Reorder(ctx context.Context, workspaceID, userID string, categoryIDs []string) ([]*entity.ChannelCategory, error) {
-	var reordered []*entity.ChannelCategory
-	err := i.txManager.Do(ctx, func(txCtx context.Context) error {
+func (i *Interactor) Reorder(ctx context.Context, workspaceID, userID string, categoryIDs []string) error {
+	return i.txManager.Do(ctx, func(txCtx context.Context) error {
 		categories, err := i.categoryRepo.FindByUser(txCtx, userID, workspaceID)
 		if err != nil {
 			return fmt.Errorf("failed to load categories: %w", err)
@@ -103,24 +102,17 @@ func (i *Interactor) Reorder(ctx context.Context, workspaceID, userID string, ca
 		if len(categories) != len(categoryIDs) {
 			return ErrInvalidOrder
 		}
-		byID := make(map[string]*entity.ChannelCategory, len(categories))
+		byID := make(map[string]bool, len(categories))
 		for _, category := range categories {
-			byID[category.ID] = category
+			byID[category.ID] = true
 		}
-		for position, id := range categoryIDs {
-			category, ok := byID[id]
-			if !ok {
+		for _, id := range categoryIDs {
+			if !byID[id] {
 				return ErrInvalidOrder
 			}
-			category.Position = position
-			reordered = append(reordered, category)
 		}
 		return i.categoryRepo.UpdatePositions(txCtx, categoryIDs)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return reordered, nil
 }
 
 // SetChannel はチャンネルをカテゴリに割り当てます。categoryID が nil なら割り当てを外します

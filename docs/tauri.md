@@ -65,4 +65,4 @@ npm の `@tauri-apps/*` と Rust の crate は同じ minor に揃える（`tauri
 
 ## origin
 
-アプリの origin は macOS・iOS が `tauri://localhost`、Windows・Android が `https://tauri.localhost`。backend の `CORS_ALLOWED_ORIGINS` と添付ファイルのバケットの CORS に両方を入れてある。
+アプリの origin は macOS・iOS が `tauri://localhost`、Windows・Android が `https://tauri.localhost`。dev・prod では backend の `CORS_ALLOWED_ORIGINS` と添付ファイルのバケットの CORS に両方を入れてある。mini 構成（`infra/k8s/overlays/mini`・`infra/terraform/envs/mini`）には入れていないので、アプリからは mini につなげない。

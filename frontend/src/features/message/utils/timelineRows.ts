@@ -7,7 +7,7 @@ import type { Message, SystemMessage, TimelineItem } from "#/gen/chat/v1/message
 
 export type TimelineRow =
   // スレッドの親メッセージなど、一覧の先頭に置く行
-  | { kind: "header"; key: string; dateKey: string }
+  | { kind: "header"; key: string }
   | { kind: "date"; key: string; dateKey: string }
   | { kind: "user"; key: string; dateKey: string; message: Message }
   | { kind: "system"; key: string; dateKey: string; message: SystemMessage };
@@ -26,9 +26,11 @@ export const buildTimelineRows = (
       )
     : items;
   const rows: TimelineRow[] = [];
+  let lastDateKey: string | null = null;
   for (const item of visible) {
     const dateKey = toDateKey(toDate(item.createdAt), timeZone);
-    if (rows.at(-1)?.dateKey !== dateKey) {
+    if (lastDateKey !== dateKey) {
+      lastDateKey = dateKey;
       rows.push({ dateKey, key: `d-${dateKey}`, kind: "date" });
     }
     if (item.content.case === "userMessage") {

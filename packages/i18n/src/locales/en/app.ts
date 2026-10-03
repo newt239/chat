@@ -16,7 +16,6 @@ export const app: Messages["app"] = {
   defaultChannelNone: "None",
   delete: {
     body: "The incoming webhook URL stops working and the app leaves its channels. Past posts remain.",
-    confirm: "Delete",
     done: "App deleted",
     title: "Delete {{name}}?",
   },

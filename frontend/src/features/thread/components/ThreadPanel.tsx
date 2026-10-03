@@ -7,11 +7,9 @@ import { BaseMessageInput } from "#/features/message/components/BaseMessageInput
 import { MessageItem } from "#/features/message/components/MessageItem";
 import { MessageList } from "#/features/message/components/MessageList";
 import { ThreadPanelContext } from "#/features/message/hooks/useOwnsMessageOverlay";
-import { toDateKey } from "#/features/message/utils/dateJump";
 import { buildTimelineRows } from "#/features/message/utils/timelineRows";
 import { TimelineItemSchema } from "#/gen/chat/v1/message_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
-import { toDate } from "#/lib/timestamp";
 
 import { useThreadReplies } from "../hooks/useThreadReplies";
 
@@ -64,14 +62,7 @@ export const ThreadPanel = ({ channelId, threadId }: ThreadPanelProps) => {
       ? []
       : hasOlder
         ? replyRows
-        : [
-            {
-              dateKey: toDateKey(toDate(parentMessage.createdAt), timeZone),
-              key: "header",
-              kind: "header",
-            },
-            ...replyRows,
-          ];
+        : [{ key: "header", kind: "header" }, ...replyRows];
 
   const renderBody = () => {
     if (isLoading) {
@@ -86,7 +77,7 @@ export const ThreadPanel = ({ channelId, threadId }: ThreadPanelProps) => {
       return <p className="m-0 p-4 text-caption text-danger">{error?.message}</p>;
     }
     if (parentMessage === undefined || replies === undefined) {
-      return <p className="m-0 p-4 text-caption text-muted">{t("shell.thread.notFound")}</p>;
+      return <p className="m-0 p-4 text-caption text-muted">{t("thread.notFound")}</p>;
     }
     return (
       <MessageList
@@ -107,7 +98,7 @@ export const ThreadPanel = ({ channelId, threadId }: ThreadPanelProps) => {
             <div className="mx-4 my-2 flex items-center gap-2 text-caption text-muted">
               {replyCount === 0
                 ? t("message.thread.noReplies")
-                : t("shell.thread.replyCount", { count: replyCount })}
+                : t("message.thread.replies", { count: replyCount })}
               <span className="h-px flex-1 bg-border" />
             </div>
           </>

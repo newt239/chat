@@ -48,11 +48,11 @@ export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
           className="text-xs font-semibold text-accent-text no-underline data-hovered:underline"
         >
           {hiddenCount > 0
-            ? t("inbox.thread.showMore", { count: hiddenCount })
-            : t("inbox.thread.open")}
+            ? t("thread.card.showMore", { count: hiddenCount })
+            : t("thread.card.open")}
         </Link>
         {thread.unreadCount > 0 && (
-          <Badge tone="accent">{t("inbox.thread.unread", { count: thread.unreadCount })}</Badge>
+          <Badge tone="accent">{t("thread.card.unread", { count: thread.unreadCount })}</Badge>
         )}
         {/* 解除しても一覧からはすぐに消さず、押し直せるようにする */}
         <span className="ml-auto">
@@ -66,7 +66,7 @@ export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
         <BaseMessageInput
           channelId={channelId}
           parentId={threadId}
-          placeholder={t("inbox.thread.replyPlaceholder")}
+          placeholder={t("thread.card.replyPlaceholder")}
           targetPicker={null}
           onSent={(reply) => {
             updateThread(threadId, (item) => ({

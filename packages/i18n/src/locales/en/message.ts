@@ -55,7 +55,6 @@ export const message: Messages["message"] = {
   },
   delete: {
     body: "This can't be undone.",
-    confirm: "Delete",
     done: "Message deleted",
     failed: "Couldn't delete the message",
     title: "Delete this message?",

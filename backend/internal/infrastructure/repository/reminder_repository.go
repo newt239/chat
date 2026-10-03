@@ -48,7 +48,6 @@ func (r *reminderRepository) Create(ctx context.Context, rem *entity.Reminder) e
 		return err
 	}
 	rem.ID = created.ID.String()
-	rem.CreatedAt = created.CreatedAt
 	return nil
 }
 
@@ -73,7 +72,6 @@ func (r *reminderRepository) ClaimDue(ctx context.Context, now time.Time, limit 
 			TargetChannelID: optionalString(rem.TargetChannelID),
 			Text:            rem.Text,
 			RemindAt:        rem.RemindAt,
-			CreatedAt:       rem.CreatedAt,
 		}
 	}), nil
 }

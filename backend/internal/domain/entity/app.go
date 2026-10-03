@@ -39,7 +39,6 @@ type App struct {
 	BotUserID      string
 	CreatedBy      string
 	LastUsedAt     *time.Time
-	CreatedAt      time.Time
 }
 
 func (a *App) Has(permission AppPermission) bool {

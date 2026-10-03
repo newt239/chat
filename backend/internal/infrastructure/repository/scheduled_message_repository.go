@@ -197,7 +197,6 @@ func scheduledMessageToEntity(m *ent.ScheduledMessage) *entity.ScheduledMessage 
 		Status:        entity.ScheduledMessageStatus(m.Status),
 		SentMessageID: optionalString(m.SentMessageID),
 		FailureReason: m.FailureReason,
-		CreatedAt:     m.CreatedAt,
 		UpdatedAt:     m.UpdatedAt,
 	}
 }

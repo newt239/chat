@@ -21,8 +21,6 @@ type Workspace struct {
 	SignupEnabled      bool
 	EmailSignupEnabled bool
 	CreatedBy          string
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
 }
 
 type WorkspaceMember struct {

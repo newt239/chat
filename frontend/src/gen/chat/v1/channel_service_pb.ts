@@ -569,7 +569,7 @@ export const ChannelService: GenService<{
     output: typeof SetChannelStarredResponseSchema;
   },
   /**
-   * 自分だけに効くミュート。通知の抑制はクライアントが is_muted を見て行う
+   * 自分だけに効くミュート。サーバーのプッシュ通知からも除外し、クライアントも is_muted を見て通知を抑える
    *
    * @generated from rpc chat.v1.ChannelService.SetChannelMuted
    */
