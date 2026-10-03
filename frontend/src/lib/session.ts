@@ -54,6 +54,10 @@ const refreshSession = () => {
 
 const clearSession = () => {
   localStorage.removeItem(refreshTokenKey);
+  // ログイン画面で読み込み中のクエリまで捨てるとフォームが出なくなるため、ログアウト済みなら何もしない
+  if (store.get(sessionAtom) === null) {
+    return;
+  }
   store.set(sessionAtom, null);
   queryClient.clear();
   navigateTo({ to: "/login" });

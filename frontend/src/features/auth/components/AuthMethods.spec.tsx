@@ -1,4 +1,6 @@
+import { Code, ConnectError } from "@connectrpc/connect";
 import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test, vi } from "vite-plus/test";
 
 import { AuthService } from "#/gen/chat/v1/auth_service_pb";
@@ -49,5 +51,29 @@ describe("AuthMethods", () => {
     expect(await screen.findByText("パスワードのフォーム")).toBeInTheDocument();
     expect(screen.queryByText(/^Google:/u)).not.toBeInTheDocument();
     expect(screen.queryByText("または")).not.toBeInTheDocument();
+  });
+
+  test("設定を読み込めなければ再試行でき、取れたらフォームを出す", async () => {
+    vi.stubEnv("VITE_GOOGLE_OAUTH_CLIENT_ID", "");
+    let fails = true;
+    await renderWithProviders(
+      <AuthMethods passwordForm={<p>パスワードのフォーム</p>} workspaceId={null} />,
+      "/login",
+      (routes) => {
+        routes.rpc(AuthService.method.getAuthConfig, () => {
+          if (fails) {
+            throw new ConnectError("down", Code.Unavailable);
+          }
+          return { passwordAuthEnabled: true };
+        });
+      },
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "ログイン方法を読み込めませんでした",
+    );
+    fails = false;
+    await userEvent.click(screen.getByRole("button", { name: "再試行" }));
+    expect(await screen.findByText("パスワードのフォーム")).toBeInTheDocument();
   });
 });

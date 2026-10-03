@@ -29,6 +29,7 @@ export const auth: Messages["auth"] = {
     title: "Join {{workspace}}",
   },
   login: {
+    configFailed: "Couldn't load sign-in options",
     invitationOnly: "Accounts are created by an admin's invitation or from a workspace join link",
     or: "or",
     submit: "Log in",

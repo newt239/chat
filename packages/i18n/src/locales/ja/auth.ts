@@ -27,6 +27,7 @@ export const auth = {
     title: "{{workspace}} に参加",
   },
   login: {
+    configFailed: "ログイン方法を読み込めませんでした",
     invitationOnly: "アカウントは管理者からの招待か、ワークスペースの参加リンクから作成できます",
     or: "または",
     submit: "ログイン",
