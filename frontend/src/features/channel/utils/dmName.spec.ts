@@ -14,16 +14,14 @@ const displayName = (_userId: string, name: string) => name;
 test("1 対 1 は相手の名前にする", () => {
   const dm = create(DirectMessageSchema, {
     members: members.slice(0, 1),
-    name: "dm-xxx",
     type: DirectMessageType.DM,
   });
   expect(dmName(dm, displayName)).toBe("Bob");
 });
 
-test("グループは付けた名前があっても参加者を並べる", () => {
+test("グループは参加者を並べる", () => {
   const dm = create(DirectMessageSchema, {
     members,
-    name: "設計",
     type: DirectMessageType.GROUP_DM,
   });
   expect(dmName(dm, displayName)).toBe("Bob, Carol");

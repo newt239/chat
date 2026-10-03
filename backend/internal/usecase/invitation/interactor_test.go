@@ -107,7 +107,6 @@ func TestCreatePermission(t *testing.T) {
 		{name: "既定ではメンバーは招待できない", role: entity.WorkspaceRoleMember, wantErr: domerr.ErrUnauthorized},
 		{name: "権限を許可するとメンバーも招待できる", overrides: []entity.PermissionOverride{allowMemberInvite}, role: entity.WorkspaceRoleMember},
 		{name: "招待を許可されたメンバーでも管理者としては招待できない", overrides: []entity.PermissionOverride{allowMemberInvite}, role: entity.WorkspaceRoleAdmin, wantErr: domerr.ErrUnauthorized},
-		{name: "オーナーとしては招待できない", overrides: []entity.PermissionOverride{allowMemberInvite}, role: entity.WorkspaceRoleOwner, wantErr: domerr.ErrInvalidRole},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

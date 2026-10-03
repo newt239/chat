@@ -68,9 +68,6 @@ func UserGroup(g *entity.UserGroup) *chatv1.UserGroup {
 		WorkspaceId: g.WorkspaceID,
 		Name:        g.Name,
 		Description: g.Description,
-		CreatedBy:   g.CreatedBy,
-		CreatedAt:   timestamppb.New(g.CreatedAt),
-		UpdatedAt:   timestamppb.New(g.UpdatedAt),
 	}
 }
 

@@ -137,18 +137,11 @@ func (i *Interactor) ResumeMember(ctx context.Context, input MemberActionInput) 
 }
 
 func (i *Interactor) UpdateMemberRole(ctx context.Context, input UpdateMemberRoleInput) error {
-	switch input.Role {
-	case entity.WorkspaceRoleOwner, entity.WorkspaceRoleAdmin, entity.WorkspaceRoleMember, entity.WorkspaceRoleGuest:
-	default:
-		return domerr.ErrInvalidRole
-	}
 	target, err := i.findTarget(ctx, input.MemberActionInput)
 	if err != nil {
 		return err
 	}
-	// owner の降格と owner への昇格は owner 本人にのみ許可する
-	isOwnerChange := target.member.Role == entity.WorkspaceRoleOwner || input.Role == entity.WorkspaceRoleOwner
-	if (isOwnerChange && target.operator.Role != entity.WorkspaceRoleOwner) || input.TargetUserID == input.OperatorID {
+	if target.member.Role == entity.WorkspaceRoleOwner || input.TargetUserID == input.OperatorID {
 		return ErrCannotChangeOwnerRole
 	}
 	if err := i.workspaceRepo.UpdateMemberRole(ctx, input.WorkspaceID, input.TargetUserID, input.Role); err != nil {
@@ -174,14 +167,12 @@ func (i *Interactor) RemoveMember(ctx context.Context, input MemberActionInput) 
 }
 
 type memberTarget struct {
-	operator *entity.WorkspaceMember
-	member   *entity.WorkspaceMember
-	label    string
+	member *entity.WorkspaceMember
+	label  string
 }
 
 func (i *Interactor) findTarget(ctx context.Context, input MemberActionInput) (*memberTarget, error) {
-	operator, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.OperatorID)
-	if err != nil {
+	if _, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.OperatorID); err != nil {
 		return nil, err
 	}
 	member, err := i.workspaceRepo.FindMemberIncludingSuspended(ctx, input.WorkspaceID, input.TargetUserID)
@@ -199,7 +190,7 @@ func (i *Interactor) findTarget(ctx context.Context, input MemberActionInput) (*
 	if user != nil {
 		label = user.DisplayName
 	}
-	return &memberTarget{operator: operator, member: member, label: label}, nil
+	return &memberTarget{member: member, label: label}, nil
 }
 
 func (i *Interactor) recordMemberAction(ctx context.Context, input MemberActionInput, label string, action entity.AuditAction, metadata map[string]string) {

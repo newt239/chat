@@ -4,7 +4,6 @@ package chat.v1;
 
 import "buf/validate/validate.proto";
 import "chat/v1/user.proto";
-import "google/protobuf/timestamp.proto";
 
 // カスタム絵文字。PresignCustomEmojiUpload の URL に画像を PUT してから CreateCustomEmoji で登録する
 service CustomEmojiService {
@@ -21,7 +20,6 @@ message CustomEmoji {
   // 有効期限付きの URL
   string image_url = 3;
   UserSummary created_by = 4;
-  google.protobuf.Timestamp created_at = 5;
   // 閲覧者が削除できるか
   bool can_delete = 6;
 }

@@ -26,7 +26,6 @@ type ChannelCategory struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Position      int32                  `protobuf:"varint,3,opt,name=position,proto3" json:"position,omitempty"`
 	ChannelIds    []string               `protobuf:"bytes,4,rep,name=channel_ids,json=channelIds,proto3" json:"channel_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -74,13 +73,6 @@ func (x *ChannelCategory) GetName() string {
 		return x.Name
 	}
 	return ""
-}
-
-func (x *ChannelCategory) GetPosition() int32 {
-	if x != nil {
-		return x.Position
-	}
-	return 0
 }
 
 func (x *ChannelCategory) GetChannelIds() []string {
@@ -640,11 +632,10 @@ var File_chat_v1_channel_category_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_channel_category_service_proto_rawDesc = "" +
 	"\n" +
-	"&chat/v1/channel_category_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"r\n" +
+	"&chat/v1/channel_category_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"V\n" +
 	"\x0fChannelCategory\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
-	"\bposition\x18\x03 \x01(\x05R\bposition\x12\x1f\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1f\n" +
 	"\vchannel_ids\x18\x04 \x03(\tR\n" +
 	"channelIds\"J\n" +
 	"\x1cListChannelCategoriesRequest\x12*\n" +

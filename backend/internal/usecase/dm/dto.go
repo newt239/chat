@@ -12,7 +12,6 @@ type CreateGroupDMInput struct {
 	WorkspaceID string
 	CreatorID   string
 	MemberIDs   []string
-	Name        string
 }
 
 type ListDMsInput struct {

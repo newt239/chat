@@ -3,7 +3,6 @@ syntax = "proto3";
 package chat.v1;
 
 import "buf/validate/validate.proto";
-import "google/protobuf/timestamp.proto";
 
 service DirectMessageService {
   rpc ListDirectMessages(ListDirectMessagesRequest) returns (ListDirectMessagesResponse);
@@ -19,13 +18,8 @@ enum DirectMessageType {
 
 message DirectMessage {
   string id = 1;
-  string workspace_id = 2;
-  string name = 3;
-  optional string description = 4;
   DirectMessageType type = 5;
   repeated DirectMessageMember members = 6;
-  google.protobuf.Timestamp created_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
   bool is_starred = 9;
   bool is_muted = 10;
   // ListDirectMessages でのみ設定される
@@ -64,7 +58,6 @@ message CreateGroupDirectMessageRequest {
       string: {uuid: true}
     }
   }];
-  optional string name = 3;
 }
 
 message CreateGroupDirectMessageResponse {

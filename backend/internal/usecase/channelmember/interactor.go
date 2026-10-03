@@ -109,13 +109,6 @@ func (i *Interactor) changeMember(ctx context.Context, channelID, userID string,
 	})
 }
 
-func validateRole(role entity.ChannelRole) error {
-	if role != entity.ChannelRoleMember && role != entity.ChannelRoleAdmin {
-		return domerr.ErrInvalidRole
-	}
-	return nil
-}
-
 func (i *Interactor) ListMembers(ctx context.Context, channelID, userID string) ([]MemberOutput, error) {
 	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID); err != nil {
 		return nil, err
@@ -143,9 +136,6 @@ func (i *Interactor) ListMembers(ctx context.Context, channelID, userID string) 
 
 // InviteMember は既に参加していれば ErrAlreadyMember を返します
 func (i *Interactor) InviteMember(ctx context.Context, input MemberInput) error {
-	if err := validateRole(input.Role); err != nil {
-		return err
-	}
 	ch, err := i.ensureCanManageMembers(ctx, input.ChannelID, input.OperatorID)
 	if err != nil {
 		return err
@@ -184,9 +174,6 @@ func (i *Interactor) JoinPublicChannel(ctx context.Context, channelID, userID st
 }
 
 func (i *Interactor) UpdateMemberRole(ctx context.Context, input MemberInput) error {
-	if err := validateRole(input.Role); err != nil {
-		return err
-	}
 	if _, err := i.ensureCanManageMembers(ctx, input.ChannelID, input.OperatorID); err != nil {
 		return err
 	}

@@ -88,7 +88,7 @@ func (i *Interactor) CreateGroupDM(ctx context.Context, input CreateGroupDMInput
 		return nil, err
 	}
 
-	channel, err := i.channelRepo.FindOrCreateGroupDM(ctx, input.WorkspaceID, input.CreatorID, input.MemberIDs, input.Name)
+	channel, err := i.channelRepo.FindOrCreateGroupDM(ctx, input.WorkspaceID, input.CreatorID, input.MemberIDs)
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,6 @@
 package presenter
 
 import (
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	appuc "github.com/newt239/chat/internal/usecase/app"
@@ -28,7 +26,6 @@ func App(a appuc.Output) *chatv1.App {
 		OutgoingSecret:   a.OutgoingSecret,
 		IsOfficial:       a.IsOfficial,
 		CreatedBy:        UserSummary(a.Creator),
-		CreatedAt:        timestamppb.New(a.CreatedAt),
 		LastUsedAt:       optionalTimestamp(a.LastUsedAt),
 		CanManage:        a.CanManage,
 	}

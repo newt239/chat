@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -35,20 +34,6 @@ func (_c *UserGroupMemberCreate) SetGroupID(v uuid.UUID) *UserGroupMemberCreate 
 // SetUserID sets the "user_id" field.
 func (_c *UserGroupMemberCreate) SetUserID(v uuid.UUID) *UserGroupMemberCreate {
 	_c.mutation.SetUserID(v)
-	return _c
-}
-
-// SetJoinedAt sets the "joined_at" field.
-func (_c *UserGroupMemberCreate) SetJoinedAt(v time.Time) *UserGroupMemberCreate {
-	_c.mutation.SetJoinedAt(v)
-	return _c
-}
-
-// SetNillableJoinedAt sets the "joined_at" field if the given value is not nil.
-func (_c *UserGroupMemberCreate) SetNillableJoinedAt(v *time.Time) *UserGroupMemberCreate {
-	if v != nil {
-		_c.SetJoinedAt(*v)
-	}
 	return _c
 }
 
@@ -111,10 +96,6 @@ func (_c *UserGroupMemberCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *UserGroupMemberCreate) defaults() {
-	if _, ok := _c.mutation.JoinedAt(); !ok {
-		v := usergroupmember.DefaultJoinedAt()
-		_c.mutation.SetJoinedAt(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := usergroupmember.DefaultID()
 		_c.mutation.SetID(v)
@@ -128,9 +109,6 @@ func (_c *UserGroupMemberCreate) check() error {
 	}
 	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "UserGroupMember.user_id"`)}
-	}
-	if _, ok := _c.mutation.JoinedAt(); !ok {
-		return &ValidationError{Name: "joined_at", err: errors.New(`ent: missing required field "UserGroupMember.joined_at"`)}
 	}
 	if len(_c.mutation.GroupIDs()) == 0 {
 		return &ValidationError{Name: "group", err: errors.New(`ent: missing required edge "UserGroupMember.group"`)}
@@ -173,10 +151,6 @@ func (_c *UserGroupMemberCreate) createSpec() (*UserGroupMember, *sqlgraph.Creat
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
-	}
-	if value, ok := _c.mutation.JoinedAt(); ok {
-		_spec.SetField(usergroupmember.FieldJoinedAt, field.TypeTime, value)
-		_node.JoinedAt = value
 	}
 	if nodes := _c.mutation.GroupIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -304,9 +278,6 @@ func (u *UserGroupMemberUpsertOne) UpdateNewValues() *UserGroupMemberUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(usergroupmember.FieldID)
-		}
-		if _, exists := u.create.mutation.JoinedAt(); exists {
-			s.SetIgnore(usergroupmember.FieldJoinedAt)
 		}
 	}))
 	return u
@@ -549,9 +520,6 @@ func (u *UserGroupMemberUpsertBulk) UpdateNewValues() *UserGroupMemberUpsertBulk
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(usergroupmember.FieldID)
-			}
-			if _, exists := b.mutation.JoinedAt(); exists {
-				s.SetIgnore(usergroupmember.FieldJoinedAt)
 			}
 		}
 	}))

@@ -26,9 +26,7 @@ message Channel {
   string name = 3;
   optional string description = 4;
   bool is_private = 5;
-  string created_by = 6;
   google.protobuf.Timestamp created_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
   int32 unread_count = 9;
   optional string parent_id = 11;
   bool is_starred = 12;

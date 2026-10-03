@@ -3,7 +3,6 @@ syntax = "proto3";
 package chat.v1;
 
 import "buf/validate/validate.proto";
-import "google/protobuf/timestamp.proto";
 
 service UserGroupService {
   rpc CreateUserGroup(CreateUserGroupRequest) returns (CreateUserGroupResponse);
@@ -20,9 +19,6 @@ message UserGroup {
   string workspace_id = 2;
   string name = 3;
   optional string description = 4;
-  string created_by = 5;
-  google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp updated_at = 7;
 }
 
 message UserGroupMember {

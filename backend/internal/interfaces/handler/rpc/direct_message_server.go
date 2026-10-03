@@ -33,7 +33,6 @@ func (s *DirectMessageServer) CreateGroupDirectMessage(ctx context.Context, req 
 		WorkspaceID: req.WorkspaceId,
 		CreatorID:   userIDFrom(ctx),
 		MemberIDs:   req.UserIds,
-		Name:        req.GetName(),
 	})
 	if err != nil {
 		return nil, err

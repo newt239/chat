@@ -39,7 +39,7 @@ message InviteChannelMemberRequest {
   string channel_id = 1 [(buf.validate.field).string.uuid = true];
   string user_id = 2 [(buf.validate.field).string.uuid = true];
   // 未指定の場合はメンバーとして招待する
-  ChannelRole role = 3;
+  ChannelRole role = 3 [(buf.validate.field).enum.defined_only = true];
 }
 
 message InviteChannelMemberResponse {}

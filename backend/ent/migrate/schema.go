@@ -1366,7 +1366,6 @@ var (
 	// UserGroupMemberColumns holds the columns for the "user_group_member" table.
 	UserGroupMemberColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "joined_at", Type: field.TypeTime},
 		{Name: "group_id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
@@ -1378,13 +1377,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "user_group_member_user_group_group",
-				Columns:    []*schema.Column{UserGroupMemberColumns[2]},
+				Columns:    []*schema.Column{UserGroupMemberColumns[1]},
 				RefColumns: []*schema.Column{UserGroupColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "user_group_member_user_user",
-				Columns:    []*schema.Column{UserGroupMemberColumns[3]},
+				Columns:    []*schema.Column{UserGroupMemberColumns[2]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1393,12 +1392,12 @@ var (
 			{
 				Name:    "usergroupmember_group_id_user_id",
 				Unique:  true,
-				Columns: []*schema.Column{UserGroupMemberColumns[2], UserGroupMemberColumns[3]},
+				Columns: []*schema.Column{UserGroupMemberColumns[1], UserGroupMemberColumns[2]},
 			},
 			{
 				Name:    "usergroupmember_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{UserGroupMemberColumns[3]},
+				Columns: []*schema.Column{UserGroupMemberColumns[2]},
 			},
 		},
 	}

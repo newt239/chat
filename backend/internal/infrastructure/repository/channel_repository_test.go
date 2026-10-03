@@ -83,11 +83,11 @@ func TestFindOrCreateDMReusesChannelByKey(t *testing.T) {
 		t.Fatalf("相手から開いても同じ DM を返すことを期待しましたが %v, %v でした", again, err)
 	}
 
-	group, err := repo.FindOrCreateGroupDM(ctx, f.workspaceID, alice, []string{alice, bob}, "")
+	group, err := repo.FindOrCreateGroupDM(ctx, f.workspaceID, alice, []string{alice, bob})
 	if err != nil || group.ID == dm.ID {
 		t.Fatalf("グループ DM は 1:1 の DM と別に作ることを期待しましたが %v, %v でした", group, err)
 	}
-	same, err := repo.FindOrCreateGroupDM(ctx, f.workspaceID, bob, []string{bob, alice}, "別名")
+	same, err := repo.FindOrCreateGroupDM(ctx, f.workspaceID, bob, []string{bob, alice})
 	if err != nil || same.ID != group.ID {
 		t.Fatalf("メンバーが同じグループ DM を返すことを期待しましたが %v, %v でした", same, err)
 	}

@@ -10,7 +10,6 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -73,17 +72,12 @@ func (DirectMessageType) EnumDescriptor() ([]byte, []int) {
 }
 
 type DirectMessage struct {
-	state       protoimpl.MessageState `protogen:"open.v1"`
-	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	WorkspaceId string                 `protobuf:"bytes,2,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	Name        string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Description *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	Type        DirectMessageType      `protobuf:"varint,5,opt,name=type,proto3,enum=chat.v1.DirectMessageType" json:"type,omitempty"`
-	Members     []*DirectMessageMember `protobuf:"bytes,6,rep,name=members,proto3" json:"members,omitempty"`
-	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	IsStarred   bool                   `protobuf:"varint,9,opt,name=is_starred,json=isStarred,proto3" json:"is_starred,omitempty"`
-	IsMuted     bool                   `protobuf:"varint,10,opt,name=is_muted,json=isMuted,proto3" json:"is_muted,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	Id        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Type      DirectMessageType      `protobuf:"varint,5,opt,name=type,proto3,enum=chat.v1.DirectMessageType" json:"type,omitempty"`
+	Members   []*DirectMessageMember `protobuf:"bytes,6,rep,name=members,proto3" json:"members,omitempty"`
+	IsStarred bool                   `protobuf:"varint,9,opt,name=is_starred,json=isStarred,proto3" json:"is_starred,omitempty"`
+	IsMuted   bool                   `protobuf:"varint,10,opt,name=is_muted,json=isMuted,proto3" json:"is_muted,omitempty"`
 	// ListDirectMessages でのみ設定される
 	UnreadCount   int32 `protobuf:"varint,11,opt,name=unread_count,json=unreadCount,proto3" json:"unread_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -127,27 +121,6 @@ func (x *DirectMessage) GetId() string {
 	return ""
 }
 
-func (x *DirectMessage) GetWorkspaceId() string {
-	if x != nil {
-		return x.WorkspaceId
-	}
-	return ""
-}
-
-func (x *DirectMessage) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *DirectMessage) GetDescription() string {
-	if x != nil && x.Description != nil {
-		return *x.Description
-	}
-	return ""
-}
-
 func (x *DirectMessage) GetType() DirectMessageType {
 	if x != nil {
 		return x.Type
@@ -158,20 +131,6 @@ func (x *DirectMessage) GetType() DirectMessageType {
 func (x *DirectMessage) GetMembers() []*DirectMessageMember {
 	if x != nil {
 		return x.Members
-	}
-	return nil
-}
-
-func (x *DirectMessage) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *DirectMessage) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
 	}
 	return nil
 }
@@ -445,7 +404,6 @@ type CreateGroupDirectMessageRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WorkspaceId   string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	UserIds       []string               `protobuf:"bytes,2,rep,name=user_ids,json=userIds,proto3" json:"user_ids,omitempty"`
-	Name          *string                `protobuf:"bytes,3,opt,name=name,proto3,oneof" json:"name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -492,13 +450,6 @@ func (x *CreateGroupDirectMessageRequest) GetUserIds() []string {
 		return x.UserIds
 	}
 	return nil
-}
-
-func (x *CreateGroupDirectMessageRequest) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
 }
 
 type CreateGroupDirectMessageResponse struct {
@@ -549,24 +500,16 @@ var File_chat_v1_direct_message_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_direct_message_service_proto_rawDesc = "" +
 	"\n" +
-	"$chat/v1/direct_message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc8\x03\n" +
+	"$chat/v1/direct_message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"\xe4\x01\n" +
 	"\rDirectMessage\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
-	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12%\n" +
-	"\vdescription\x18\x04 \x01(\tH\x00R\vdescription\x88\x01\x01\x12.\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12.\n" +
 	"\x04type\x18\x05 \x01(\x0e2\x1a.chat.v1.DirectMessageTypeR\x04type\x126\n" +
-	"\amembers\x18\x06 \x03(\v2\x1c.chat.v1.DirectMessageMemberR\amembers\x129\n" +
-	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1d\n" +
+	"\amembers\x18\x06 \x03(\v2\x1c.chat.v1.DirectMessageMemberR\amembers\x12\x1d\n" +
 	"\n" +
 	"is_starred\x18\t \x01(\bR\tisStarred\x12\x19\n" +
 	"\bis_muted\x18\n" +
 	" \x01(\bR\aisMuted\x12!\n" +
-	"\funread_count\x18\v \x01(\x05R\vunreadCountB\x0e\n" +
-	"\f_description\"\x84\x01\n" +
+	"\funread_count\x18\v \x01(\x05R\vunreadCount\"\x84\x01\n" +
 	"\x13DirectMessageMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\"\n" +
@@ -581,12 +524,10 @@ const file_chat_v1_direct_message_service_proto_rawDesc = "" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12!\n" +
 	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"\\\n" +
 	"\x1bCreateDirectMessageResponse\x12=\n" +
-	"\x0edirect_message\x18\x01 \x01(\v2\x16.chat.v1.DirectMessageR\rdirectMessage\"\x9d\x01\n" +
+	"\x0edirect_message\x18\x01 \x01(\v2\x16.chat.v1.DirectMessageR\rdirectMessage\"{\n" +
 	"\x1fCreateGroupDirectMessageRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12,\n" +
-	"\buser_ids\x18\x02 \x03(\tB\x11\xbaH\x0e\x92\x01\v\b\x02\x10\t\"\x05r\x03\xb0\x01\x01R\auserIds\x12\x17\n" +
-	"\x04name\x18\x03 \x01(\tH\x00R\x04name\x88\x01\x01B\a\n" +
-	"\x05_name\"a\n" +
+	"\buser_ids\x18\x02 \x03(\tB\x11\xbaH\x0e\x92\x01\v\b\x02\x10\t\"\x05r\x03\xb0\x01\x01R\auserIds\"a\n" +
 	" CreateGroupDirectMessageResponse\x12=\n" +
 	"\x0edirect_message\x18\x01 \x01(\v2\x16.chat.v1.DirectMessageR\rdirectMessage*v\n" +
 	"\x11DirectMessageType\x12#\n" +
@@ -623,27 +564,24 @@ var file_chat_v1_direct_message_service_proto_goTypes = []any{
 	(*CreateDirectMessageResponse)(nil),      // 6: chat.v1.CreateDirectMessageResponse
 	(*CreateGroupDirectMessageRequest)(nil),  // 7: chat.v1.CreateGroupDirectMessageRequest
 	(*CreateGroupDirectMessageResponse)(nil), // 8: chat.v1.CreateGroupDirectMessageResponse
-	(*timestamppb.Timestamp)(nil),            // 9: google.protobuf.Timestamp
 }
 var file_chat_v1_direct_message_service_proto_depIdxs = []int32{
-	0,  // 0: chat.v1.DirectMessage.type:type_name -> chat.v1.DirectMessageType
-	2,  // 1: chat.v1.DirectMessage.members:type_name -> chat.v1.DirectMessageMember
-	9,  // 2: chat.v1.DirectMessage.created_at:type_name -> google.protobuf.Timestamp
-	9,  // 3: chat.v1.DirectMessage.updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 4: chat.v1.ListDirectMessagesResponse.direct_messages:type_name -> chat.v1.DirectMessage
-	1,  // 5: chat.v1.CreateDirectMessageResponse.direct_message:type_name -> chat.v1.DirectMessage
-	1,  // 6: chat.v1.CreateGroupDirectMessageResponse.direct_message:type_name -> chat.v1.DirectMessage
-	3,  // 7: chat.v1.DirectMessageService.ListDirectMessages:input_type -> chat.v1.ListDirectMessagesRequest
-	5,  // 8: chat.v1.DirectMessageService.CreateDirectMessage:input_type -> chat.v1.CreateDirectMessageRequest
-	7,  // 9: chat.v1.DirectMessageService.CreateGroupDirectMessage:input_type -> chat.v1.CreateGroupDirectMessageRequest
-	4,  // 10: chat.v1.DirectMessageService.ListDirectMessages:output_type -> chat.v1.ListDirectMessagesResponse
-	6,  // 11: chat.v1.DirectMessageService.CreateDirectMessage:output_type -> chat.v1.CreateDirectMessageResponse
-	8,  // 12: chat.v1.DirectMessageService.CreateGroupDirectMessage:output_type -> chat.v1.CreateGroupDirectMessageResponse
-	10, // [10:13] is the sub-list for method output_type
-	7,  // [7:10] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	0, // 0: chat.v1.DirectMessage.type:type_name -> chat.v1.DirectMessageType
+	2, // 1: chat.v1.DirectMessage.members:type_name -> chat.v1.DirectMessageMember
+	1, // 2: chat.v1.ListDirectMessagesResponse.direct_messages:type_name -> chat.v1.DirectMessage
+	1, // 3: chat.v1.CreateDirectMessageResponse.direct_message:type_name -> chat.v1.DirectMessage
+	1, // 4: chat.v1.CreateGroupDirectMessageResponse.direct_message:type_name -> chat.v1.DirectMessage
+	3, // 5: chat.v1.DirectMessageService.ListDirectMessages:input_type -> chat.v1.ListDirectMessagesRequest
+	5, // 6: chat.v1.DirectMessageService.CreateDirectMessage:input_type -> chat.v1.CreateDirectMessageRequest
+	7, // 7: chat.v1.DirectMessageService.CreateGroupDirectMessage:input_type -> chat.v1.CreateGroupDirectMessageRequest
+	4, // 8: chat.v1.DirectMessageService.ListDirectMessages:output_type -> chat.v1.ListDirectMessagesResponse
+	6, // 9: chat.v1.DirectMessageService.CreateDirectMessage:output_type -> chat.v1.CreateDirectMessageResponse
+	8, // 10: chat.v1.DirectMessageService.CreateGroupDirectMessage:output_type -> chat.v1.CreateGroupDirectMessageResponse
+	8, // [8:11] is the sub-list for method output_type
+	5, // [5:8] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_direct_message_service_proto_init() }
@@ -651,9 +589,7 @@ func file_chat_v1_direct_message_service_proto_init() {
 	if File_chat_v1_direct_message_service_proto != nil {
 		return
 	}
-	file_chat_v1_direct_message_service_proto_msgTypes[0].OneofWrappers = []any{}
 	file_chat_v1_direct_message_service_proto_msgTypes[1].OneofWrappers = []any{}
-	file_chat_v1_direct_message_service_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

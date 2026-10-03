@@ -73,9 +73,6 @@ func (i *Interactor) findWorkspace(ctx context.Context, workspaceID string) (*en
 
 // CreateWorkspace は ID が使われていれば ErrWorkspaceIDExists を返します
 func (i *Interactor) CreateWorkspace(ctx context.Context, input CreateWorkspaceInput) (*WorkspaceOutput, error) {
-	if err := entity.ValidateWorkspaceSlug(input.ID); err != nil {
-		return nil, err
-	}
 	workspace := &entity.Workspace{
 		ID:          input.ID,
 		Name:        input.Name,

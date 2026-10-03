@@ -129,9 +129,7 @@ type Channel struct {
 	Name        string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Description *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
 	IsPrivate   bool                   `protobuf:"varint,5,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
-	CreatedBy   string                 `protobuf:"bytes,6,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
 	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	UnreadCount int32                  `protobuf:"varint,9,opt,name=unread_count,json=unreadCount,proto3" json:"unread_count,omitempty"`
 	ParentId    *string                `protobuf:"bytes,11,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
 	IsStarred   bool                   `protobuf:"varint,12,opt,name=is_starred,json=isStarred,proto3" json:"is_starred,omitempty"`
@@ -211,23 +209,9 @@ func (x *Channel) GetIsPrivate() bool {
 	return false
 }
 
-func (x *Channel) GetCreatedBy() string {
-	if x != nil {
-		return x.CreatedBy
-	}
-	return ""
-}
-
 func (x *Channel) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *Channel) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
 	}
 	return nil
 }
@@ -1150,20 +1134,16 @@ var File_chat_v1_channel_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1dchat/v1/channel_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe7\x04\n" +
+	"\x1dchat/v1/channel_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8d\x04\n" +
 	"\aChannel\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12%\n" +
 	"\vdescription\x18\x04 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x1d\n" +
 	"\n" +
-	"is_private\x18\x05 \x01(\bR\tisPrivate\x12\x1d\n" +
+	"is_private\x18\x05 \x01(\bR\tisPrivate\x129\n" +
 	"\n" +
-	"created_by\x18\x06 \x01(\tR\tcreatedBy\x129\n" +
-	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12!\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12!\n" +
 	"\funread_count\x18\t \x01(\x05R\vunreadCount\x12 \n" +
 	"\tparent_id\x18\v \x01(\tH\x01R\bparentId\x88\x01\x01\x12\x1d\n" +
 	"\n" +
@@ -1296,38 +1276,37 @@ var file_chat_v1_channel_service_proto_goTypes = []any{
 }
 var file_chat_v1_channel_service_proto_depIdxs = []int32{
 	20, // 0: chat.v1.Channel.created_at:type_name -> google.protobuf.Timestamp
-	20, // 1: chat.v1.Channel.updated_at:type_name -> google.protobuf.Timestamp
-	20, // 2: chat.v1.Channel.last_message_at:type_name -> google.protobuf.Timestamp
-	2,  // 3: chat.v1.ListChannelsResponse.channels:type_name -> chat.v1.Channel
-	2,  // 4: chat.v1.CreateChannelResponse.channel:type_name -> chat.v1.Channel
-	2,  // 5: chat.v1.GetChannelResponse.channel:type_name -> chat.v1.Channel
-	2,  // 6: chat.v1.UpdateChannelResponse.channel:type_name -> chat.v1.Channel
-	2,  // 7: chat.v1.BrowsableChannel.channel:type_name -> chat.v1.Channel
-	16, // 8: chat.v1.ListBrowsableChannelsResponse.channels:type_name -> chat.v1.BrowsableChannel
-	0,  // 9: chat.v1.SearchBrowsableChannelsRequest.membership:type_name -> chat.v1.BrowsableChannelMembership
-	1,  // 10: chat.v1.SearchBrowsableChannelsRequest.sort:type_name -> chat.v1.BrowsableChannelSort
-	16, // 11: chat.v1.SearchBrowsableChannelsResponse.channels:type_name -> chat.v1.BrowsableChannel
-	3,  // 12: chat.v1.ChannelService.ListChannels:input_type -> chat.v1.ListChannelsRequest
-	5,  // 13: chat.v1.ChannelService.CreateChannel:input_type -> chat.v1.CreateChannelRequest
-	7,  // 14: chat.v1.ChannelService.GetChannel:input_type -> chat.v1.GetChannelRequest
-	9,  // 15: chat.v1.ChannelService.UpdateChannel:input_type -> chat.v1.UpdateChannelRequest
-	11, // 16: chat.v1.ChannelService.SetChannelStarred:input_type -> chat.v1.SetChannelStarredRequest
-	13, // 17: chat.v1.ChannelService.SetChannelMuted:input_type -> chat.v1.SetChannelMutedRequest
-	15, // 18: chat.v1.ChannelService.ListBrowsableChannels:input_type -> chat.v1.ListBrowsableChannelsRequest
-	18, // 19: chat.v1.ChannelService.SearchBrowsableChannels:input_type -> chat.v1.SearchBrowsableChannelsRequest
-	4,  // 20: chat.v1.ChannelService.ListChannels:output_type -> chat.v1.ListChannelsResponse
-	6,  // 21: chat.v1.ChannelService.CreateChannel:output_type -> chat.v1.CreateChannelResponse
-	8,  // 22: chat.v1.ChannelService.GetChannel:output_type -> chat.v1.GetChannelResponse
-	10, // 23: chat.v1.ChannelService.UpdateChannel:output_type -> chat.v1.UpdateChannelResponse
-	12, // 24: chat.v1.ChannelService.SetChannelStarred:output_type -> chat.v1.SetChannelStarredResponse
-	14, // 25: chat.v1.ChannelService.SetChannelMuted:output_type -> chat.v1.SetChannelMutedResponse
-	17, // 26: chat.v1.ChannelService.ListBrowsableChannels:output_type -> chat.v1.ListBrowsableChannelsResponse
-	19, // 27: chat.v1.ChannelService.SearchBrowsableChannels:output_type -> chat.v1.SearchBrowsableChannelsResponse
-	20, // [20:28] is the sub-list for method output_type
-	12, // [12:20] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	20, // 1: chat.v1.Channel.last_message_at:type_name -> google.protobuf.Timestamp
+	2,  // 2: chat.v1.ListChannelsResponse.channels:type_name -> chat.v1.Channel
+	2,  // 3: chat.v1.CreateChannelResponse.channel:type_name -> chat.v1.Channel
+	2,  // 4: chat.v1.GetChannelResponse.channel:type_name -> chat.v1.Channel
+	2,  // 5: chat.v1.UpdateChannelResponse.channel:type_name -> chat.v1.Channel
+	2,  // 6: chat.v1.BrowsableChannel.channel:type_name -> chat.v1.Channel
+	16, // 7: chat.v1.ListBrowsableChannelsResponse.channels:type_name -> chat.v1.BrowsableChannel
+	0,  // 8: chat.v1.SearchBrowsableChannelsRequest.membership:type_name -> chat.v1.BrowsableChannelMembership
+	1,  // 9: chat.v1.SearchBrowsableChannelsRequest.sort:type_name -> chat.v1.BrowsableChannelSort
+	16, // 10: chat.v1.SearchBrowsableChannelsResponse.channels:type_name -> chat.v1.BrowsableChannel
+	3,  // 11: chat.v1.ChannelService.ListChannels:input_type -> chat.v1.ListChannelsRequest
+	5,  // 12: chat.v1.ChannelService.CreateChannel:input_type -> chat.v1.CreateChannelRequest
+	7,  // 13: chat.v1.ChannelService.GetChannel:input_type -> chat.v1.GetChannelRequest
+	9,  // 14: chat.v1.ChannelService.UpdateChannel:input_type -> chat.v1.UpdateChannelRequest
+	11, // 15: chat.v1.ChannelService.SetChannelStarred:input_type -> chat.v1.SetChannelStarredRequest
+	13, // 16: chat.v1.ChannelService.SetChannelMuted:input_type -> chat.v1.SetChannelMutedRequest
+	15, // 17: chat.v1.ChannelService.ListBrowsableChannels:input_type -> chat.v1.ListBrowsableChannelsRequest
+	18, // 18: chat.v1.ChannelService.SearchBrowsableChannels:input_type -> chat.v1.SearchBrowsableChannelsRequest
+	4,  // 19: chat.v1.ChannelService.ListChannels:output_type -> chat.v1.ListChannelsResponse
+	6,  // 20: chat.v1.ChannelService.CreateChannel:output_type -> chat.v1.CreateChannelResponse
+	8,  // 21: chat.v1.ChannelService.GetChannel:output_type -> chat.v1.GetChannelResponse
+	10, // 22: chat.v1.ChannelService.UpdateChannel:output_type -> chat.v1.UpdateChannelResponse
+	12, // 23: chat.v1.ChannelService.SetChannelStarred:output_type -> chat.v1.SetChannelStarredResponse
+	14, // 24: chat.v1.ChannelService.SetChannelMuted:output_type -> chat.v1.SetChannelMutedResponse
+	17, // 25: chat.v1.ChannelService.ListBrowsableChannels:output_type -> chat.v1.ListBrowsableChannelsResponse
+	19, // 26: chat.v1.ChannelService.SearchBrowsableChannels:output_type -> chat.v1.SearchBrowsableChannelsResponse
+	19, // [19:27] is the sub-list for method output_type
+	11, // [11:19] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_channel_service_proto_init() }

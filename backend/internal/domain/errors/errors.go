@@ -55,6 +55,5 @@ var (
 	ErrGoogleAuthDisabled   = New(ErrFailedPrecondition, "このサーバーでは Google ログインが設定されていません")
 	ErrSignupDisabled       = New(ErrFailedPrecondition, "このワークスペースでは新規登録を受け付けていません")
 
-	ErrInvalidRole     = New(ErrValidation, "指定できないロールです")
 	ErrInvalidTimeZone = New(ErrValidation, "タイムゾーンの指定が正しくありません")
 )

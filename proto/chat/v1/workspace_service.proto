@@ -35,9 +35,6 @@ message Workspace {
   optional string icon_url = 4;
   bool is_public = 5;
   WorkspaceRole role = 6;
-  string created_by = 7;
-  google.protobuf.Timestamp created_at = 8;
-  google.protobuf.Timestamp updated_at = 9;
   bool signup_enabled = 10;
   bool email_signup_enabled = 11;
 }
@@ -66,7 +63,6 @@ message PublicWorkspace {
   optional string icon_url = 4;
   int32 member_count = 5;
   bool is_joined = 6;
-  google.protobuf.Timestamp created_at = 7;
 }
 
 message ListWorkspacesRequest {}

@@ -8,7 +8,6 @@ import (
 )
 
 type ThreadMetadata struct {
-	MessageID       string
 	ReplyCount      int
 	LastReplyAt     *time.Time
 	LastReplyUserID *string
@@ -37,7 +36,6 @@ type FindParticipatingThreadsInput struct {
 
 type ParticipatingThread struct {
 	ThreadID       string
-	ChannelID      string
 	FirstMessage   *entity.Message
 	LatestReplies  []*entity.Message
 	ReplyCount     int

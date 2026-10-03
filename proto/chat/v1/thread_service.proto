@@ -17,7 +17,6 @@ service ThreadService {
 
 message ParticipatingThread {
   string thread_id = 1;
-  optional string channel_id = 2;
   Message first_message = 3;
   int32 reply_count = 4;
   google.protobuf.Timestamp last_activity_at = 5;

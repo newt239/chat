@@ -5,7 +5,6 @@ package ent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -24,8 +23,6 @@ type UserGroupMember struct {
 	GroupID uuid.UUID `json:"group_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
-	// JoinedAt holds the value of the "joined_at" field.
-	JoinedAt time.Time `json:"joined_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserGroupMemberQuery when eager-loading is set.
 	Edges        UserGroupMemberEdges `json:"edges"`
@@ -70,8 +67,6 @@ func (*UserGroupMember) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case usergroupmember.FieldJoinedAt:
-			values[i] = new(sql.NullTime)
 		case usergroupmember.FieldID, usergroupmember.FieldGroupID, usergroupmember.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -106,12 +101,6 @@ func (_m *UserGroupMember) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
 				_m.UserID = *value
-			}
-		case usergroupmember.FieldJoinedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field joined_at", values[i])
-			} else if value.Valid {
-				_m.JoinedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -164,9 +153,6 @@ func (_m *UserGroupMember) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
-	builder.WriteString(", ")
-	builder.WriteString("joined_at=")
-	builder.WriteString(_m.JoinedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

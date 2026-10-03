@@ -60,14 +60,8 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*CreateOutp
 	if err != nil {
 		return nil, err
 	}
-	switch input.Role {
-	case entity.WorkspaceRoleAdmin:
-		if !requester.IsAdmin() {
-			return nil, domerr.ErrUnauthorized
-		}
-	case entity.WorkspaceRoleMember, entity.WorkspaceRoleGuest:
-	default:
-		return nil, domerr.ErrInvalidRole
+	if input.Role == entity.WorkspaceRoleAdmin && !requester.IsAdmin() {
+		return nil, domerr.ErrUnauthorized
 	}
 
 	email := entity.NormalizeEmail(input.Email)

@@ -279,8 +279,6 @@ func userGroupToEntity(ug *ent.UserGroup) *entity.UserGroup {
 		Name:        ug.Name,
 		Description: ug.Description,
 		CreatedBy:   ug.CreatedByID.String(),
-		CreatedAt:   ug.CreatedAt,
-		UpdatedAt:   ug.UpdatedAt,
 	}
 }
 

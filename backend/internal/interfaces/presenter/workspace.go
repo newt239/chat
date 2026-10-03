@@ -1,8 +1,6 @@
 package presenter
 
 import (
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
@@ -25,9 +23,6 @@ func Workspace(w workspaceuc.WorkspaceOutput) *chatv1.Workspace {
 		SignupEnabled:      w.SignupEnabled,
 		EmailSignupEnabled: w.EmailSignupEnabled,
 		Role:               WorkspaceRoles[w.Role],
-		CreatedBy:          w.CreatedBy,
-		CreatedAt:          timestamppb.New(w.CreatedAt),
-		UpdatedAt:          timestamppb.New(w.UpdatedAt),
 	}
 }
 
@@ -54,6 +49,5 @@ func PublicWorkspace(w workspaceuc.PublicWorkspaceItem) *chatv1.PublicWorkspace 
 		IconUrl:     w.IconURL,
 		MemberCount: int32(w.MemberCount),
 		IsJoined:    w.IsJoined,
-		CreatedAt:   timestamppb.New(w.CreatedAt),
 	}
 }

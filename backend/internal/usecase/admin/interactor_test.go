@@ -298,11 +298,9 @@ func TestUpdateMemberRole(t *testing.T) {
 		wantErr  error
 	}{
 		{name: "admin は owner を降格できない", operator: "admin", target: "owner", role: entity.WorkspaceRoleMember, wantErr: ErrCannotChangeOwnerRole},
-		{name: "admin は他人を owner に昇格できない", operator: "admin", target: "member", role: entity.WorkspaceRoleOwner, wantErr: ErrCannotChangeOwnerRole},
-		{name: "自分自身のロールは変更できない", operator: "admin", target: "admin", role: entity.WorkspaceRoleOwner, wantErr: ErrCannotChangeOwnerRole},
+		{name: "自分自身のロールは変更できない", operator: "admin", target: "admin", role: entity.WorkspaceRoleMember, wantErr: ErrCannotChangeOwnerRole},
 		{name: "member はロールを変更できない", operator: "member", target: "admin", role: entity.WorkspaceRoleMember, wantErr: domerr.ErrUnauthorized},
 		{name: "admin は member を admin に昇格できる", operator: "admin", target: "member", role: entity.WorkspaceRoleAdmin},
-		{name: "owner は他人を owner に昇格できる", operator: "owner", target: "member", role: entity.WorkspaceRoleOwner},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

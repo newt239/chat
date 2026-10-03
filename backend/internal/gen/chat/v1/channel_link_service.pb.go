@@ -10,7 +10,6 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -29,10 +28,6 @@ type ChannelLink struct {
 	ChannelId     string                 `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	Url           string                 `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`
-	Position      int32                  `protobuf:"varint,5,opt,name=position,proto3" json:"position,omitempty"`
-	CreatedBy     string                 `protobuf:"bytes,6,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -93,34 +88,6 @@ func (x *ChannelLink) GetUrl() string {
 		return x.Url
 	}
 	return ""
-}
-
-func (x *ChannelLink) GetPosition() int32 {
-	if x != nil {
-		return x.Position
-	}
-	return 0
-}
-
-func (x *ChannelLink) GetCreatedBy() string {
-	if x != nil {
-		return x.CreatedBy
-	}
-	return ""
-}
-
-func (x *ChannelLink) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *ChannelLink) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
 }
 
 type ListChannelLinksRequest struct {
@@ -609,20 +576,13 @@ var File_chat_v1_channel_link_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_channel_link_service_proto_rawDesc = "" +
 	"\n" +
-	"\"chat/v1/channel_link_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x95\x02\n" +
+	"\"chat/v1/channel_link_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"d\n" +
 	"\vChannelLink\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
 	"channel_id\x18\x02 \x01(\tR\tchannelId\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x10\n" +
-	"\x03url\x18\x04 \x01(\tR\x03url\x12\x1a\n" +
-	"\bposition\x18\x05 \x01(\x05R\bposition\x12\x1d\n" +
-	"\n" +
-	"created_by\x18\x06 \x01(\tR\tcreatedBy\x129\n" +
-	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"B\n" +
+	"\x03url\x18\x04 \x01(\tR\x03url\"B\n" +
 	"\x17ListChannelLinksRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\"a\n" +
@@ -684,30 +644,27 @@ var file_chat_v1_channel_link_service_proto_goTypes = []any{
 	(*DeleteChannelLinkResponse)(nil),   // 8: chat.v1.DeleteChannelLinkResponse
 	(*ReorderChannelLinksRequest)(nil),  // 9: chat.v1.ReorderChannelLinksRequest
 	(*ReorderChannelLinksResponse)(nil), // 10: chat.v1.ReorderChannelLinksResponse
-	(*timestamppb.Timestamp)(nil),       // 11: google.protobuf.Timestamp
 }
 var file_chat_v1_channel_link_service_proto_depIdxs = []int32{
-	11, // 0: chat.v1.ChannelLink.created_at:type_name -> google.protobuf.Timestamp
-	11, // 1: chat.v1.ChannelLink.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 2: chat.v1.ListChannelLinksResponse.links:type_name -> chat.v1.ChannelLink
-	0,  // 3: chat.v1.CreateChannelLinkResponse.link:type_name -> chat.v1.ChannelLink
-	0,  // 4: chat.v1.UpdateChannelLinkResponse.link:type_name -> chat.v1.ChannelLink
-	0,  // 5: chat.v1.ReorderChannelLinksResponse.links:type_name -> chat.v1.ChannelLink
-	1,  // 6: chat.v1.ChannelLinkService.ListChannelLinks:input_type -> chat.v1.ListChannelLinksRequest
-	3,  // 7: chat.v1.ChannelLinkService.CreateChannelLink:input_type -> chat.v1.CreateChannelLinkRequest
-	5,  // 8: chat.v1.ChannelLinkService.UpdateChannelLink:input_type -> chat.v1.UpdateChannelLinkRequest
-	7,  // 9: chat.v1.ChannelLinkService.DeleteChannelLink:input_type -> chat.v1.DeleteChannelLinkRequest
-	9,  // 10: chat.v1.ChannelLinkService.ReorderChannelLinks:input_type -> chat.v1.ReorderChannelLinksRequest
-	2,  // 11: chat.v1.ChannelLinkService.ListChannelLinks:output_type -> chat.v1.ListChannelLinksResponse
-	4,  // 12: chat.v1.ChannelLinkService.CreateChannelLink:output_type -> chat.v1.CreateChannelLinkResponse
-	6,  // 13: chat.v1.ChannelLinkService.UpdateChannelLink:output_type -> chat.v1.UpdateChannelLinkResponse
-	8,  // 14: chat.v1.ChannelLinkService.DeleteChannelLink:output_type -> chat.v1.DeleteChannelLinkResponse
-	10, // 15: chat.v1.ChannelLinkService.ReorderChannelLinks:output_type -> chat.v1.ReorderChannelLinksResponse
-	11, // [11:16] is the sub-list for method output_type
-	6,  // [6:11] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	0,  // 0: chat.v1.ListChannelLinksResponse.links:type_name -> chat.v1.ChannelLink
+	0,  // 1: chat.v1.CreateChannelLinkResponse.link:type_name -> chat.v1.ChannelLink
+	0,  // 2: chat.v1.UpdateChannelLinkResponse.link:type_name -> chat.v1.ChannelLink
+	0,  // 3: chat.v1.ReorderChannelLinksResponse.links:type_name -> chat.v1.ChannelLink
+	1,  // 4: chat.v1.ChannelLinkService.ListChannelLinks:input_type -> chat.v1.ListChannelLinksRequest
+	3,  // 5: chat.v1.ChannelLinkService.CreateChannelLink:input_type -> chat.v1.CreateChannelLinkRequest
+	5,  // 6: chat.v1.ChannelLinkService.UpdateChannelLink:input_type -> chat.v1.UpdateChannelLinkRequest
+	7,  // 7: chat.v1.ChannelLinkService.DeleteChannelLink:input_type -> chat.v1.DeleteChannelLinkRequest
+	9,  // 8: chat.v1.ChannelLinkService.ReorderChannelLinks:input_type -> chat.v1.ReorderChannelLinksRequest
+	2,  // 9: chat.v1.ChannelLinkService.ListChannelLinks:output_type -> chat.v1.ListChannelLinksResponse
+	4,  // 10: chat.v1.ChannelLinkService.CreateChannelLink:output_type -> chat.v1.CreateChannelLinkResponse
+	6,  // 11: chat.v1.ChannelLinkService.UpdateChannelLink:output_type -> chat.v1.UpdateChannelLinkResponse
+	8,  // 12: chat.v1.ChannelLinkService.DeleteChannelLink:output_type -> chat.v1.DeleteChannelLinkResponse
+	10, // 13: chat.v1.ChannelLinkService.ReorderChannelLinks:output_type -> chat.v1.ReorderChannelLinksResponse
+	9,  // [9:14] is the sub-list for method output_type
+	4,  // [4:9] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_channel_link_service_proto_init() }

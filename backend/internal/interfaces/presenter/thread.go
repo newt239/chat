@@ -12,7 +12,6 @@ func ParticipatingThreads(out *messageuc.ListParticipatingThreadsOutput) *chatv1
 		Threads: ConvertAll(out.Items, func(t messageuc.ParticipatingThreadOutput) *chatv1.ParticipatingThread {
 			return &chatv1.ParticipatingThread{
 				ThreadId:       t.ThreadID,
-				ChannelId:      &t.ChannelID,
 				ReplyCount:     int32(t.ReplyCount),
 				LastActivityAt: timestamppb.New(t.LastActivityAt),
 				UnreadCount:    int32(t.UnreadCount),

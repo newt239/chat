@@ -10,7 +10,6 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -29,9 +28,8 @@ type CustomEmoji struct {
 	// 本文やリアクションでは :name: と書く
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// 有効期限付きの URL
-	ImageUrl  string                 `protobuf:"bytes,3,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
-	CreatedBy *UserSummary           `protobuf:"bytes,4,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ImageUrl  string       `protobuf:"bytes,3,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
+	CreatedBy *UserSummary `protobuf:"bytes,4,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
 	// 閲覧者が削除できるか
 	CanDelete     bool `protobuf:"varint,6,opt,name=can_delete,json=canDelete,proto3" json:"can_delete,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -92,13 +90,6 @@ func (x *CustomEmoji) GetImageUrl() string {
 func (x *CustomEmoji) GetCreatedBy() *UserSummary {
 	if x != nil {
 		return x.CreatedBy
-	}
-	return nil
-}
-
-func (x *CustomEmoji) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
 	}
 	return nil
 }
@@ -507,15 +498,13 @@ var File_chat_v1_custom_emoji_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_custom_emoji_service_proto_rawDesc = "" +
 	"\n" +
-	"\"chat/v1/custom_emoji_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xdd\x01\n" +
+	"\"chat/v1/custom_emoji_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\"\xa2\x01\n" +
 	"\vCustomEmoji\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1b\n" +
 	"\timage_url\x18\x03 \x01(\tR\bimageUrl\x123\n" +
 	"\n" +
-	"created_by\x18\x04 \x01(\v2\x14.chat.v1.UserSummaryR\tcreatedBy\x129\n" +
-	"\n" +
-	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1d\n" +
+	"created_by\x18\x04 \x01(\v2\x14.chat.v1.UserSummaryR\tcreatedBy\x12\x1d\n" +
 	"\n" +
 	"can_delete\x18\x06 \x01(\bR\tcanDelete\"E\n" +
 	"\x17ListCustomEmojisRequest\x12*\n" +
@@ -574,26 +563,24 @@ var file_chat_v1_custom_emoji_service_proto_goTypes = []any{
 	(*DeleteCustomEmojiRequest)(nil),         // 7: chat.v1.DeleteCustomEmojiRequest
 	(*DeleteCustomEmojiResponse)(nil),        // 8: chat.v1.DeleteCustomEmojiResponse
 	(*UserSummary)(nil),                      // 9: chat.v1.UserSummary
-	(*timestamppb.Timestamp)(nil),            // 10: google.protobuf.Timestamp
 }
 var file_chat_v1_custom_emoji_service_proto_depIdxs = []int32{
-	9,  // 0: chat.v1.CustomEmoji.created_by:type_name -> chat.v1.UserSummary
-	10, // 1: chat.v1.CustomEmoji.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 2: chat.v1.ListCustomEmojisResponse.emojis:type_name -> chat.v1.CustomEmoji
-	0,  // 3: chat.v1.CreateCustomEmojiResponse.emoji:type_name -> chat.v1.CustomEmoji
-	1,  // 4: chat.v1.CustomEmojiService.ListCustomEmojis:input_type -> chat.v1.ListCustomEmojisRequest
-	3,  // 5: chat.v1.CustomEmojiService.PresignCustomEmojiUpload:input_type -> chat.v1.PresignCustomEmojiUploadRequest
-	5,  // 6: chat.v1.CustomEmojiService.CreateCustomEmoji:input_type -> chat.v1.CreateCustomEmojiRequest
-	7,  // 7: chat.v1.CustomEmojiService.DeleteCustomEmoji:input_type -> chat.v1.DeleteCustomEmojiRequest
-	2,  // 8: chat.v1.CustomEmojiService.ListCustomEmojis:output_type -> chat.v1.ListCustomEmojisResponse
-	4,  // 9: chat.v1.CustomEmojiService.PresignCustomEmojiUpload:output_type -> chat.v1.PresignCustomEmojiUploadResponse
-	6,  // 10: chat.v1.CustomEmojiService.CreateCustomEmoji:output_type -> chat.v1.CreateCustomEmojiResponse
-	8,  // 11: chat.v1.CustomEmojiService.DeleteCustomEmoji:output_type -> chat.v1.DeleteCustomEmojiResponse
-	8,  // [8:12] is the sub-list for method output_type
-	4,  // [4:8] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	9, // 0: chat.v1.CustomEmoji.created_by:type_name -> chat.v1.UserSummary
+	0, // 1: chat.v1.ListCustomEmojisResponse.emojis:type_name -> chat.v1.CustomEmoji
+	0, // 2: chat.v1.CreateCustomEmojiResponse.emoji:type_name -> chat.v1.CustomEmoji
+	1, // 3: chat.v1.CustomEmojiService.ListCustomEmojis:input_type -> chat.v1.ListCustomEmojisRequest
+	3, // 4: chat.v1.CustomEmojiService.PresignCustomEmojiUpload:input_type -> chat.v1.PresignCustomEmojiUploadRequest
+	5, // 5: chat.v1.CustomEmojiService.CreateCustomEmoji:input_type -> chat.v1.CreateCustomEmojiRequest
+	7, // 6: chat.v1.CustomEmojiService.DeleteCustomEmoji:input_type -> chat.v1.DeleteCustomEmojiRequest
+	2, // 7: chat.v1.CustomEmojiService.ListCustomEmojis:output_type -> chat.v1.ListCustomEmojisResponse
+	4, // 8: chat.v1.CustomEmojiService.PresignCustomEmojiUpload:output_type -> chat.v1.PresignCustomEmojiUploadResponse
+	6, // 9: chat.v1.CustomEmojiService.CreateCustomEmoji:output_type -> chat.v1.CreateCustomEmojiResponse
+	8, // 10: chat.v1.CustomEmojiService.DeleteCustomEmoji:output_type -> chat.v1.DeleteCustomEmojiResponse
+	7, // [7:11] is the sub-list for method output_type
+	3, // [3:7] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_custom_emoji_service_proto_init() }

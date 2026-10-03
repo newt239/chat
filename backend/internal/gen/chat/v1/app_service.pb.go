@@ -97,7 +97,6 @@ type App struct {
 	OutgoingSecret *string                `protobuf:"bytes,9,opt,name=outgoing_secret,json=outgoingSecret,proto3,oneof" json:"outgoing_secret,omitempty"`
 	IsOfficial     bool                   `protobuf:"varint,10,opt,name=is_official,json=isOfficial,proto3" json:"is_official,omitempty"`
 	CreatedBy      *UserSummary           `protobuf:"bytes,12,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
-	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	LastUsedAt     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=last_used_at,json=lastUsedAt,proto3" json:"last_used_at,omitempty"`
 	// 閲覧者が編集・削除できるか
 	CanManage     bool `protobuf:"varint,15,opt,name=can_manage,json=canManage,proto3" json:"can_manage,omitempty"`
@@ -208,13 +207,6 @@ func (x *App) GetIsOfficial() bool {
 func (x *App) GetCreatedBy() *UserSummary {
 	if x != nil {
 		return x.CreatedBy
-	}
-	return nil
-}
-
-func (x *App) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
 	}
 	return nil
 }
@@ -1044,7 +1036,7 @@ var File_chat_v1_app_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_app_service_proto_rawDesc = "" +
 	"\n" +
-	"\x19chat/v1/app_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa3\x05\n" +
+	"\x19chat/v1/app_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe8\x04\n" +
 	"\x03App\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
@@ -1060,9 +1052,7 @@ const file_chat_v1_app_service_proto_rawDesc = "" +
 	" \x01(\bR\n" +
 	"isOfficial\x123\n" +
 	"\n" +
-	"created_by\x18\f \x01(\v2\x14.chat.v1.UserSummaryR\tcreatedBy\x129\n" +
-	"\n" +
-	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12<\n" +
+	"created_by\x18\f \x01(\v2\x14.chat.v1.UserSummaryR\tcreatedBy\x12<\n" +
 	"\flast_used_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"lastUsedAt\x12\x1d\n" +
 	"\n" +
@@ -1181,36 +1171,35 @@ var file_chat_v1_app_service_proto_goTypes = []any{
 var file_chat_v1_app_service_proto_depIdxs = []int32{
 	0,  // 0: chat.v1.App.permissions:type_name -> chat.v1.AppPermission
 	19, // 1: chat.v1.App.created_by:type_name -> chat.v1.UserSummary
-	20, // 2: chat.v1.App.created_at:type_name -> google.protobuf.Timestamp
-	20, // 3: chat.v1.App.last_used_at:type_name -> google.protobuf.Timestamp
-	0,  // 4: chat.v1.AppSettings.permissions:type_name -> chat.v1.AppPermission
-	1,  // 5: chat.v1.ListAppsResponse.apps:type_name -> chat.v1.App
-	1,  // 6: chat.v1.ListChannelAppsResponse.apps:type_name -> chat.v1.App
-	2,  // 7: chat.v1.CreateAppRequest.settings:type_name -> chat.v1.AppSettings
-	1,  // 8: chat.v1.CreateAppResponse.app:type_name -> chat.v1.App
-	2,  // 9: chat.v1.UpdateAppRequest.settings:type_name -> chat.v1.AppSettings
-	1,  // 10: chat.v1.UpdateAppResponse.app:type_name -> chat.v1.App
-	3,  // 11: chat.v1.AppService.ListApps:input_type -> chat.v1.ListAppsRequest
-	5,  // 12: chat.v1.AppService.ListChannelApps:input_type -> chat.v1.ListChannelAppsRequest
-	7,  // 13: chat.v1.AppService.CreateApp:input_type -> chat.v1.CreateAppRequest
-	9,  // 14: chat.v1.AppService.UpdateApp:input_type -> chat.v1.UpdateAppRequest
-	11, // 15: chat.v1.AppService.RegenerateAppToken:input_type -> chat.v1.RegenerateAppTokenRequest
-	13, // 16: chat.v1.AppService.DeleteApp:input_type -> chat.v1.DeleteAppRequest
-	15, // 17: chat.v1.AppService.AddAppToChannel:input_type -> chat.v1.AddAppToChannelRequest
-	17, // 18: chat.v1.AppService.RemoveAppFromChannel:input_type -> chat.v1.RemoveAppFromChannelRequest
-	4,  // 19: chat.v1.AppService.ListApps:output_type -> chat.v1.ListAppsResponse
-	6,  // 20: chat.v1.AppService.ListChannelApps:output_type -> chat.v1.ListChannelAppsResponse
-	8,  // 21: chat.v1.AppService.CreateApp:output_type -> chat.v1.CreateAppResponse
-	10, // 22: chat.v1.AppService.UpdateApp:output_type -> chat.v1.UpdateAppResponse
-	12, // 23: chat.v1.AppService.RegenerateAppToken:output_type -> chat.v1.RegenerateAppTokenResponse
-	14, // 24: chat.v1.AppService.DeleteApp:output_type -> chat.v1.DeleteAppResponse
-	16, // 25: chat.v1.AppService.AddAppToChannel:output_type -> chat.v1.AddAppToChannelResponse
-	18, // 26: chat.v1.AppService.RemoveAppFromChannel:output_type -> chat.v1.RemoveAppFromChannelResponse
-	19, // [19:27] is the sub-list for method output_type
-	11, // [11:19] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	20, // 2: chat.v1.App.last_used_at:type_name -> google.protobuf.Timestamp
+	0,  // 3: chat.v1.AppSettings.permissions:type_name -> chat.v1.AppPermission
+	1,  // 4: chat.v1.ListAppsResponse.apps:type_name -> chat.v1.App
+	1,  // 5: chat.v1.ListChannelAppsResponse.apps:type_name -> chat.v1.App
+	2,  // 6: chat.v1.CreateAppRequest.settings:type_name -> chat.v1.AppSettings
+	1,  // 7: chat.v1.CreateAppResponse.app:type_name -> chat.v1.App
+	2,  // 8: chat.v1.UpdateAppRequest.settings:type_name -> chat.v1.AppSettings
+	1,  // 9: chat.v1.UpdateAppResponse.app:type_name -> chat.v1.App
+	3,  // 10: chat.v1.AppService.ListApps:input_type -> chat.v1.ListAppsRequest
+	5,  // 11: chat.v1.AppService.ListChannelApps:input_type -> chat.v1.ListChannelAppsRequest
+	7,  // 12: chat.v1.AppService.CreateApp:input_type -> chat.v1.CreateAppRequest
+	9,  // 13: chat.v1.AppService.UpdateApp:input_type -> chat.v1.UpdateAppRequest
+	11, // 14: chat.v1.AppService.RegenerateAppToken:input_type -> chat.v1.RegenerateAppTokenRequest
+	13, // 15: chat.v1.AppService.DeleteApp:input_type -> chat.v1.DeleteAppRequest
+	15, // 16: chat.v1.AppService.AddAppToChannel:input_type -> chat.v1.AddAppToChannelRequest
+	17, // 17: chat.v1.AppService.RemoveAppFromChannel:input_type -> chat.v1.RemoveAppFromChannelRequest
+	4,  // 18: chat.v1.AppService.ListApps:output_type -> chat.v1.ListAppsResponse
+	6,  // 19: chat.v1.AppService.ListChannelApps:output_type -> chat.v1.ListChannelAppsResponse
+	8,  // 20: chat.v1.AppService.CreateApp:output_type -> chat.v1.CreateAppResponse
+	10, // 21: chat.v1.AppService.UpdateApp:output_type -> chat.v1.UpdateAppResponse
+	12, // 22: chat.v1.AppService.RegenerateAppToken:output_type -> chat.v1.RegenerateAppTokenResponse
+	14, // 23: chat.v1.AppService.DeleteApp:output_type -> chat.v1.DeleteAppResponse
+	16, // 24: chat.v1.AppService.AddAppToChannel:output_type -> chat.v1.AddAppToChannelResponse
+	18, // 25: chat.v1.AppService.RemoveAppFromChannel:output_type -> chat.v1.RemoveAppFromChannelResponse
+	18, // [18:26] is the sub-list for method output_type
+	10, // [10:18] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_app_service_proto_init() }

@@ -47,7 +47,6 @@ message App {
   optional string outgoing_secret = 9;
   bool is_official = 10;
   UserSummary created_by = 12;
-  google.protobuf.Timestamp created_at = 13;
   google.protobuf.Timestamp last_used_at = 14;
   // 閲覧者が編集・削除できるか
   bool can_manage = 15;

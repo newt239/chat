@@ -614,10 +614,6 @@ func init() {
 	usergroup.DefaultID = usergroupDescID.Default.(func() uuid.UUID)
 	usergroupmemberFields := schema.UserGroupMember{}.Fields()
 	_ = usergroupmemberFields
-	// usergroupmemberDescJoinedAt is the schema descriptor for joined_at field.
-	usergroupmemberDescJoinedAt := usergroupmemberFields[3].Descriptor()
-	// usergroupmember.DefaultJoinedAt holds the default value on creation for the joined_at field.
-	usergroupmember.DefaultJoinedAt = usergroupmemberDescJoinedAt.Default.(func() time.Time)
 	// usergroupmemberDescID is the schema descriptor for id field.
 	usergroupmemberDescID := usergroupmemberFields[0].Descriptor()
 	// usergroupmember.DefaultID holds the default value on creation for the id field.

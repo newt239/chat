@@ -3,8 +3,6 @@
 package usergroupmember
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -19,8 +17,6 @@ const (
 	FieldGroupID = "group_id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
-	// FieldJoinedAt holds the string denoting the joined_at field in the database.
-	FieldJoinedAt = "joined_at"
 	// EdgeGroup holds the string denoting the group edge name in mutations.
 	EdgeGroup = "group"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -48,7 +44,6 @@ var Columns = []string{
 	FieldID,
 	FieldGroupID,
 	FieldUserID,
-	FieldJoinedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -62,8 +57,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultJoinedAt holds the default value on creation for the "joined_at" field.
-	DefaultJoinedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -84,11 +77,6 @@ func ByGroupID(opts ...sql.OrderTermOption) OrderOption {
 // ByUserID orders the results by the user_id field.
 func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
-}
-
-// ByJoinedAt orders the results by the joined_at field.
-func ByJoinedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldJoinedAt, opts...).ToFunc()
 }
 
 // ByGroupField orders the results by group field.

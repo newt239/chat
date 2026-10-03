@@ -45,7 +45,7 @@ func (r *threadRepository) CalculateMetadataByMessageIDs(ctx context.Context, me
 	}
 	byID := make(map[uuid.UUID]*domainrepository.ThreadMetadata, len(messageIDs))
 	for i, id := range messageIDs {
-		result[id] = &domainrepository.ThreadMetadata{MessageID: id}
+		result[id] = &domainrepository.ThreadMetadata{}
 		byID[parsedIDs[i]] = result[id]
 	}
 
@@ -144,7 +144,6 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 		}
 		items = append(items, domainrepository.ParticipatingThread{
 			ThreadID:       thread.ID.String(),
-			ChannelID:      thread.ChannelID.String(),
 			FirstMessage:   messageToEntity(thread),
 			LatestReplies:  convertAll(summary.latestReplies, messageToEntity),
 			ReplyCount:     summary.replyCount,

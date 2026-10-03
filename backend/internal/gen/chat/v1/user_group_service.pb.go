@@ -10,7 +10,6 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -29,9 +28,6 @@ type UserGroup struct {
 	WorkspaceId   string                 `protobuf:"bytes,2,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Description   *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	CreatedBy     string                 `protobuf:"bytes,5,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -92,27 +88,6 @@ func (x *UserGroup) GetDescription() string {
 		return *x.Description
 	}
 	return ""
-}
-
-func (x *UserGroup) GetCreatedBy() string {
-	if x != nil {
-		return x.CreatedBy
-	}
-	return ""
-}
-
-func (x *UserGroup) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *UserGroup) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
 }
 
 type UserGroupMember struct {
@@ -819,18 +794,12 @@ var File_chat_v1_user_group_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_user_group_service_proto_rawDesc = "" +
 	"\n" +
-	" chat/v1/user_group_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9e\x02\n" +
+	" chat/v1/user_group_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"\x89\x01\n" +
 	"\tUserGroup\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12%\n" +
-	"\vdescription\x18\x04 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x1d\n" +
-	"\n" +
-	"created_by\x18\x05 \x01(\tR\tcreatedBy\x129\n" +
-	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\x0e\n" +
+	"\vdescription\x18\x04 \x01(\tH\x00R\vdescription\x88\x01\x01B\x0e\n" +
 	"\f_description\"\x80\x01\n" +
 	"\x0fUserGroupMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
@@ -915,34 +884,31 @@ var file_chat_v1_user_group_service_proto_goTypes = []any{
 	(*AddUserGroupMemberResponse)(nil),    // 13: chat.v1.AddUserGroupMemberResponse
 	(*RemoveUserGroupMemberRequest)(nil),  // 14: chat.v1.RemoveUserGroupMemberRequest
 	(*RemoveUserGroupMemberResponse)(nil), // 15: chat.v1.RemoveUserGroupMemberResponse
-	(*timestamppb.Timestamp)(nil),         // 16: google.protobuf.Timestamp
 }
 var file_chat_v1_user_group_service_proto_depIdxs = []int32{
-	16, // 0: chat.v1.UserGroup.created_at:type_name -> google.protobuf.Timestamp
-	16, // 1: chat.v1.UserGroup.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 2: chat.v1.CreateUserGroupResponse.user_group:type_name -> chat.v1.UserGroup
-	0,  // 3: chat.v1.ListUserGroupsResponse.user_groups:type_name -> chat.v1.UserGroup
-	0,  // 4: chat.v1.UpdateUserGroupResponse.user_group:type_name -> chat.v1.UserGroup
-	1,  // 5: chat.v1.ListUserGroupMembersResponse.members:type_name -> chat.v1.UserGroupMember
-	2,  // 6: chat.v1.UserGroupService.CreateUserGroup:input_type -> chat.v1.CreateUserGroupRequest
-	4,  // 7: chat.v1.UserGroupService.ListUserGroups:input_type -> chat.v1.ListUserGroupsRequest
-	6,  // 8: chat.v1.UserGroupService.UpdateUserGroup:input_type -> chat.v1.UpdateUserGroupRequest
-	8,  // 9: chat.v1.UserGroupService.DeleteUserGroup:input_type -> chat.v1.DeleteUserGroupRequest
-	10, // 10: chat.v1.UserGroupService.ListUserGroupMembers:input_type -> chat.v1.ListUserGroupMembersRequest
-	12, // 11: chat.v1.UserGroupService.AddUserGroupMember:input_type -> chat.v1.AddUserGroupMemberRequest
-	14, // 12: chat.v1.UserGroupService.RemoveUserGroupMember:input_type -> chat.v1.RemoveUserGroupMemberRequest
-	3,  // 13: chat.v1.UserGroupService.CreateUserGroup:output_type -> chat.v1.CreateUserGroupResponse
-	5,  // 14: chat.v1.UserGroupService.ListUserGroups:output_type -> chat.v1.ListUserGroupsResponse
-	7,  // 15: chat.v1.UserGroupService.UpdateUserGroup:output_type -> chat.v1.UpdateUserGroupResponse
-	9,  // 16: chat.v1.UserGroupService.DeleteUserGroup:output_type -> chat.v1.DeleteUserGroupResponse
-	11, // 17: chat.v1.UserGroupService.ListUserGroupMembers:output_type -> chat.v1.ListUserGroupMembersResponse
-	13, // 18: chat.v1.UserGroupService.AddUserGroupMember:output_type -> chat.v1.AddUserGroupMemberResponse
-	15, // 19: chat.v1.UserGroupService.RemoveUserGroupMember:output_type -> chat.v1.RemoveUserGroupMemberResponse
-	13, // [13:20] is the sub-list for method output_type
-	6,  // [6:13] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	0,  // 0: chat.v1.CreateUserGroupResponse.user_group:type_name -> chat.v1.UserGroup
+	0,  // 1: chat.v1.ListUserGroupsResponse.user_groups:type_name -> chat.v1.UserGroup
+	0,  // 2: chat.v1.UpdateUserGroupResponse.user_group:type_name -> chat.v1.UserGroup
+	1,  // 3: chat.v1.ListUserGroupMembersResponse.members:type_name -> chat.v1.UserGroupMember
+	2,  // 4: chat.v1.UserGroupService.CreateUserGroup:input_type -> chat.v1.CreateUserGroupRequest
+	4,  // 5: chat.v1.UserGroupService.ListUserGroups:input_type -> chat.v1.ListUserGroupsRequest
+	6,  // 6: chat.v1.UserGroupService.UpdateUserGroup:input_type -> chat.v1.UpdateUserGroupRequest
+	8,  // 7: chat.v1.UserGroupService.DeleteUserGroup:input_type -> chat.v1.DeleteUserGroupRequest
+	10, // 8: chat.v1.UserGroupService.ListUserGroupMembers:input_type -> chat.v1.ListUserGroupMembersRequest
+	12, // 9: chat.v1.UserGroupService.AddUserGroupMember:input_type -> chat.v1.AddUserGroupMemberRequest
+	14, // 10: chat.v1.UserGroupService.RemoveUserGroupMember:input_type -> chat.v1.RemoveUserGroupMemberRequest
+	3,  // 11: chat.v1.UserGroupService.CreateUserGroup:output_type -> chat.v1.CreateUserGroupResponse
+	5,  // 12: chat.v1.UserGroupService.ListUserGroups:output_type -> chat.v1.ListUserGroupsResponse
+	7,  // 13: chat.v1.UserGroupService.UpdateUserGroup:output_type -> chat.v1.UpdateUserGroupResponse
+	9,  // 14: chat.v1.UserGroupService.DeleteUserGroup:output_type -> chat.v1.DeleteUserGroupResponse
+	11, // 15: chat.v1.UserGroupService.ListUserGroupMembers:output_type -> chat.v1.ListUserGroupMembersResponse
+	13, // 16: chat.v1.UserGroupService.AddUserGroupMember:output_type -> chat.v1.AddUserGroupMemberResponse
+	15, // 17: chat.v1.UserGroupService.RemoveUserGroupMember:output_type -> chat.v1.RemoveUserGroupMemberResponse
+	11, // [11:18] is the sub-list for method output_type
+	4,  // [4:11] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_user_group_service_proto_init() }

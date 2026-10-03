@@ -45,7 +45,7 @@ type ChannelRepository interface {
 	Update(ctx context.Context, channel *entity.Channel) error
 	// FindOrCreateDM と FindOrCreateGroupDM は DM を返し、参加者を全員参加させます
 	FindOrCreateDM(ctx context.Context, workspaceID string, userID1 string, userID2 string) (*entity.Channel, error)
-	FindOrCreateGroupDM(ctx context.Context, workspaceID string, creatorID string, memberIDs []string, name string) (*entity.Channel, error)
+	FindOrCreateGroupDM(ctx context.Context, workspaceID string, creatorID string, memberIDs []string) (*entity.Channel, error)
 	FindUserDMs(ctx context.Context, workspaceID string, userID string) ([]*entity.Channel, error)
 	FindByNames(ctx context.Context, workspaceID string, names []string) ([]*entity.Channel, error)
 	FindByIDs(ctx context.Context, ids []string) ([]*entity.Channel, error)

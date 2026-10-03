@@ -169,14 +169,11 @@ func (r *channelRepository) FindOrCreateDM(ctx context.Context, workspaceID stri
 	}, "dm:", []string{userID1, userID2})
 }
 
-// FindOrCreateGroupDM はメンバーがまったく同じグループ DM を返します。なければ name で作ります
-func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID string, creatorID string, memberIDs []string, name string) (*entity.Channel, error) {
-	if name == "" {
-		name = "group_dm_" + creatorID
-	}
+// FindOrCreateGroupDM はメンバーがまったく同じグループ DM を返します
+func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID string, creatorID string, memberIDs []string) (*entity.Channel, error) {
 	return r.findOrCreateByDMKey(ctx, &entity.Channel{
 		WorkspaceID: workspaceID,
-		Name:        name,
+		Name:        "group_dm_" + creatorID,
 		Type:        entity.ChannelTypeGroupDM,
 		CreatedBy:   creatorID,
 	}, "g:", memberIDs)

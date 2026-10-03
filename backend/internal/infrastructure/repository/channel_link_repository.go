@@ -69,8 +69,6 @@ func (r *channelLinkRepository) Create(ctx context.Context, link *entity.Channel
 	}
 
 	link.ID = created.ID.String()
-	link.CreatedAt = created.CreatedAt
-	link.UpdatedAt = created.UpdatedAt
 	return nil
 }
 
@@ -80,16 +78,10 @@ func (r *channelLinkRepository) Update(ctx context.Context, link *entity.Channel
 		return err
 	}
 
-	updated, err := transaction.ResolveClient(ctx, r.client).ChannelLink.UpdateOneID(linkID).
+	return transaction.ResolveClient(ctx, r.client).ChannelLink.UpdateOneID(linkID).
 		SetTitle(link.Title).
 		SetURL(link.URL).
-		Save(ctx)
-	if err != nil {
-		return err
-	}
-
-	link.UpdatedAt = updated.UpdatedAt
-	return nil
+		Exec(ctx)
 }
 
 func (r *channelLinkRepository) Delete(ctx context.Context, id string) error {
@@ -123,7 +115,5 @@ func channelLinkToEntity(link *ent.ChannelLink) *entity.ChannelLink {
 		Position:  link.Position,
 		ChannelID: link.ChannelID.String(),
 		CreatedBy: link.CreatedByID.String(),
-		CreatedAt: link.CreatedAt,
-		UpdatedAt: link.UpdatedAt,
 	}
 }

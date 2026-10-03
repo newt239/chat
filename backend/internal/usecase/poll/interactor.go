@@ -11,7 +11,6 @@ import (
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
-	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
@@ -35,7 +34,6 @@ type Interactor struct {
 	channelAccessSvc domainservice.ChannelAccessService
 	outputBuilder    *messageuc.MessageOutputBuilder
 	notifier         messageuc.Notifier
-	txManager        domaintransaction.Manager
 }
 
 func New(
@@ -45,7 +43,6 @@ func New(
 	channelAccessSvc domainservice.ChannelAccessService,
 	outputBuilder *messageuc.MessageOutputBuilder,
 	notifier messageuc.Notifier,
-	txManager domaintransaction.Manager,
 ) *Interactor {
 	return &Interactor{
 		pollRepo:         pollRepo,
@@ -54,7 +51,6 @@ func New(
 		channelAccessSvc: channelAccessSvc,
 		outputBuilder:    outputBuilder,
 		notifier:         notifier,
-		txManager:        txManager,
 	}
 }
 
@@ -71,9 +67,7 @@ func (i *Interactor) Vote(ctx context.Context, input PollInput) (*messageuc.Mess
 	if err != nil {
 		return nil, err
 	}
-	if err := i.txManager.Do(ctx, func(txCtx context.Context) error {
-		return i.pollRepo.ReplaceVotes(txCtx, poll.ID, input.UserID, optionIDs)
-	}); err != nil {
+	if err := i.pollRepo.ReplaceVotes(ctx, poll.ID, input.UserID, optionIDs); err != nil {
 		return nil, fmt.Errorf("failed to save votes: %w", err)
 	}
 	return i.publish(ctx, ch, message, input.UserID)

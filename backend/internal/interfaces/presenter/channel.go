@@ -21,9 +21,7 @@ func Channel(c channeluc.ChannelOutput) *chatv1.Channel {
 		Name:          c.Name,
 		Description:   c.Description,
 		IsPrivate:     c.IsPrivate(),
-		CreatedBy:     c.CreatedBy,
 		CreatedAt:     timestamppb.New(c.CreatedAt),
-		UpdatedAt:     timestamppb.New(c.UpdatedAt),
 		UnreadCount:   int32(c.UnreadCount),
 		MentionCount:  int32(c.MentionCount),
 		ParentId:      c.ParentID,
@@ -54,13 +52,9 @@ func ChannelLink(l *entity.ChannelLink) *chatv1.ChannelLink {
 		ChannelId: l.ChannelID,
 		Title:     l.Title,
 		Url:       l.URL,
-		Position:  int32(l.Position),
-		CreatedBy: l.CreatedBy,
-		CreatedAt: timestamppb.New(l.CreatedAt),
-		UpdatedAt: timestamppb.New(l.UpdatedAt),
 	}
 }
 
 func ChannelCategory(c *entity.ChannelCategory) *chatv1.ChannelCategory {
-	return &chatv1.ChannelCategory{Id: c.ID, Name: c.Name, Position: int32(c.Position), ChannelIds: c.ChannelIDs}
+	return &chatv1.ChannelCategory{Id: c.ID, Name: c.Name, ChannelIds: c.ChannelIDs}
 }

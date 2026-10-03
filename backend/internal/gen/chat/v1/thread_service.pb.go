@@ -26,7 +26,6 @@ const (
 type ParticipatingThread struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	ThreadId       string                 `protobuf:"bytes,1,opt,name=thread_id,json=threadId,proto3" json:"thread_id,omitempty"`
-	ChannelId      *string                `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3,oneof" json:"channel_id,omitempty"`
 	FirstMessage   *Message               `protobuf:"bytes,3,opt,name=first_message,json=firstMessage,proto3" json:"first_message,omitempty"`
 	ReplyCount     int32                  `protobuf:"varint,4,opt,name=reply_count,json=replyCount,proto3" json:"reply_count,omitempty"`
 	LastActivityAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=last_activity_at,json=lastActivityAt,proto3" json:"last_activity_at,omitempty"`
@@ -72,13 +71,6 @@ func (*ParticipatingThread) Descriptor() ([]byte, []int) {
 func (x *ParticipatingThread) GetThreadId() string {
 	if x != nil {
 		return x.ThreadId
-	}
-	return ""
-}
-
-func (x *ParticipatingThread) GetChannelId() string {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
 	}
 	return ""
 }
@@ -781,19 +773,16 @@ var File_chat_v1_thread_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_thread_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1cchat/v1/thread_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x82\x03\n" +
+	"\x1cchat/v1/thread_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xcf\x02\n" +
 	"\x13ParticipatingThread\x12\x1b\n" +
-	"\tthread_id\x18\x01 \x01(\tR\bthreadId\x12\"\n" +
-	"\n" +
-	"channel_id\x18\x02 \x01(\tH\x00R\tchannelId\x88\x01\x01\x125\n" +
+	"\tthread_id\x18\x01 \x01(\tR\bthreadId\x125\n" +
 	"\rfirst_message\x18\x03 \x01(\v2\x10.chat.v1.MessageR\ffirstMessage\x12\x1f\n" +
 	"\vreply_count\x18\x04 \x01(\x05R\n" +
 	"replyCount\x12D\n" +
 	"\x10last_activity_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastActivityAt\x12!\n" +
 	"\funread_count\x18\x06 \x01(\x05R\vunreadCount\x127\n" +
 	"\x0elatest_replies\x18\a \x03(\v2\x10.chat.v1.MessageR\rlatestReplies\x12!\n" +
-	"\fis_following\x18\b \x01(\bR\visFollowingB\r\n" +
-	"\v_channel_id\"q\n" +
+	"\fis_following\x18\b \x01(\bR\visFollowing\"q\n" +
 	"\fThreadCursor\x12D\n" +
 	"\x10last_activity_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastActivityAt\x12\x1b\n" +
 	"\tthread_id\x18\x02 \x01(\tR\bthreadId\"\x92\x02\n" +
@@ -915,7 +904,6 @@ func file_chat_v1_thread_service_proto_init() {
 		return
 	}
 	file_chat_v1_message_proto_init()
-	file_chat_v1_thread_service_proto_msgTypes[0].OneofWrappers = []any{}
 	file_chat_v1_thread_service_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

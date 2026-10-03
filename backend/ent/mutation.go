@@ -27588,7 +27588,6 @@ type UserGroupMemberMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
-	joined_at     *time.Time
 	clearedFields map[string]struct{}
 	group         *uuid.UUID
 	clearedgroup  bool
@@ -27775,42 +27774,6 @@ func (m *UserGroupMemberMutation) ResetUserID() {
 	m.user = nil
 }
 
-// SetJoinedAt sets the "joined_at" field.
-func (m *UserGroupMemberMutation) SetJoinedAt(t time.Time) {
-	m.joined_at = &t
-}
-
-// JoinedAt returns the value of the "joined_at" field in the mutation.
-func (m *UserGroupMemberMutation) JoinedAt() (r time.Time, exists bool) {
-	v := m.joined_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldJoinedAt returns the old "joined_at" field's value of the UserGroupMember entity.
-// If the UserGroupMember object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserGroupMemberMutation) OldJoinedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldJoinedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldJoinedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldJoinedAt: %w", err)
-	}
-	return oldValue.JoinedAt, nil
-}
-
-// ResetJoinedAt resets all changes to the "joined_at" field.
-func (m *UserGroupMemberMutation) ResetJoinedAt() {
-	m.joined_at = nil
-}
-
 // ClearGroup clears the "group" edge to the UserGroup entity.
 func (m *UserGroupMemberMutation) ClearGroup() {
 	m.clearedgroup = true
@@ -27899,15 +27862,12 @@ func (m *UserGroupMemberMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserGroupMemberMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 2)
 	if m.group != nil {
 		fields = append(fields, usergroupmember.FieldGroupID)
 	}
 	if m.user != nil {
 		fields = append(fields, usergroupmember.FieldUserID)
-	}
-	if m.joined_at != nil {
-		fields = append(fields, usergroupmember.FieldJoinedAt)
 	}
 	return fields
 }
@@ -27921,8 +27881,6 @@ func (m *UserGroupMemberMutation) Field(name string) (ent.Value, bool) {
 		return m.GroupID()
 	case usergroupmember.FieldUserID:
 		return m.UserID()
-	case usergroupmember.FieldJoinedAt:
-		return m.JoinedAt()
 	}
 	return nil, false
 }
@@ -27936,8 +27894,6 @@ func (m *UserGroupMemberMutation) OldField(ctx context.Context, name string) (en
 		return m.OldGroupID(ctx)
 	case usergroupmember.FieldUserID:
 		return m.OldUserID(ctx)
-	case usergroupmember.FieldJoinedAt:
-		return m.OldJoinedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown UserGroupMember field %s", name)
 }
@@ -27960,13 +27916,6 @@ func (m *UserGroupMemberMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUserID(v)
-		return nil
-	case usergroupmember.FieldJoinedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetJoinedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown UserGroupMember field %s", name)
@@ -28022,9 +27971,6 @@ func (m *UserGroupMemberMutation) ResetField(name string) error {
 		return nil
 	case usergroupmember.FieldUserID:
 		m.ResetUserID()
-		return nil
-	case usergroupmember.FieldJoinedAt:
-		m.ResetJoinedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown UserGroupMember field %s", name)

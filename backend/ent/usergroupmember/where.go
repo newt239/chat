@@ -3,8 +3,6 @@
 package usergroupmember
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -66,11 +64,6 @@ func UserID(v uuid.UUID) predicate.UserGroupMember {
 	return predicate.UserGroupMember(sql.FieldEQ(FieldUserID, v))
 }
 
-// JoinedAt applies equality check predicate on the "joined_at" field. It's identical to JoinedAtEQ.
-func JoinedAt(v time.Time) predicate.UserGroupMember {
-	return predicate.UserGroupMember(sql.FieldEQ(FieldJoinedAt, v))
-}
-
 // GroupIDEQ applies the EQ predicate on the "group_id" field.
 func GroupIDEQ(v uuid.UUID) predicate.UserGroupMember {
 	return predicate.UserGroupMember(sql.FieldEQ(FieldGroupID, v))
@@ -109,46 +102,6 @@ func UserIDIn(vs ...uuid.UUID) predicate.UserGroupMember {
 // UserIDNotIn applies the NotIn predicate on the "user_id" field.
 func UserIDNotIn(vs ...uuid.UUID) predicate.UserGroupMember {
 	return predicate.UserGroupMember(sql.FieldNotIn(FieldUserID, vs...))
-}
-
-// JoinedAtEQ applies the EQ predicate on the "joined_at" field.
-func JoinedAtEQ(v time.Time) predicate.UserGroupMember {
-	return predicate.UserGroupMember(sql.FieldEQ(FieldJoinedAt, v))
-}
-
-// JoinedAtNEQ applies the NEQ predicate on the "joined_at" field.
-func JoinedAtNEQ(v time.Time) predicate.UserGroupMember {
-	return predicate.UserGroupMember(sql.FieldNEQ(FieldJoinedAt, v))
-}
-
-// JoinedAtIn applies the In predicate on the "joined_at" field.
-func JoinedAtIn(vs ...time.Time) predicate.UserGroupMember {
-	return predicate.UserGroupMember(sql.FieldIn(FieldJoinedAt, vs...))
-}
-
-// JoinedAtNotIn applies the NotIn predicate on the "joined_at" field.
-func JoinedAtNotIn(vs ...time.Time) predicate.UserGroupMember {
-	return predicate.UserGroupMember(sql.FieldNotIn(FieldJoinedAt, vs...))
-}
-
-// JoinedAtGT applies the GT predicate on the "joined_at" field.
-func JoinedAtGT(v time.Time) predicate.UserGroupMember {
-	return predicate.UserGroupMember(sql.FieldGT(FieldJoinedAt, v))
-}
-
-// JoinedAtGTE applies the GTE predicate on the "joined_at" field.
-func JoinedAtGTE(v time.Time) predicate.UserGroupMember {
-	return predicate.UserGroupMember(sql.FieldGTE(FieldJoinedAt, v))
-}
-
-// JoinedAtLT applies the LT predicate on the "joined_at" field.
-func JoinedAtLT(v time.Time) predicate.UserGroupMember {
-	return predicate.UserGroupMember(sql.FieldLT(FieldJoinedAt, v))
-}
-
-// JoinedAtLTE applies the LTE predicate on the "joined_at" field.
-func JoinedAtLTE(v time.Time) predicate.UserGroupMember {
-	return predicate.UserGroupMember(sql.FieldLTE(FieldJoinedAt, v))
 }
 
 // HasGroup applies the HasEdge predicate on the "group" edge.

@@ -693,12 +693,12 @@ const file_chat_v1_channel_member_service_proto_rawDesc = "" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\"N\n" +
 	"\x1aListChannelMembersResponse\x120\n" +
-	"\amembers\x18\x01 \x03(\v2\x16.chat.v1.ChannelMemberR\amembers\"\x92\x01\n" +
+	"\amembers\x18\x01 \x03(\v2\x16.chat.v1.ChannelMemberR\amembers\"\x9c\x01\n" +
 	"\x1aInviteChannelMemberRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12!\n" +
-	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x12(\n" +
-	"\x04role\x18\x03 \x01(\x0e2\x14.chat.v1.ChannelRoleR\x04role\"\x1d\n" +
+	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x122\n" +
+	"\x04role\x18\x03 \x01(\x0e2\x14.chat.v1.ChannelRoleB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04role\"\x1d\n" +
 	"\x1bInviteChannelMemberResponse\"=\n" +
 	"\x12JoinChannelRequest\x12'\n" +
 	"\n" +

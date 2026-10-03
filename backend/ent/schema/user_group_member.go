@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
@@ -27,9 +25,6 @@ func (UserGroupMember) Fields() []ent.Field {
 			Immutable(),
 		field.UUID("group_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}),
-		field.Time("joined_at").
-			Default(time.Now).
-			Immutable(),
 	}
 }
 

@@ -58,7 +58,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.dev
+      target: dev
     environment:
       - PORT=8080
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
@@ -94,7 +94,8 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: frontend/Dockerfile.dev
+      dockerfile: frontend/Dockerfile
+      target: dev
     environment:
       - VITE_API_BASE_URL=${CHAT_API_URL:-}
       - VITE_WS_URL=${CHAT_WS_URL:-}

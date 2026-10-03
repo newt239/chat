@@ -18,7 +18,6 @@ service ChannelCategoryService {
 message ChannelCategory {
   string id = 1;
   string name = 2;
-  int32 position = 3;
   repeated string channel_ids = 4;
 }
 

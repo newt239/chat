@@ -60,10 +60,6 @@ func (stubAccess) EnsureChannelMember(_ context.Context, id string, _ string) (*
 	return &entity.Channel{ID: id, WorkspaceID: "ws"}, nil
 }
 
-type stubTx struct{}
-
-func (stubTx) Do(ctx context.Context, fn func(context.Context) error) error { return fn(ctx) }
-
 type stubNotifier struct {
 	messageuc.Notifier
 	updated int
@@ -76,7 +72,7 @@ func (n *stubNotifier) NotifyUpdatedMessage(string, string, messageuc.MessageOut
 // 出力の組み立て役は渡さず、組み立ての前に失敗する場合だけを確かめる
 func newInteractor(poll *entity.Poll) (*Interactor, *fakePollRepo) {
 	repo := &fakePollRepo{poll: poll}
-	return New(repo, stubMessageRepo{}, stubWorkspaceRepo{}, stubAccess{}, nil, &stubNotifier{}, stubTx{}), repo
+	return New(repo, stubMessageRepo{}, stubWorkspaceRepo{}, stubAccess{}, nil, &stubNotifier{}), repo
 }
 
 func TestVoteValidates(t *testing.T) {

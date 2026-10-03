@@ -1,11 +1,6 @@
 package entity
 
-import (
-	"regexp"
-	"time"
-
-	domerr "github.com/newt239/chat/internal/domain/errors"
-)
+import "time"
 
 type WorkspaceRole string
 
@@ -49,17 +44,4 @@ type MemberActivity struct {
 	MessageCount  int
 	StorageBytes  int64
 	LastMessageAt *time.Time
-}
-
-var (
-	ErrWorkspaceSlugInvalid = domerr.New(domerr.ErrValidation, "ワークスペースIDは英小文字・数字・ハイフンの 3〜12 文字で指定してください")
-	workspaceSlugPattern    = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*[a-z0-9]$`)
-)
-
-// ValidateWorkspaceSlug はワークスペース ID の長さと使える文字を確かめます
-func ValidateWorkspaceSlug(slug string) error {
-	if len(slug) < 3 || len(slug) > 12 || !workspaceSlugPattern.MatchString(slug) {
-		return ErrWorkspaceSlugInvalid
-	}
-	return nil
 }

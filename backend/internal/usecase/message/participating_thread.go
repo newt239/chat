@@ -15,7 +15,6 @@ const defaultListLimit = 20
 
 type ParticipatingThreadOutput struct {
 	ThreadID       string
-	ChannelID      string
 	FirstMessage   MessageOutput
 	LatestReplies  []MessageOutput
 	ReplyCount     int
@@ -62,7 +61,6 @@ func (i *Interactor) ListParticipatingThreads(ctx context.Context, input domainr
 		replyCount := len(item.LatestReplies)
 		items = append(items, ParticipatingThreadOutput{
 			ThreadID:       item.ThreadID,
-			ChannelID:      item.ChannelID,
 			FirstMessage:   outputs[0],
 			LatestReplies:  outputs[1 : 1+replyCount],
 			ReplyCount:     item.ReplyCount,

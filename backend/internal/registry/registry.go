@@ -186,7 +186,7 @@ func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func
 	mux.Handle(chatv1connect.NewPinServiceHandler(&rpc.PinServer{UC: pinuc.New(pinRepo, channelMemberRepo, userRepo, notifier, outputBuilder, channelAccess, systemMessages, permissionSvc, indexer)}, opts...))
 	mux.Handle(chatv1connect.NewAdminServiceHandler(&rpc.AdminServer{UC: admin}, opts...))
 	mux.Handle(chatv1connect.NewPermissionServiceHandler(&rpc.PermissionServer{UC: admin}, opts...))
-	mux.Handle(chatv1connect.NewPollServiceHandler(&rpc.PollServer{UC: polluc.New(pollRepo, messageRepo, workspaceRepo, channelAccess, outputBuilder, notifier, txManager)}, opts...))
+	mux.Handle(chatv1connect.NewPollServiceHandler(&rpc.PollServer{UC: polluc.New(pollRepo, messageRepo, workspaceRepo, channelAccess, outputBuilder, notifier)}, opts...))
 	mux.Handle(chatv1connect.NewCommandServiceHandler(&rpc.CommandServer{UC: command}, opts...))
 	mux.Handle(chatv1connect.NewAppServiceHandler(&rpc.AppServer{UC: app}, opts...))
 	mux.Handle(chatv1connect.NewCustomEmojiServiceHandler(&rpc.CustomEmojiServer{UC: customemojiuc.New(repository.NewCustomEmojiRepository(client), userRepo, workspaceRepo, permissionSvc, storage, notifier, recorder)}, opts...))
