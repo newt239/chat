@@ -1,14 +1,13 @@
 import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 
+import { useMutation } from "@connectrpc/connect-query";
 import { Form, TextArea, TextField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { AttachmentListItem } from "#/features/attachment/components/AttachmentListItem";
 import { useFileUpload } from "#/features/attachment/hooks/useFileUpload";
-import { useExecuteCommand } from "#/features/command/hooks/useExecuteCommand";
-import { findCommand, unescapeCommand } from "#/features/command/utils/commands";
 import { useDraftAutosave } from "#/features/draft/hooks/useDraftAutosave";
 import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
 import { LocationShareDialog } from "#/features/location/components/LocationShareDialog";
@@ -17,10 +16,12 @@ import { useMentionCodec } from "#/features/mention/hooks/useMentionCodec";
 import { PollComposerDialog } from "#/features/poll/components/PollComposerDialog";
 import { VoiceRecorder } from "#/features/recorder/components/VoiceRecorder";
 import { useScheduleMessage } from "#/features/schedule/hooks/useScheduledMessages";
+import { CommandService } from "#/gen/chat/v1/command_service_pb";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 
 import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
+import { findCommand, unescapeCommand } from "../utils/commands";
 import { continueList, detectActiveFormats, insertEmoji, toggleFormat } from "../utils/format";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
@@ -95,7 +96,8 @@ export const BaseMessageInput = ({
     isUploading,
   } = useFileUpload();
   const scheduleMessage = useScheduleMessage();
-  const executeCommand = useExecuteCommand();
+  // 応答は公式アプリの投稿として WebSocket で届く
+  const executeCommand = useMutation(CommandService.method.executeCommand);
   const isBusy = isPending || executeCommand.isPending;
 
   const handleBodyChange = (next: string) => {
@@ -364,11 +366,14 @@ export const BaseMessageInput = ({
           resetComposer();
         }}
       />
-      <LocationShareDialog
-        isOpen={isLocationOpen}
-        onOpenChange={setIsLocationOpen}
-        onConfirm={setLocation}
-      />
+      {isLocationOpen && (
+        <LocationShareDialog
+          onClose={() => {
+            setIsLocationOpen(false);
+          }}
+          onConfirm={setLocation}
+        />
+      )}
       {error && <p className="m-0 mt-1.5 text-caption text-danger">{error}</p>}
     </Form>
   );

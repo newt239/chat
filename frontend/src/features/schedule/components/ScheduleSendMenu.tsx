@@ -9,7 +9,7 @@ import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { useDateFormat } from "#/hooks/useDateFormat";
 
-import { defaultScheduleDate, schedulePresets } from "../utils/schedulePresets";
+import { schedulePresets } from "../utils/schedulePresets";
 import { ScheduleDialog } from "./ScheduleDialog";
 
 type ScheduleSendMenuProps = {
@@ -21,8 +21,8 @@ type ScheduleSendMenuProps = {
 export const ScheduleSendMenu = ({ isDisabled, onSchedule }: ScheduleSendMenuProps) => {
   const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const now = new Date();
   const { timeZone } = useDateFormat();
+  const presets = schedulePresets(new Date(), timeZone);
 
   return (
     <>
@@ -38,7 +38,7 @@ export const ScheduleSendMenu = ({ isDisabled, onSchedule }: ScheduleSendMenuPro
           </IconButton>
         }
       >
-        {schedulePresets(now, timeZone).map(({ key, date }) => (
+        {presets.map(({ key, date }) => (
           <MenuItem
             key={key}
             icon={<IconClock aria-hidden />}
@@ -61,18 +61,18 @@ export const ScheduleSendMenu = ({ isDisabled, onSchedule }: ScheduleSendMenuPro
       </Menu>
       {isDialogOpen && (
         <ScheduleDialog
-          isOpen
-          onOpenChange={setIsDialogOpen}
+          onClose={() => {
+            setIsDialogOpen(false);
+          }}
           title={t("schedule.dialog.title")}
-          initialDate={defaultScheduleDate(now, timeZone)}
+          // 日時を指定するときは明日の朝を初期値にする
+          initialDate={presets[1].date}
           isPending={false}
           onConfirm={(scheduledAt) => {
             setIsDialogOpen(false);
             onSchedule(scheduledAt);
           }}
-        >
-          {null}
-        </ScheduleDialog>
+        />
       )}
     </>
   );

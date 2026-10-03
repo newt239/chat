@@ -8,8 +8,8 @@ import { EmptyState } from "#/components/ui/EmptyState/EmptyState";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { TextField } from "#/components/ui/TextField/TextField";
-import { usePermissions } from "#/features/admin/hooks/useAdminQueries";
 import { Permission } from "#/gen/chat/v1/permission_service_pb";
+import { usePermissions } from "#/hooks/usePermissions";
 
 import { useCustomEmojiActions } from "../hooks/useCustomEmojiActions";
 import { useCustomEmojis } from "../hooks/useCustomEmojis";

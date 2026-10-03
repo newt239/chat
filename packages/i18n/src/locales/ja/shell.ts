@@ -30,10 +30,8 @@ export const shell = {
     settings: "設定",
   },
   nav: {
-    activity: "通知",
     admin: "管理画面",
     bookmarks: "ブックマーク",
-    insights: "インサイト",
     mentions: "メンション",
     search: "検索",
     threads: "スレッド",

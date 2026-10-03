@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedControl";
 import { Switch } from "#/components/ui/Switch/Switch";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { notificationPreferencesAtom } from "#/features/settings/atoms";
-import { requestNotificationPermission } from "#/features/settings/utils/notify";
+import { notificationPreferencesAtom } from "#/features/notification/atoms";
+import { usePushNotifications } from "#/features/notification/hooks/usePushNotifications";
+import { requestNotificationPermission } from "#/features/notification/utils/notify";
 import { usePreferences, useUpdatePreferences } from "#/hooks/usePreferences";
 import { notificationLevels } from "#/providers/store/preferences";
 
-import { usePushNotifications } from "../hooks/usePushNotifications";
 import { SettingRow } from "./SettingRow";
 
 export const NotificationSettings = () => {

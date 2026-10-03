@@ -10,7 +10,10 @@ import { currentUser, renderWithProviders } from "#/test/renderWithProviders";
 
 import { AdminMembersTab } from "./AdminMembersTab";
 
-import type { UpdateMemberRoleRequest } from "#/gen/chat/v1/workspace_service_pb";
+import type {
+  RemoveMemberRequest,
+  UpdateMemberRoleRequest,
+} from "#/gen/chat/v1/workspace_service_pb";
 
 const members = [
   create(AdminMemberSchema, {
@@ -42,6 +45,7 @@ const members = [
 
 const setup = async () => {
   const updateRole = vi.fn<(req: UpdateMemberRoleRequest) => void>();
+  const removeMember = vi.fn<(req: RemoveMemberRequest) => void>();
   await renderWithProviders(
     <AdminMembersTab workspaceId="ws1" members={members} />,
     "/app/ws1/admin",
@@ -50,9 +54,13 @@ const setup = async () => {
         updateRole(req);
         return {};
       });
+      routes.rpc(WorkspaceService.method.removeMember, (req) => {
+        removeMember(req);
+        return {};
+      });
     },
   );
-  return { updateRole };
+  return { removeMember, updateRole };
 };
 
 const rowOf = (name: string) => {
@@ -100,6 +108,25 @@ describe("AdminMembersTab", () => {
       expect(updateRole).toHaveBeenCalledWith(
         expect.objectContaining({
           role: WorkspaceRole.ADMIN,
+          userId: "00000000-0000-0000-0000-000000000002",
+          workspaceId: "ws1",
+        }),
+      );
+    });
+  });
+
+  test("メンバーを外す前に確認し、確定したときだけ外す", async () => {
+    const { removeMember } = await setup();
+    await userEvent.click(screen.getByRole("button", { name: "Bob をワークスペースから外す" }));
+    const dialog = screen.getByRole("alertdialog", {
+      name: "Bob をワークスペースから外しますか？",
+    });
+    expect(removeMember).not.toHaveBeenCalled();
+
+    await userEvent.click(within(dialog).getByRole("button", { name: "外す" }));
+    await waitFor(() => {
+      expect(removeMember).toHaveBeenCalledWith(
+        expect.objectContaining({
           userId: "00000000-0000-0000-0000-000000000002",
           workspaceId: "ws1",
         }),

@@ -7,7 +7,7 @@ import { PageHeader } from "#/components/block/PageHeader/PageHeader";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { cn } from "#/components/ui/styles/styles";
 import { DMList } from "#/features/dm/components/DMList";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { openDialog } from "#/lib/overlaySearch";
 
 // モバイルの「DM」タブ
 export const DMsPage = () => {

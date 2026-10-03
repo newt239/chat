@@ -14,11 +14,9 @@ import { toast } from "#/components/ui/ToastRegion/toast";
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { AppPermission } from "#/gen/chat/v1/app_service_pb";
 import { ImagePurpose } from "#/gen/chat/v1/image_service_pb";
+import { apiBaseUrl } from "#/lib/api/createTransport";
 
 import { useAppActions } from "../hooks/useApps";
-import { appWebhookUrl } from "../utils/appWebhookUrl";
-import { appPermissionKeys } from "../utils/permissionKeys";
-import { AppUrlPanel } from "./AppUrlPanel";
 
 import type { App } from "#/gen/chat/v1/app_service_pb";
 
@@ -32,6 +30,17 @@ type AppDialogProps = {
 };
 
 const NO_CHANNEL = "";
+
+// 画面に並べる順と、辞書の app.permissions.* のキー
+const appPermissionKeys = [
+  [AppPermission.POST_JOINED_CHANNELS, "postJoinedChannels"],
+  [AppPermission.POST_PUBLIC_CHANNELS, "postPublicChannels"],
+  [AppPermission.POST_THREAD_REPLIES, "postThreadReplies"],
+  [AppPermission.OUTGOING_WEBHOOK, "outgoingWebhook"],
+] as const;
+
+const appWebhookUrl = (appId: string, token: string) =>
+  new URL(`/webhooks/${appId}/${token}`, apiBaseUrl).href;
 
 export const AppDialog = ({ workspaceId, app, initialChannelId, onClose }: AppDialogProps) => {
   const { t } = useTranslation();
@@ -48,7 +57,7 @@ export const AppDialog = ({ workspaceId, app, initialChannelId, onClose }: AppDi
   const [outgoingUrl, setOutgoingUrl] = useState(app?.outgoingUrl ?? "");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  // 発行・再発行した直後だけ URL を表示する
+  // 発行・再発行した直後だけ URL を表示する。サーバーはトークンをハッシュでしか持たないため再表示できない
   const [revealedUrl, setRevealedUrl] = useState<string | null>(null);
   const { create, regenerate, remove, update } = useAppActions();
   const trimmedName = name.trim();
@@ -119,7 +128,15 @@ export const AppDialog = ({ workspaceId, app, initialChannelId, onClose }: AppDi
         size="md"
         footer={<Button onPress={onClose}>{t("app.done")}</Button>}
       >
-        <AppUrlPanel url={revealedUrl} />
+        <p className="m-0 rounded-md bg-accent-soft px-3 py-2 text-caption text-accent-text">
+          {t("app.urlOnce")}
+        </p>
+        <span className="text-xs font-semibold text-muted">{t("app.url")}</span>
+        <CopyableUrl url={revealedUrl} />
+        <span className="text-xs font-semibold text-muted">{t("app.example")}</span>
+        <pre className="m-0 overflow-x-auto rounded-md border border-border bg-sunken px-2 py-1.5 font-mono text-xs whitespace-pre">
+          {`curl -X POST -H 'Content-Type: application/json' \\\n  -d '{"text": "Hello", "channel_id": "<任意>", "thread_id": "<任意>"}' \\\n  ${revealedUrl}`}
+        </pre>
       </Dialog>
     );
   }

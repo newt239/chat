@@ -8,7 +8,7 @@ import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { openDialog } from "#/lib/overlaySearch";
 
 import { useAppActions, useApps, useChannelApps } from "../hooks/useApps";
 import { AppRow } from "./AppRow";

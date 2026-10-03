@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import { useQuery } from "@connectrpc/connect-query";
+import { useMutation, useQuery } from "@connectrpc/connect-query";
+import { getRouteApi } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -8,7 +9,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "#/components/ui/Button/Button";
 import { Link } from "#/components/ui/Link/Link";
 import { TextField } from "#/components/ui/TextField/TextField";
-import { useSignUp } from "#/features/auth/hooks/useSignUp";
+import { useCompleteLogin } from "#/features/auth/hooks/useCompleteLogin";
+import { AuthService } from "#/gen/chat/v1/auth_service_pb";
 import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 import { sessionAtom } from "#/providers/store/auth";
 
@@ -16,16 +18,17 @@ import { AuthCard } from "./AuthCard";
 import { AuthMethods } from "./AuthMethods";
 import { JoinAsMember } from "./JoinAsMember";
 
-type JoinWorkspaceProps = {
-  workspaceId: string;
-};
+const joinRoute = getRouteApi("/join/$workspaceId");
 
 // 新規登録を許可したワークスペースの参加リンクの受け口。未ログインならアカウントを作って参加する
-export const JoinWorkspace = ({ workspaceId }: JoinWorkspaceProps) => {
+export const JoinWorkspace = () => {
   const { t } = useTranslation();
+  const { workspaceId } = joinRoute.useParams();
   const info = useQuery(WorkspaceService.method.getWorkspaceSignupInfo, { workspaceId });
   const isAuthenticated = useAtomValue(sessionAtom) !== null;
-  const signUp = useSignUp(workspaceId);
+  const signUp = useMutation(AuthService.method.signUp, {
+    onSuccess: useCompleteLogin(workspaceId),
+  });
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");

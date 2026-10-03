@@ -1,4 +1,4 @@
-export const workspaceSettingsSections = ["general", "members", "emoji"] as const;
+export const workspaceSettingsSections = ["general", "emoji"] as const;
 export type WorkspaceSettingsSection = (typeof workspaceSettingsSections)[number];
 
 // URL の値がワークスペース設定の画面のどれかなら、その名前を返す

@@ -6,7 +6,7 @@ import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
 import { lastWorkspaceIdAtom } from "#/providers/store/workspace";
 
 const shortcutRoutes = {
-  activity: "/app/$workspaceId/activity",
+  activity: "/app/$workspaceId/mentions",
   dms: "/app/$workspaceId/dms",
   search: "/app/$workspaceId/search",
 } as const;

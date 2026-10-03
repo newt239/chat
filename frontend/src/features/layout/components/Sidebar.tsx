@@ -6,7 +6,6 @@ import { NavLink } from "#/components/block/NavLink/NavLink";
 import { sidebarNavTone } from "#/components/block/NavLink/navTone";
 import { sidebarWidthRanges, sidebarWidthsAtom } from "#/features/layout/atoms";
 import { ResizeHandle } from "#/features/layout/components/ResizeHandle";
-import { MiniPlayer } from "#/features/player/components/MiniPlayer";
 import { WorkspaceMenu } from "#/features/workspace/components/WorkspaceMenu";
 
 import { NavigationList } from "./NavigationList";
@@ -38,7 +37,6 @@ export const Sidebar = ({ workspaceId }: SidebarProps) => {
         {t("shell.nav.search")}
       </NavLink>
       <NavigationList workspaceId={workspaceId} />
-      <MiniPlayer variant="sidebar" />
       <SidebarFooter />
       <ResizeHandle
         label={t("shell.sidebar.resize")}

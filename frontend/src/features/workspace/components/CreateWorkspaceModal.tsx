@@ -8,8 +8,9 @@ import { Button } from "#/components/ui/Button/Button";
 import { Dialog } from "#/components/ui/Dialog/Dialog";
 import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { TextField } from "#/components/ui/TextField/TextField";
+import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 
-import { useCreateWorkspace } from "../hooks/useWorkspace";
+import { useWorkspaceMutation } from "../hooks/useWorkspace";
 
 type CreateWorkspaceModalProps = {
   isOpen: boolean;
@@ -27,7 +28,7 @@ export const CreateWorkspaceModal = ({ isOpen, onOpenChange }: CreateWorkspaceMo
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const createWorkspace = useCreateWorkspace();
+  const createWorkspace = useWorkspaceMutation(WorkspaceService.method.createWorkspace);
   const idError =
     isSubmitted && !WORKSPACE_ID_PATTERN.test(id) ? t("workspace.create.idInvalid") : undefined;
 

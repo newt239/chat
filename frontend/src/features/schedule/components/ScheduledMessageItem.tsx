@@ -160,8 +160,9 @@ export const ScheduledMessageItem = ({
       )}
       {isEditing && (
         <ScheduleDialog
-          isOpen
-          onOpenChange={setIsEditing}
+          onClose={() => {
+            setIsEditing(false);
+          }}
           title={t("schedule.list.editTitle")}
           initialDate={toDate(message.scheduledAt)}
           isPending={update.isPending}

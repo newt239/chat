@@ -1,5 +1,4 @@
 export const userGroup = {
-  adminOnly: "グループの作成と編集は管理者だけができます",
   add: "追加",
   addMember: "メンバーを追加",
   addMemberPlaceholder: "ユーザーを選択",
@@ -13,9 +12,6 @@ export const userGroup = {
   description: "説明（任意）",
   edit: "編集",
   editTitle: "グループを編集",
-  empty: "ユーザーグループはまだありません",
-  emptyHint: "チームや役割ごとにグループを作ると、@グループ名 でまとめてメンションできます",
-  manage: "グループを管理",
   members: "メンバー",
   mentionCopied: "メンションをコピーしました",
   name: "グループ名",

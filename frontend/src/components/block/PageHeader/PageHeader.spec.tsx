@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vite-plus/test";
 
-import { MobileBackContext } from "#/components/block/BackButton/mobileBackContext";
+import { MobileStackContext } from "#/components/block/BackButton/mobileStack";
 
 import { PageHeader } from "./PageHeader";
 
@@ -16,9 +16,9 @@ test("積み重ねた画面の外では「戻る」を出さない", () => {
 test("積み重ねた画面の中では「戻る」で戻る", async () => {
   const back = vi.fn<() => void>();
   render(
-    <MobileBackContext value={back}>
+    <MobileStackContext value={{ back, setForward: vi.fn<() => void>() }}>
       <PageHeader icon={null} title="スレッド" />
-    </MobileBackContext>,
+    </MobileStackContext>,
   );
 
   await userEvent.click(screen.getByRole("button", { name: "戻る" }));

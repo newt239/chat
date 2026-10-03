@@ -1,26 +1,25 @@
 import { AuditAction } from "#/gen/chat/v1/admin_service_pb";
 import { Permission } from "#/gen/chat/v1/permission_service_pb";
 
-export const auditActionKeys = {
-  [AuditAction.UNSPECIFIED]: "unspecified",
-  [AuditAction.LOGIN]: "login",
-  [AuditAction.LOGIN_FAILED]: "loginFailed",
-  [AuditAction.MEMBER_ROLE_CHANGED]: "memberRoleChanged",
-  [AuditAction.MEMBER_SUSPENDED]: "memberSuspended",
-  [AuditAction.MEMBER_RESUMED]: "memberResumed",
-  [AuditAction.CHANNEL_CREATED]: "channelCreated",
-  [AuditAction.CHANNEL_DELETED]: "channelDeleted",
-  [AuditAction.CHANNEL_ARCHIVED]: "channelArchived",
-  [AuditAction.CHANNEL_UNARCHIVED]: "channelUnarchived",
-  [AuditAction.PERMISSION_CHANGED]: "permissionChanged",
-  [AuditAction.AUDIT_LOG_EXPORTED]: "auditLogExported",
-  [AuditAction.WEBHOOK_CREATED]: "webhookCreated",
-  [AuditAction.WEBHOOK_DELETED]: "webhookDeleted",
-  [AuditAction.CUSTOM_EMOJI_CREATED]: "customEmojiCreated",
-  [AuditAction.CUSTOM_EMOJI_DELETED]: "customEmojiDeleted",
-  [AuditAction.APP_CREATED]: "appCreated",
-  [AuditAction.APP_DELETED]: "appDeleted",
-} as const;
+// 監査ログの操作と辞書 admin.audit.actions.* のキー。絞り込みの選択肢と URL で受け付ける値もここから作る
+export const auditActions = [
+  { action: AuditAction.LOGIN, key: "login" },
+  { action: AuditAction.LOGIN_FAILED, key: "loginFailed" },
+  { action: AuditAction.MEMBER_ROLE_CHANGED, key: "memberRoleChanged" },
+  { action: AuditAction.MEMBER_SUSPENDED, key: "memberSuspended" },
+  { action: AuditAction.MEMBER_RESUMED, key: "memberResumed" },
+  { action: AuditAction.CHANNEL_CREATED, key: "channelCreated" },
+  { action: AuditAction.CHANNEL_DELETED, key: "channelDeleted" },
+  { action: AuditAction.PERMISSION_CHANGED, key: "permissionChanged" },
+  { action: AuditAction.AUDIT_LOG_EXPORTED, key: "auditLogExported" },
+  { action: AuditAction.CUSTOM_EMOJI_CREATED, key: "customEmojiCreated" },
+  { action: AuditAction.CUSTOM_EMOJI_DELETED, key: "customEmojiDeleted" },
+  { action: AuditAction.APP_CREATED, key: "appCreated" },
+  { action: AuditAction.APP_DELETED, key: "appDeleted" },
+] as const;
+
+export const auditActionKey = (action: AuditAction) =>
+  auditActions.find((entry) => entry.action === action)?.key ?? "unspecified";
 
 // 権限やセキュリティに関わる操作は目立たせる
 export const sensitiveAuditActions: ReadonlySet<AuditAction> = new Set([
@@ -51,11 +50,4 @@ export const permissionKeyByName: Readonly<Record<string, (typeof permissionKeys
   edit_channel_links: "editChannelLinks",
   invite_members: "inviteMembers",
   pin_messages: "pinMessages",
-};
-
-export const roleKeyByName: Readonly<Record<string, "owner" | "admin" | "member" | "guest">> = {
-  admin: "admin",
-  guest: "guest",
-  member: "member",
-  owner: "owner",
 };

@@ -6,7 +6,7 @@ import { Button } from "#/components/ui/Button/Button";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { AppRow } from "#/features/app/components/AppRow";
 import { useApps } from "#/features/app/hooks/useApps";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { openDialog } from "#/lib/overlaySearch";
 
 type AdminAppsTabProps = {
   workspaceId: string;

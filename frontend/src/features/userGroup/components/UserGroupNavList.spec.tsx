@@ -22,6 +22,5 @@ describe("UserGroupNavList", () => {
 
     await userEvent.click(await screen.findByRole("link", { name: "@frontend" }));
     expect(router.state.location.search).toEqual({ group: "g1" });
-    expect(screen.getByRole("link", { name: "グループを管理" })).toBeInTheDocument();
   });
 });

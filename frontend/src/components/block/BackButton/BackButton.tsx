@@ -5,13 +5,13 @@ import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 
-import { MobileBackContext } from "./mobileBackContext";
+import { MobileStackContext } from "./mobileStack";
 
 // モバイルで積み重ねた画面の見出しに出す「戻る」。それ以外では何も出さない
 export const BackButton = () => {
   const { t } = useTranslation();
-  const back = useContext(MobileBackContext);
-  if (back === null) {
+  const back = useContext(MobileStackContext)?.back;
+  if (back === undefined) {
     return null;
   }
   return (

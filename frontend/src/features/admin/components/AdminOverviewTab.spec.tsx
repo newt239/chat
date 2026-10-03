@@ -36,7 +36,7 @@ const members = [
   }),
 ];
 
-const kpiValue = (label: string) => screen.getByText(label).parentElement;
+const countOf = (label: string) => screen.getByText(label).parentElement;
 
 describe("AdminOverviewTab", () => {
   test("メンバーの集計・内訳・最近の監査ログを表示する", async () => {
@@ -46,17 +46,16 @@ describe("AdminOverviewTab", () => {
       (routes) => {
         routes.rpc(AdminService.method.listAuditLogs, () => ({
           logs: [create(AuditLogSchema, { action: AuditAction.CHANNEL_CREATED, id: "l1" })],
-          totalCount: 1,
         }));
       },
     );
-    expect(kpiValue("メンバー")).toHaveTextContent("2人");
-    expect(kpiValue("管理者")).toHaveTextContent("1人");
-    expect(kpiValue("停止中")).toHaveTextContent("1人");
+    expect(countOf("メンバー")).toHaveTextContent("2");
+    expect(countOf("管理者")).toHaveTextContent("1");
+    expect(countOf("停止中")).toHaveTextContent("1");
 
     const posters = screen.getByRole("heading", { name: "投稿の多いメンバー" }).closest("section");
     if (!posters) {
-      throw new Error("カードが見つからない");
+      throw new Error("一覧が見つからない");
     }
     expect(within(posters).getAllByRole("listitem")[0]).toHaveTextContent("Bob9");
 

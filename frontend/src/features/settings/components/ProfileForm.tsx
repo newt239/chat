@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { createConnectQueryKey, useMutation } from "@connectrpc/connect-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -9,8 +11,8 @@ import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { ImagePurpose } from "#/gen/chat/v1/image_service_pb";
+import { UserService } from "#/gen/chat/v1/user_service_pb";
 
-import { useUpdateProfile } from "../hooks/useUpdateProfile";
 import { ProfileLinksField } from "./ProfileLinksField";
 
 import type { User } from "#/gen/chat/v1/user_pb";
@@ -21,7 +23,16 @@ type ProfileFormProps = {
 
 export const ProfileForm = ({ me }: ProfileFormProps) => {
   const { t } = useTranslation();
-  const mutation = useUpdateProfile();
+  const queryClient = useQueryClient();
+  const mutation = useMutation(UserService.method.updateMe, {
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: createConnectQueryKey({
+          cardinality: "finite",
+          schema: UserService.method.getMe,
+        }),
+      }),
+  });
   const [displayName, setDisplayName] = useState(me.displayName);
   const [bio, setBio] = useState(me.bio ?? "");
   const [avatarUrl, setAvatarUrl] = useState(me.avatarUrl ?? "");

@@ -8,7 +8,7 @@ import { transport } from "#/lib/api/transport";
 import { isAdminRole } from "#/lib/isAdminRole";
 import { queryClient } from "#/providers/query/query";
 
-// 一般メンバーは管理画面に入れずインサイトへ戻す（API 側でも拒否される）
+// 一般メンバーは管理画面に入れずワークスペースのトップへ戻す（API 側でも拒否される）
 export const Route = createFileRoute("/app/$workspaceId/admin")({
   beforeLoad: async ({ params }) => {
     const { workspace } = await queryClient.query(
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/app/$workspaceId/admin")({
       ),
     );
     if (!isAdminRole(workspace?.role)) {
-      throw redirect({ params, to: "/app/$workspaceId/insights" });
+      throw redirect({ params, to: "/app/$workspaceId" });
     }
   },
   component: AdminPage,

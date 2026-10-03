@@ -7,17 +7,11 @@ import { toast } from "#/components/ui/ToastRegion/toast";
 import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
 import { permissionKeys } from "#/features/admin/utils/labels";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";
+import { workspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
 import { Permission } from "#/gen/chat/v1/permission_service_pb";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 
 import type { PermissionGrant } from "#/gen/chat/v1/permission_service_pb";
-
-const roleColumns = [
-  { key: "owner", role: WorkspaceRole.OWNER },
-  { key: "admin", role: WorkspaceRole.ADMIN },
-  { key: "member", role: WorkspaceRole.MEMBER },
-  { key: "guest", role: WorkspaceRole.GUEST },
-] as const;
 
 const permissions = [
   Permission.CREATE_PUBLIC_CHANNEL,
@@ -56,7 +50,7 @@ export const AdminPermissionsTab = ({ workspaceId, grants, myRole }: AdminPermis
               <th scope="col" className={tableClassNames.header}>
                 {t("admin.permissions.operation")}
               </th>
-              {roleColumns.map(({ key }) => (
+              {workspaceRoles.map(({ key }) => (
                 <th key={key} scope="col" className={cn(tableClassNames.header, "text-center")}>
                   {t(`member.role.${key}`)}
                 </th>
@@ -71,7 +65,7 @@ export const AdminPermissionsTab = ({ workspaceId, grants, myRole }: AdminPermis
                   <th scope="row" className={cn(tableClassNames.cell, "text-left font-normal")}>
                     {permissionName}
                   </th>
-                  {roleColumns.map(({ key, role }) => {
+                  {workspaceRoles.map(({ key, role }) => {
                     const label = t("admin.permissions.toggle", {
                       permission: permissionName,
                       role: t(`member.role.${key}`),

@@ -3,13 +3,10 @@ import { Button, ListBox, ListBoxItem, Popover, Select, SelectValue } from "reac
 import { useTranslation } from "react-i18next";
 
 import { cn, focusRing, overlayStyles } from "#/components/ui/styles/styles";
+import { workspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 
-const roles = [
-  { key: "admin", role: WorkspaceRole.ADMIN },
-  { key: "member", role: WorkspaceRole.MEMBER },
-  { key: "guest", role: WorkspaceRole.GUEST },
-] as const;
+const roles = workspaceRoles.filter((option) => option.role !== WorkspaceRole.OWNER);
 
 type RoleSelectProps = {
   ariaLabel: string;

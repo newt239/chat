@@ -18,11 +18,7 @@ afterEach(() => {
 
 const renderLoggedOut = async (routes: (router: ConnectRouter) => void) => {
   vi.stubEnv("VITE_GOOGLE_OAUTH_CLIENT_ID", "");
-  const { store } = await renderWithProviders(
-    <JoinWorkspace workspaceId="ws1" />,
-    "/app/ws1",
-    routes,
-  );
+  const { store } = await renderWithProviders(<JoinWorkspace />, "/join/ws1", routes);
   store.set(sessionAtom, null);
 };
 

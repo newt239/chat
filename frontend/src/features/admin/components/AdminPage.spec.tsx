@@ -16,7 +16,7 @@ describe("AdminPage", () => {
       routes.rpc(AdminService.method.listAdminMembers, () => ({
         members: [create(AdminMemberSchema, { displayName: "Bob", userId: "u2" })],
       }));
-      routes.rpc(AdminService.method.listAuditLogs, () => ({ logs: [], totalCount: 0 }));
+      routes.rpc(AdminService.method.listAuditLogs, () => ({ logs: [] }));
       routes.rpc(PermissionService.method.getPermissions, () => ({ grants: [] }));
       routes.rpc(WorkspaceService.method.getWorkspace, () => ({
         workspace: { id: "ws1", role: WorkspaceRole.OWNER },

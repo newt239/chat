@@ -1,3 +1,4 @@
+import { useQuery } from "@connectrpc/connect-query";
 import { IconShieldCheck } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -14,9 +15,10 @@ import { AdminInvitationsTab } from "#/features/admin/components/AdminInvitation
 import { AdminMembersTab } from "#/features/admin/components/AdminMembersTab";
 import { AdminOverviewTab } from "#/features/admin/components/AdminOverviewTab";
 import { AdminPermissionsTab } from "#/features/admin/components/AdminPermissionsTab";
-import { useAdminMembers, usePermissions } from "#/features/admin/hooks/useAdminQueries";
 import { adminTabValues } from "#/features/admin/schemas";
-import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { AdminService } from "#/gen/chat/v1/admin_service_pb";
+import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
+import { usePermissions } from "#/hooks/usePermissions";
 
 import type { adminSearchSchema } from "#/features/admin/schemas";
 
@@ -31,9 +33,17 @@ export const AdminPage = () => {
   const { workspaceId } = adminRoute.useParams();
   const { tab } = adminRoute.useSearch();
   const navigate = adminRoute.useNavigate();
-  const { data: members, error } = useAdminMembers(workspaceId);
+  const { data: members, error } = useQuery(
+    AdminService.method.listAdminMembers,
+    { workspaceId },
+    { select: (res) => res.members },
+  );
   const { data: permissions } = usePermissions(workspaceId);
-  const { data: myRole } = useMyWorkspaceRole(workspaceId);
+  const { data: myRole } = useQuery(
+    WorkspaceService.method.getWorkspace,
+    { workspaceId },
+    { select: (res) => res.workspace?.role },
+  );
 
   const renderTab = (value: AdminTab) => {
     if (error) {

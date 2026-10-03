@@ -1,24 +1,21 @@
-import { IconAdjustments, IconBuilding, IconMoodSmile, IconUsers } from "@tabler/icons-react";
+import { IconAdjustments, IconBuilding, IconMoodSmile } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { SettingsLayout } from "#/components/block/SettingsLayout/SettingsLayout";
+import { SettingsNavLink } from "#/components/block/SettingsNavLink/SettingsNavLink";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { CustomEmojiSettings } from "#/features/customEmoji/components/CustomEmojiSettings";
-import { SettingsLayout } from "#/features/settings/components/SettingsLayout";
-import { SettingsNavLink } from "#/features/settings/components/SettingsNavLink";
-import { isAdminRole } from "#/lib/isAdminRole";
 
 import { useWorkspaces } from "../hooks/useWorkspace";
 import { findWorkspaceSettingsSection, workspaceSettingsSections } from "../schemas";
 import { WorkspaceGeneralSettings } from "./WorkspaceGeneralSettings";
-import { WorkspaceMemberManager } from "./WorkspaceMemberManager";
 
 import type { WorkspaceSettingsSection } from "../schemas";
 
-const sectionIcons: Record<WorkspaceSettingsSection, typeof IconUsers> = {
+const sectionIcons: Record<WorkspaceSettingsSection, typeof IconBuilding> = {
   emoji: IconMoodSmile,
   general: IconAdjustments,
-  members: IconUsers,
 };
 
 const workspaceSettingsRoute = getRouteApi("/app/$workspaceId/workspace-settings/{-$section}");
@@ -38,14 +35,6 @@ export const WorkspaceSettingsPage = () => {
       case "general": {
         // 保存後に一覧が更新されてもフォームを作り直さない
         return <WorkspaceGeneralSettings key={workspace.id} workspace={workspace} />;
-      }
-      case "members": {
-        return (
-          <WorkspaceMemberManager
-            workspaceId={workspaceId}
-            canManage={isAdminRole(workspace.role)}
-          />
-        );
       }
       case "emoji": {
         return <CustomEmojiSettings workspaceId={workspaceId} />;

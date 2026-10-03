@@ -43,7 +43,7 @@ export const useVoiceRecorder = () => {
         releaseMicrophone();
         return;
       }
-      const mimeType = pickRecordingMimeType((type) => MediaRecorder.isTypeSupported(type));
+      const mimeType = pickRecordingMimeType();
       const recorder = new MediaRecorder(stream, mimeType === "" ? {} : { mimeType });
       const chunks: Blob[] = [];
       const startedAt = Date.now();

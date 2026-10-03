@@ -16,8 +16,8 @@ import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useChannelListActions } from "#/features/channel/hooks/useChannelListActions";
 import { canHaveChildChannel } from "#/features/channel/utils/channelPath";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
 import { copyWithToast } from "#/lib/clipboard";
+import { openDialog } from "#/lib/overlaySearch";
 import { isTauri } from "#/lib/platform/platform";
 import { toShareUrl } from "#/lib/shareUrl";
 

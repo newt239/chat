@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
-import { useJoinPublicWorkspace } from "#/features/workspace/hooks/usePublicWorkspaces";
-import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
+import { useWorkspaceMutation, useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
+import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 import { useMe } from "#/hooks/useMe";
 
 type JoinAsMemberProps = {
@@ -17,7 +17,7 @@ export const JoinAsMember = ({ workspaceId }: JoinAsMemberProps) => {
   const { data: user } = useMe();
   const navigate = useNavigate();
   const workspaces = useWorkspaces();
-  const join = useJoinPublicWorkspace();
+  const join = useWorkspaceMutation(WorkspaceService.method.joinPublicWorkspace);
 
   if (workspaces.isPending) {
     return null;

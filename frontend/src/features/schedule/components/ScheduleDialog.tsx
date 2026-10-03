@@ -9,20 +9,18 @@ import { Dialog } from "#/components/ui/Dialog/Dialog";
 import { useDateFormat } from "#/hooks/useDateFormat";
 
 type ScheduleDialogProps = {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
+  onClose: () => void;
   title: string;
   initialDate: Date;
   onConfirm: (scheduledAt: Date) => void;
   isPending: boolean;
   // 日時の上に出す欄（予約の編集で本文を直すときなど）
-  children: ReactNode;
+  children?: ReactNode;
 };
 
 // 送信日時を選ぶダイアログ。過去の日時で確定しようとしたらエラーを出す
 export const ScheduleDialog = ({
-  isOpen,
-  onOpenChange,
+  onClose,
   title,
   initialDate,
   onConfirm,
@@ -36,17 +34,16 @@ export const ScheduleDialog = ({
 
   return (
     <Dialog
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          onClose();
+        }
+      }}
       title={title}
       footer={
         <>
-          <Button
-            variant="secondary"
-            onPress={() => {
-              onOpenChange(false);
-            }}
-          >
+          <Button variant="secondary" onPress={onClose}>
             {t("common.cancel")}
           </Button>
           <Button

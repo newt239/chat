@@ -77,6 +77,7 @@ describe("AppDialog", () => {
     expect(
       await screen.findByText(/\/webhooks\/a2\/first-token$/, { selector: "code" }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/curl -X POST/)).toHaveTextContent("channel_id");
   });
 
   test("送信 Webhook を選んだら送信先の URL を必須にする", async () => {

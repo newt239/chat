@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 import { IconChevronLeft, IconChevronRight, IconSearch } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
@@ -38,27 +38,22 @@ export const SearchPage = () => {
   const navigate = searchRoute.useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [inputValue, setInputValue] = useState(query);
-  const [syncedQuery, setSyncedQuery] = useState(query);
-  // URL のクエリが変わったら入力欄に反映する
-  if (syncedQuery !== query) {
-    setSyncedQuery(query);
-    setInputValue(query);
-  }
-
   const { data, isFetching, error, isEnabled, unresolved, resolved } = useWorkspaceSearch(
     workspaceId,
     search,
     RESULTS_PER_PAGE,
   );
 
+  // 入力欄は URL のクエリを初期値にした非制御の欄なので、DOM の値を書き換えて input イベントで知らせる
   const insertModifier = (modifier: string) => {
-    setInputValue((prev) => `${prev.trimEnd()}${prev.trim() ? " " : ""}${modifier}`);
-    requestAnimationFrame(() => {
-      const input = inputRef.current;
-      input?.focus();
-      input?.setSelectionRange(input.value.length, input.value.length);
-    });
+    const input = inputRef.current;
+    if (input === null) {
+      return;
+    }
+    const prefix = input.value.trimEnd();
+    input.setRangeText(`${prefix ? " " : ""}${modifier}`, prefix.length, input.value.length, "end");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.focus();
   };
 
   const countOf = (value: SearchFilter) =>
@@ -185,12 +180,13 @@ export const SearchPage = () => {
         className="flex shrink-0 flex-col gap-2 px-4.5 pt-3 pb-2.5"
         onSubmit={(event) => {
           event.preventDefault();
-          void navigate({ search: (prev) => ({ ...prev, page: 1, q: inputValue.trim() }) });
+          const q = inputRef.current?.value.trim() ?? "";
+          void navigate({ search: (prev) => ({ ...prev, page: 1, q }) });
         }}
       >
         <SearchField
-          value={inputValue}
-          onChange={setInputValue}
+          key={query}
+          defaultValue={query}
           label={t("search.input")}
           placeholder={t("search.placeholder")}
           inputRef={inputRef}
@@ -198,7 +194,7 @@ export const SearchPage = () => {
         />
         <SearchModifierHelp onInsert={insertModifier} />
       </Form>
-      <SearchFilterBar />
+      <SearchFilterBar resolved={resolved} />
       <Tabs
         selectedKey={filter}
         onSelectionChange={(key) => {

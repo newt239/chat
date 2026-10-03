@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
-import { permissionKeyByName, roleKeyByName } from "#/features/admin/utils/labels";
+import { permissionKeyByName } from "#/features/admin/utils/labels";
+import { workspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
 import { AuditAction } from "#/gen/chat/v1/admin_service_pb";
 
 import type { AuditLog } from "#/gen/chat/v1/admin_service_pb";
@@ -12,7 +13,7 @@ export const useAuditLogFormatter = () => {
   const { t } = useTranslation();
 
   const roleName = (name: string | undefined) => {
-    const key = name === undefined ? undefined : roleKeyByName[name];
+    const key = workspaceRoles.find((option) => option.key === name)?.key;
     return key === undefined ? (name ?? "") : t(`member.role.${key}`);
   };
 

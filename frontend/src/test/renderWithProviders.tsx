@@ -16,9 +16,9 @@ import { z } from "zod";
 
 import { adminSearchSchema } from "#/features/admin/schemas";
 import { browseChannelsSearchSchema } from "#/features/channel/schemas";
-import { workspaceSearchSchema } from "#/features/layout/schemas";
 import { jumpDateSchema } from "#/features/message/utils/dateJump";
 import { searchQuerySchema } from "#/features/search/schemas";
+import { workspaceSearchSchema } from "#/lib/overlaySearch";
 import { sessionAtom } from "#/providers/store/auth";
 
 import type { ConnectRouter } from "@connectrpc/connect";
@@ -55,7 +55,6 @@ export const renderWithProviders = async (
     path: "/admin",
     validateSearch: adminSearchSchema,
   });
-  const insightsRoute = createRoute({ getParentRoute: () => workspaceRoute, path: "/insights" });
   const draftsRoute = createRoute({ getParentRoute: () => workspaceRoute, path: "/drafts" });
   const browseChannelsRoute = createRoute({
     getParentRoute: () => workspaceRoute,
@@ -78,19 +77,22 @@ export const renderWithProviders = async (
       message: z.string().optional(),
     }),
   });
+  const inviteRoute = createRoute({ getParentRoute: () => rootRoute, path: "/invite/$token" });
+  const joinRoute = createRoute({ getParentRoute: () => rootRoute, path: "/join/$workspaceId" });
   const router = createRouter({
     history: createMemoryHistory({ initialEntries: [url] }),
     routeTree: rootRoute.addChildren([
       workspaceRoute.addChildren([
         searchRoute,
         adminRoute,
-        insightsRoute,
         draftsRoute,
         browseChannelsRoute,
         settingsRoute,
         workspaceSettingsRoute,
         channelRoute,
       ]),
+      inviteRoute,
+      joinRoute,
     ]),
   });
   await router.load();

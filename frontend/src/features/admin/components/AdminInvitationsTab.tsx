@@ -6,7 +6,7 @@ import { cn } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { AdminSignupSettings } from "#/features/admin/components/AdminSignupSettings";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";
-import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
+import { workspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
 import { InviteMemberForm } from "#/features/workspace/components/InviteMemberForm";
 import { useInvitationActions } from "#/features/workspace/hooks/useInvitationActions";
 import { InvitationService } from "#/gen/chat/v1/invitation_service_pb";
@@ -60,7 +60,7 @@ export const AdminInvitationsTab = ({ workspaceId }: AdminInvitationsTabProps) =
                   <tr key={invitation.id} className={tableClassNames.row}>
                     <td className={tableClassNames.cell}>{invitation.email}</td>
                     <td className={tableClassNames.cell}>
-                      {t(workspaceRoleKeys[invitation.role])}
+                      {t(`member.role.${workspaceRoleKey(invitation.role)}`)}
                     </td>
                     <td className={tableClassNames.cell}>{invitation.invitedByName}</td>
                     <td className={cn(tableClassNames.cell, tableClassNames.numeric)}>

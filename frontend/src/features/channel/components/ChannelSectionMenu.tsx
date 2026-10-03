@@ -8,8 +8,8 @@ import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { MenuSection } from "#/components/ui/MenuSection/MenuSection";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
 import { usePreferences, useUpdatePreferences } from "#/hooks/usePreferences";
+import { openDialog } from "#/lib/overlaySearch";
 import { channelSortOrders } from "#/providers/store/preferences";
 
 type ChannelSectionMenuProps = {

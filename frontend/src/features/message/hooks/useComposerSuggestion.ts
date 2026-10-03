@@ -3,9 +3,9 @@ import { useId, useState } from "react";
 import { skipToken, useQuery } from "@connectrpc/connect-query";
 import { useParams } from "@tanstack/react-router";
 
-import { commandNames } from "#/features/command/utils/commands";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { toMentionToken } from "#/features/mention/utils/mentionToken";
+import { commandNames } from "#/features/message/utils/commands";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 

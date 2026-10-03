@@ -15,6 +15,7 @@ import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { BackButton } from "#/components/block/BackButton/BackButton";
+import { useMobileForward } from "#/components/block/BackButton/mobileStack";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { IconToggleButton } from "#/components/ui/IconToggleButton/IconToggleButton";
@@ -26,13 +27,12 @@ import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { DMAvatar } from "#/features/dm/components/DMAvatar";
 import { useDMs } from "#/features/dm/hooks/useDM";
 import { dmName } from "#/features/dm/utils/dmName";
-import { useMobileForward } from "#/features/layout/hooks/useMobileForward";
-import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { usePinCount } from "#/features/pin/hooks/usePinnedMessages";
 import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { useIsMobile } from "#/hooks/useMediaQuery";
+import { openPanel } from "#/lib/overlaySearch";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
 import { useChannelById } from "../hooks/useChannelById";
@@ -43,7 +43,7 @@ import { ChannelMenuItems } from "./ChannelMenuItems";
 import { ChannelName } from "./ChannelName";
 import { DescendantsToggle } from "./DescendantsToggle";
 
-import type { PanelSearch } from "#/features/layout/utils/overlaySearch";
+import type { PanelSearch } from "#/lib/overlaySearch";
 
 type ChannelHeaderProps = {
   workspaceId: string;

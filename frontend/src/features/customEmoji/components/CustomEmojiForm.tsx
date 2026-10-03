@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Code, ConnectError } from "@connectrpc/connect";
 import { IconPhoto } from "@tabler/icons-react";
@@ -37,6 +37,16 @@ export const CustomEmojiForm = ({ workspaceId, onAdded }: CustomEmojiFormProps) 
   const [preview, setPreview] = useState<string | null>(null);
   const isNameValid = NAME_PATTERN.test(name);
 
+  // 差し替えたときとアンマウントしたときに前のプレビューを解放する
+  useEffect(
+    () => () => {
+      if (preview !== null) {
+        URL.revokeObjectURL(preview);
+      }
+    },
+    [preview],
+  );
+
   const errorMessage = (() => {
     const { error } = register;
     if (error === null) {
@@ -54,9 +64,6 @@ export const CustomEmojiForm = ({ workspaceId, onAdded }: CustomEmojiFormProps) 
   })();
 
   const selectFile = (selected: File) => {
-    if (preview !== null) {
-      URL.revokeObjectURL(preview);
-    }
     setFile(selected);
     setPreview(URL.createObjectURL(selected));
     if (name === "") {
@@ -80,9 +87,6 @@ export const CustomEmojiForm = ({ workspaceId, onAdded }: CustomEmojiFormProps) 
               toast(t("workspace.emoji.added", { name: toCustomEmojiValue(name) }), {
                 tone: "success",
               });
-              if (preview !== null) {
-                URL.revokeObjectURL(preview);
-              }
               setName("");
               setFile(null);
               setPreview(null);

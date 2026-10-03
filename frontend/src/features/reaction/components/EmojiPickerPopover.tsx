@@ -9,10 +9,10 @@ import { useTranslation } from "react-i18next";
 import { Button } from "#/components/ui/Button/Button";
 import { Dialog } from "#/components/ui/Dialog/Dialog";
 import { Popover } from "#/components/ui/Popover/Popover";
-import { usePermissions } from "#/features/admin/hooks/useAdminQueries";
 import { CustomEmojiForm } from "#/features/customEmoji/components/CustomEmojiForm";
 import { toCustomEmojiValue } from "#/features/customEmoji/utils/customEmoji";
 import { Permission } from "#/gen/chat/v1/permission_service_pb";
+import { usePermissions } from "#/hooks/usePermissions";
 
 import { EmojiPicker } from "./EmojiPicker";
 

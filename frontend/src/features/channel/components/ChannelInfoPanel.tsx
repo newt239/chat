@@ -9,7 +9,7 @@ import { ChannelAppsSection } from "#/features/app/components/ChannelAppsSection
 import { ChannelMemberManager } from "#/features/channel/components/ChannelMemberManager";
 import { ChannelSettingsPanel } from "#/features/channel/components/ChannelSettingsPanel";
 import { canHaveChildChannel } from "#/features/channel/utils/channelPath";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { openDialog } from "#/lib/overlaySearch";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
 import { useChannelListActions } from "../hooks/useChannelListActions";

@@ -4,15 +4,17 @@ import { formatBytes, formatNumber, formatRelativeTime } from "@chat/i18n/format
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Button } from "#/components/ui/Button/Button";
 import { SearchField } from "#/components/ui/SearchField/SearchField";
 import { Select } from "#/components/ui/Select/Select";
 import { cn } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";
 import { summarizeUserAgent } from "#/features/admin/utils/userAgent";
-import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
-import { useWorkspaceMemberActions } from "#/features/workspace/hooks/useWorkspaceMemberActions";
+import { workspaceRoleKey, workspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
@@ -21,17 +23,10 @@ import { myUserIdAtom } from "#/providers/store/auth";
 import { MemberSuspendButton } from "./MemberSuspendButton";
 import { RoleSelect } from "./RoleSelect";
 
+import type { WorkspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
 import type { AdminMember } from "#/gen/chat/v1/admin_service_pb";
 
-const roleFilters = {
-  admin: WorkspaceRole.ADMIN,
-  all: null,
-  guest: WorkspaceRole.GUEST,
-  member: WorkspaceRole.MEMBER,
-  owner: WorkspaceRole.OWNER,
-} as const;
-type RoleFilter = keyof typeof roleFilters;
-const roleFilterValues = ["all", "owner", "admin", "member", "guest"] as const;
+type RoleFilter = WorkspaceRoleKey | "all";
 
 const memberColumns = [
   { isNumeric: false, key: "member" },
@@ -52,18 +47,19 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
   const { t } = useTranslation();
   const { formatDateTime, locale } = useDateFormat();
   const myId = useAtomValue(myUserIdAtom);
-  const { updateRole } = useWorkspaceMemberActions();
+  const { remove, updateRole } = useAdminActions();
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
+  const [removing, setRemoving] = useState<AdminMember | null>(null);
   const now = new Date();
 
   const normalizedQuery = query.trim().toLowerCase();
   const rows = members.filter(
     (member) =>
-      (roleFilters[roleFilter] === null || member.role === roleFilters[roleFilter]) &&
+      (roleFilter === "all" || workspaceRoleKey(member.role) === roleFilter) &&
       `${member.displayName} ${member.email}`.toLowerCase().includes(normalizedQuery),
   );
-  const roleLabel = (role: WorkspaceRole) => t(workspaceRoleKeys[role]);
+  const roleLabel = (role: WorkspaceRole) => t(`member.role.${workspaceRoleKey(role)}`);
 
   return (
     <div className="flex flex-col gap-3.5">
@@ -79,10 +75,10 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
           className="w-40"
           value={roleFilter}
           onChange={setRoleFilter}
-          options={roleFilterValues.map((value) => ({
-            label: value === "all" ? t("admin.members.allRoles") : t(`member.role.${value}`),
-            value,
-          }))}
+          options={[
+            { label: t("admin.members.allRoles"), value: "all" },
+            ...workspaceRoles.map(({ key }) => ({ label: t(`member.role.${key}`), value: key })),
+          ]}
         />
       </div>
       <div className={tableClassNames.wrapper}>
@@ -187,7 +183,19 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
                   </td>
                   <td className={cn(tableClassNames.cell, "text-right")}>
                     {!isMe && !isOwner && (
-                      <MemberSuspendButton workspaceId={workspaceId} member={member} />
+                      <div className="flex justify-end gap-1.5">
+                        <MemberSuspendButton workspaceId={workspaceId} member={member} />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label={t("admin.members.removeLabel", { name: member.displayName })}
+                          onPress={() => {
+                            setRemoving(member);
+                          }}
+                        >
+                          {t("admin.members.remove")}
+                        </Button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -197,6 +205,32 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
         </table>
       </div>
       <p className="m-0 text-xs text-muted">{t("admin.members.count", { count: rows.length })}</p>
+      <AlertDialog
+        isOpen={removing !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setRemoving(null);
+          }
+        }}
+        title={t("admin.members.removeTitle", { name: removing?.displayName ?? "" })}
+        confirmLabel={t("admin.members.removeConfirm")}
+        tone="danger"
+        isPending={remove.isPending}
+        onConfirm={() => {
+          if (removing !== null) {
+            remove.mutate(
+              { userId: removing.userId, workspaceId },
+              {
+                onSettled: () => {
+                  setRemoving(null);
+                },
+              },
+            );
+          }
+        }}
+      >
+        <p className="m-0">{t("admin.members.removeBody")}</p>
+      </AlertDialog>
     </div>
   );
 };

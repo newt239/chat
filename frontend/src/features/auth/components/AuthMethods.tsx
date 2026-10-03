@@ -9,7 +9,6 @@ import { GoogleSignInButton } from "./GoogleSignInButton";
 import { GoogleSignInButtonNative } from "./GoogleSignInButtonNative";
 
 type AuthMethodsProps = {
-  // パスワード認証が有効なときだけ表示する。null なら Google だけにする
   passwordForm: ReactNode;
   workspaceId: string | null;
 };

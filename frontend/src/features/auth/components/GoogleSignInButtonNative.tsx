@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 
+import { useMutation } from "@connectrpc/connect-query";
 import { IconBrandGoogle } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
-import { useLoginWithGoogleCode } from "#/features/auth/hooks/useLoginWithGoogleCode";
+import { useCompleteLogin } from "#/features/auth/hooks/useCompleteLogin";
 import { startGoogleOAuth, takeGoogleOAuthResult } from "#/features/auth/utils/googleOAuthPkce";
+import { AuthService } from "#/gen/chat/v1/auth_service_pb";
 import { openExternal } from "#/lib/platform/openExternal";
 
 type GoogleSignInButtonNativeProps = {
@@ -19,7 +21,10 @@ const loadDeepLink = () => import("#/features/auth/utils/deepLink");
 // ネイティブアプリでは WebView で Google のボタンを使えないため、システムのブラウザでログインしてディープリンクで戻る
 export const GoogleSignInButtonNative = ({ workspaceId }: GoogleSignInButtonNativeProps) => {
   const { t } = useTranslation();
-  const { error, isError, isPending, mutate } = useLoginWithGoogleCode(workspaceId);
+  const { error, isError, isPending, mutate } = useMutation(
+    AuthService.method.loginWithGoogleCode,
+    { onSuccess: useCompleteLogin(workspaceId) },
+  );
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {

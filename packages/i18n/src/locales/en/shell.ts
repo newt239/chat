@@ -32,10 +32,8 @@ export const shell: Messages["shell"] = {
     settings: "Settings",
   },
   nav: {
-    activity: "Activity",
     admin: "Admin",
     bookmarks: "Bookmarks",
-    insights: "Insights",
     mentions: "Mentions",
     search: "Search",
     threads: "Threads",

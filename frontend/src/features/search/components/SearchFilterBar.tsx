@@ -3,7 +3,6 @@ import { Button, ToggleButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { focusRing } from "#/components/ui/styles/styles";
-import { useResolvedSearchQuery } from "#/features/search/hooks/useResolvedSearchQuery";
 import { chipClassName } from "#/features/search/utils/chipClassName";
 import {
   emptySearchQuery,
@@ -15,6 +14,7 @@ import {
 import { SearchDateFilter } from "./SearchDateFilter";
 import { SearchFilterPicker } from "./SearchFilterPicker";
 
+import type { ResolvedSearchQuery } from "#/features/search/hooks/useResolvedSearchQuery";
 import type { SearchParams } from "#/features/search/schemas";
 import type { SearchIs, SearchQuery } from "#/features/search/utils/searchQuery";
 
@@ -32,14 +32,16 @@ const summarize = (labels: readonly string[]) =>
 
 const isToggles = ["pinned", "thread", "mention"] as const satisfies readonly SearchIs[];
 
+type SearchFilterBarProps = {
+  resolved: ResolvedSearchQuery;
+};
+
 // 入力欄の修飾子と同じ条件をチップで操作する。操作すると q を書き換える
-export const SearchFilterBar = () => {
+export const SearchFilterBar = ({ resolved }: SearchFilterBarProps) => {
   const { t } = useTranslation();
-  const { workspaceId } = searchRoute.useParams();
   const search = searchRoute.useSearch();
   const navigate = searchRoute.useNavigate();
-  const { query, users, inChannels, members, channels, hasDescendants, isResolving } =
-    useResolvedSearchQuery(workspaceId, search.q);
+  const { query, users, inChannels, members, channels, hasDescendants, isResolving } = resolved;
 
   const update = (patch: Partial<SearchParams>) => {
     void navigate({ search: (prev) => ({ ...prev, ...patch, page: 1 }) });

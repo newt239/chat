@@ -1,7 +1,6 @@
 import type { Messages } from "../../messages";
 
 export const userGroup: Messages["userGroup"] = {
-  adminOnly: "Only admins can create and edit groups",
   add: "Add",
   addMember: "Add a member",
   addMemberPlaceholder: "Choose a user",
@@ -15,9 +14,6 @@ export const userGroup: Messages["userGroup"] = {
   description: "Description (optional)",
   edit: "Edit",
   editTitle: "Edit group",
-  empty: "No user groups yet",
-  emptyHint: "Create groups for teams or roles and mention everyone with @group-name",
-  manage: "Manage groups",
   members: "Members",
   mentionCopied: "Copied the mention",
   name: "Group name",

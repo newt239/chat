@@ -11,7 +11,7 @@ import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { focusRing } from "#/components/ui/styles/styles";
 import { useCreateDM } from "#/features/dm/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
+import { workspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
 import { usePreferences } from "#/hooks/usePreferences";
 import { myUserIdAtom } from "#/providers/store/auth";
 
@@ -85,7 +85,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
         </div>
         <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-1 text-label font-normal">
           <dt className="text-muted">{t("member.profile.role")}</dt>
-          <dd className="m-0">{t(workspaceRoleKeys[member.role])}</dd>
+          <dd className="m-0">{t(`member.role.${workspaceRoleKey(member.role)}`)}</dd>
           <dt className="text-muted">{t("member.profile.email")}</dt>
           <dd className="m-0 truncate">{member.email}</dd>
           {member.timezone !== "" && (

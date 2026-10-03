@@ -40,3 +40,5 @@ export const useResolvedSearchQuery = (workspaceId: string, raw: string) => {
     users,
   };
 };
+
+export type ResolvedSearchQuery = ReturnType<typeof useResolvedSearchQuery>;

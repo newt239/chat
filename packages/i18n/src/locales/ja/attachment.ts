@@ -22,16 +22,5 @@ export const attachment = {
     tallHint: "縦長の画像はスクロールで全体を確認できます",
   },
   loadFailed: "読み込めませんでした",
-  player: {
-    close: "再生を終了",
-    jump: "元のメッセージへ移動",
-    label: "再生中のメディア",
-    pause: "一時停止",
-    play: "再生",
-    playFailed: "再生できませんでした",
-    playFile: "{{name}} を再生",
-    seek: "再生位置",
-    speed: "再生速度",
-  },
   remove: "添付を外す",
 } as const;

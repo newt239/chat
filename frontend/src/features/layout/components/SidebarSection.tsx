@@ -13,9 +13,7 @@ import { transitions } from "#/lib/motion";
 type SidebarSectionProps = {
   id: string;
   title: string;
-  // 見出しの右に出す追加ボタン。null なら出さない
   onAdd: { label: string; onPress: () => void } | null;
-  // 見出しの右に出すメニュー。null なら出さない
   menu: ReactNode;
   children: ReactNode;
 };

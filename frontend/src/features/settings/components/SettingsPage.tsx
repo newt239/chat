@@ -1,32 +1,19 @@
-import {
-  IconBell,
-  IconKeyboard,
-  IconKey,
-  IconLanguage,
-  IconPalette,
-  IconSettings,
-} from "@tabler/icons-react";
+import { IconSettings } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { SettingsLayout } from "#/components/block/SettingsLayout/SettingsLayout";
+import { SettingsNavLink } from "#/components/block/SettingsNavLink/SettingsNavLink";
+
 import { findSettingsSection, settingsSections } from "../schemas";
+import { settingsSectionIcons } from "../utils/sectionIcons";
 import { AccountSettings } from "./AccountSettings";
 import { DisplaySettings } from "./DisplaySettings";
 import { NotificationSettings } from "./NotificationSettings";
-import { SettingsLayout } from "./SettingsLayout";
-import { SettingsNavLink } from "./SettingsNavLink";
 import { ShortcutSettings } from "./ShortcutSettings";
 import { ThemeSettings } from "./ThemeSettings";
 
 import type { SettingsSection } from "../schemas";
-
-const sectionIcons: Record<SettingsSection, typeof IconKey> = {
-  account: IconKey,
-  display: IconLanguage,
-  notifications: IconBell,
-  shortcuts: IconKeyboard,
-  theme: IconPalette,
-};
 
 const sectionBodies: Record<SettingsSection, () => React.JSX.Element> = {
   account: AccountSettings,
@@ -50,7 +37,7 @@ export const SettingsPage = () => {
       title={t("settings.title")}
       sectionTitle={t(`settings.sections.${current}`)}
       nav={settingsSections.map((name) => {
-        const Icon = sectionIcons[name];
+        const Icon = settingsSectionIcons[name];
         return (
           <SettingsNavLink
             key={name}

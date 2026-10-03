@@ -9,17 +9,14 @@ import { Button } from "#/components/ui/Button/Button";
 import { Select } from "#/components/ui/Select/Select";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { workspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
 import { useInvitationActions } from "#/features/workspace/hooks/useInvitationActions";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 import { toShareUrl } from "#/lib/shareUrl";
 
-const roles = {
-  admin: WorkspaceRole.ADMIN,
-  guest: WorkspaceRole.GUEST,
-  member: WorkspaceRole.MEMBER,
-} as const;
-type RoleKey = keyof typeof roles;
-const roleKeys: readonly RoleKey[] = ["member", "guest", "admin"];
+import type { WorkspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
+
+const roles = workspaceRoles.filter((option) => option.role !== WorkspaceRole.OWNER);
 
 type IssuedInvitation = {
   email: string;
@@ -36,13 +33,13 @@ export const InviteMemberForm = ({ workspaceId }: InviteMemberFormProps) => {
   const router = useRouter();
   const { create } = useInvitationActions();
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<RoleKey>("member");
+  const [role, setRole] = useState<WorkspaceRoleKey>("member");
   const [issued, setIssued] = useState<IssuedInvitation | null>(null);
 
   const submit = () => {
     const target = email.trim();
     create.mutate(
-      { email: target, role: roles[role], workspaceId },
+      { email: target, role: roles.find((option) => option.key === role)?.role, workspaceId },
       {
         onError: (error) => {
           toast(t("workspace.invite.failed"), { description: error.message, tone: "danger" });
@@ -84,7 +81,7 @@ export const InviteMemberForm = ({ workspaceId }: InviteMemberFormProps) => {
           className="w-32"
           value={role}
           onChange={setRole}
-          options={roleKeys.map((value) => ({ label: t(`member.role.${value}`), value }))}
+          options={roles.map(({ key }) => ({ label: t(`member.role.${key}`), value: key }))}
         />
         <Button type="submit" isDisabled={email.trim().length === 0} isPending={create.isPending}>
           {t("workspace.invite.submit")}

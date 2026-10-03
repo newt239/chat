@@ -6,7 +6,7 @@ import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { Submenu } from "#/components/ui/Submenu/Submenu";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { openDialog } from "#/lib/overlaySearch";
 
 import { useChannelCategories, useChannelCategoryActions } from "../hooks/useChannelCategories";
 import { categoryOfChannel } from "../utils/channelTree";

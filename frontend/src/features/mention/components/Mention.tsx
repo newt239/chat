@@ -6,7 +6,7 @@ import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { cn, focusRing } from "#/components/ui/styles/styles";
-import { openPanel } from "#/features/layout/utils/overlaySearch";
+import { openPanel } from "#/lib/overlaySearch";
 import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useMentionDirectory } from "../hooks/useMentionDirectory";

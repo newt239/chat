@@ -5,13 +5,10 @@ import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Link } from "#/components/ui/Link/Link";
 import { MemberRow } from "#/features/member/components/MemberRow";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
-import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
+import { workspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
 import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { MessageListCard } from "#/features/message/components/MessageListCard";
-import { excerpt } from "#/features/search/utils/excerpt";
-import { splitHighlights } from "#/features/search/utils/splitHighlights";
-
-import { SearchResultSection } from "./SearchResultSection";
+import { excerpt, splitHighlights } from "#/features/search/utils/highlights";
 
 import type { SearchFilter } from "#/features/search/schemas";
 import type { Channel } from "#/gen/chat/v1/channel_service_pb";
@@ -44,7 +41,10 @@ export const SearchResultList = ({
   return (
     <div className="flex flex-col gap-1 pb-4 font-sans text-text">
       {shows("messages") && messages.length > 0 && (
-        <SearchResultSection title={t("search.sections.messages")}>
+        <section className="flex flex-col">
+          <h3 className="m-0 px-4.5 pt-3 pb-1 text-caption font-semibold text-muted">
+            {t("search.sections.messages")}
+          </h3>
           {messages.map(({ message, highlights }) => {
             if (message === undefined) {
               return null;
@@ -79,11 +79,14 @@ export const SearchResultList = ({
               </div>
             );
           })}
-        </SearchResultSection>
+        </section>
       )}
 
       {shows("channels") && channels.length > 0 && (
-        <SearchResultSection title={t("search.sections.channels")}>
+        <section className="flex flex-col">
+          <h3 className="m-0 px-4.5 pt-3 pb-1 text-caption font-semibold text-muted">
+            {t("search.sections.channels")}
+          </h3>
           <ul className="m-0 flex list-none flex-col px-2.5 py-0">
             {channels.map((channel) => (
               <li key={channel.id}>
@@ -107,11 +110,14 @@ export const SearchResultList = ({
               </li>
             ))}
           </ul>
-        </SearchResultSection>
+        </section>
       )}
 
       {shows("users") && users.length > 0 && (
-        <SearchResultSection title={t("search.sections.users")}>
+        <section className="flex flex-col">
+          <h3 className="m-0 px-4.5 pt-3 pb-1 text-caption font-semibold text-muted">
+            {t("search.sections.users")}
+          </h3>
           <ul className="m-0 flex list-none flex-col px-2.5 py-0">
             {users.map((user) => (
               <li key={user.userId}>
@@ -119,16 +125,19 @@ export const SearchResultList = ({
                   userId={user.userId}
                   name={displayName(user.userId, user.displayName)}
                   avatarUrl={user.avatarUrl}
-                  detail={`${t(workspaceRoleKeys[user.role])} · ${user.email}`}
+                  detail={`${t(`member.role.${workspaceRoleKey(user.role)}`)} · ${user.email}`}
                 />
               </li>
             ))}
           </ul>
-        </SearchResultSection>
+        </section>
       )}
 
       {shows("groups") && groups.length > 0 && (
-        <SearchResultSection title={t("search.sections.groups")}>
+        <section className="flex flex-col">
+          <h3 className="m-0 px-4.5 pt-3 pb-1 text-caption font-semibold text-muted">
+            {t("search.sections.groups")}
+          </h3>
           <ul className="m-0 flex list-none flex-col px-2.5 py-0">
             {groups.map((group) => (
               <li
@@ -145,7 +154,7 @@ export const SearchResultList = ({
               </li>
             ))}
           </ul>
-        </SearchResultSection>
+        </section>
       )}
     </div>
   );

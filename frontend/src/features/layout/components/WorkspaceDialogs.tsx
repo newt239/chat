@@ -12,10 +12,9 @@ import { UserGroupDialog } from "#/features/userGroup/components/UserGroupDialog
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { CreateWorkspaceModal } from "#/features/workspace/components/CreateWorkspaceModal";
 import { ChannelLinkService } from "#/gen/chat/v1/channel_link_service_pb";
-import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
-import { isAdminRole } from "#/lib/isAdminRole";
+import { useIsWorkspaceAdmin } from "#/hooks/useIsWorkspaceAdmin";
+import { closeDialog, openPanel } from "#/lib/overlaySearch";
 
-import { closeDialog, openPanel } from "../utils/overlaySearch";
 import { workspaceRoute } from "../utils/workspaceRoute";
 
 type WorkspaceDialogsProps = {
@@ -28,7 +27,7 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
   const { app, assign, category, dialog, group, link, parent } = workspaceRoute.useSearch();
   const channelId = useParams({ select: (params) => params.channelId, strict: false });
   const { data: groups } = useUserGroups(workspaceId);
-  const canManageGroups = isAdminRole(useMyWorkspaceRole(workspaceId).data);
+  const canManageGroups = useIsWorkspaceAdmin(workspaceId);
   const editingGroup = groups?.find((candidate) => candidate.id === group);
   const { data: categories } = useChannelCategories(workspaceId);
   const editingCategory = categories?.find((candidate) => candidate.id === category);

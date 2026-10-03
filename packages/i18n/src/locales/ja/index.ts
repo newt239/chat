@@ -11,7 +11,6 @@ import { common } from "./common";
 import { dm } from "./dm";
 import { draft } from "./draft";
 import { inbox } from "./inbox";
-import { insights } from "./insights";
 import { link } from "./link";
 import { location } from "./location";
 import { member } from "./member";
@@ -44,7 +43,6 @@ export const ja = {
   dm,
   draft,
   inbox,
-  insights,
   link,
   location,
   member,

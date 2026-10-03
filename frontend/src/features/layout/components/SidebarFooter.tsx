@@ -1,10 +1,9 @@
 import { IconLogout, IconSettings, IconUser } from "@tabler/icons-react";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
-import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
@@ -13,14 +12,12 @@ import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { focusRing } from "#/components/ui/styles/styles";
 import { useLogout } from "#/features/auth/hooks/useLogout";
 import { useMe } from "#/hooks/useMe";
-
-import { openPanel } from "../utils/overlaySearch";
+import { openPanel } from "#/lib/overlaySearch";
 
 // サイドバー下部の自分の名前。プロフィール・設定・ログアウトを出す
 export const SidebarFooter = () => {
   const { t } = useTranslation();
   const { data: user } = useMe();
-  const navigate = useNavigate();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const logout = useLogout();
 
@@ -65,18 +62,6 @@ export const SidebarFooter = () => {
           {t("shell.me.logout")}
         </MenuItem>
       </Menu>
-      <IconButton
-        label={t("shell.me.settings")}
-        className="text-(--nav-muted) data-hovered:bg-(--nav-hover) data-hovered:text-(--nav-strong)"
-        onPress={() => {
-          void navigate({
-            params: { section: "theme", workspaceId },
-            to: "/app/$workspaceId/settings/{-$section}",
-          });
-        }}
-      >
-        <IconSettings />
-      </IconButton>
     </div>
   );
 };

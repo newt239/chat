@@ -1,6 +1,6 @@
 import { useMutation } from "@connectrpc/connect-query";
 
-import { usePushNotifications } from "#/features/settings/hooks/usePushNotifications";
+import { usePushNotifications } from "#/features/notification/hooks/usePushNotifications";
 import { AuthService } from "#/gen/chat/v1/auth_service_pb";
 import { signOut } from "#/lib/session";
 

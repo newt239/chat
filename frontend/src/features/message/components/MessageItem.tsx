@@ -12,7 +12,6 @@ import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Badge } from "#/components/ui/Badge/Badge";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { MessageAttachments } from "#/features/attachment/components/MessageAttachments";
-import { closeDialog, openDialog, openPanel } from "#/features/layout/utils/overlaySearch";
 import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
 import { MessageLocationCard } from "#/features/location/components/MessageLocationCard";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
@@ -22,6 +21,7 @@ import { ReactionsDialog } from "#/features/reaction/components/ReactionsDialog"
 import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
 import { ALL_REACTIONS_TAB } from "#/features/reaction/utils/groupReactions";
 import { useIsMobile } from "#/hooks/useMediaQuery";
+import { closeDialog, openDialog, openPanel } from "#/lib/overlaySearch";
 import { toDate } from "#/lib/timestamp";
 import { myUserIdAtom } from "#/providers/store/auth";
 
