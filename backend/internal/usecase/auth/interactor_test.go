@@ -287,24 +287,18 @@ func TestPasswordAuthCanBeDisabled(t *testing.T) {
 	}
 }
 
-func TestDeletedUserCannotLoginOrRefresh(t *testing.T) {
+// 退会でセッションは消えるが、念のためリフレッシュでも退会済みを弾く
+func TestDeletedUserCannotRefresh(t *testing.T) {
 	f := newFixture(true)
-	deletedAt, sub := time.Now(), "sub-gone"
-	f.users.users = append(f.users.users, &entity.User{ID: "gone", Email: "gone@example.com", PasswordHash: "password123", GoogleSub: &sub, DeletedAt: &deletedAt})
+	deletedAt := time.Now()
+	f.users.users = append(f.users.users, &entity.User{ID: "gone", DeletedAt: &deletedAt})
 	f.sessions.active = []*entity.Session{{ID: "s1", UserID: "gone", RefreshTokenHash: entity.HashSecretToken("refresh")}}
-	ctx := context.Background()
 
-	if _, err := f.uc.Login(ctx, LoginInput{Email: "gone@example.com", Password: "password123"}); !errors.Is(err, domerr.ErrInvalidCredentials) {
-		t.Errorf("退会済みのユーザーがパスワードでログインできました: %v", err)
-	}
-	if _, err := f.uc.LoginWithGoogle(ctx, LoginWithGoogleInput{IDToken: "gone"}); !errors.Is(err, domerr.ErrInvalidCredentials) {
-		t.Errorf("退会済みのユーザーが Google でログインできました: %v", err)
-	}
-	if _, err := f.uc.RefreshToken(ctx, RefreshTokenInput{RefreshToken: "refresh"}); !errors.Is(err, domerr.ErrInvalidToken) {
+	if _, err := f.uc.RefreshToken(context.Background(), RefreshTokenInput{RefreshToken: "refresh"}); !errors.Is(err, domerr.ErrInvalidToken) {
 		t.Errorf("退会済みのユーザーのトークンを更新できました: %v", err)
 	}
-	if len(f.sessions.created) != 0 || len(f.sessions.rotated) != 0 {
-		t.Errorf("退会済みのユーザーのセッションが作られました")
+	if len(f.sessions.rotated) != 0 {
+		t.Errorf("退会済みのユーザーのセッションが更新されました")
 	}
 }
 

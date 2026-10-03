@@ -2,7 +2,6 @@ import { createConnectQueryKey, useMutation, useQuery } from "@connectrpc/connec
 import { useQueryClient } from "@tanstack/react-query";
 
 import { DraftService } from "#/gen/chat/v1/draft_service_pb";
-import { toastError } from "#/lib/toastError";
 
 export const useDrafts = (workspaceId: string) =>
   useQuery(DraftService.method.listDrafts, { workspaceId }, { select: (res) => res.drafts });
@@ -18,6 +17,5 @@ export const useInvalidateDrafts = () => {
 
 export const useDeleteDraft = () =>
   useMutation(DraftService.method.deleteDraft, {
-    onError: toastError,
     onSuccess: useInvalidateDrafts(),
   });

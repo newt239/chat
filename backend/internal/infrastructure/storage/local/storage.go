@@ -80,7 +80,7 @@ func (s *Storage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "content length does not match the signed size", http.StatusBadRequest)
 			return
 		}
-		s.put(w, r, path, size)
+		s.put(w, r, path)
 		return
 	}
 	file, err := os.Open(path)
@@ -100,7 +100,7 @@ func (s *Storage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, "", stat.ModTime(), file)
 }
 
-func (s *Storage) put(w http.ResponseWriter, r *http.Request, path string, size int64) {
+func (s *Storage) put(w http.ResponseWriter, r *http.Request, path string) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -110,12 +110,9 @@ func (s *Storage) put(w http.ResponseWriter, r *http.Request, path string, size 
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	written, err := io.Copy(file, http.MaxBytesReader(w, r.Body, size))
+	_, err = io.Copy(file, r.Body)
 	if closeErr := file.Close(); err == nil {
 		err = closeErr
-	}
-	if err == nil && written != size {
-		err = errors.New("body is shorter than the signed size")
 	}
 	if err != nil {
 		_ = os.Remove(path)
