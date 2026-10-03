@@ -54,7 +54,8 @@ export const ChannelNavItem = ({
         params={{ channelId, workspaceId }}
         className={cn(
           navItemClassName,
-          hasUnread && "font-semibold text-(--nav-strong) [&_svg]:text-(--nav-strong)",
+          hasUnread &&
+            "font-semibold text-(--nav-strong) [--nav-active-weight:600] [&_svg]:text-(--nav-strong)",
           isMuted && "opacity-55",
         )}
       >
