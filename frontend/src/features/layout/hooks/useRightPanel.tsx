@@ -81,7 +81,7 @@ export const useRightPanel = (workspaceId: string) => {
           title: t("shell.rightPanel.channelInfo"),
         },
         members: {
-          body: <ChannelMemberPanel channelId={channelId} />,
+          body: <ChannelMemberPanel workspaceId={workspaceId} channelId={channelId} />,
           extra: null,
           key: `members-${channelId}`,
           title: t("shell.rightPanel.members"),
