@@ -15,10 +15,4 @@ describe("Checkbox", () => {
     expect(checkbox).toBeChecked();
     expect(onChange).toHaveBeenCalledWith(true);
   });
-
-  test("一部選択の状態を表せる", () => {
-    render(<Checkbox isIndeterminate>一部のチャンネル</Checkbox>);
-
-    expect(screen.getByRole("checkbox", { name: "一部のチャンネル" })).toBePartiallyChecked();
-  });
 });

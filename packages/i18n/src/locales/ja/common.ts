@@ -3,8 +3,6 @@ export const common = {
   close: "閉じる",
   copyFailed: "コピーできませんでした",
   delete: "削除",
-  loading: "読み込み中",
-  ok: "OK",
   save: "保存",
   upload: {
     aborted: "アップロードがキャンセルされました",

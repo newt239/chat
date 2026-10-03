@@ -202,9 +202,6 @@ importers:
       '@chat/i18n':
         specifier: workspace:*
         version: link:../packages/i18n
-      '@chat/search-query':
-        specifier: workspace:*
-        version: link:../packages/search-query
       '@connectrpc/connect':
         specifier: 2.2.0
         version: 2.2.0(@bufbuild/protobuf@2.15.0)
@@ -253,9 +250,6 @@ importers:
       '@tauri-apps/plugin-opener':
         specifier: 2.5.5
         version: 2.5.5
-      '@tauri-apps/plugin-os':
-        specifier: 2.3.2
-        version: 2.3.2
       firebase:
         specifier: 12.19.0
         version: 12.19.0
@@ -427,19 +421,6 @@ importers:
         version: 0.3.3(@types/node@26.6.2)(jiti@2.7.0)(jsdom@30.1.1)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)
 
   packages/i18n:
-    dependencies:
-      i18next:
-        specifier: 26.4.2
-        version: 26.4.2(typescript@7.0.2)
-    devDependencies:
-      typescript:
-        specifier: 7.0.2
-        version: 7.0.2
-      vite-plus:
-        specifier: 0.3.3
-        version: 0.3.3(@types/node@26.6.2)(jiti@2.7.0)(jsdom@30.1.1)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)
-
-  packages/search-query:
     devDependencies:
       typescript:
         specifier: 7.0.2
@@ -2737,9 +2718,6 @@ packages:
 
   '@tauri-apps/plugin-opener@2.5.5':
     resolution: {integrity: sha512-xvzGai5aQds8j8R8RsUK/lW6pGG50YgOYIPLzvkqmkwAj7dfySOD7sGtejRzvVdMmv1EQfKVEFh1MvmDp8QR0g==}
-
-  '@tauri-apps/plugin-os@2.3.2':
-    resolution: {integrity: sha512-n+nXWeuSeF9wcEsSPmRnBEGrRgOy6jjkSU+UVCOV8YUGKb2erhDOxis7IqRXiRVHhY8XMKks00BJ0OAdkpf6+A==}
 
   '@testing-library/dom@10.4.2':
     resolution: {integrity: sha512-yzr2S9HyAIdhz2/6qHgbs665Q7PKVcDF05vsOlHPxG1mo36gKVesdYVeDLnXgfjJ03CrKRk08knc6+E/9m8v2Q==}
@@ -7681,10 +7659,6 @@ snapshots:
       '@tauri-apps/api': 2.11.1
 
   '@tauri-apps/plugin-opener@2.5.5':
-    dependencies:
-      '@tauri-apps/api': 2.11.1
-
-  '@tauri-apps/plugin-os@2.3.2':
     dependencies:
       '@tauri-apps/api': 2.11.1
 

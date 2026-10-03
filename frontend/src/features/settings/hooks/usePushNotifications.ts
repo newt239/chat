@@ -3,15 +3,17 @@ import { useEffect, useEffectEvent } from "react";
 import { useMutation } from "@connectrpc/connect-query";
 import { useAtom } from "jotai";
 
+import { notificationPreferencesAtom } from "#/features/settings/atoms";
+import {
+  isNotificationGranted,
+  requestNotificationPermission,
+} from "#/features/settings/utils/notify";
 import {
   isPushSupported,
   registerPush,
   unregisterPush,
 } from "#/features/settings/utils/pushMessaging";
 import { NotificationService, PushPlatform } from "#/gen/chat/v1/notification_service_pb";
-import { logger } from "#/lib/logger";
-import { isNotificationGranted, requestNotificationPermission } from "#/lib/platform/notify";
-import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
 
 /** この端末へのプッシュ通知の登録と解除。トークンはサーバーと端末の両方に持つ */
 export const usePushNotifications = () => {
@@ -76,7 +78,7 @@ export const useSyncPushToken = () => {
     try {
       await refresh();
     } catch (error) {
-      logger.warn("プッシュ通知の登録を更新できませんでした", error);
+      console.warn("プッシュ通知の登録を更新できませんでした", error);
     }
   });
 

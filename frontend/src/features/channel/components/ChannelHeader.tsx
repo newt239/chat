@@ -14,6 +14,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
+import { BackButton } from "#/components/block/BackButton/BackButton";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { IconToggleButton } from "#/components/ui/IconToggleButton/IconToggleButton";
@@ -25,7 +26,6 @@ import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { DMAvatar } from "#/features/dm/components/DMAvatar";
 import { useDMs } from "#/features/dm/hooks/useDM";
 import { dmName } from "#/features/dm/utils/dmName";
-import { BackButton } from "#/features/layout/components/BackButton";
 import { useMobileForward } from "#/features/layout/hooks/useMobileForward";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";

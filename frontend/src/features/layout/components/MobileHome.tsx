@@ -30,7 +30,7 @@ export const MobileHome = ({ workspaceId }: MobileHomeProps) => {
             aria-label={t("shell.tabs.me")}
             className="no-underline"
           >
-            <Avatar name={user.displayName} src={user.avatarUrl} size={30} presence="online" />
+            <Avatar name={user.displayName} src={user.avatarUrl} size={30} isOnline />
           </Link>
         )}
       </header>

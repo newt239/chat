@@ -7,14 +7,14 @@ type ShowNotificationOptions = {
   onClick: () => void;
 };
 
-const loadTauri = () => import("#/lib/platform/tauri/notification");
+const loadTauri = () => import("@tauri-apps/plugin-notification");
 
 export const isNotificationSupported = () => isTauri || "Notification" in globalThis;
 
 export const isNotificationGranted = async () => {
   if (isTauri) {
-    const { isGranted } = await loadTauri();
-    return isGranted();
+    const { isPermissionGranted } = await loadTauri();
+    return isPermissionGranted();
   }
   return isNotificationSupported() && Notification.permission === "granted";
 };
@@ -22,8 +22,8 @@ export const isNotificationGranted = async () => {
 // 許可を求められるのはユーザー操作の中だけなので、操作のハンドラから呼ぶ
 export const requestNotificationPermission = async () => {
   if (isTauri) {
-    const { request } = await loadTauri();
-    return request();
+    const { requestPermission } = await loadTauri();
+    return (await requestPermission()) === "granted";
   }
   return (await Notification.requestPermission()) === "granted";
 };
@@ -34,8 +34,9 @@ export const showNotification = async ({ title, body, tag, onClick }: ShowNotifi
     return;
   }
   if (isTauri) {
-    const { show } = await loadTauri();
-    show(title, body);
+    const { sendNotification } = await loadTauri();
+    // デスクトップの通知はクリックを受け取れないため、押すとアプリが前に出るだけになる
+    sendNotification({ body, title });
     return;
   }
   const notification = new Notification(title, { body, tag });

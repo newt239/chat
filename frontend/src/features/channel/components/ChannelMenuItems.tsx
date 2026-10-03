@@ -18,8 +18,8 @@ import { useChannelListActions } from "#/features/channel/hooks/useChannelListAc
 import { canHaveChildChannel } from "#/features/channel/utils/channelPath";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
 import { copyWithToast } from "#/lib/clipboard";
-import { toShareUrl } from "#/lib/platform/appOrigin";
 import { isTauri } from "#/lib/platform/platform";
+import { toShareUrl } from "#/lib/shareUrl";
 
 import { MoveToCategoryMenu } from "./MoveToCategoryMenu";
 

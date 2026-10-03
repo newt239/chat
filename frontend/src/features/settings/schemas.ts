@@ -8,5 +8,5 @@ export const settingsSections = [
 export type SettingsSection = (typeof settingsSections)[number];
 
 // URL の値が設定の画面のどれかなら、その名前を返す
-export const findSettingsSection = (value: string) =>
+export const findSettingsSection = (value: string | undefined) =>
   settingsSections.find((section) => section === value);

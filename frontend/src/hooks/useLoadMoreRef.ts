@@ -1,19 +1,13 @@
-import { useEffect, useEffectEvent, useRef } from "react";
-
-// 一覧の末尾に置いた要素が見えたら次のページを読み込む（無限スクロール）
-export const useLoadMoreRef = (onLoadMore: () => void, isEnabled: boolean) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const handleLoadMore = useEffectEvent(onLoadMore);
-
-  useEffect(() => {
-    const element = ref.current;
+// 一覧の末尾に置いた要素が見えたら次のページを読み込む（無限スクロール）。戻り値は callback ref
+export const useLoadMoreRef =
+  (onLoadMore: () => void, isEnabled: boolean) => (element: HTMLElement | null) => {
     if (element === null || !isEnabled) {
       return undefined;
     }
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          handleLoadMore();
+          onLoadMore();
         }
       },
       { rootMargin: "200px" },
@@ -22,7 +16,4 @@ export const useLoadMoreRef = (onLoadMore: () => void, isEnabled: boolean) => {
     return () => {
       observer.disconnect();
     };
-  }, [isEnabled]);
-
-  return ref;
-};
+  };

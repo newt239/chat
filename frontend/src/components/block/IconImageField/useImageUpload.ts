@@ -2,7 +2,7 @@ import { callUnaryMethod, useTransport } from "@connectrpc/connect-query";
 import { useMutation } from "@tanstack/react-query";
 
 import { ImageService } from "#/gen/chat/v1/image_service_pb";
-import { putToStorage } from "#/lib/storage";
+import { putToStorage } from "#/lib/upload";
 
 import type { ImagePurpose } from "#/gen/chat/v1/image_service_pb";
 

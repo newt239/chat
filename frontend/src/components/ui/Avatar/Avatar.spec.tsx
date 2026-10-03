@@ -21,9 +21,9 @@ describe("Avatar", () => {
   });
 
   test("在席状態の点を表示する", () => {
-    const { container } = render(<Avatar name="Ren" presence="online" />);
+    const { container } = render(<Avatar name="Ren" isOnline />);
 
-    expect(container.querySelector("[data-presence]")).toHaveAttribute("data-presence", "online");
+    expect(container.querySelector("[data-online]")).toBeInTheDocument();
   });
 
   test("同じ名前でも表示モードで背景色を変える", () => {

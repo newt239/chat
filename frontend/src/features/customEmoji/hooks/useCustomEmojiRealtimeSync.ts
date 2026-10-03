@@ -9,7 +9,7 @@ import { customEmojiListKey } from "./useCustomEmojis";
 /** 誰かが絵文字を登録・削除したら一覧を取り直す */
 export const useCustomEmojiRealtimeSync = (workspaceId: string) => {
   const queryClient = useQueryClient();
-  const { wsClient } = useWsClient();
+  const wsClient = useWsClient();
 
   useEffect(() => {
     if (!wsClient) {

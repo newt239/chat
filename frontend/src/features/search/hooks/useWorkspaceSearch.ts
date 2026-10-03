@@ -1,9 +1,9 @@
 import { create } from "@bufbuild/protobuf";
 import { timestampFromDate } from "@bufbuild/protobuf/wkt";
-import { hasSearchConditions, searchDateRange } from "@chat/search-query/query";
 import { skipToken, useQuery } from "@connectrpc/connect-query";
 
 import { searchFilterMessages, searchSortMessages } from "#/features/search/schemas";
+import { hasSearchConditions, searchDateRange } from "#/features/search/utils/searchQuery";
 import {
   ChannelSearchResultSchema,
   MessageSearchResultSchema,
@@ -16,8 +16,7 @@ import {
 import { useResolvedSearchQuery } from "./useResolvedSearchQuery";
 
 import type { SearchParams } from "#/features/search/schemas";
-
-import type { SearchHas as SearchHasValue } from "@chat/search-query/query";
+import type { SearchHas as SearchHasValue } from "#/features/search/utils/searchQuery";
 
 const hasMessages: Record<SearchHasValue, SearchHas> = {
   file: SearchHas.FILE,

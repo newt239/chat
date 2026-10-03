@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { formatRelativeTime } from "@chat/i18n/format";
 import { IconChartBar, IconCheck } from "@tabler/icons-react";
 import { Button as AriaButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -29,7 +30,7 @@ const MAX_VOTER_AVATARS = 5;
 /** メッセージに付けた投票。押した選択肢に投票し、もう一度押すと取り消す */
 export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
   const { t } = useTranslation();
-  const { formatDateTime, formatDateWithWeekday, formatRelativeTime, formatTime } = useDateFormat();
+  const { formatDateTime, formatDateWithWeekday, formatTime, locale } = useDateFormat();
   const { member } = useMentionDirectory();
   const { close, vote } = usePollActions();
   // 配信されるメッセージには自分の投票が含まれないため、読み込んだ時点と投票した結果を覚えておく
@@ -134,7 +135,7 @@ export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
         {poll.closesAt && !poll.isClosed && (
           <span>
             {t("poll.closesAt", {
-              relative: formatRelativeTime(toDate(poll.closesAt), new Date()),
+              relative: formatRelativeTime(toDate(poll.closesAt), new Date(), locale),
               time: formatDateTime(toDate(poll.closesAt)),
             })}
           </span>

@@ -2,10 +2,10 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vite-plus/test";
 
+import { notificationPreferencesAtom } from "#/features/settings/atoms";
 import { NotificationService, PushPlatform } from "#/gen/chat/v1/notification_service_pb";
 import { NotificationLevel } from "#/gen/chat/v1/user_pb";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
-import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { NotificationSettings } from "./NotificationSettings";

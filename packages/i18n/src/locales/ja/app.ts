@@ -31,7 +31,6 @@ export const app = {
   namePlaceholder: "例: デプロイ通知",
   nameRequired: "名前を入力してください",
   neverUsed: "未使用",
-  noneToAdd: "追加できるアプリはありません",
   official: "公式",
   outgoingSecret: "署名の秘密鍵",
   outgoingSecretHint:

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
 export const useTypingUsers = (channelId: string) => {
-  const { wsClient } = useWsClient();
+  const wsClient = useWsClient();
   const [typingUserIds, setTypingUserIds] = useState<string[]>([]);
 
   useEffect(() => {

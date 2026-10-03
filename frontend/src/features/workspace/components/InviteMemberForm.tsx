@@ -11,7 +11,7 @@ import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useInvitationActions } from "#/features/workspace/hooks/useInvitationActions";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
-import { toShareUrl } from "#/lib/platform/appOrigin";
+import { toShareUrl } from "#/lib/shareUrl";
 
 const roles = {
   admin: WorkspaceRole.ADMIN,

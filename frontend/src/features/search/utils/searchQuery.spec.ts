@@ -6,7 +6,7 @@ import {
   hasSearchConditions,
   parseSearchQuery,
   searchDateRange,
-} from "./query";
+} from "./searchQuery";
 
 describe("parseSearchQuery", () => {
   it("修飾子と語に分ける", () => {

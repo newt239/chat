@@ -6,7 +6,7 @@ import { describe, expect, test } from "vite-plus/test";
 
 import { ServerEventSchema } from "#/gen/chat/v1/event_pb";
 import { WsClient } from "#/lib/ws";
-import { WsClientContext } from "#/providers/ws/wsClientContext";
+import { WsClientContext } from "#/providers/ws/useWsClient";
 
 import { useTypingUsers } from "./useTypingUsers";
 
@@ -22,7 +22,7 @@ describe("useTypingUsers", () => {
   test("表示中のチャンネルで入力中のユーザーだけを返す", () => {
     const client = new WsClient(() => Promise.resolve("ticket"), false);
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <WsClientContext value={{ wsClient: client }}>{children}</WsClientContext>
+      <WsClientContext value={client}>{children}</WsClientContext>
     );
     const { result } = renderHook(() => useTypingUsers("ch1"), { wrapper });
 

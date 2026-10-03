@@ -85,7 +85,7 @@ export const WorkspaceMenu = ({ workspaceId }: WorkspaceMenuProps) => {
       {current && (
         <MenuItemLink
           icon={<IconSettings />}
-          to="/app/$workspaceId/workspace-settings/$section"
+          to="/app/$workspaceId/workspace-settings/{-$section}"
           params={{ section: "general", workspaceId }}
         >
           {t("shell.workspace.settings")}

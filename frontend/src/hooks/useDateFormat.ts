@@ -4,7 +4,6 @@ import {
   formatDateWithWeekday,
   formatFullDateTime,
   formatMonthDay,
-  formatRelativeTime,
   formatTime,
   formatWeekday,
 } from "@chat/i18n/format";
@@ -22,7 +21,6 @@ export const useDateFormat = () => {
     formatDateWithWeekday: (date: Date) => formatDateWithWeekday(date, locale, timeZone),
     formatFullDateTime: (date: Date) => formatFullDateTime(date, locale, timeZone),
     formatMonthDay: (date: Date) => formatMonthDay(date, locale, timeZone),
-    formatRelativeTime: (date: Date, now: Date) => formatRelativeTime(date, now, locale),
     formatTime: (date: Date) => formatTime(date, locale, timeZone),
     formatWeekday: (date: Date) => formatWeekday(date, locale, timeZone),
     locale,

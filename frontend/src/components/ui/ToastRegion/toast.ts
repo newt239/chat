@@ -7,7 +7,7 @@ type ToastAction = {
   onAction: () => void;
 };
 
-export type ToastContent = {
+type ToastContent = {
   title: string;
   description?: string;
   tone: ToastTone;

@@ -8,7 +8,7 @@ export const useGlobalShortcuts = (workspaceId: string) => {
   const router = useRouter();
   const canGoBack = useCanGoBack();
   const isSettingsOpen =
-    useMatch({ from: "/app/$workspaceId/settings/$section", shouldThrow: false }) !== undefined;
+    useMatch({ from: "/app/$workspaceId/settings/{-$section}", shouldThrow: false }) !== undefined;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -24,7 +24,7 @@ export const useGlobalShortcuts = (workspaceId: string) => {
         if (!isSettingsOpen) {
           void navigate({
             params: { section: "theme", workspaceId },
-            to: "/app/$workspaceId/settings/$section",
+            to: "/app/$workspaceId/settings/{-$section}",
           });
         } else if (canGoBack) {
           router.history.back();

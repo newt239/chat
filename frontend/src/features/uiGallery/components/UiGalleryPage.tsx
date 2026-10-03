@@ -19,7 +19,6 @@ import { Checkbox } from "#/components/ui/Checkbox/Checkbox";
 import { ComboBox } from "#/components/ui/ComboBox/ComboBox";
 import { ContextMenu } from "#/components/ui/ContextMenu/ContextMenu";
 import { Dialog } from "#/components/ui/Dialog/Dialog";
-import { GroupAvatar } from "#/components/ui/GroupAvatar/GroupAvatar";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Link } from "#/components/ui/Link/Link";
 import { Menu } from "#/components/ui/Menu/Menu";
@@ -37,6 +36,7 @@ import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
+import { GroupAvatar } from "#/features/dm/components/GroupAvatar";
 import { CodeBlock } from "#/features/message/components/markdown/CodeBlock";
 import { usePreferences, useUpdatePreferences } from "#/hooks/usePreferences";
 
@@ -306,15 +306,15 @@ export const UiGalleryPage = () => {
         </section>
 
         <section className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface p-4">
-          <Avatar name="田中 美咲" presence="online" />
-          <Avatar name="Kenta" presence="away" size={40} />
-          <Avatar name="Ren" presence="offline" size={24} />
+          <Avatar name="田中 美咲" isOnline />
+          <Avatar name="Kenta" size={40} />
+          <Avatar name="Ren" size={24} />
           <GroupAvatar count={4} />
           <Badge>3</Badge>
           <Badge tone="tag">BOT</Badge>
           <Badge tone="accent">@frontend</Badge>
           <span className="rounded-md bg-side px-3 py-2 text-side-fg [--dot-ring:var(--c-side)]">
-            <Avatar name="Yui" presence="online" size={18} /> sidebar
+            <Avatar name="Yui" isOnline size={18} /> sidebar
           </span>
         </section>
       </div>

@@ -10,7 +10,6 @@
     "deep-link:default",
     "notification:default",
     "core:window:allow-set-badge-count",
-    "os:default",
     {
       "identifier": "opener:allow-open-url",
       "allow": [

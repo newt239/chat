@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-import { apiBaseUrl } from "#/lib/api/baseUrl";
-import { storage } from "#/providers/store/storage";
+import { apiBaseUrl } from "#/lib/api/createTransport";
 
 const STORAGE_KEY = "google-oauth-pending";
 // ブラウザでの操作に時間がかかっても間に合い、古い要求は使わせない長さ
@@ -36,7 +35,7 @@ export const startGoogleOAuth = async (workspaceId: string | null) => {
     verifier: randomString(),
     workspaceId,
   };
-  storage.setItem(STORAGE_KEY, JSON.stringify(pending));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(pending));
   const params = new URLSearchParams({
     code_challenge: toBase64Url(await sha256(pending.verifier)),
     nonce: pending.nonce,
@@ -62,12 +61,12 @@ export const takeGoogleOAuthResult = (url: string): GoogleOAuthResult | null => 
   if (`${host}${pathname}`.replace(/^\/+/, "") !== "auth/callback") {
     return null;
   }
-  const raw = storage.getItem(STORAGE_KEY);
+  const raw = localStorage.getItem(STORAGE_KEY);
   // 起動のきっかけになったリンクは何度も届くため、要求がなければ処理済みとして無視する
   if (raw === null) {
     return null;
   }
-  storage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(STORAGE_KEY);
   const pending = pendingSchema.safeParse(JSON.parse(raw)).data;
   const code = searchParams.get("code");
   if (

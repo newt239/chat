@@ -1,9 +1,6 @@
 import type { Messages } from "../../messages";
 
 export const shell: Messages["shell"] = {
-  admin: {
-    forbidden: "Only admins can open this page",
-  },
   back: "Back",
   channel: {
     links: "Channel links",
@@ -23,7 +20,6 @@ export const shell: Messages["shell"] = {
     unmute: "Unmute",
     unstar: "Unstar",
   },
-  comingSoon: "This page is coming soon",
   error: {
     backToTop: "Back to top",
     description: "Something went wrong while loading the page",

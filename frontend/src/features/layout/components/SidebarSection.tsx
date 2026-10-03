@@ -7,8 +7,8 @@ import { Button } from "react-aria-components";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { focusRing } from "#/components/ui/styles/styles";
+import { collapsedSidebarSectionsAtom } from "#/features/layout/atoms";
 import { transitions } from "#/lib/motion";
-import { collapsedSidebarSectionsAtom } from "#/providers/store/ui";
 
 type SidebarSectionProps = {
   id: string;

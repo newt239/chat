@@ -9,7 +9,6 @@ import { useMe } from "#/hooks/useMe";
 import { useMediaQuery } from "#/hooks/useMediaQuery";
 import { usePreferences } from "#/hooks/usePreferences";
 import { i18n } from "#/lib/i18n";
-import { preferencesFromProto } from "#/lib/preferences";
 import { storedPreferencesAtom } from "#/providers/store/preferences";
 
 import { ColorModeContext } from "./colorMode";
@@ -43,7 +42,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   // 次に開いたときもログイン前からこの設定で描画できるよう、端末に写しを残す
   useEffect(() => {
     if (accountPreferences) {
-      setStoredPreferences(preferencesFromProto(accountPreferences));
+      setStoredPreferences(accountPreferences);
     }
   }, [accountPreferences, setStoredPreferences]);
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { formatBytes, formatNumber } from "@chat/i18n/format";
+import { formatBytes, formatNumber, formatRelativeTime } from "@chat/i18n/format";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
@@ -50,7 +50,7 @@ type AdminMembersTabProps = {
 
 export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) => {
   const { t } = useTranslation();
-  const { formatDateTime, formatRelativeTime, locale } = useDateFormat();
+  const { formatDateTime, locale } = useDateFormat();
   const myId = useAtomValue(myUserIdAtom);
   const { updateRole } = useWorkspaceMemberActions();
   const [query, setQuery] = useState("");
@@ -170,7 +170,7 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
                       <span className="text-subtle">{t("admin.members.never")}</span>
                     ) : (
                       <time dateTime={lastLogin.toISOString()} title={formatDateTime(lastLogin)}>
-                        {formatRelativeTime(lastLogin, now)}
+                        {formatRelativeTime(lastLogin, now, locale)}
                       </time>
                     )}
                   </td>

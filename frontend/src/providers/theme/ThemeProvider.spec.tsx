@@ -4,7 +4,7 @@ import { createStore, Provider } from "jotai";
 import { useTranslation } from "react-i18next";
 import { afterEach, describe, expect, test } from "vite-plus/test";
 
-import { storedPreferencesAtom } from "#/providers/store/preferences";
+import { preferencesToProto, storedPreferencesAtom } from "#/providers/store/preferences";
 import { QueryWrapper } from "#/test/QueryWrapper";
 
 import { useColorMode } from "./colorMode";
@@ -23,7 +23,7 @@ const Probe = () => {
 
 const renderWithPreferences = (preferences: Preferences) => {
   const store = createStore();
-  store.set(storedPreferencesAtom, preferences);
+  store.set(storedPreferencesAtom, preferencesToProto(preferences));
   render(
     <Provider store={store}>
       <ThemeProvider>

@@ -1,11 +1,11 @@
-// 時間は ms。Web は Motion、Native は Reanimated（withTiming / withSpring）に同じ値を渡す
-export type TimingToken = {
+// 時間は ms
+type TimingToken = {
   type: "timing";
   duration: number;
   easing: readonly [number, number, number, number];
 };
 
-export type SpringToken = {
+type SpringToken = {
   type: "spring";
   stiffness: number;
   damping: number;

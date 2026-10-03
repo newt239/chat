@@ -23,7 +23,7 @@ const getReplies = (page: GetThreadRepliesResponse) => page.replies;
 export const useThreadReplies = (threadId: string, aroundReplyId: string | null) => {
   const transport = useTransport();
   const queryClient = useQueryClient();
-  const { wsClient } = useWsClient();
+  const wsClient = useWsClient();
   const input = {
     aroundReplyId: aroundReplyId ?? undefined,
     limit: THREAD_REPLIES_PAGE_SIZE,

@@ -54,7 +54,7 @@ export const MePage = () => {
       <div className={cn(mobileNavTone, "flex min-h-0 flex-1 flex-col overflow-y-auto p-1.5")}>
         {user && (
           <NavLink to="." search={openPanel({ profile: user.id })} className="h-auto gap-3 py-3">
-            <Avatar name={user.displayName} src={user.avatarUrl} size={52} presence="online" />
+            <Avatar name={user.displayName} src={user.avatarUrl} size={52} isOnline />
             <span className="flex min-w-0 flex-1 flex-col">
               <b className="truncate text-title">{user.displayName}</b>
               <span className="truncate text-caption text-muted">{user.email}</span>
@@ -86,7 +86,7 @@ export const MePage = () => {
         {settingRows.map(([section, Icon]) => (
           <NavLink
             key={section}
-            to="/app/$workspaceId/settings/$section"
+            to="/app/$workspaceId/settings/{-$section}"
             params={{ section, workspaceId }}
           >
             <Icon aria-hidden />

@@ -5,11 +5,11 @@ import { useAtomValue } from "jotai";
 
 import { RealtimeService } from "#/gen/chat/v1/realtime_service_pb";
 import { transport } from "#/lib/api/transport";
-import { getIsMobileApp, isTauri } from "#/lib/platform/platform";
+import { isMobileApp, isTauri } from "#/lib/platform/platform";
 import { WsClient } from "#/lib/ws";
 import { sessionAtom } from "#/providers/store/auth";
 
-import { WsClientContext } from "./wsClientContext";
+import { WsClientContext } from "./useWsClient";
 
 const realtimeClient = createClient(RealtimeService, transport);
 
@@ -30,7 +30,7 @@ export const WsProvider = ({ workspaceId, children }: WsProviderProps) => {
     }
     const instance = new WsClient(
       () => realtimeClient.issueWebSocketTicket({ workspaceId }).then(({ ticket }) => ticket),
-      isTauri && !getIsMobileApp(),
+      isTauri && !isMobileApp,
     );
     setWsClient(instance);
     return () => {
@@ -38,5 +38,5 @@ export const WsProvider = ({ workspaceId, children }: WsProviderProps) => {
     };
   }, [hasSession, workspaceId]);
 
-  return <WsClientContext.Provider value={{ wsClient }}>{children}</WsClientContext.Provider>;
+  return <WsClientContext value={wsClient}>{children}</WsClientContext>;
 };

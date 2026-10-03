@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { useTranslation } from "react-i18next";
 
-import { putToStorage } from "#/lib/storage";
+import { putToStorage } from "#/lib/upload";
 
 import { usePresignUpload } from "../api/client";
 import { measureMedia } from "../utils/measureMedia";

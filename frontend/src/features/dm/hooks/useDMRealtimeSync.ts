@@ -14,7 +14,7 @@ import type {
 /** WebSocket イベントから DM 一覧の未読数を更新する。表示中の DM は既読として扱う */
 export const useDMRealtimeSync = (workspaceId: string, currentChannelId: string | null) => {
   const queryClient = useQueryClient();
-  const { wsClient } = useWsClient();
+  const wsClient = useWsClient();
 
   useEffect(() => {
     if (!wsClient) {

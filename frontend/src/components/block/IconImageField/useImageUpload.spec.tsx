@@ -7,13 +7,13 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, test, vi } from "vite-plus/test";
 
 import { ImagePurpose, ImageService } from "#/gen/chat/v1/image_service_pb";
-import { putToStorage } from "#/lib/storage";
+import { putToStorage } from "#/lib/upload";
 
 import { useImageUpload } from "./useImageUpload";
 
 import type { PresignImageUploadRequest } from "#/gen/chat/v1/image_service_pb";
 
-vi.mock("#/lib/storage", () => ({ putToStorage: vi.fn(() => Promise.resolve()) }));
+vi.mock("#/lib/upload", () => ({ putToStorage: vi.fn(() => Promise.resolve()) }));
 
 describe("useImageUpload", () => {
   test("発行された URL に画像を PUT して配信用の URL を返す", async () => {

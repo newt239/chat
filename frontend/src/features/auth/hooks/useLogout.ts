@@ -2,7 +2,6 @@ import { useMutation } from "@connectrpc/connect-query";
 
 import { usePushNotifications } from "#/features/settings/hooks/usePushNotifications";
 import { AuthService } from "#/gen/chat/v1/auth_service_pb";
-import { logger } from "#/lib/logger";
 import { signOut } from "#/lib/session";
 
 /** サーバー側のセッションを失効させてからローカルの認証情報を破棄する */
@@ -15,7 +14,7 @@ export const useLogout = () => {
       try {
         await push.disable();
       } catch (error) {
-        logger.warn("プッシュ通知の登録を解除できませんでした", error);
+        console.warn("プッシュ通知の登録を解除できませんでした", error);
       }
     },
     // 失効に失敗してもローカルからは必ずログアウトする

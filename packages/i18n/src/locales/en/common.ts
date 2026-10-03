@@ -5,8 +5,6 @@ export const common: Messages["common"] = {
   close: "Close",
   copyFailed: "Couldn't copy",
   delete: "Delete",
-  loading: "Loading",
-  ok: "OK",
   save: "Save",
   upload: {
     aborted: "Upload canceled",

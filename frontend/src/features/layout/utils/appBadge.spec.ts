@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from "vite-plus/test";
 
-import { setAppBadge } from "#/lib/platform/badge";
+import { setAppBadge } from "#/features/layout/utils/appBadge";
 
 afterEach(() => {
   vi.unstubAllGlobals();

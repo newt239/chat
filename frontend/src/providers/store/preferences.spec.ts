@@ -1,61 +1,78 @@
-import { createStore } from "jotai";
-import { afterEach, describe, expect, test, vi } from "vite-plus/test";
+import { create } from "@bufbuild/protobuf";
+import { themePresets } from "@chat/design-tokens/theme";
+import { describe, expect, test } from "vite-plus/test";
 
-// atomWithStorage は atom の生成時に端末の値を読むため、保存してからモジュールを読み込み直す
-const loadPreferences = async (saved: object) => {
-  localStorage.setItem("preferences", JSON.stringify(saved));
-  vi.resetModules();
-  const { defaultPreferences, storedPreferencesAtom } = await import("./preferences");
-  return { defaultPreferences, preferences: createStore().get(storedPreferencesAtom) };
-};
+import {
+  ColorMode,
+  NotificationLevel,
+  SidebarStyle,
+  UserPreferencesSchema,
+} from "#/gen/chat/v1/user_pb";
 
-describe("storedPreferencesAtom", () => {
-  afterEach(() => {
-    localStorage.clear();
-  });
+import { preferencesFromProto, preferencesToProto } from "./preferences";
 
-  test("端末に保存した設定を読み込む", async () => {
-    const saved = {
+import type { Preferences } from "./preferences";
+
+describe("preferences と proto の変換", () => {
+  test("往復しても値が変わらない", () => {
+    const preferences: Preferences = {
       channelSortOrder: "recentActivity",
       hideJoinMessages: true,
       locale: "en",
       mode: "dark",
       notificationLevel: "all",
-      theme: { chroma: 0.2, hue: 100, sidebar: "light" },
+      theme: themePresets.plum,
       timezone: "Asia/Tokyo",
       timezoneAutoUpdate: true,
     };
 
-    const { preferences } = await loadPreferences(saved);
-
-    expect(preferences).toStrictEqual(saved);
+    expect(preferencesFromProto(preferencesToProto(preferences))).toStrictEqual(preferences);
   });
 
-  test("通知の範囲やタイムゾーン・並び順がない以前の保存値は既定値で補う", async () => {
-    const saved = {
-      locale: "en",
-      mode: "dark",
-      theme: { chroma: 0.2, hue: 100, sidebar: "light" },
-    };
-
-    const { preferences } = await loadPreferences(saved);
-
-    expect(preferences).toStrictEqual({
-      ...saved,
+  test("proto の列挙値に変換する", () => {
+    const proto = preferencesToProto({
       channelSortOrder: "default",
       hideJoinMessages: false,
-      notificationLevel: "mentions",
+      locale: "ja",
+      mode: "system",
+      notificationLevel: "none",
+      theme: themePresets.jade,
       timezone: "",
       timezoneAutoUpdate: false,
     });
+
+    expect(proto.colorMode).toBe(ColorMode.SYSTEM);
+    expect(proto.notificationLevel).toBe(NotificationLevel.NONE);
+    expect(proto.theme?.sidebar).toBe(SidebarStyle.TINTED);
   });
 
-  test("壊れた値は既定値に置き換える", async () => {
-    const { defaultPreferences, preferences } = await loadPreferences({
-      locale: "fr",
-      mode: "dark",
+  test("色相は整数に丸めて 0〜359 に収める", () => {
+    const proto = preferencesToProto({
+      channelSortOrder: "default",
+      hideJoinMessages: false,
+      locale: "ja",
+      mode: "light",
+      notificationLevel: "mentions",
+      theme: { chroma: 0.1, hue: 359.6, sidebar: "light" },
+      timezone: "",
+      timezoneAutoUpdate: false,
     });
 
-    expect(preferences).toStrictEqual(defaultPreferences);
+    expect(proto.theme?.hue).toBe(0);
+  });
+
+  test("未設定や未知の値は既定値にする", () => {
+    const preferences = preferencesFromProto(create(UserPreferencesSchema, { locale: "fr" }));
+
+    expect(preferences).toStrictEqual({
+      channelSortOrder: "default",
+      hideJoinMessages: false,
+      locale: "ja",
+      mode: "system",
+      notificationLevel: "mentions",
+      theme: themePresets.jade,
+      timezone: "",
+      timezoneAutoUpdate: false,
+    });
   });
 });

@@ -1,4 +1,10 @@
-import { findThemePreset, themePresetNames, themePresets } from "@chat/design-tokens/theme";
+import {
+  chromaRange,
+  findThemePreset,
+  hueRange,
+  themePresetNames,
+  themePresets,
+} from "@chat/design-tokens/theme";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -61,8 +67,8 @@ export const ThemeSettings = () => {
           <Slider
             label={t("preferences.theme.hue")}
             value={theme.hue}
-            minValue={0}
-            maxValue={359}
+            minValue={hueRange.min}
+            maxValue={hueRange.max}
             step={1}
             trackBackground={hueTrack}
             onChange={(hue) => {
@@ -75,8 +81,8 @@ export const ThemeSettings = () => {
           <Slider
             label={t("preferences.theme.chroma")}
             value={theme.chroma}
-            minValue={0}
-            maxValue={0.3}
+            minValue={chromaRange.min}
+            maxValue={chromaRange.max}
             step={0.005}
             onChange={(chroma) => {
               preview({ theme: { ...theme, chroma } });

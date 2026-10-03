@@ -2,7 +2,7 @@ import { callUnaryMethod, useMutation, useTransport } from "@connectrpc/connect-
 import { useMutation as useQueryMutation, useQueryClient } from "@tanstack/react-query";
 
 import { CustomEmojiService } from "#/gen/chat/v1/custom_emoji_service_pb";
-import { putToStorage } from "#/lib/storage";
+import { putToStorage } from "#/lib/upload";
 
 import { prepareEmojiImage } from "../utils/prepareEmojiImage";
 import { customEmojiListKey } from "./useCustomEmojis";

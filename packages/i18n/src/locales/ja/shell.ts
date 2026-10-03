@@ -1,7 +1,4 @@
 export const shell = {
-  admin: {
-    forbidden: "管理者だけが開けます",
-  },
   back: "戻る",
   channel: {
     links: "関連リンク",
@@ -21,7 +18,6 @@ export const shell = {
     unmute: "ミュートを解除",
     unstar: "スターを外す",
   },
-  comingSoon: "この画面は準備中です",
   error: {
     backToTop: "トップへ戻る",
     description: "ページの読み込み中にエラーが発生しました",

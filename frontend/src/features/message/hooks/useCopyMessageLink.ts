@@ -2,7 +2,7 @@ import { useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { copyWithToast } from "#/lib/clipboard";
-import { toShareUrl } from "#/lib/platform/appOrigin";
+import { toShareUrl } from "#/lib/shareUrl";
 
 export const useCopyMessageLink = (workspaceId: string | null, channelId: string | null) => {
   const router = useRouter();

@@ -17,9 +17,6 @@
     "test": "vp test run",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "i18next": "26.4.2"
-  },
   "devDependencies": {
     "typescript": "7.0.2",
     "vite-plus": "0.3.3"

@@ -59,7 +59,7 @@ export const useChannelTimeline = ({
   items,
 }: UseChannelTimelineArgs) => {
   const queryClient = useQueryClient();
-  const { wsClient } = useWsClient();
+  const wsClient = useWsClient();
   const descendantKey = [...new Set(descendantIds)].toSorted().join(",");
 
   useEffect(() => {

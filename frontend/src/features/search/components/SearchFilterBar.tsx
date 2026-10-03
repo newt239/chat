@@ -1,9 +1,3 @@
-import {
-  emptySearchQuery,
-  formatSearchQuery,
-  hasSearchConditions,
-  searchHasValues,
-} from "@chat/search-query/query";
 import { getRouteApi } from "@tanstack/react-router";
 import { Button, ToggleButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -11,13 +5,18 @@ import { useTranslation } from "react-i18next";
 import { focusRing } from "#/components/ui/styles/styles";
 import { useResolvedSearchQuery } from "#/features/search/hooks/useResolvedSearchQuery";
 import { chipClassName } from "#/features/search/utils/chipClassName";
+import {
+  emptySearchQuery,
+  formatSearchQuery,
+  hasSearchConditions,
+  searchHasValues,
+} from "#/features/search/utils/searchQuery";
 
 import { SearchDateFilter } from "./SearchDateFilter";
 import { SearchFilterPicker } from "./SearchFilterPicker";
 
 import type { SearchParams } from "#/features/search/schemas";
-
-import type { SearchIs, SearchQuery } from "@chat/search-query/query";
+import type { SearchIs, SearchQuery } from "#/features/search/utils/searchQuery";
 
 const searchRoute = getRouteApi("/app/$workspaceId/search");
 

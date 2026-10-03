@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from "vite-plus/test";
 
-import { showNotification } from "#/lib/platform/notify";
+import { showNotification } from "#/features/settings/utils/notify";
 
 afterEach(() => {
   vi.unstubAllGlobals();

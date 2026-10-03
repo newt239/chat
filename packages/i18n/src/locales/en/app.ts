@@ -33,7 +33,6 @@ export const app: Messages["app"] = {
   namePlaceholder: "e.g. Deploy notifications",
   nameRequired: "Enter a name",
   neverUsed: "Never used",
-  noneToAdd: "No apps to add",
   official: "Official",
   outgoingSecret: "Signing secret",
   outgoingSecretHint:

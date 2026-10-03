@@ -6,11 +6,11 @@ import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useDMs } from "#/features/dm/hooks/useDM";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
+import { notificationPreferencesAtom } from "#/features/settings/atoms";
+import { isNotificationSupported, showNotification } from "#/features/settings/utils/notify";
 import { usePreferences } from "#/hooks/usePreferences";
 import { navigateTo } from "#/lib/navigation";
-import { isNotificationSupported, showNotification } from "#/lib/platform/notify";
 import { myUserIdAtom } from "#/providers/store/auth";
-import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
 import type { MessageEvent } from "#/gen/chat/v1/event_pb";
@@ -18,7 +18,7 @@ import type { MessageEvent } from "#/gen/chat/v1/event_pb";
 /** 設定に従って新着メッセージを OS の通知で知らせる。ミュート中と表示中のチャンネルは除く。プッシュ通知と同じ tag で出し、二重にならないようにする */
 export const useDesktopNotifications = (workspaceId: string, currentChannelId: string | null) => {
   const { toText } = useMentionDirectory();
-  const { wsClient } = useWsClient();
+  const wsClient = useWsClient();
   const { desktop, pushToken } = useAtomValue(notificationPreferencesAtom);
   const level = usePreferences().notificationLevel;
   const myId = useAtomValue(myUserIdAtom);

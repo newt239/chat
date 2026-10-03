@@ -36,7 +36,7 @@ export const SidebarFooter = () => {
           <Button
             className={`flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-left data-hovered:bg-(--nav-hover) ${focusRing}`}
           >
-            <Avatar name={user.displayName} src={user.avatarUrl} size={28} presence="online" />
+            <Avatar name={user.displayName} src={user.avatarUrl} size={28} isOnline />
             <span className="min-w-0 truncate text-body-sm font-bold text-(--nav-strong)">
               {user.displayName}
             </span>
@@ -49,7 +49,7 @@ export const SidebarFooter = () => {
           </MenuItemLink>
           <MenuItemLink
             icon={<IconSettings />}
-            to="/app/$workspaceId/settings/$section"
+            to="/app/$workspaceId/settings/{-$section}"
             params={{ section: "theme", workspaceId }}
           >
             {t("shell.me.settings")}
@@ -71,7 +71,7 @@ export const SidebarFooter = () => {
         onPress={() => {
           void navigate({
             params: { section: "theme", workspaceId },
-            to: "/app/$workspaceId/settings/$section",
+            to: "/app/$workspaceId/settings/{-$section}",
           });
         }}
       >

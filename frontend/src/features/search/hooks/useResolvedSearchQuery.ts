@@ -1,7 +1,6 @@
-import { parseSearchQuery } from "@chat/search-query/query";
-
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useMembers } from "#/features/member/hooks/useMembers";
+import { parseSearchQuery } from "#/features/search/utils/searchQuery";
 
 import type { WorkspaceMember } from "#/gen/chat/v1/workspace_service_pb";
 

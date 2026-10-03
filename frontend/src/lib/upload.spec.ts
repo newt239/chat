@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test, vi } from "vite-plus/test";
 
-import { putToStorage } from "#/lib/storage";
+import { putToStorage } from "#/lib/upload";
 
 type Listener = () => void;
 type SentRequest = { method: string; url: string; contentType: string | null };

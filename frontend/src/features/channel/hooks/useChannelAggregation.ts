@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 
-import { excludedDescendantsAtom } from "#/providers/store/ui";
+import { excludedDescendantsAtom } from "#/features/channel/atoms";
 
 import { isDescendantPath } from "../utils/channelTree";
 import { useChannels } from "./useChannel";

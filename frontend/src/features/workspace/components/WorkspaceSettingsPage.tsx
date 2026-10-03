@@ -21,7 +21,7 @@ const sectionIcons: Record<WorkspaceSettingsSection, typeof IconUsers> = {
   members: IconUsers,
 };
 
-const workspaceSettingsRoute = getRouteApi("/app/$workspaceId/workspace-settings/$section");
+const workspaceSettingsRoute = getRouteApi("/app/$workspaceId/workspace-settings/{-$section}");
 
 export const WorkspaceSettingsPage = () => {
   const { t } = useTranslation();
@@ -66,7 +66,7 @@ export const WorkspaceSettingsPage = () => {
         return (
           <SettingsNavLink
             key={name}
-            to="/app/$workspaceId/workspace-settings/$section"
+            to="/app/$workspaceId/workspace-settings/{-$section}"
             params={{ section: name, workspaceId }}
             replace
           >

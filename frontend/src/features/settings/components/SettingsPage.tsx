@@ -36,7 +36,7 @@ const sectionBodies: Record<SettingsSection, () => React.JSX.Element> = {
   theme: ThemeSettings,
 };
 
-const settingsRoute = getRouteApi("/app/$workspaceId/settings/$section");
+const settingsRoute = getRouteApi("/app/$workspaceId/settings/{-$section}");
 
 export const SettingsPage = () => {
   const { t } = useTranslation();
@@ -54,7 +54,7 @@ export const SettingsPage = () => {
         return (
           <SettingsNavLink
             key={name}
-            to="/app/$workspaceId/settings/$section"
+            to="/app/$workspaceId/settings/{-$section}"
             params={{ section: name, workspaceId }}
             replace
           >

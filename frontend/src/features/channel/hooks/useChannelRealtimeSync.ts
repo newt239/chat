@@ -21,7 +21,7 @@ export const useChannelRealtimeSync = (
   currentChannelId: string | null,
 ) => {
   const queryClient = useQueryClient();
-  const { wsClient } = useWsClient();
+  const wsClient = useWsClient();
   const currentUserId = useAtomValue(myUserIdAtom);
 
   useEffect(() => {

@@ -3,9 +3,9 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vite-plus/test";
 
+import { channelViewersAtom } from "#/features/channel/atoms";
 import { ChannelMemberSchema, ChannelMemberService } from "#/gen/chat/v1/channel_member_service_pb";
 import { WorkspaceMemberSchema, WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
-import { channelViewersAtom } from "#/providers/store/ui";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { ChannelMemberPanel } from "./ChannelMemberPanel";
