@@ -9,7 +9,7 @@ export const schedule = {
   list: {
     actionFailed: "操作できませんでした",
     actions: "予約の操作",
-    attachments: "添付 {{count}} 件",
+    attachments_other: "添付 {{count}} 件",
     body: "本文",
     deleted: "予約を削除しました",
     edit: "編集",

@@ -13,6 +13,7 @@ import { cn, focusRing } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
+import { useInvalidateMessageLists } from "#/features/message/hooks/useInvalidateMessageLists";
 import { PollMode } from "#/gen/chat/v1/message_pb";
 import { PollService } from "#/gen/chat/v1/poll_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
@@ -35,8 +36,9 @@ export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
   const { member } = useMentionDirectory();
   const nameOf = useDisplayName();
   // 集計の変化はメッセージの更新として WebSocket で届く
-  const close = useMutation(PollService.method.closePoll);
-  const vote = useMutation(PollService.method.vote);
+  const invalidateMessageLists = useInvalidateMessageLists();
+  const close = useMutation(PollService.method.closePoll, { onSuccess: invalidateMessageLists });
+  const vote = useMutation(PollService.method.vote, { onSuccess: invalidateMessageLists });
   // 配信されるメッセージには自分の投票が含まれないため、読み込んだ時点と投票した結果を覚えておく
   const [myOptionIds, setMyOptionIds] = useState(poll.myOptionIds);
   const maxVotes = Math.max(1, ...poll.options.map((option) => option.voteCount));

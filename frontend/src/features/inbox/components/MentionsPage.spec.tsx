@@ -7,8 +7,9 @@ import { describe, expect, test, vi } from "vite-plus/test";
 import { ChannelSchema, ChannelService } from "#/gen/chat/v1/channel_service_pb";
 import { DirectMessageService } from "#/gen/chat/v1/direct_message_service_pb";
 import { MentionCursorSchema, MentionService } from "#/gen/chat/v1/mention_service_pb";
-import { MessageSchema } from "#/gen/chat/v1/message_pb";
+import { MessageSchema, ReactionSchema } from "#/gen/chat/v1/message_pb";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
+import { ReactionService } from "#/gen/chat/v1/reaction_service_pb";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { MentionsPage } from "./MentionsPage";
@@ -100,6 +101,29 @@ describe("MentionsPage", () => {
     await waitFor(() => {
       expect(created).toHaveBeenLastCalledWith(expect.objectContaining({ parentId: "p1" }));
     });
+  });
+
+  test("カードでリアクションを付けたら一覧を取り直して表示を変える", async () => {
+    let reactionCount = 1;
+    const added = vi.fn<() => void>();
+    await renderWithProviders(<MentionsPage />, "/app/ws1", (routes) => {
+      routes.rpc(MentionService.method.listMentions, () => {
+        const mention = message("m1", "確認お願いします");
+        mention.reactions = Array.from({ length: reactionCount }, (_, index) =>
+          create(ReactionSchema, { emoji: "👍", user: { id: `u${index}` } }),
+        );
+        return { messages: [mention] };
+      });
+      routes.rpc(ReactionService.method.addReaction, () => {
+        added();
+        reactionCount = 2;
+        return {};
+      });
+    });
+    await userEvent.click(await screen.findByRole("button", { name: /^👍 1 件。/ }));
+
+    expect(await screen.findByRole("button", { name: /^👍 2 件。/ })).toBeInTheDocument();
+    expect(added).toHaveBeenCalledTimes(1);
   });
 
   test("メンションがなければ案内を出す", async () => {

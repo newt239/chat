@@ -1,7 +1,8 @@
 import type { Messages } from "../../messages";
 
 export const search: Messages["search"] = {
-  count: "{{count}} results",
+  count_one: "{{count}} result",
+  count_other: "{{count}} results",
   empty: "No results match",
   emptyHint: "Try fewer keywords or remove some filters",
   failed: "Couldn't load search results",

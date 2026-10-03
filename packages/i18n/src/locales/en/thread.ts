@@ -4,7 +4,8 @@ export const thread: Messages["thread"] = {
   card: {
     open: "Open thread",
     replyPlaceholder: "Reply…",
-    showMore: "Show {{count}} more replies",
+    showMore_one: "Show {{count}} more reply",
+    showMore_other: "Show {{count}} more replies",
     unread: "{{count}} unread",
   },
   follow: {

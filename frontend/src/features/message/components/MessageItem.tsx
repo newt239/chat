@@ -27,6 +27,7 @@ import { closeDialog, openDialog, openPanel, workspaceRoute } from "#/lib/overla
 import { toDate } from "#/lib/timestamp";
 import { myUserIdAtom } from "#/providers/store/auth";
 
+import { useInvalidateMessageLists } from "../hooks/useInvalidateMessageLists";
 import { useLongPress } from "../hooks/useLongPress";
 import { useMessageMenuActions } from "../hooks/useMessageMenuActions";
 import { useOwnsMessageOverlay } from "../hooks/useOwnsMessageOverlay";
@@ -84,11 +85,13 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
   const { isPressed, longPressProps } = useLongPress(() => {
     void navigate({ search: openDialog({ sheet: message.id }), to: "." });
   }, isMobile && !isEditing);
+  const invalidateMessageLists = useInvalidateMessageLists();
   const updateMessage = useMutation(MessageService.method.updateMessage, {
     onError: (error) => {
       toast(t("message.edit.failed"), { description: error.message || undefined, tone: "danger" });
     },
     onSuccess: () => {
+      invalidateMessageLists();
       toast(t("message.edit.done"), { tone: "success" });
     },
   });
@@ -103,6 +106,7 @@ export const MessageItem = ({ message, isHighlighted, channelChip }: MessageItem
       setIsDeleteOpen(false);
     },
     onSuccess: () => {
+      invalidateMessageLists();
       toast(t("message.delete.done"), { tone: "success" });
     },
   });

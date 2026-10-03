@@ -2,8 +2,10 @@ import type { Messages } from "../../messages";
 
 export const channel: Messages["channel"] = {
   aggregate: {
-    count: "{{count}} channels",
-    hint: "Also shows posts from {{count}} nested channels",
+    count_one: "{{count}} channel",
+    count_other: "{{count}} channels",
+    hint_one: "Also shows posts from {{count}} nested channel",
+    hint_other: "Also shows posts from {{count}} nested channels",
     open: "Open #{{name}}",
     placeholder: "Message #{{name}}",
     target: "Post to #{{name}}",
@@ -12,7 +14,8 @@ export const channel: Messages["channel"] = {
     toggle: "Include nested",
   },
   browse: {
-    count: "{{count}} channels",
+    count_one: "{{count}} channel",
+    count_other: "{{count}} channels",
     membership: {
       all: "All",
       joined: "Joined",
@@ -27,7 +30,8 @@ export const channel: Messages["channel"] = {
     empty: "No channels found",
     join: "Join",
     joinedToast: "Joined #{{name}}",
-    memberCount: "{{count}} members",
+    memberCount_one: "{{count}} member",
+    memberCount_other: "{{count}} members",
     noDescription: "No description",
     search: "Search channels",
     title: "Browse channels",

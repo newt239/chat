@@ -1,7 +1,7 @@
 export const channel = {
   aggregate: {
-    count: "{{count}} チャンネル",
-    hint: "下階層 {{count}} チャンネルの投稿をまとめて表示します",
+    count_other: "{{count}} チャンネル",
+    hint_other: "下階層 {{count}} チャンネルの投稿をまとめて表示します",
     open: "#{{name}} を開く",
     placeholder: "#{{name}} へのメッセージ",
     target: "投稿先: #{{name}}",
@@ -10,7 +10,7 @@ export const channel = {
     toggle: "下階層を含む",
   },
   browse: {
-    count: "{{count}} 件",
+    count_other: "{{count}} 件",
     membership: {
       all: "すべて",
       joined: "参加中",
@@ -25,7 +25,7 @@ export const channel = {
     empty: "該当するチャンネルはありません",
     join: "参加",
     joinedToast: "#{{name}} に参加しました",
-    memberCount: "{{count}} 人",
+    memberCount_other: "{{count}} 人",
     noDescription: "説明はありません",
     search: "チャンネルを検索",
     title: "チャンネルに参加",

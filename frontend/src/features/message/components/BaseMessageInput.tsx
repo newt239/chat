@@ -139,13 +139,13 @@ export const BaseMessageInput = ({
       { ...content, channelId, parentId: parentId ?? undefined },
       {
         onSuccess: ({ message }) => {
+          resetComposer();
           if (message && onSent) {
             onSent(message);
           }
         },
       },
     );
-    resetComposer();
   };
 
   const handleSubmit = () => {

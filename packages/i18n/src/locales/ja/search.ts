@@ -1,5 +1,5 @@
 export const search = {
-  count: "{{count}} 件",
+  count_other: "{{count}} 件",
   empty: "条件に一致する結果はありません",
   emptyHint: "キーワードを減らすか、絞り込みを外してみてください",
   failed: "検索結果を読み込めませんでした",

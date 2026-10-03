@@ -15,36 +15,46 @@ import { renderWithProviders } from "#/test/renderWithProviders";
 import { MoveToCategoryMenu } from "./MoveToCategoryMenu";
 
 import type { SetChannelCategoryRequest } from "#/gen/chat/v1/channel_category_service_pb";
+import type { Channel } from "#/gen/chat/v1/channel_service_pb";
 
 const dev = create(ChannelSchema, { id: "dev", name: "dev" });
 const frontend = create(ChannelSchema, { id: "fe", name: "dev/frontend", parentId: "dev" });
 
+const setup = async (channel: Channel) => {
+  const assigned = vi.fn<(req: SetChannelCategoryRequest) => void>();
+  await renderWithProviders(
+    <Menu trigger={<Button>開く</Button>}>
+      <MoveToCategoryMenu workspaceId="ws1" channel={channel} channels={[dev, frontend]} />
+    </Menu>,
+    "/app/ws1",
+    (routes) => {
+      routes.rpc(ChannelCategoryService.method.listChannelCategories, () => ({
+        categories: [
+          create(ChannelCategorySchema, { channelIds: ["dev"], id: "work", name: "仕事" }),
+          create(ChannelCategorySchema, { id: "fun", name: "趣味" }),
+        ],
+      }));
+      routes.rpc(ChannelCategoryService.method.setChannelCategory, (req) => {
+        assigned(req);
+        return {};
+      });
+    },
+  );
+  await userEvent.click(await screen.findByRole("button", { name: "開く" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "カテゴリに移動" }));
+  return assigned;
+};
+
 describe("MoveToCategoryMenu", () => {
   test("親の所属カテゴリに印を付け、選んだカテゴリへ移す", async () => {
-    const assigned = vi.fn<(req: SetChannelCategoryRequest) => void>();
-    await renderWithProviders(
-      <Menu trigger={<Button>開く</Button>}>
-        <MoveToCategoryMenu workspaceId="ws1" channel={frontend} channels={[dev, frontend]} />
-      </Menu>,
-      "/app/ws1",
-      (routes) => {
-        routes.rpc(ChannelCategoryService.method.listChannelCategories, () => ({
-          categories: [
-            create(ChannelCategorySchema, { channelIds: ["dev"], id: "work", name: "仕事" }),
-            create(ChannelCategorySchema, { id: "fun", name: "趣味" }),
-          ],
-        }));
-        routes.rpc(ChannelCategoryService.method.setChannelCategory, (req) => {
-          assigned(req);
-          return {};
-        });
-      },
-    );
-
-    await userEvent.click(await screen.findByRole("button", { name: "開く" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "カテゴリに移動" }));
+    const assigned = await setup(frontend);
     const current = await screen.findByRole("menuitem", { name: "仕事" });
     expect(current.querySelector("svg")).not.toHaveClass("invisible");
+    // 継承しているだけなので既定のカテゴリに戻しても変わらない
+    expect(screen.getByRole("menuitem", { name: "チャンネル（既定）" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
     await userEvent.click(screen.getByRole("menuitem", { name: "趣味" }));
 
     await waitFor(() => {
@@ -52,5 +62,16 @@ describe("MoveToCategoryMenu", () => {
         expect.objectContaining({ categoryId: "fun", channelId: "fe" }),
       );
     });
+  });
+
+  test("自分に割り当てがあれば既定のカテゴリに戻せる", async () => {
+    const assigned = await setup(dev);
+    await screen.findByRole("menuitem", { name: "仕事" });
+    await userEvent.click(screen.getByRole("menuitem", { name: "チャンネル（既定）" }));
+
+    await waitFor(() => {
+      expect(assigned).toHaveBeenCalledWith(expect.objectContaining({ channelId: "dev" }));
+    });
+    expect(assigned.mock.lastCall?.[0].categoryId).toBeUndefined();
   });
 });

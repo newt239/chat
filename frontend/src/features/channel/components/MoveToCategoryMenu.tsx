@@ -26,6 +26,8 @@ export const MoveToCategoryMenu = ({ workspaceId, channel, channels }: MoveToCat
   const { data: categories = [] } = useChannelCategories(workspaceId);
   const { setChannel } = useChannelCategoryActions(workspaceId);
   const current = categoryOfChannel(channel, channels, categories);
+  // 割り当てがなければ外しても変わらない。祖先から継承しているときもそのまま
+  const isAssigned = categories.some((category) => category.channelIds.includes(channel.id));
   const moveTo = (categoryId: string | undefined, name: string) => {
     setChannel.mutate(
       { categoryId, channelId: channel.id },
@@ -44,6 +46,7 @@ export const MoveToCategoryMenu = ({ workspaceId, channel, channels }: MoveToCat
     <Submenu label={t("channel.category.moveTo")} icon={<IconFolder />}>
       <MenuItem
         icon={checkIcon(null)}
+        isDisabled={!isAssigned}
         onAction={() => {
           moveTo(undefined, t("shell.sidebar.channels"));
         }}
