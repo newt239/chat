@@ -3,12 +3,12 @@ import { useTranslation } from "react-i18next";
 
 import { Badge } from "#/components/ui/Badge/Badge";
 import { Link } from "#/components/ui/Link/Link";
+import { BaseMessageInput } from "#/features/message/components/BaseMessageInput";
 import { MessageItem } from "#/features/message/components/MessageItem";
 import { MessageListCard } from "#/features/message/components/MessageListCard";
 import { useUpdateListedThread } from "#/features/thread/hooks/useParticipatingThreads";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
 
-import { InlineReplyComposer } from "./InlineReplyComposer";
 import { ThreadFollowButton } from "./ThreadFollowButton";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
@@ -74,10 +74,11 @@ export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
         />
       ))}
       <div className="pt-1">
-        <InlineReplyComposer
+        <BaseMessageInput
           channelId={channelId}
           parentId={threadId}
           placeholder={t("inbox.thread.replyPlaceholder")}
+          targetPicker={null}
           onSent={(reply) => {
             updateThread(threadId, (item) => ({
               ...item,

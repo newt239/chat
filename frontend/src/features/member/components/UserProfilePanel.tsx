@@ -9,7 +9,7 @@ import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Button } from "#/components/ui/Button/Button";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { focusRing } from "#/components/ui/styles/styles";
-import { useCreateDM } from "#/features/dm/hooks/useDM";
+import { useCreateDM } from "#/features/channel/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { workspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
 import { usePreferences } from "#/hooks/usePreferences";

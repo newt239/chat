@@ -7,7 +7,7 @@ import { toast } from "#/components/ui/ToastRegion/toast";
 import { ScheduledMessageService } from "#/gen/chat/v1/scheduled_message_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 
-import type { ComposerContent } from "#/features/message/components/BaseMessageInput";
+import type { MessageLocation } from "#/gen/chat/v1/message_pb";
 
 export const useScheduledMessages = (workspaceId: string) =>
   useQuery(
@@ -24,7 +24,13 @@ const useInvalidateScheduledMessages = () => {
     });
 };
 
-type ScheduleTarget = ComposerContent & { channelId: string; parentId: string | undefined };
+type ScheduleTarget = {
+  channelId: string;
+  parentId: string | undefined;
+  body: string;
+  attachmentIds: string[];
+  location: MessageLocation | undefined;
+};
 
 // 入力欄の内容を予約する。予約できたら onScheduled で入力欄を空にする
 export const useScheduleMessage = () => {

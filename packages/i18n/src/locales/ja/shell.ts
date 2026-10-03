@@ -10,7 +10,6 @@ export const shell = {
     createChild: "子チャンネルを作成",
     copyLink: "リンクをコピー",
     label: "チャンネルの操作",
-    linkCopied: "リンクをコピーしました",
     markAsRead: "すべて既読にする",
     more: "その他",
     mute: "ミュート",

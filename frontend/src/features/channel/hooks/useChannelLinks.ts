@@ -1,4 +1,4 @@
-import { createConnectQueryKey, useMutation, useQuery } from "@connectrpc/connect-query";
+import { createConnectQueryKey, skipToken, useMutation, useQuery } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ChannelLinkService } from "#/gen/chat/v1/channel_link_service_pb";
@@ -12,8 +12,11 @@ const channelLinksKey = (channelId: string) =>
     schema: ChannelLinkService.method.listChannelLinks,
   });
 
-export const useChannelLinks = (channelId: string) =>
-  useQuery(ChannelLinkService.method.listChannelLinks, { channelId });
+export const useChannelLinks = (channelId: string | null) =>
+  useQuery(
+    ChannelLinkService.method.listChannelLinks,
+    channelId === null ? skipToken : { channelId },
+  );
 
 /** 関連リンクの追加・編集・削除・並び替え */
 export const useChannelLinkActions = (channelId: string) => {

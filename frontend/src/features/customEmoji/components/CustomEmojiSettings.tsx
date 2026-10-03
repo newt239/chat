@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { useQuery } from "@connectrpc/connect-query";
 import { IconMoodPlus, IconTrash } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
@@ -8,8 +9,7 @@ import { EmptyState } from "#/components/ui/EmptyState/EmptyState";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { TextField } from "#/components/ui/TextField/TextField";
-import { Permission } from "#/gen/chat/v1/permission_service_pb";
-import { usePermissions } from "#/hooks/usePermissions";
+import { Permission, PermissionService } from "#/gen/chat/v1/permission_service_pb";
 
 import { useCustomEmojiActions } from "../hooks/useCustomEmojiActions";
 import { useCustomEmojis } from "../hooks/useCustomEmojis";
@@ -25,8 +25,11 @@ type CustomEmojiSettingsProps = {
 export const CustomEmojiSettings = ({ workspaceId }: CustomEmojiSettingsProps) => {
   const { t } = useTranslation();
   const { data: emojis } = useCustomEmojis(workspaceId);
-  const { data: permissions } = usePermissions(workspaceId);
-  const canCreate = permissions?.myPermissions.includes(Permission.CREATE_CUSTOM_EMOJI) ?? false;
+  const { data: canCreate = false } = useQuery(
+    PermissionService.method.getPermissions,
+    { workspaceId },
+    { select: (res) => res.myPermissions.includes(Permission.CREATE_CUSTOM_EMOJI) },
+  );
   const [query, setQuery] = useState("");
   const [deleting, setDeleting] = useState<CustomEmoji | null>(null);
   const { remove } = useCustomEmojiActions(workspaceId);

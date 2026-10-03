@@ -71,15 +71,7 @@ const modifierPattern = /^(?<key>from|in|has|is|before|after):(?<value>.+)$/i;
 
 // 解釈できない修飾子（値が空・未知の値）は語として残す。日付の形式が不正なものは invalidDates に分ける
 export const parseSearchQuery = (raw: string) => {
-  const query: SearchQuery = {
-    ...emptySearchQuery,
-    from: [],
-    has: [],
-    in: [],
-    invalidDates: [],
-    is: [],
-    keywords: [],
-  };
+  const query = structuredClone(emptySearchQuery);
   for (const token of tokenize(raw)) {
     const groups = modifierPattern.exec(token)?.groups;
     const key = groups?.key?.toLowerCase();

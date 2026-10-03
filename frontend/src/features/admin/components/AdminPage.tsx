@@ -17,8 +17,8 @@ import { AdminOverviewTab } from "#/features/admin/components/AdminOverviewTab";
 import { AdminPermissionsTab } from "#/features/admin/components/AdminPermissionsTab";
 import { adminTabValues } from "#/features/admin/schemas";
 import { AdminService } from "#/gen/chat/v1/admin_service_pb";
+import { PermissionService } from "#/gen/chat/v1/permission_service_pb";
 import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
-import { usePermissions } from "#/hooks/usePermissions";
 
 import type { adminSearchSchema } from "#/features/admin/schemas";
 
@@ -38,7 +38,7 @@ export const AdminPage = () => {
     { workspaceId },
     { select: (res) => res.members },
   );
-  const { data: permissions } = usePermissions(workspaceId);
+  const { data: permissions } = useQuery(PermissionService.method.getPermissions, { workspaceId });
   const { data: myRole } = useQuery(
     WorkspaceService.method.getWorkspace,
     { workspaceId },

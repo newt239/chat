@@ -24,3 +24,13 @@ export const useCreateChannel = () => {
     },
   });
 };
+
+export const useUpdateChannel = (workspaceId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation(ChannelService.method.updateChannel, {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: channelListKey(workspaceId) });
+    },
+  });
+};

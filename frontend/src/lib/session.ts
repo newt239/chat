@@ -37,7 +37,7 @@ export const startSession = ({ accessToken, refreshToken, user }: AuthResponse) 
 let refreshing: Promise<string> | null = null;
 
 /** アクセストークンを取り直す。ローテーションが競合しないよう、タブをまたいで直列にする */
-export const refreshSession = () => {
+const refreshSession = () => {
   refreshing ??= navigator.locks
     .request("chat-refresh", async () => {
       const response = await authClient.refresh({

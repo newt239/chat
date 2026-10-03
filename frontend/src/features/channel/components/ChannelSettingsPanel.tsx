@@ -14,7 +14,7 @@ import {
   validateChannelPath,
 } from "#/features/channel/utils/channelPath";
 
-import { useUpdateChannel } from "../hooks/useUpdateChannel";
+import { useUpdateChannel } from "../hooks/useChannel";
 import { ChannelNameField } from "./ChannelNameField";
 
 import type { Channel } from "#/gen/chat/v1/channel_service_pb";

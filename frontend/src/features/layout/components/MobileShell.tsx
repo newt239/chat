@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useMatches, useNavigate, useRouter } from "@tanstack/react-router";
 
 import { BackButton } from "#/components/block/BackButton/BackButton";
-import { DMsPage } from "#/features/dm/components/DMsPage";
+import { DMsPage } from "#/features/channel/components/DMsPage";
+import { MentionsPage } from "#/features/inbox/components/MentionsPage";
 import { useVisualViewport } from "#/features/layout/hooks/useVisualViewport";
-import { MentionsPage } from "#/features/mention/components/MentionsPage";
 
 import { useRightPanel } from "../hooks/useRightPanel";
 import { mobileTabs } from "../utils/mobileTabs";

@@ -90,7 +90,6 @@
   --leading-normal: var(--lh-normal);
   --leading-relaxed: var(--lh-relaxed);
 
-  --tracking-tight: var(--ls-tight);
   --tracking-wide: var(--ls-wide);
 
   --font-sans: var(--ff-sans);
@@ -132,8 +131,6 @@
 @utility z-toast {
   z-index: 400;
 }
-
-@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
 
 :root {
   color-scheme: light dark;

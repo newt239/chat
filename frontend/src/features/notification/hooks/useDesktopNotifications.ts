@@ -3,7 +3,7 @@ import { useEffect, useEffectEvent } from "react";
 import { useAtomValue } from "jotai";
 
 import { useChannels } from "#/features/channel/hooks/useChannel";
-import { useDMs } from "#/features/dm/hooks/useDM";
+import { useDMs } from "#/features/channel/hooks/useDM";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { notificationPreferencesAtom } from "#/features/notification/atoms";

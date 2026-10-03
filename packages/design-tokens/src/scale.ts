@@ -24,7 +24,7 @@ export const typography = {
 export const lineHeight = { normal: 1.5, relaxed: 1.6, snug: 1.35, tight: 1.25 } as const;
 
 // 字間（em）
-export const letterSpacing = { tight: -0.01, wide: 0.06 } as const;
+export const letterSpacing = { wide: 0.06 } as const;
 
 export const fontFamily = {
   mono: ["IBM Plex Mono", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],

@@ -14,8 +14,7 @@ export type TimelineRow =
 
 const joinKinds = new Set([SystemMessageKind.MEMBER_JOINED, SystemMessageKind.MEMBER_ADDED]);
 
-// 古い順の項目を、日付の区切りとメッセージを 1 行ずつ並べた仮想リストの行にする
-// 参加のお知らせを隠すときは、それしかない日の区切りも出さない
+// 古い順の項目を日付の区切りとメッセージの行にする。参加のお知らせだけの日は区切りも出さない
 export const buildTimelineRows = (
   items: readonly TimelineItem[],
   hideJoinMessages: boolean,

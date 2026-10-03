@@ -12,7 +12,6 @@ export const shell: Messages["shell"] = {
     createChild: "Create sub-channel",
     copyLink: "Copy link",
     label: "Channel actions",
-    linkCopied: "Link copied",
     markAsRead: "Mark all as read",
     more: "More",
     mute: "Mute",

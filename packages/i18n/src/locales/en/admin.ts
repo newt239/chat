@@ -136,7 +136,6 @@ export const admin: Messages["admin"] = {
       editChannelLinks: "Edit channel links",
       inviteMembers: "Invite members",
       pinMessages: "Pin messages",
-      unspecified: "Unknown action",
     },
     note: "Owners can always do everything. Only owners can change the admin column. Only owners and admins can edit user groups. Changes are recorded in the audit log.",
     operation: "Action",

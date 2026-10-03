@@ -1,18 +1,22 @@
 import type { ReactNode } from "react";
 
 import { formatRelativeTime } from "@chat/i18n/format";
+import { IconEdit } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Badge } from "#/components/ui/Badge/Badge";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { usePreferences } from "#/hooks/usePreferences";
+import { openDialog } from "#/lib/overlaySearch";
 import { toDate } from "#/lib/timestamp";
 
 import type { App } from "#/gen/chat/v1/app_service_pb";
 
 type AppRowProps = {
   app: App;
-  // 行の右端に置く操作
+  // 管理できるアプリの編集ボタンの横に置く操作
   actions: ReactNode;
 };
 
@@ -20,6 +24,7 @@ type AppRowProps = {
 export const AppRow = ({ app, actions }: AppRowProps) => {
   const { t } = useTranslation();
   const { locale } = usePreferences();
+  const navigate = useNavigate();
 
   return (
     <li className="flex items-center gap-2 rounded-md px-2 py-1">
@@ -43,7 +48,19 @@ export const AppRow = ({ app, actions }: AppRowProps) => {
         </small>
       </span>
       <span className="flex shrink-0 [&_button]:size-7 [&_svg]:size-4! max-md:gap-1 max-md:[&_button]:size-11">
-        {actions}
+        {app.canManage && (
+          <>
+            <IconButton
+              label={t("app.editOf", { name: app.name })}
+              onPress={() => {
+                void navigate({ search: openDialog({ app: app.id, dialog: "edit-app" }), to: "." });
+              }}
+            >
+              <IconEdit />
+            </IconButton>
+            {actions}
+          </>
+        )}
       </span>
     </li>
   );

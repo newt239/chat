@@ -12,11 +12,9 @@ import {
 } from "@tanstack/react-router";
 import { render } from "@testing-library/react";
 import { Provider as JotaiProvider, createStore } from "jotai";
-import { z } from "zod";
 
 import { adminSearchSchema } from "#/features/admin/schemas";
-import { browseChannelsSearchSchema } from "#/features/channel/schemas";
-import { jumpDateSchema } from "#/features/message/utils/dateJump";
+import { browseChannelsSearchSchema, channelSearchSchema } from "#/features/channel/schemas";
 import { searchQuerySchema } from "#/features/search/schemas";
 import { workspaceSearchSchema } from "#/lib/overlaySearch";
 import { sessionAtom } from "#/providers/store/auth";
@@ -72,10 +70,7 @@ export const renderWithProviders = async (
   const channelRoute = createRoute({
     getParentRoute: () => workspaceRoute,
     path: "/$channelId",
-    validateSearch: z.object({
-      date: jumpDateSchema.optional(),
-      message: z.string().optional(),
-    }),
+    validateSearch: channelSearchSchema,
   });
   const inviteRoute = createRoute({ getParentRoute: () => rootRoute, path: "/invite/$token" });
   const joinRoute = createRoute({ getParentRoute: () => rootRoute, path: "/join/$workspaceId" });

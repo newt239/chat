@@ -7,7 +7,7 @@ type SettingsLayoutProps = {
   icon: ReactNode;
   title: string;
   sectionTitle: string;
-  // SettingsNavLink を並べる。モバイルでは項目ごとに積んだ画面なので出さない
+  // settingsNavLinkClassName のリンクを並べる。モバイルでは項目ごとに積んだ画面なので出さない
   nav: ReactNode;
   children: ReactNode;
 };

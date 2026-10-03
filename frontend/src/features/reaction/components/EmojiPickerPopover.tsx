@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
 
+import { skipToken, useQuery } from "@connectrpc/connect-query";
 import { IconMoodPlus } from "@tabler/icons-react";
 import { useParams } from "@tanstack/react-router";
 import { DialogTrigger } from "react-aria-components";
@@ -11,8 +12,7 @@ import { Dialog } from "#/components/ui/Dialog/Dialog";
 import { Popover } from "#/components/ui/Popover/Popover";
 import { CustomEmojiForm } from "#/features/customEmoji/components/CustomEmojiForm";
 import { toCustomEmojiValue } from "#/features/customEmoji/utils/customEmoji";
-import { Permission } from "#/gen/chat/v1/permission_service_pb";
-import { usePermissions } from "#/hooks/usePermissions";
+import { Permission, PermissionService } from "#/gen/chat/v1/permission_service_pb";
 
 import { EmojiPicker } from "./EmojiPicker";
 
@@ -35,9 +35,11 @@ export const EmojiPickerPopover = ({
 }: EmojiPickerPopoverProps) => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ strict: false });
-  const { data: permissions } = usePermissions(workspaceId ?? null);
-  const canCreateEmoji =
-    permissions?.myPermissions.includes(Permission.CREATE_CUSTOM_EMOJI) ?? false;
+  const { data: canCreateEmoji = false } = useQuery(
+    PermissionService.method.getPermissions,
+    workspaceId === undefined ? skipToken : { workspaceId },
+    { select: (res) => res.myPermissions.includes(Permission.CREATE_CUSTOM_EMOJI) },
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const changeOpen = (next: boolean) => {

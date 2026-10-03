@@ -132,7 +132,6 @@ export const admin = {
       editChannelLinks: "関連リンクの編集",
       inviteMembers: "メンバーの招待",
       pinMessages: "メッセージのピン留め",
-      unspecified: "不明な操作",
     },
     note: "オーナーは常にすべての操作ができます。管理者の列はオーナーだけが変更できます。ユーザーグループの編集はオーナーと管理者だけができます。変更は監査ログに記録されます。",
     operation: "操作",

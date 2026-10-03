@@ -13,7 +13,6 @@ export const ui: Messages["ui"] = {
     showSuggestions: "Show suggestions",
   },
   copyableUrl: {
-    copied: "Copied the link",
     copy: "Copy",
   },
   iconImage: {

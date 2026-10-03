@@ -4,11 +4,11 @@ import { useTranslation } from "react-i18next";
 
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { toPlainText } from "#/features/message/utils/markdown/plainText";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
 import { replaceMentionTokens } from "../utils/mentionToken";
+import { toPlainText } from "../utils/plainText";
 
 import type { MentionToken } from "../utils/mentionToken";
 
@@ -45,16 +45,14 @@ export const useMentionDirectory = () => {
     return name === undefined ? null : `@${name}`;
   };
 
-  // 抜粋や通知など平文で出す本文。分からない宛先は伏せる
-  const toText = (body: string) =>
-    replaceMentionTokens(
-      body,
-      (token) =>
-        labelOf(token) ??
-        (token.kind === "channel"
-          ? `#${t("message.mention.unknownChannel")}`
-          : `@${t(token.kind === "group" ? "message.mention.unknownGroup" : "message.mention.unknownUser")}`),
-    );
+  // 本文や抜粋に出す名前。分からない宛先は伏せる
+  const textOf = (token: MentionToken) =>
+    labelOf(token) ??
+    (token.kind === "channel"
+      ? `#${t("message.mention.unknownChannel")}`
+      : `@${t(token.kind === "group" ? "message.mention.unknownGroup" : "message.mention.unknownUser")}`);
+
+  const toText = (body: string) => replaceMentionTokens(body, textOf);
 
   // 一覧やシートに出す 1 行の抜粋
   const toExcerpt = (body: string) =>
@@ -66,6 +64,7 @@ export const useMentionDirectory = () => {
     isReady: members !== undefined && groups !== undefined && channels !== undefined,
     labelOf,
     member,
+    textOf,
     toExcerpt,
     toText,
     workspaceId,

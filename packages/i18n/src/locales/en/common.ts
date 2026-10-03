@@ -5,6 +5,7 @@ export const common: Messages["common"] = {
   close: "Close",
   copyFailed: "Couldn't copy",
   delete: "Delete",
+  linkCopied: "Link copied",
   save: "Save",
   upload: {
     aborted: "Upload canceled",

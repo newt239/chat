@@ -1,5 +1,3 @@
-import { useEffect, useEffectEvent } from "react";
-
 import { IconChevronLeft, IconChevronRight, IconDownload, IconX } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button, Dialog, Modal, ModalOverlay } from "react-aria-components";
@@ -46,26 +44,6 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
     }
   };
 
-  // 左右キーで前後の画像へ移る。Esc で閉じるのは Modal が扱う
-  const moveByKey = useEffectEvent((event: KeyboardEvent) => {
-    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-      move(event.key === "ArrowLeft" ? -1 : 1);
-    }
-  });
-  const isLightboxOpen = index !== null;
-  useEffect(() => {
-    if (!isLightboxOpen || !hasMany) {
-      return undefined;
-    }
-    const onKeyDown = (event: KeyboardEvent) => {
-      moveByKey(event);
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [isLightboxOpen, hasMany]);
-
   const isTall =
     image?.media?.width !== undefined &&
     image.media.height !== undefined &&
@@ -93,6 +71,19 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
             <Dialog
               aria-label={t("attachment.lightbox.label")}
               className="flex size-full flex-col font-sans text-media-fg outline-none"
+              // 左右キーで前後の画像へ移る。Esc で閉じるのは Modal が扱う
+              render={(props) => (
+                // oxlint-disable-next-line jsx-a11y/no-static-element-interactions -- role は props で付く
+                <section
+                  {...props}
+                  onKeyDown={(event) => {
+                    props.onKeyDown?.(event);
+                    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+                      move(event.key === "ArrowLeft" ? -1 : 1);
+                    }
+                  }}
+                />
+              )}
             >
               <header className="flex items-center gap-2.5 px-3.5 pt-[max(10px,env(safe-area-inset-top))] pb-2.5 text-body-sm">
                 <Avatar name={authorName} src={message.user?.avatarUrl} size={30} />

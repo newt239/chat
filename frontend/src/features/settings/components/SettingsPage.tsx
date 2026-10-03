@@ -3,7 +3,8 @@ import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { SettingsLayout } from "#/components/block/SettingsLayout/SettingsLayout";
-import { SettingsNavLink } from "#/components/block/SettingsNavLink/SettingsNavLink";
+import { settingsNavLinkClassName } from "#/components/block/SettingsLayout/settingsNavLinkClassName";
+import { Link } from "#/components/ui/Link/Link";
 
 import { findSettingsSection, settingsSections } from "../schemas";
 import { settingsSectionIcons } from "../utils/sectionIcons";
@@ -39,7 +40,8 @@ export const SettingsPage = () => {
       nav={settingsSections.map((name) => {
         const Icon = settingsSectionIcons[name];
         return (
-          <SettingsNavLink
+          <Link
+            className={settingsNavLinkClassName}
             key={name}
             to="/app/$workspaceId/settings/{-$section}"
             params={{ section: name, workspaceId }}
@@ -47,7 +49,7 @@ export const SettingsPage = () => {
           >
             <Icon aria-hidden />
             {t(`settings.sections.${name}`)}
-          </SettingsNavLink>
+          </Link>
         );
       })}
     >

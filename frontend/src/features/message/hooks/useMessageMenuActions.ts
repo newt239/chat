@@ -22,11 +22,11 @@ import {
   useIsBookmarked,
   useRemoveBookmark,
 } from "#/features/bookmark/hooks/useBookmarks";
-import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
 import { useMentionDirectory } from "#/features/mention/hooks/useMentionDirectory";
 import { usePinActions } from "#/features/pin/hooks/usePinActions";
 import { useToggleThreadFollow } from "#/features/thread/hooks/useToggleThreadFollow";
 import { copyWithToast } from "#/lib/clipboard";
+import { workspaceRoute } from "#/lib/overlaySearch";
 import { toShareUrl } from "#/lib/shareUrl";
 
 import { messageLocation } from "../utils/messageLocation";
@@ -116,7 +116,7 @@ export const useMessageMenuActions = ({
         workspaceId,
       }),
     );
-    void copyWithToast(toShareUrl(href), t("message.link.copied"));
+    void copyWithToast(toShareUrl(href), t("common.linkCopied"));
   };
 
   const threadHref = router.buildLocation({

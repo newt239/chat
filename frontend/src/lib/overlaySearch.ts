@@ -1,3 +1,4 @@
+import { getRouteApi } from "@tanstack/react-router";
 import { z } from "zod";
 
 const optionalId = z.string().min(1).optional().catch(undefined);
@@ -46,6 +47,9 @@ export const workspaceSearchSchema = z.object({
   // モバイルで長押ししたメッセージの操作シート
   sheet: optionalId,
 });
+
+// 右パネルやダイアログの search を子のルートから読む
+export const workspaceRoute = getRouteApi("/app/$workspaceId");
 
 type WorkspaceSearch = z.input<typeof workspaceSearchSchema>;
 

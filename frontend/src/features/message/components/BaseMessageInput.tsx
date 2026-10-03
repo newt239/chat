@@ -20,47 +20,37 @@ import { CommandService } from "#/gen/chat/v1/command_service_pb";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 
 import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
+import { useSendMessage } from "../hooks/useMessage";
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
 import { findCommand, unescapeCommand } from "../utils/commands";
-import { continueList, detectActiveFormats, insertEmoji, toggleFormat } from "../utils/format";
+import { detectActiveFormats, handleEnterKey, insertEmoji, toggleFormat } from "../utils/format";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
 import { SuggestionList } from "./SuggestionList";
 
 import type { FormatKey, Selection } from "../utils/format";
 
-import type { MessageLocation, PollInput } from "#/gen/chat/v1/message_pb";
-
-// 入力欄から送る内容。CreateMessage の入力にそのまま広げて使う
-export type ComposerContent = {
-  body: string;
-  attachmentIds: string[];
-  location: MessageLocation | undefined;
-  poll: PollInput | undefined;
-};
+import type { Message, MessageLocation, PollInput } from "#/gen/chat/v1/message_pb";
 
 type BaseMessageInputProps = {
-  onSubmit: (content: ComposerContent) => void;
   placeholder: string;
-  isPending: boolean;
-  error: string | null;
   channelId: string;
-  // スレッドへの返信の欄のときの親メッセージ。下書きの置き場所に使う
+  // スレッドへの返信の欄のときの親メッセージ
   parentId: string | null;
   // 集約表示中の投稿先の切り替え。入力欄の上に出す
   targetPicker: ReactNode;
+  // 送った投稿を呼び出し側の表示に足すとき
+  onSent: ((message: Message) => void) | null;
 };
 
 const urlPattern = /https?:\/\/[^\s<>"{}|\\^`[\]]+/g;
 
 export const BaseMessageInput = ({
-  onSubmit,
   placeholder,
-  isPending,
-  error,
   channelId,
   parentId,
   targetPicker,
+  onSent,
 }: BaseMessageInputProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -95,10 +85,11 @@ export const BaseMessageInput = ({
     getCompletedAttachmentIds,
     isUploading,
   } = useFileUpload();
+  const sendMessage = useSendMessage();
   const scheduleMessage = useScheduleMessage();
   // 応答は公式アプリの投稿として WebSocket で届く
   const executeCommand = useMutation(CommandService.method.executeCommand);
-  const isBusy = isPending || executeCommand.isPending;
+  const isBusy = sendMessage.isPending || executeCommand.isPending;
 
   const handleBodyChange = (next: string) => {
     setTypedBody(next);
@@ -183,6 +174,25 @@ export const BaseMessageInput = ({
     clearAttachments();
   };
 
+  const send = (content: {
+    body: string;
+    attachmentIds: string[];
+    location: MessageLocation | undefined;
+    poll: PollInput | undefined;
+  }) => {
+    sendMessage.mutate(
+      { ...content, channelId, parentId: parentId ?? undefined },
+      {
+        onSuccess: ({ message }) => {
+          if (message && onSent) {
+            onSent(message);
+          }
+        },
+      },
+    );
+    resetComposer();
+  };
+
   const handleSubmit = () => {
     const content = collectContent();
     if (content === null) {
@@ -205,8 +215,7 @@ export const BaseMessageInput = ({
       );
       return;
     }
-    onSubmit({ ...content, body: unescapeCommand(content.body) });
-    resetComposer();
+    send({ ...content, body: unescapeCommand(content.body) });
   };
 
   const handleSchedule = (scheduledAt: Date) => {
@@ -279,26 +288,16 @@ export const BaseMessageInput = ({
             }}
             isDisabled={isBusy}
             onKeyDown={(event) => {
-              if (
-                suggestion.handleKeyDown(event) ||
-                event.key !== "Enter" ||
-                event.nativeEvent.isComposing
-              ) {
-                return;
-              }
-              // モバイルの Enter は改行にする
-              if (!event.shiftKey && !isMobile) {
-                event.preventDefault();
-                handleSubmit();
-                return;
-              }
-              const textarea = textareaRef.current;
-              const continued =
-                textarea &&
-                continueList(body, { end: textarea.selectionEnd, start: textarea.selectionStart });
-              if (continued) {
-                event.preventDefault();
-                replaceSelection(continued);
+              if (!suggestion.handleKeyDown(event)) {
+                handleEnterKey({
+                  event,
+                  onReplace: replaceSelection,
+                  onSubmit: handleSubmit,
+                  // モバイルの Enter は改行にする
+                  submitsOnEnter: !isMobile,
+                  text: body,
+                  textarea: textareaRef.current,
+                });
               }
             }}
           >
@@ -362,8 +361,7 @@ export const BaseMessageInput = ({
         onOpenChange={setIsPollOpen}
         onConfirm={(poll) => {
           // 書きかけの本文は投票の説明として一緒に投稿する
-          onSubmit({ attachmentIds: [], body: encode(body.trim()), location: undefined, poll });
-          resetComposer();
+          send({ attachmentIds: [], body: encode(body.trim()), location: undefined, poll });
         }}
       />
       {isLocationOpen && (
@@ -374,7 +372,11 @@ export const BaseMessageInput = ({
           onConfirm={setLocation}
         />
       )}
-      {error && <p className="m-0 mt-1.5 text-caption text-danger">{error}</p>}
+      {sendMessage.isError && (
+        <p className="m-0 mt-1.5 text-caption text-danger">
+          {sendMessage.error.rawMessage || t("message.composer.sendFailed")}
+        </p>
+      )}
     </Form>
   );
 };

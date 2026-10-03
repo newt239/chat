@@ -5,8 +5,7 @@
   "type": "module",
   "exports": {
     "./format": "./src/format.ts",
-    "./i18n": "./src/i18n.ts",
-    "./messages": "./src/messages.ts"
+    "./i18n": "./src/i18n.ts"
   },
   "scripts": {
     "codecheck": "pnpm run typecheck && pnpm run lint && pnpm run format && pnpm run test",

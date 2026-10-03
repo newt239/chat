@@ -26,10 +26,12 @@ const hasMessages: Record<SearchHasValue, SearchHas> = {
   video: SearchHas.VIDEO,
 };
 
+const RESULTS_PER_PAGE = 20;
+
 const toTimestamp = (date: Date | undefined) =>
   date === undefined ? undefined : timestampFromDate(date);
 
-export const useWorkspaceSearch = (workspaceId: string, search: SearchParams, perPage: number) => {
+export const useWorkspaceSearch = (workspaceId: string, search: SearchParams) => {
   const resolved = useResolvedSearchQuery(workspaceId, search.q);
   const { query, users, inChannels, isResolving } = resolved;
   const text = query.keywords.join(" ");
@@ -65,7 +67,7 @@ export const useWorkspaceSearch = (workspaceId: string, search: SearchParams, pe
             threadOnly: query.is.includes("thread"),
           },
           page: search.page,
-          perPage,
+          perPage: RESULTS_PER_PAGE,
           query: text,
           sort: searchSortMessages[search.sort],
           target: searchFilterMessages[search.filter],

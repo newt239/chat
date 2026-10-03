@@ -21,9 +21,8 @@ const customSchema = {
     code: [...(defaultSchema.attributes?.code ?? []), "className"],
     span: [
       ...(defaultSchema.attributes?.span ?? []),
-      ["className", "mention", "channel-link", "custom-emoji"],
+      ["className", "mention", "custom-emoji"],
       "dataMention",
-      "dataChannel",
       "dataEmoji",
     ],
   },

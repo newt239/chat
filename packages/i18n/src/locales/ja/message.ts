@@ -32,6 +32,7 @@ export const message = {
     previewEmpty: "プレビューするテキストを入力してください",
     quote: "引用",
     send: "送信",
+    sendFailed: "送信できませんでした",
     strikethrough: "取り消し線",
     uploading: "アップロードが終わるまでお待ちください",
   },
@@ -80,7 +81,6 @@ export const message = {
     mention: "メンション",
   },
   link: {
-    copied: "リンクをコピーしました",
     textCopied: "テキストをコピーしました",
   },
   mention: {
@@ -117,7 +117,6 @@ export const message = {
     noReplies: "まだ返信がありません",
     replies: "{{count}} 件の返信",
     replyPlaceholder: "スレッドに返信",
-    sendFailed: "返信を送信できませんでした",
   },
   typing: {
     many: "複数人が入力中",

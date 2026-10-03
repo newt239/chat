@@ -1,3 +1,5 @@
+import { canvasToBlob } from "#/lib/canvasToBlob";
+
 import type { Area } from "react-easy-crop";
 
 const OUTPUT_SIZE = 256;
@@ -13,17 +15,5 @@ export const cropImage = async (src: string, area: Area) => {
   canvas
     .getContext("2d")
     ?.drawImage(image, area.x, area.y, area.width, area.height, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error("failed to encode image"));
-        }
-      },
-      "image/webp",
-      0.9,
-    );
-  });
+  return canvasToBlob(canvas, "image/webp", 0.9);
 };

@@ -1,11 +1,11 @@
 import { timestampNow } from "@bufbuild/protobuf/wkt";
-import { createConnectQueryKey, useMutation } from "@connectrpc/connect-query";
+import { useMutation } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { channelListKey } from "#/features/channel/hooks/useChannel";
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
-import { DirectMessageService } from "#/gen/chat/v1/direct_message_service_pb";
 
+import { channelListKey } from "./useChannel";
+import { dmListKey } from "./useDM";
 import { useUpdateReadState } from "./useUpdateReadState";
 
 import type {
@@ -22,13 +22,7 @@ export const useChannelListActions = (workspaceId: string) => {
     update: (dm: DirectMessage) => DirectMessage,
   ) => {
     queryClient.setQueriesData<ListDirectMessagesResponse>(
-      {
-        queryKey: createConnectQueryKey({
-          cardinality: "finite",
-          input: { workspaceId },
-          schema: DirectMessageService.method.listDirectMessages,
-        }),
-      },
+      { queryKey: dmListKey(workspaceId) },
       (res) =>
         res && {
           ...res,

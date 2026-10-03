@@ -1,13 +1,15 @@
 import { useState } from "react";
 
+import { formatBytes } from "@chat/i18n/format";
 import { useMutation } from "@connectrpc/connect-query";
 import { useTranslation } from "react-i18next";
 
 import { AttachmentService } from "#/gen/chat/v1/attachment_service_pb";
+import { usePreferences } from "#/hooks/usePreferences";
 import { putToStorage } from "#/lib/upload";
 
 import { measureMedia } from "../utils/measureMedia";
-import { formatFileSize, validateFile } from "../utils/validator";
+import { validateFile } from "../utils/validator";
 
 export type PendingAttachment = {
   id: string;
@@ -29,6 +31,7 @@ export const useFileUpload = () => {
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const presignMutation = useMutation(AttachmentService.method.presignUpload);
   const { t } = useTranslation();
+  const { locale } = usePreferences();
 
   // 並行して上げても互いの行を上書きしないよう、添付ごとの id で更新する
   const setState = (id: string, state: PendingAttachment["state"]) => {
@@ -50,7 +53,7 @@ export const useFileUpload = () => {
             error:
               invalidReason === "empty"
                 ? t("attachment.errors.empty")
-                : t("attachment.errors.tooLarge", { size: formatFileSize(file.size) }),
+                : t("attachment.errors.tooLarge", { size: formatBytes(file.size, locale) }),
             status: "error",
           },
         },

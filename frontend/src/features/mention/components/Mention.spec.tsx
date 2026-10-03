@@ -8,8 +8,10 @@ import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { Mention } from "./Mention";
 
-const setup = (value: string) =>
-  renderWithProviders(<Mention data-mention={value} />, "/app/ws1", (routes) => {
+import type { MentionToken } from "../utils/mentionToken";
+
+const setup = (token: MentionToken) =>
+  renderWithProviders(<Mention token={token} />, "/app/ws1", (routes) => {
     routes.rpc(WorkspaceService.method.listMembers, () => ({
       members: [create(WorkspaceMemberSchema, { displayName: "Bob Smith", userId: "u-bob" })],
     }));
@@ -20,23 +22,23 @@ const setup = (value: string) =>
 
 describe("Mention", () => {
   test("ユーザーは ID で引いた今の表示名のボタンにする", async () => {
-    await setup("user:u-bob");
+    await setup({ id: "u-bob", kind: "user" });
     expect(await screen.findByRole("button", { name: "@Bob Smith" })).toBeInTheDocument();
   });
 
   test("グループは ID で引いた今の名前のボタンにする", async () => {
-    await setup("group:g1");
+    await setup({ id: "g1", kind: "group" });
     expect(await screen.findByRole("button", { name: "@developers" })).toBeInTheDocument();
   });
 
   test("@channel / @here はボタンにしない", async () => {
-    await setup("broadcast:here");
+    await setup({ id: "here", kind: "broadcast" });
     expect(await screen.findByText("@here")).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
   test("見つからないユーザーは名前を伏せる", async () => {
-    await setup("user:u-nobody");
+    await setup({ id: "u-nobody", kind: "user" });
     expect(await screen.findByText("@不明なユーザー")).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });

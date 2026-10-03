@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vite-plus/test";
 
-import { ensureSession, refreshOrSignOut, refreshSession } from "#/lib/session";
+import { ensureSession, refreshOrSignOut } from "#/lib/session";
 import { sessionAtom } from "#/providers/store/auth";
 import { store } from "#/providers/store/store";
 
@@ -25,7 +25,7 @@ describe("session", () => {
 
   test("同時に呼ばれた refresh は 1 回の通信にまとめ、セッションを始める", async () => {
     const fetchMock = respondRefresh(Response.json({ accessToken: "new", user: { id: "u1" } }));
-    const tokens = await Promise.all([refreshSession(), refreshSession()]);
+    const tokens = await Promise.all([refreshOrSignOut(), refreshOrSignOut()]);
     expect(tokens).toEqual(["new", "new"]);
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(store.get(sessionAtom)).toEqual({ accessToken: "new", userId: "u1" });

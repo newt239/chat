@@ -23,8 +23,6 @@ import { SearchResultList } from "./SearchResultList";
 
 import type { SearchFilter } from "#/features/search/schemas";
 
-const RESULTS_PER_PAGE = 20;
-
 const searchRoute = getRouteApi("/app/$workspaceId/search");
 
 const pageCount = (total: number, perPage: number) =>
@@ -41,7 +39,6 @@ export const SearchPage = () => {
   const { data, isFetching, error, isEnabled, unresolved, resolved } = useWorkspaceSearch(
     workspaceId,
     search,
-    RESULTS_PER_PAGE,
   );
 
   // 入力欄は URL のクエリを初期値にした非制御の欄なので、DOM の値を書き換えて input イベントで知らせる
@@ -77,29 +74,23 @@ export const SearchPage = () => {
 
   const renderResults = () => {
     const { invalidDates } = resolved.query;
-    if (invalidDates.length > 0) {
+    const errorMessage =
+      invalidDates.length > 0
+        ? t("search.invalidDate", { tokens: invalidDates.join(", ") })
+        : unresolved.length > 0
+          ? t("search.unresolved", { names: unresolved.join(", ") })
+          : error
+            ? t("search.failed")
+            : null;
+    if (errorMessage !== null) {
       return (
         <p role="alert" className="m-0 px-4.5 py-6 text-caption text-danger">
-          {t("search.invalidDate", { tokens: invalidDates.join(", ") })}
-        </p>
-      );
-    }
-    if (unresolved.length > 0) {
-      return (
-        <p role="alert" className="m-0 px-4.5 py-6 text-caption text-danger">
-          {t("search.unresolved", { names: unresolved.join(", ") })}
+          {errorMessage}
         </p>
       );
     }
     if (query.trim().length === 0) {
       return <p className="m-0 px-4.5 py-6 text-caption text-muted">{t("search.prompt")}</p>;
-    }
-    if (error) {
-      return (
-        <p role="alert" className="m-0 px-4.5 py-6 text-caption text-danger">
-          {t("search.failed")}
-        </p>
-      );
     }
     if (!isEnabled || isFetching || data === undefined) {
       return (

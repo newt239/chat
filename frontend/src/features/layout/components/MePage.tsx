@@ -3,10 +3,10 @@ import { useParams } from "@tanstack/react-router";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { NavLink } from "#/components/block/NavLink/NavLink";
-import { mobileNavTone, navItemClassName } from "#/components/block/NavLink/navTone";
 import { PageHeader } from "#/components/block/PageHeader/PageHeader";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Link } from "#/components/ui/Link/Link";
+import { mobileNavTone, navItemClassName } from "#/components/ui/styles/navTone";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { useLogout } from "#/features/auth/hooks/useLogout";
 import { InstallAppRow } from "#/features/layout/components/InstallAppRow";
@@ -32,14 +32,18 @@ export const MePage = () => {
       <PageHeader icon={<IconUser />} title={t("shell.tabs.me")} />
       <div className={cn(mobileNavTone, "flex min-h-0 flex-1 flex-col overflow-y-auto p-1.5")}>
         {user && (
-          <NavLink to="." search={openPanel({ profile: user.id })} className="h-auto gap-3 py-3">
+          <Link
+            to="."
+            search={openPanel({ profile: user.id })}
+            className={cn(navItemClassName, "h-auto gap-3 py-3")}
+          >
             <Avatar name={user.displayName} src={user.avatarUrl} size={52} isOnline />
             <span className="flex min-w-0 flex-1 flex-col">
               <b className="truncate text-title">{user.displayName}</b>
               <span className="truncate text-caption text-muted">{user.email}</span>
             </span>
             <IconChevronRight aria-hidden />
-          </NavLink>
+          </Link>
         )}
         <h2 className="m-0 px-2.5 pt-4 pb-1 text-xs font-semibold text-muted">
           {t("settings.title")}
@@ -47,7 +51,8 @@ export const MePage = () => {
         {mobileSettingsSections.map((section) => {
           const Icon = settingsSectionIcons[section];
           return (
-            <NavLink
+            <Link
+              className={navItemClassName}
               key={section}
               to="/app/$workspaceId/settings/{-$section}"
               params={{ section, workspaceId }}
@@ -55,7 +60,7 @@ export const MePage = () => {
               <Icon aria-hidden />
               <span className="flex-1">{t(`settings.sections.${section}`)}</span>
               <IconChevronRight aria-hidden />
-            </NavLink>
+            </Link>
           );
         })}
         {!isTauri && <InstallAppRow />}

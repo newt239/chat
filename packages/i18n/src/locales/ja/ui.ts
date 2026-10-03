@@ -11,7 +11,6 @@ export const ui = {
     showSuggestions: "候補を表示",
   },
   copyableUrl: {
-    copied: "リンクをコピーしました",
     copy: "コピー",
   },
   iconImage: {

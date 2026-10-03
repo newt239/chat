@@ -6,7 +6,7 @@ import { isDescendantPath } from "../utils/channelTree";
 import { useChannels } from "./useChannel";
 
 /** 親チャンネルで子孫のメッセージもまとめて表示するか。子孫がいれば既定でオン */
-export const useChannelAggregation = (workspaceId: string | null, channelId: string | null) => {
+export const useChannelAggregation = (workspaceId: string, channelId: string) => {
   const { data: channels, isLoading, isError } = useChannels(workspaceId);
   const [excluded, setExcluded] = useAtom(excludedDescendantsAtom);
   const channel = channels?.find((candidate) => candidate.id === channelId);
@@ -24,9 +24,7 @@ export const useChannelAggregation = (workspaceId: string | null, channelId: str
     // チャンネル一覧を読み込むまでは集約するか決まらない
     isResolved: !isLoading,
     setIncludesDescendants: (value: boolean) => {
-      if (channelId !== null) {
-        setExcluded({ ...excluded, [channelId]: !value });
-      }
+      setExcluded({ ...excluded, [channelId]: !value });
     },
   };
 };

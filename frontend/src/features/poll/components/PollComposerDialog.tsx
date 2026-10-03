@@ -87,13 +87,21 @@ export const PollComposerDialog = ({
       setDates((current) => [...current, { allDay: false, at: daysLater(current.length + 1, 19) }]);
     }
   };
-  const removeOption = (index: number) => {
-    if (mode === "text") {
-      setLabels((current) => current.filter((_, i) => i !== index));
-    } else {
-      setDates((current) => current.filter((_, i) => i !== index));
-    }
-  };
+  const removeButton = (index: number) =>
+    optionCount > 2 && (
+      <IconButton
+        label={t("poll.removeOption", { number: index + 1 })}
+        onPress={() => {
+          if (mode === "text") {
+            setLabels((current) => current.filter((_, i) => i !== index));
+          } else {
+            setDates((current) => current.filter((_, i) => i !== index));
+          }
+        }}
+      >
+        <IconX />
+      </IconButton>
+    );
 
   return (
     <Dialog
@@ -147,16 +155,7 @@ export const PollComposerDialog = ({
                     setLabels((current) => current.map((value, i) => (i === index ? next : value)));
                   }}
                 />
-                {optionCount > 2 && (
-                  <IconButton
-                    label={t("poll.removeOption", { number: index + 1 })}
-                    onPress={() => {
-                      removeOption(index);
-                    }}
-                  >
-                    <IconX />
-                  </IconButton>
-                )}
+                {removeButton(index)}
               </div>
             ))
           : dates.map((option, index) => (
@@ -183,16 +182,7 @@ export const PollComposerDialog = ({
                 >
                   {t("poll.allDay")}
                 </Checkbox>
-                {optionCount > 2 && (
-                  <IconButton
-                    label={t("poll.removeOption", { number: index + 1 })}
-                    onPress={() => {
-                      removeOption(index);
-                    }}
-                  >
-                    <IconX />
-                  </IconButton>
-                )}
+                {removeButton(index)}
               </div>
             ))}
         {isSubmitted && isOptionsShort && (

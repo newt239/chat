@@ -25,18 +25,18 @@ export const WsProvider = ({ workspaceId, children }: WsProviderProps) => {
 
   useEffect(() => {
     if (!hasSession) {
-      setWsClient(null);
       return undefined;
     }
     const instance = new WsClient(
       () => realtimeClient.issueWebSocketTicket({ workspaceId }).then(({ ticket }) => ticket),
       isTauri && !isMobileApp,
     );
+    // oxlint-disable-next-line react/set-state-in-effect -- 接続は effect の中で作って閉じる
     setWsClient(instance);
     return () => {
       instance.close();
     };
   }, [hasSession, workspaceId]);
 
-  return <WsClientContext value={wsClient}>{children}</WsClientContext>;
+  return <WsClientContext value={hasSession ? wsClient : null}>{children}</WsClientContext>;
 };

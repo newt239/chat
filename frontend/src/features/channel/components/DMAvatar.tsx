@@ -1,5 +1,5 @@
 import { Avatar } from "#/components/ui/Avatar/Avatar";
-import { GroupAvatar } from "#/features/dm/components/GroupAvatar";
+import { GroupAvatar } from "#/features/channel/components/GroupAvatar";
 import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
 
 import type { DirectMessage } from "#/gen/chat/v1/direct_message_service_pb";

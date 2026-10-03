@@ -3,9 +3,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { BaseMessageInput } from "#/features/message/components/BaseMessageInput";
 import { MessageItem } from "#/features/message/components/MessageItem";
 import { MessageListCard } from "#/features/message/components/MessageListCard";
-import { InlineReplyComposer } from "#/features/thread/components/InlineReplyComposer";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 
@@ -35,9 +35,10 @@ export const MentionCard = ({ workspaceId, message }: MentionCardProps) => {
         />
       ))}
       <div className="pt-1">
-        <InlineReplyComposer
+        <BaseMessageInput
           channelId={channelId}
           parentId={threadId}
+          targetPicker={null}
           placeholder={t("inbox.mention.replyPlaceholder", {
             name: displayName(message.userId, message.user?.displayName ?? ""),
           })}

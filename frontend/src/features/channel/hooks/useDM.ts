@@ -3,6 +3,13 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { DirectMessageService } from "#/gen/chat/v1/direct_message_service_pb";
 
+export const dmListKey = (workspaceId: string) =>
+  createConnectQueryKey({
+    cardinality: "finite",
+    input: { workspaceId },
+    schema: DirectMessageService.method.listDirectMessages,
+  });
+
 export const useDMs = (workspaceId: string) =>
   useQuery(
     DirectMessageService.method.listDirectMessages,
@@ -12,14 +19,8 @@ export const useDMs = (workspaceId: string) =>
 
 const useInvalidateDMs = () => {
   const queryClient = useQueryClient();
-
-  return async () => {
-    await queryClient.invalidateQueries({
-      queryKey: createConnectQueryKey({
-        cardinality: "finite",
-        schema: DirectMessageService.method.listDirectMessages,
-      }),
-    });
+  return async (_: object, { workspaceId = "" }: { workspaceId?: string }) => {
+    await queryClient.invalidateQueries({ queryKey: dmListKey(workspaceId) });
   };
 };
 

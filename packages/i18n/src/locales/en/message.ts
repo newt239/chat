@@ -34,6 +34,7 @@ export const message: Messages["message"] = {
     previewEmpty: "Type something to preview",
     quote: "Quote",
     send: "Send",
+    sendFailed: "Couldn't send",
     strikethrough: "Strikethrough",
     uploading: "Wait for the upload to finish",
   },
@@ -82,7 +83,6 @@ export const message: Messages["message"] = {
     mention: "Mention",
   },
   link: {
-    copied: "Link copied",
     textCopied: "Text copied",
   },
   mention: {
@@ -119,7 +119,6 @@ export const message: Messages["message"] = {
     noReplies: "No replies yet",
     replies: "Replies: {{count}}",
     replyPlaceholder: "Reply in thread",
-    sendFailed: "Couldn't send the reply",
   },
   typing: {
     many: "Several people are typing",

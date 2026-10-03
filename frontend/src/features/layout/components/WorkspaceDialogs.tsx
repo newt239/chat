@@ -1,21 +1,18 @@
-import { skipToken, useQuery } from "@connectrpc/connect-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 
 import { AppDialogLoader } from "#/features/app/components/AppDialogLoader";
 import { ChannelCategoryDialog } from "#/features/channel/components/ChannelCategoryDialog";
 import { ChannelLinkDialog } from "#/features/channel/components/ChannelLinkDialog";
 import { CreateChannelModal } from "#/features/channel/components/CreateChannelModal";
+import { CreateDMModal } from "#/features/channel/components/CreateDMModal";
 import { useChannelCategories } from "#/features/channel/hooks/useChannelCategories";
-import { CreateDMModal } from "#/features/dm/components/CreateDMModal";
+import { useChannelLinks } from "#/features/channel/hooks/useChannelLinks";
 import { MarkdownHelpModal } from "#/features/message/components/MarkdownHelpModal";
 import { UserGroupDialog } from "#/features/userGroup/components/UserGroupDialog";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { CreateWorkspaceModal } from "#/features/workspace/components/CreateWorkspaceModal";
-import { ChannelLinkService } from "#/gen/chat/v1/channel_link_service_pb";
 import { useIsWorkspaceAdmin } from "#/hooks/useIsWorkspaceAdmin";
-import { closeDialog, openPanel } from "#/lib/overlaySearch";
-
-import { workspaceRoute } from "../utils/workspaceRoute";
+import { closeDialog, openPanel, workspaceRoute } from "#/lib/overlaySearch";
 
 type WorkspaceDialogsProps = {
   workspaceId: string;
@@ -32,9 +29,8 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
   const { data: categories } = useChannelCategories(workspaceId);
   const editingCategory = categories?.find((candidate) => candidate.id === category);
   const isLinkDialog = dialog === "add-link" || dialog === "edit-link";
-  const { data: channelLinks } = useQuery(
-    ChannelLinkService.method.listChannelLinks,
-    isLinkDialog && channelId !== undefined ? { channelId } : skipToken,
+  const { data: channelLinks } = useChannelLinks(
+    isLinkDialog && channelId !== undefined ? channelId : null,
   );
   const editingLink = channelLinks?.links.find((candidate) => candidate.id === link);
 

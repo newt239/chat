@@ -15,7 +15,6 @@ import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
 import { auditPeriodValues } from "#/features/admin/schemas";
-import { downloadText } from "#/features/admin/utils/downloadText";
 import { auditActions } from "#/features/admin/utils/labels";
 import { AdminService } from "#/gen/chat/v1/admin_service_pb";
 import { usePreferences } from "#/hooks/usePreferences";
@@ -188,7 +187,14 @@ export const AdminAuditTab = ({ workspaceId, members }: AdminAuditTabProps) => {
           onPress={() => {
             exportAuditLogs.mutate(filter, {
               onSuccess: ({ content, fileName }) => {
-                downloadText(content, fileName, "text/csv;charset=utf-8");
+                const url = URL.createObjectURL(
+                  new Blob([content], { type: "text/csv;charset=utf-8" }),
+                );
+                const anchor = document.createElement("a");
+                anchor.href = url;
+                anchor.download = fileName;
+                anchor.click();
+                URL.revokeObjectURL(url);
                 toast(t("admin.audit.exported"), { tone: "success" });
               },
             });

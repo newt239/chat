@@ -1,3 +1,5 @@
+import { canvasToBlob } from "#/lib/canvasToBlob";
+
 export type VideoThumbnail = {
   blob: Blob;
   width: number;
@@ -37,21 +39,6 @@ const seek = (video: HTMLVideoElement, time: number) =>
     video.currentTime = time;
   });
 
-const toJpeg = (canvas: HTMLCanvasElement) =>
-  new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (blob === null) {
-          reject(new Error("failed to encode"));
-        } else {
-          resolve(blob);
-        }
-      },
-      "image/jpeg",
-      JPEG_QUALITY,
-    );
-  });
-
 // メタデータを読み込んだ <video> から 1 フレームを JPEG として切り出す
 export const captureVideoFrame = async (video: HTMLVideoElement) => {
   const duration = Number.isFinite(video.duration) ? video.duration : 0;
@@ -65,5 +52,5 @@ export const captureVideoFrame = async (video: HTMLVideoElement) => {
     throw new Error("canvas is not supported");
   }
   context.drawImage(video, 0, 0, width, height);
-  return { blob: await toJpeg(canvas), height, width };
+  return { blob: await canvasToBlob(canvas, "image/jpeg", JPEG_QUALITY), height, width };
 };

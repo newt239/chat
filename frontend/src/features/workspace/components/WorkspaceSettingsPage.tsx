@@ -3,7 +3,8 @@ import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { SettingsLayout } from "#/components/block/SettingsLayout/SettingsLayout";
-import { SettingsNavLink } from "#/components/block/SettingsNavLink/SettingsNavLink";
+import { settingsNavLinkClassName } from "#/components/block/SettingsLayout/settingsNavLinkClassName";
+import { Link } from "#/components/ui/Link/Link";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { CustomEmojiSettings } from "#/features/customEmoji/components/CustomEmojiSettings";
 
@@ -13,10 +14,19 @@ import { WorkspaceGeneralSettings } from "./WorkspaceGeneralSettings";
 
 import type { WorkspaceSettingsSection } from "../schemas";
 
+import type { Workspace } from "#/gen/chat/v1/workspace_service_pb";
+
 const sectionIcons: Record<WorkspaceSettingsSection, typeof IconBuilding> = {
   emoji: IconMoodSmile,
   general: IconAdjustments,
 };
+
+const sectionBodies: Record<WorkspaceSettingsSection, (workspace: Workspace) => React.JSX.Element> =
+  {
+    emoji: (workspace) => <CustomEmojiSettings workspaceId={workspace.id} />,
+    // 保存後に一覧が更新されてもフォームを作り直さない
+    general: (workspace) => <WorkspaceGeneralSettings key={workspace.id} workspace={workspace} />,
+  };
 
 const workspaceSettingsRoute = getRouteApi("/app/$workspaceId/workspace-settings/{-$section}");
 
@@ -27,24 +37,6 @@ export const WorkspaceSettingsPage = () => {
   const { data: workspaces } = useWorkspaces();
   const workspace = workspaces?.find((candidate) => candidate.id === workspaceId);
 
-  const renderBody = () => {
-    if (workspace === undefined) {
-      return <Skeleton className="h-64 w-full rounded-xl" />;
-    }
-    switch (current) {
-      case "general": {
-        // 保存後に一覧が更新されてもフォームを作り直さない
-        return <WorkspaceGeneralSettings key={workspace.id} workspace={workspace} />;
-      }
-      case "emoji": {
-        return <CustomEmojiSettings workspaceId={workspaceId} />;
-      }
-      default: {
-        return null;
-      }
-    }
-  };
-
   return (
     <SettingsLayout
       icon={<IconBuilding />}
@@ -53,7 +45,8 @@ export const WorkspaceSettingsPage = () => {
       nav={workspaceSettingsSections.map((name) => {
         const Icon = sectionIcons[name];
         return (
-          <SettingsNavLink
+          <Link
+            className={settingsNavLinkClassName}
             key={name}
             to="/app/$workspaceId/workspace-settings/{-$section}"
             params={{ section: name, workspaceId }}
@@ -61,11 +54,15 @@ export const WorkspaceSettingsPage = () => {
           >
             <Icon aria-hidden />
             {t(`workspace.settings.sections.${name}`)}
-          </SettingsNavLink>
+          </Link>
         );
       })}
     >
-      {renderBody()}
+      {workspace === undefined ? (
+        <Skeleton className="h-64 w-full rounded-xl" />
+      ) : (
+        sectionBodies[current](workspace)
+      )}
     </SettingsLayout>
   );
 };

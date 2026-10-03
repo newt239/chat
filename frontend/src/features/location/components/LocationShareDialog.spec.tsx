@@ -2,11 +2,23 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
-import { stubGeolocation } from "#/test/stubGeolocation";
-
 import { LocationShareDialog } from "./LocationShareDialog";
 
 import type { MessageLocation } from "#/gen/chat/v1/message_pb";
+
+type Coordinates = { latitude: number; longitude: number; accuracy: number };
+type Success = (position: { coords: Coordinates }) => void;
+type Failure = (error: { code: number; PERMISSION_DENIED: number }) => void;
+
+// jsdom には Geolocation API がないため、respond で成功・失敗を返す実装を navigator に生やす
+const stubGeolocation = (respond: (success: Success, failure: Failure) => void) => {
+  const getCurrentPosition = vi.fn(respond);
+  Object.defineProperty(navigator, "geolocation", {
+    configurable: true,
+    value: { getCurrentPosition },
+  });
+  return getCurrentPosition;
+};
 
 describe("LocationShareDialog", () => {
   test("取得した現在地を確かめ、ラベルを付けて共有して閉じる", async () => {

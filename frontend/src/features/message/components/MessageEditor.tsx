@@ -7,8 +7,10 @@ import { Button } from "#/components/ui/Button/Button";
 import { useMentionCodec } from "#/features/mention/hooks/useMentionCodec";
 
 import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
-import { continueList } from "../utils/format";
+import { handleEnterKey } from "../utils/format";
 import { SuggestionList } from "./SuggestionList";
+
+import type { Selection } from "../utils/format";
 
 type MessageEditorProps = {
   initialBody: string;
@@ -25,26 +27,29 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
   const draft = editedDraft ?? mentionCodec.decode(initialBody);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cursor, setCursor] = useState(draft.length);
+  const [selection, setSelection] = useState({ end: draft.length, start: draft.length });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const replaceDraft = (text: string, nextCursor: number) => {
-    setEditedDraft(text);
-    setCursor(nextCursor);
+  const replaceSelection = (next: { text: string; selection: Selection }) => {
+    setEditedDraft(next.text);
+    setSelection(next.selection);
     requestAnimationFrame(() => {
-      textareaRef.current?.setSelectionRange(nextCursor, nextCursor);
+      textareaRef.current?.setSelectionRange(next.selection.start, next.selection.end);
     });
   };
   const suggestion = useComposerSuggestion({
     allowsCommands: false,
     body: draft,
-    cursor,
+    cursor: selection.start,
     onApply: (next, item) => {
       mentionCodec.register(item.value, item.token);
-      replaceDraft(next.text, next.cursor);
+      replaceSelection({ selection: { end: next.cursor, start: next.cursor }, text: next.text });
     },
   });
-  const syncCursor = () => {
-    setCursor(textareaRef.current?.selectionStart ?? 0);
+  const syncSelection = () => {
+    const textarea = textareaRef.current;
+    if (textarea !== null) {
+      setSelection({ end: textarea.selectionEnd, start: textarea.selectionStart });
+    }
   };
 
   const save = async () => {
@@ -74,7 +79,7 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
         value={draft}
         onChange={(next) => {
           setEditedDraft(next);
-          syncCursor();
+          syncSelection();
         }}
         isDisabled={isSaving}
         isInvalid={error !== null}
@@ -87,28 +92,22 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
           if (event.key === "Escape") {
             onClose();
           }
-          if (event.key !== "Enter" || event.nativeEvent.isComposing) {
-            return;
-          }
-          if (!event.shiftKey) {
-            event.preventDefault();
-            void save();
-            return;
-          }
-          const textarea = textareaRef.current;
-          const continued =
-            textarea &&
-            continueList(draft, { end: textarea.selectionEnd, start: textarea.selectionStart });
-          if (continued) {
-            event.preventDefault();
-            replaceDraft(continued.text, continued.selection.start);
-          }
+          handleEnterKey({
+            event,
+            onReplace: replaceSelection,
+            onSubmit: () => {
+              void save();
+            },
+            submitsOnEnter: true,
+            text: draft,
+            textarea: textareaRef.current,
+          });
         }}
       >
         <TextArea
           {...suggestion.inputProps}
           ref={textareaRef}
-          onSelect={syncCursor}
+          onSelect={syncSelection}
           className="min-h-15 w-full resize-y rounded-md border border-accent bg-surface px-2.5 py-1.5 font-sans text-body text-text ring-3 ring-accent-soft outline-none"
         />
       </TextField>

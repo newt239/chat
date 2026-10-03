@@ -3,7 +3,6 @@ import { Outlet, useParams } from "@tanstack/react-router";
 import { useChannelRealtimeSync } from "#/features/channel/hooks/useChannelRealtimeSync";
 import { useChannelViewersSync } from "#/features/channel/hooks/useChannelViewers";
 import { useCustomEmojiRealtimeSync } from "#/features/customEmoji/hooks/useCustomEmojiRealtimeSync";
-import { useDMRealtimeSync } from "#/features/dm/hooks/useDMRealtimeSync";
 import { useDesktopNotifications } from "#/features/notification/hooks/useDesktopNotifications";
 import { useSyncPushToken } from "#/features/notification/hooks/usePushNotifications";
 import { useIsMobile } from "#/hooks/useMediaQuery";
@@ -27,7 +26,6 @@ export const AppShell = ({ workspaceId }: AppShellProps) => {
     strict: false,
   });
   useChannelRealtimeSync(workspaceId, currentChannelId);
-  useDMRealtimeSync(workspaceId, currentChannelId);
   useDesktopNotifications(workspaceId, currentChannelId);
   useGlobalShortcuts(workspaceId);
   useChannelViewersSync();

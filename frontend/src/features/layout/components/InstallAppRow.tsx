@@ -2,7 +2,7 @@ import { IconDownload } from "@tabler/icons-react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { navItemClassName } from "#/components/block/NavLink/navTone";
+import { navItemClassName } from "#/components/ui/styles/navTone";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { promptInstall, useInstallPrompt } from "#/features/layout/utils/installPrompt";

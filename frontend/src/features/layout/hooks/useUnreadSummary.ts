@@ -1,5 +1,5 @@
 import { useChannels } from "#/features/channel/hooks/useChannel";
-import { useDMs } from "#/features/dm/hooks/useDM";
+import { useDMs } from "#/features/channel/hooks/useDM";
 
 /** モバイルのタブとアプリアイコンのバッジに出す未読。DM は未読の合計、通知は未読のメンションがあるチャンネルの数（ミュートを除く） */
 export const useUnreadSummary = (workspaceId: string) => {

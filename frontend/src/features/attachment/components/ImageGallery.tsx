@@ -4,9 +4,8 @@ import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { cn, focusRing } from "#/components/ui/styles/styles";
-import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
 import { useOwnsMessageOverlay } from "#/features/message/hooks/useOwnsMessageOverlay";
-import { closeDialog, openDialog } from "#/lib/overlaySearch";
+import { closeDialog, openDialog, workspaceRoute } from "#/lib/overlaySearch";
 
 import { imageBox } from "../utils/imageBox";
 import { AttachmentImage } from "./AttachmentImage";

@@ -1,55 +1,64 @@
-import type { ReactNode } from "react";
-
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
-import { useTranslation } from "react-i18next";
 
+import { Link } from "#/components/ui/Link/Link";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { openPanel } from "#/lib/overlaySearch";
 import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useMentionDirectory } from "../hooks/useMentionDirectory";
 
+import type { MentionToken } from "../utils/mentionToken";
+
 const chipClassName =
   "inline cursor-pointer rounded-sm bg-accent-soft px-0.75 font-semibold text-accent-text no-underline";
 
 type MentionProps = {
-  // 「user:ID」「group:ID」「broadcast:channel」の形
-  "data-mention": string;
-  children?: ReactNode;
+  token: MentionToken;
 };
 
-/** 本文に ID で埋め込んだメンションを今の名前で出す。名前が変わってもメンション先は変わらない */
-export const Mention = ({ "data-mention": value }: MentionProps) => {
-  const { t } = useTranslation();
+/** 本文に ID で埋め込んだメンションやチャンネルを今の名前で出す。名前が変わっても指す先は変わらない */
+export const Mention = ({ token }: MentionProps) => {
   const directory = useMentionDirectory();
   const myId = useAtomValue(myUserIdAtom);
   const navigate = useNavigate();
-  const [kind, id = ""] = value.split(":");
+  const label = directory.textOf(token);
+  const channel = token.kind === "channel" ? directory.channel(token.id) : undefined;
+  const member = token.kind === "user" ? directory.member(token.id) : undefined;
+  const group = token.kind === "group" ? directory.group(token.id) : undefined;
 
-  if (kind === "broadcast") {
+  if (channel && directory.workspaceId !== null) {
     return (
-      <span className={cn(chipClassName, "cursor-default bg-mention-chip text-mention-text")}>
-        @{id}
-      </span>
+      <Link
+        to="/app/$workspaceId/$channelId"
+        params={{ channelId: channel.id, workspaceId: directory.workspaceId }}
+        className={chipClassName}
+      >
+        {label}
+      </Link>
     );
   }
-
-  const member = kind === "user" ? directory.member(id) : undefined;
-  const group = kind === "group" ? directory.group(id) : undefined;
   if (member === undefined && group === undefined) {
     return (
-      <span className={cn(chipClassName, "cursor-default")}>
-        @{t(kind === "group" ? "message.mention.unknownGroup" : "message.mention.unknownUser")}
+      <span
+        className={cn(
+          chipClassName,
+          "cursor-default",
+          token.kind === "broadcast" && "bg-mention-chip text-mention-text",
+        )}
+      >
+        {label}
       </span>
     );
   }
-
-  const isMe = member?.userId === myId;
   return (
     <Button
-      className={cn(chipClassName, isMe && "bg-mention-chip text-mention-text", focusRing)}
+      className={cn(
+        chipClassName,
+        member?.userId === myId && "bg-mention-chip text-mention-text",
+        focusRing,
+      )}
       onPress={() => {
         void navigate({
           search: openPanel(member ? { profile: member.userId } : { group: group?.id }),
@@ -57,7 +66,7 @@ export const Mention = ({ "data-mention": value }: MentionProps) => {
         });
       }}
     >
-      @{member ? (member.nickname ?? member.displayName) : group?.name}
+      {label}
     </Button>
   );
 };

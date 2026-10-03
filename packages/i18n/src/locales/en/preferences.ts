@@ -40,7 +40,6 @@ export const preferences: Messages["preferences"] = {
       tinted: "Tinted",
       title: "Sidebar",
     },
-    title: "Theme",
   },
   timezone: {
     autoUpdate: "Update time zone automatically",

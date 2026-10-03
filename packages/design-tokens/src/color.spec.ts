@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { contrastRatio, oklchToHex } from "./color";
+import { oklchToHex } from "./color";
 
 describe("oklchToHex", () => {
   it("白と黒を変換できる", () => {
@@ -16,15 +16,5 @@ describe("oklchToHex", () => {
     for (let hue = 0; hue < 360; hue += 15) {
       expect(oklchToHex(0.9, 0.4, hue)).toMatch(/^#[0-9A-F]{6}$/);
     }
-  });
-});
-
-describe("contrastRatio", () => {
-  it("白と黒のコントラスト比は 21", () => {
-    expect(contrastRatio("#FFFFFF", "#000000")).toBeCloseTo(21);
-  });
-
-  it("引数の順序に依存しない", () => {
-    expect(contrastRatio("#0E7C66", "#FFFFFF")).toBe(contrastRatio("#FFFFFF", "#0E7C66"));
   });
 });

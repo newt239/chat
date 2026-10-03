@@ -4,8 +4,7 @@ import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
 import { useChannels } from "./useChannel";
 
-// 一覧にあればそれを使い、未参加の公開チャンネルなど一覧にないものは個別に取得する
-// channelId が null なら取得しない
+// 一覧になければ個別に取得する。channelId が null なら取得しない
 export const useChannelById = (workspaceId: string, channelId: string | null) => {
   const { data: channels } = useChannels(workspaceId);
   const listed = channels?.find((channel) => channel.id === channelId);

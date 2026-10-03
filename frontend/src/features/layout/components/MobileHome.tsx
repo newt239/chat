@@ -1,10 +1,10 @@
 import { IconSearch } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { NavLink } from "#/components/block/NavLink/NavLink";
-import { mobileNavTone } from "#/components/block/NavLink/navTone";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Link } from "#/components/ui/Link/Link";
+import { mobileNavTone, navItemClassName } from "#/components/ui/styles/navTone";
+import { cn } from "#/components/ui/styles/styles";
 import { WorkspaceMenu } from "#/features/workspace/components/WorkspaceMenu";
 import { useMe } from "#/hooks/useMe";
 
@@ -34,14 +34,14 @@ export const MobileHome = ({ workspaceId }: MobileHomeProps) => {
           </Link>
         )}
       </header>
-      <NavLink
+      <Link
         to="/app/$workspaceId/search"
         params={{ workspaceId }}
-        className="mx-3 my-1.5 h-10 w-auto rounded-lg bg-sunken text-muted"
+        className={cn(navItemClassName, "mx-3 my-1.5 h-10 w-auto rounded-lg bg-sunken text-muted")}
       >
         <IconSearch aria-hidden />
         {t("shell.nav.search")}
-      </NavLink>
+      </Link>
       <NavigationList workspaceId={workspaceId} />
     </div>
   );

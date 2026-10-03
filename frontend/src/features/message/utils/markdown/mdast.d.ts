@@ -13,16 +13,11 @@ declare module "mdast" {
     type: "mention";
   }
 
-  interface ChannelLinkNode extends Literal {
-    type: "channelLink";
-  }
-
   interface CustomEmojiNode extends Literal {
     type: "customEmoji";
   }
 
   interface RootContentMap {
-    channelLink: ChannelLinkNode;
     customEmoji: CustomEmojiNode;
     mention: MentionNode;
   }

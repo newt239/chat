@@ -6,7 +6,6 @@ import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { BaseMessageInput } from "#/features/message/components/BaseMessageInput";
 import { MessageItem } from "#/features/message/components/MessageItem";
 import { MessageList } from "#/features/message/components/MessageList";
-import { useSendMessage } from "#/features/message/hooks/useMessage";
 import { ThreadPanelContext } from "#/features/message/hooks/useOwnsMessageOverlay";
 import { toDateKey } from "#/features/message/utils/dateJump";
 import { buildTimelineRows } from "#/features/message/utils/timelineRows";
@@ -50,7 +49,6 @@ export const ThreadPanel = ({ channelId, threadId }: ThreadPanelProps) => {
     load,
     loading,
   } = useThreadReplies(threadId, targetReplyId);
-  const sendReply = useSendMessage();
   const { timeZone } = useDateFormat();
   // 親チャンネルの集約表示から開いたスレッドは子孫チャンネルのものなので、返信先は親メッセージのチャンネルにする
   const threadChannelId = parentMessage?.channelId ?? channelId;
@@ -110,12 +108,7 @@ export const ThreadPanel = ({ channelId, threadId }: ThreadPanelProps) => {
         renderMessage={renderMessage}
         header={
           <>
-            <MessageItem
-              message={parentMessage}
-              threadMetadata={undefined}
-              isHighlighted={false}
-              channelChip={null}
-            />
+            {renderMessage(parentMessage, false)}
             <div className="mx-4 my-2 flex items-center gap-2 text-caption text-muted">
               {replyCount === 0
                 ? t("message.thread.noReplies")
@@ -136,15 +129,9 @@ export const ThreadPanel = ({ channelId, threadId }: ThreadPanelProps) => {
           <BaseMessageInput
             channelId={threadChannelId}
             parentId={threadId}
-            onSubmit={(content) => {
-              sendReply.mutate({ ...content, channelId: threadChannelId, parentId: threadId });
-            }}
             placeholder={t("message.thread.replyPlaceholder")}
-            isPending={sendReply.isPending}
-            error={
-              sendReply.isError ? sendReply.error.message || t("message.thread.sendFailed") : null
-            }
             targetPicker={null}
+            onSent={null}
           />
         )}
       </div>

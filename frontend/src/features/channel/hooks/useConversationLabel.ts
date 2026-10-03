@@ -1,5 +1,5 @@
-import { useDMs } from "#/features/dm/hooks/useDM";
-import { dmName } from "#/features/dm/utils/dmName";
+import { useDMs } from "#/features/channel/hooks/useDM";
+import { dmName } from "#/features/channel/utils/dmName";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 
 import { useChannels } from "./useChannel";

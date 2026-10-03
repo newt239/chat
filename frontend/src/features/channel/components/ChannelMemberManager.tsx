@@ -15,7 +15,6 @@ import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { useChannelMemberActions } from "#/features/channel/hooks/useChannelMemberActions";
 import { useChannelMembers } from "#/features/channel/hooks/useChannelMembers";
-import { channelRoleKeys } from "#/features/channel/utils/channelRole";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { ChannelRole } from "#/gen/chat/v1/channel_member_service_pb";
@@ -104,7 +103,7 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
                       updateRole.mutate({ channelId, role, userId: member.userId });
                     }}
                   >
-                    {t(channelRoleKeys[role])}
+                    {t(role === ChannelRole.ADMIN ? "channel.roles.admin" : "channel.roles.member")}
                   </MenuItem>
                 ))}
                 <MenuSeparator />

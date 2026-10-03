@@ -172,8 +172,6 @@ export default defineConfig(({ mode }) => {
         "react/jsx-props-no-spreading": "off",
         "react/no-object-type-as-default-prop": "off",
         "react/react-in-jsx-scope": "off",
-        // 外部値とフォーム状態を同期する用途で使っているため
-        "react/set-state-in-effect": "off",
         "require-unicode-regexp": "off",
         "sort-imports": "off",
         "typescript/consistent-type-definitions": ["error", "type"],

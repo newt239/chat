@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 
 import { timestampNow } from "@bufbuild/protobuf/wkt";
 
 import { useUpdateReadState } from "#/features/channel/hooks/useUpdateReadState";
 
 type UseMessageViewportDetectionArgs = {
-  channelId: string | null;
-  workspaceId: string | null;
+  channelId: string;
+  workspaceId: string;
   latestMessageId: string | null;
   // 集約表示中は子孫チャンネルもまとめて既読にする
   includeDescendants: boolean;
@@ -19,41 +19,29 @@ export const useMessageViewportDetection = ({
   latestMessageId,
   includeDescendants,
 }: UseMessageViewportDetectionArgs) => {
-  const [element, setElement] = useState<HTMLElement | null>(null);
   const { mutate: updateReadState } = useUpdateReadState(workspaceId);
   // 既読にした対象。チャンネルや最新のメッセージが変わったらまた既読にする
   const markedKeyRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (element === null || channelId === null || latestMessageId === null) {
+  const latestMessageRef = (element: HTMLElement | null) => {
+    if (element === null || latestMessageId === null) {
       return undefined;
     }
-
     const key = `${channelId}:${latestMessageId}:${String(includeDescendants)}`;
     const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
+      ([entry]) => {
         if (entry?.isIntersecting && markedKeyRef.current !== key) {
           markedKeyRef.current = key;
-          updateReadState({
-            channelId,
-            includeDescendants,
-            lastReadAt: timestampNow(),
-          });
+          updateReadState({ channelId, includeDescendants, lastReadAt: timestampNow() });
         }
       },
-      {
-        rootMargin: "0px",
-        threshold: 0.1,
-      },
+      { threshold: 0.1 },
     );
-
     observer.observe(element);
-
     return () => {
       observer.disconnect();
     };
-  }, [element, channelId, latestMessageId, includeDescendants, updateReadState]);
+  };
 
-  return { latestMessageRef: setElement };
+  return { latestMessageRef };
 };

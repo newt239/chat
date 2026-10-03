@@ -95,7 +95,7 @@ export const ChannelMenuItems = ({
         icon={<IconLink />}
         onAction={() => {
           const { href } = router.buildLocation(location);
-          void copyWithToast(toShareUrl(href), t("shell.channelMenu.linkCopied"));
+          void copyWithToast(toShareUrl(href), t("common.linkCopied"));
         }}
       >
         {t("shell.channelMenu.copyLink")}

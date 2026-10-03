@@ -1,3 +1,4 @@
+import { formatBytes } from "@chat/i18n/format";
 import { useMutation } from "@connectrpc/connect-query";
 import { IconDownload, IconLoader2 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
@@ -5,9 +6,9 @@ import { useTranslation } from "react-i18next";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { AttachmentService } from "#/gen/chat/v1/attachment_service_pb";
+import { usePreferences } from "#/hooks/usePreferences";
 import { openExternal } from "#/lib/platform/openExternal";
 
-import { formatFileSize } from "../utils/validator";
 import { FileIcon } from "./FileIcon";
 
 import type { MessageAttachment } from "#/gen/chat/v1/message_pb";
@@ -18,6 +19,7 @@ type FileAttachmentProps = {
 
 export const FileAttachment = ({ attachment }: FileAttachmentProps) => {
   const { t } = useTranslation();
+  const { locale } = usePreferences();
   const downloadMutation = useMutation(AttachmentService.method.getDownloadUrl);
 
   const handleDownload = async () => {
@@ -36,7 +38,7 @@ export const FileAttachment = ({ attachment }: FileAttachmentProps) => {
       <div className="flex min-w-0 flex-1 flex-col leading-snug">
         <b className="truncate text-body-sm font-semibold">{attachment.fileName}</b>
         <small className="text-caption text-muted">
-          {formatFileSize(Number(attachment.sizeBytes))}
+          {formatBytes(Number(attachment.sizeBytes), locale)}
         </small>
       </div>
       <IconButton

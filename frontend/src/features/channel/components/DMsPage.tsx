@@ -2,11 +2,11 @@ import { IconEdit, IconMessageCircle } from "@tabler/icons-react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { mobileNavTone } from "#/components/block/NavLink/navTone";
 import { PageHeader } from "#/components/block/PageHeader/PageHeader";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { mobileNavTone } from "#/components/ui/styles/navTone";
 import { cn } from "#/components/ui/styles/styles";
-import { DMList } from "#/features/dm/components/DMList";
+import { DMList } from "#/features/channel/components/DMList";
 import { openDialog } from "#/lib/overlaySearch";
 
 // モバイルの「DM」タブ

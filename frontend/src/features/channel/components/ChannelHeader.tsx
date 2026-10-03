@@ -24,9 +24,8 @@ import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { focusRing } from "#/components/ui/styles/styles";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
-import { DMAvatar } from "#/features/dm/components/DMAvatar";
-import { useDMs } from "#/features/dm/hooks/useDM";
-import { dmName } from "#/features/dm/utils/dmName";
+import { DMAvatar } from "#/features/channel/components/DMAvatar";
+import { dmName } from "#/features/channel/utils/dmName";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { usePinCount } from "#/features/pin/hooks/usePinnedMessages";
 import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
@@ -35,7 +34,6 @@ import { useIsMobile } from "#/hooks/useMediaQuery";
 import { openPanel } from "#/lib/overlaySearch";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
-import { useChannelById } from "../hooks/useChannelById";
 import { useChannelListActions } from "../hooks/useChannelListActions";
 import { useChannelMembers } from "../hooks/useChannelMembers";
 import { ChannelLinkBar } from "./ChannelLinkBar";
@@ -43,14 +41,19 @@ import { ChannelMenuItems } from "./ChannelMenuItems";
 import { ChannelName } from "./ChannelName";
 import { DescendantsToggle } from "./DescendantsToggle";
 
+import type { Channel } from "#/gen/chat/v1/channel_service_pb";
+import type { DirectMessage } from "#/gen/chat/v1/direct_message_service_pb";
 import type { PanelSearch } from "#/lib/overlaySearch";
 
 type ChannelHeaderProps = {
   workspaceId: string;
   channelId: string;
+  // DM のときは channel が、チャンネルのときは dm が undefined
+  channel: Channel | undefined;
+  dm: DirectMessage | undefined;
 };
 
-export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) => {
+export const ChannelHeader = ({ workspaceId, channelId, channel, dm }: ChannelHeaderProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -59,17 +62,10 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
     workspaceId,
     channelId,
   );
-  const { data: dms } = useDMs(workspaceId);
-  // 未参加のチャンネルをプレビューしているときは一覧にないため個別に取得する
-  const channel = useChannelById(
-    workspaceId,
-    dms === undefined || dms.some((candidate) => candidate.id === channelId) ? null : channelId,
-  );
   const { data: members = [] } = useChannelMembers(channelId);
   const { setStarred } = useChannelListActions(workspaceId);
   const displayName = useDisplayName();
 
-  const dm = dms?.find((candidate) => candidate.id === channelId);
   const isStarred = channel?.isStarred ?? dm?.isStarred ?? false;
   const isMuted = channel?.isMuted ?? dm?.isMuted ?? false;
   const isGroupDM = dm?.type === DirectMessageType.GROUP_DM;

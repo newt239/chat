@@ -1,10 +1,11 @@
+import { formatBytes } from "@chat/i18n/format";
 import { IconX } from "@tabler/icons-react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { focusRing } from "#/components/ui/styles/styles";
+import { usePreferences } from "#/hooks/usePreferences";
 
-import { formatFileSize } from "../utils/validator";
 import { FileIcon } from "./FileIcon";
 
 import type { PendingAttachment } from "../hooks/useFileUpload";
@@ -16,6 +17,7 @@ type AttachmentListItemProps = {
 
 export const AttachmentListItem = ({ attachment, onRemove }: AttachmentListItemProps) => {
   const { t } = useTranslation();
+  const { locale } = usePreferences();
   const { file, state } = attachment;
 
   return (
@@ -24,7 +26,7 @@ export const AttachmentListItem = ({ attachment, onRemove }: AttachmentListItemP
       <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-snug">
         <span className="truncate text-xs font-medium">{file.name}</span>
         <span className="truncate text-caption text-muted">
-          {formatFileSize(file.size)}
+          {formatBytes(file.size, locale)}
           {state.status === "uploading" && ` · ${state.progress}%`}
           {state.status === "completed" && ` · ${t("attachment.completed")}`}
           {state.status === "error" && (

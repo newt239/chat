@@ -1,3 +1,5 @@
+import { canvasToBlob } from "#/lib/canvasToBlob";
+
 export const EMOJI_IMAGE_TYPES = ["image/png", "image/gif", "image/jpeg", "image/webp"];
 const EMOJI_MAX_BYTES = 256 * 1024;
 const EMOJI_MAX_SIZE = 128;
@@ -11,17 +13,6 @@ export class EmojiImageError extends Error {
     this.reason = reason;
   }
 }
-
-const toPngBlob = (canvas: HTMLCanvasElement) =>
-  new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(new EmojiImageError("type"));
-      }
-    }, "image/png");
-  });
 
 // 128px 四方に収まるよう縮めて PNG にする。GIF はアニメーションを残すためそのまま使う
 export const prepareEmojiImage = async (file: File) => {
@@ -43,7 +34,7 @@ export const prepareEmojiImage = async (file: File) => {
   canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
 
-  const blob = await toPngBlob(canvas);
+  const blob = await canvasToBlob(canvas, "image/png", undefined);
   if (blob.size > EMOJI_MAX_BYTES) {
     throw new EmojiImageError("size");
   }

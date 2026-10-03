@@ -25,14 +25,18 @@ export const usePushNotifications = () => {
     setPreferences((prev) => ({ ...prev, pushToken }));
   };
 
+  const registerToken = async () => {
+    const token = await registerPush();
+    await register({ platform: PushPlatform.WEB, token });
+    return token;
+  };
+
   // 許可を求められるのはユーザー操作の中だけなので、スイッチを押したときに呼ぶ
   const enable = async () => {
     if (!(await requestNotificationPermission())) {
       return false;
     }
-    const token = await registerPush();
-    await register({ platform: PushPlatform.WEB, token });
-    setToken(token);
+    setToken(await registerToken());
     return true;
   };
 
@@ -54,8 +58,7 @@ export const usePushNotifications = () => {
       await disable();
       return;
     }
-    const token = await registerPush();
-    await register({ platform: PushPlatform.WEB, token });
+    const token = await registerToken();
     if (token !== previous) {
       setToken(token);
       await unregister({ token: previous });

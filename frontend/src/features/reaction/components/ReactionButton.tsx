@@ -1,18 +1,21 @@
+import { useAtomValue } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { usePreferences } from "#/hooks/usePreferences";
 import { transitions } from "#/lib/motion";
+import { myUserIdAtom } from "#/providers/store/auth";
 
-import { useFormatReactors } from "../hooks/useFormatReactors";
+import { reactionPillClassName } from "../utils/reactionPillClassName";
 import { ReactionEmoji } from "./ReactionEmoji";
 
 import type { ReactionGroup } from "../utils/groupReactions";
 
-const reactionPillClassName =
-  "inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border border-border bg-sunken px-1.75 font-sans text-xs text-muted tabular-nums data-hovered:border-border-strong";
+const MAX_NAMES = 4;
 
 type ReactionButtonProps = {
   group: ReactionGroup;
@@ -23,7 +26,23 @@ type ReactionButtonProps = {
 
 export const ReactionButton = ({ group, onPress, onOpenList }: ReactionButtonProps) => {
   const { t } = useTranslation();
-  const names = useFormatReactors()(group.users);
+  const { locale } = usePreferences();
+  const currentUserId = useAtomValue(myUserIdAtom);
+  const displayName = useDisplayName();
+  const listFormat = new Intl.ListFormat(locale);
+  // 自分を「あなた」として先頭に置き、多いときは先頭の 3 人と残りの人数にまとめる
+  const allNames = group.users
+    .toSorted((a, b) => Number(b.id === currentUserId) - Number(a.id === currentUserId))
+    .map((user) =>
+      user.id === currentUserId ? t("reaction.names.you") : displayName(user.id, user.displayName),
+    );
+  const names =
+    allNames.length <= MAX_NAMES
+      ? listFormat.format(allNames)
+      : t("reaction.names.others", {
+          count: allNames.length - (MAX_NAMES - 1),
+          names: listFormat.format(allNames.slice(0, MAX_NAMES - 1)),
+        });
 
   return (
     <Tooltip

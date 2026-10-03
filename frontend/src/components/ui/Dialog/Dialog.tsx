@@ -10,7 +10,6 @@ import { useIsMobile } from "#/hooks/useMediaQuery";
 import { DialogFrame } from "./DialogFrame";
 
 const widths = {
-  lg: "md:max-w-225",
   md: "md:max-w-150",
   sm: "md:max-w-110",
 };

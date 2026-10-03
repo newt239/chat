@@ -27,22 +27,18 @@ const numberFormats = new Map<Locale, Intl.NumberFormat>();
 const dateOptions = { day: "numeric", month: "short", year: "numeric" } as const;
 const timeOptions = { hour: "numeric", minute: "2-digit" } as const;
 
-// 日付・時刻のフォーマッタは timeZone（IANA 名）の日時で表示する。undefined なら実行環境のタイムゾーン
-
-// 2026年9月28日 / Sep 28, 2026
-export const formatDate = (date: Date, locale: Locale, timeZone: string | undefined) =>
-  dateTimeFormat(locale, { ...dateOptions, timeZone }).format(date);
+// 日付・時刻のフォーマッタは timeZone（IANA 名）の日時で表示する
 
 // 10:16 / 10:16 AM
-export const formatTime = (date: Date, locale: Locale, timeZone: string | undefined) =>
+export const formatTime = (date: Date, locale: Locale, timeZone: string) =>
   dateTimeFormat(locale, { ...timeOptions, timeZone }).format(date);
 
 // 2026年9月28日 10:16 / Sep 28, 2026, 10:16 AM
-export const formatDateTime = (date: Date, locale: Locale, timeZone: string | undefined) =>
+export const formatDateTime = (date: Date, locale: Locale, timeZone: string) =>
   dateTimeFormat(locale, { ...dateOptions, ...timeOptions, timeZone }).format(date);
 
 // 2026年9月28日(月) 10:16:05 / Mon, Sep 28, 2026, 10:16:05 AM
-export const formatFullDateTime = (date: Date, locale: Locale, timeZone: string | undefined) =>
+export const formatFullDateTime = (date: Date, locale: Locale, timeZone: string) =>
   dateTimeFormat(locale, {
     ...dateOptions,
     ...timeOptions,
@@ -52,16 +48,8 @@ export const formatFullDateTime = (date: Date, locale: Locale, timeZone: string 
   }).format(date);
 
 // 2026年9月28日(月) / Mon, Sep 28, 2026
-export const formatDateWithWeekday = (date: Date, locale: Locale, timeZone: string | undefined) =>
+export const formatDateWithWeekday = (date: Date, locale: Locale, timeZone: string) =>
   dateTimeFormat(locale, { ...dateOptions, timeZone, weekday: "short" }).format(date);
-
-// 9/28（グラフの軸など幅の狭い場所に使う）
-export const formatMonthDay = (date: Date, locale: Locale, timeZone: string | undefined) =>
-  dateTimeFormat(locale, { day: "numeric", month: "numeric", timeZone }).format(date);
-
-// 月 / Mon
-export const formatWeekday = (date: Date, locale: Locale, timeZone: string | undefined) =>
-  dateTimeFormat(locale, { timeZone, weekday: "short" }).format(date);
 
 const relativeUnits = [
   { seconds: 60 * 60 * 24 * 365, unit: "year" },

@@ -1,9 +1,9 @@
 import { IconHash, IconLock } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { surfaceNavTone } from "#/components/block/NavLink/navTone";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
+import { surfaceNavTone } from "#/components/ui/styles/navTone";
 import { Switch } from "#/components/ui/Switch/Switch";
 import { ChannelAppsSection } from "#/features/app/components/ChannelAppsSection";
 import { ChannelMemberManager } from "#/features/channel/components/ChannelMemberManager";

@@ -3,13 +3,14 @@ import type { ReactNode } from "react";
 import { IconBellOff } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { NavLink } from "#/components/block/NavLink/NavLink";
 import { Badge } from "#/components/ui/Badge/Badge";
 import { ContextMenu } from "#/components/ui/ContextMenu/ContextMenu";
+import { Link } from "#/components/ui/Link/Link";
+import { navItemClassName } from "#/components/ui/styles/navTone";
 import { cn } from "#/components/ui/styles/styles";
-import { DraftIndicator } from "#/features/draft/components/DraftIndicator";
 
 import { ChannelMenuItems } from "./ChannelMenuItems";
+import { DraftIndicator } from "./DraftIndicator";
 
 type ChannelNavItemProps = {
   workspaceId: string;
@@ -48,10 +49,11 @@ export const ChannelNavItem = ({
         />
       }
     >
-      <NavLink
+      <Link
         to="/app/$workspaceId/$channelId"
         params={{ channelId, workspaceId }}
         className={cn(
+          navItemClassName,
           hasUnread && "font-semibold text-(--nav-strong) [&_svg]:text-(--nav-strong)",
           isMuted && "opacity-55",
         )}
@@ -60,7 +62,7 @@ export const ChannelNavItem = ({
         <DraftIndicator workspaceId={workspaceId} channelId={channelId} />
         {isMuted && <IconBellOff aria-label={t("shell.channel.muted")} role="img" />}
         {badgeCount > 0 && <Badge>{badgeCount > 99 ? "99+" : badgeCount}</Badge>}
-      </NavLink>
+      </Link>
     </ContextMenu>
   );
 };

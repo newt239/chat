@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { jumpDateSchema } from "#/features/message/utils/dateJump";
 import { BrowsableChannelMembership, BrowsableChannelSort } from "#/gen/chat/v1/channel_service_pb";
 
 export const browseMembershipValues = ["all", "joined", "notJoined"] as const;
@@ -24,4 +25,9 @@ export const browseChannelsSearchSchema = z.object({
   page: z.number().int().min(1).default(1).catch(1),
   q: z.string().default("").catch(""),
   sort: z.enum(browseSortValues).default("name").catch("name"),
+});
+
+export const channelSearchSchema = z.object({
+  date: jumpDateSchema.optional().catch(undefined),
+  message: z.string().optional().catch(undefined),
 });
