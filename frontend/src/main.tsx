@@ -15,10 +15,9 @@ import { store } from "#/providers/store/store";
 import { ThemeProvider } from "#/providers/theme/ThemeProvider";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
-import "@fontsource/ibm-plex-sans-jp/400.css";
-import "@fontsource/ibm-plex-sans-jp/500.css";
-import "@fontsource/ibm-plex-sans-jp/600.css";
-import "@fontsource/ibm-plex-sans-jp/700.css";
+import "@fontsource/zen-kaku-gothic-new/400.css";
+import "@fontsource/zen-kaku-gothic-new/500.css";
+import "@fontsource/zen-kaku-gothic-new/700.css";
 
 import "./styles/globals.css";
 

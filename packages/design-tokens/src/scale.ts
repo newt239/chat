@@ -29,7 +29,7 @@ export const letterSpacing = { wide: 0.06 } as const;
 export const fontFamily = {
   mono: ["IBM Plex Mono", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
   sans: [
-    "IBM Plex Sans JP",
+    "Zen Kaku Gothic New",
     "Hiragino Sans",
     "Hiragino Kaku Gothic ProN",
     "Noto Sans JP",
