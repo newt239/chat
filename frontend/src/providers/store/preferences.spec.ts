@@ -2,12 +2,7 @@ import { create } from "@bufbuild/protobuf";
 import { themePresets } from "@chat/design-tokens/theme";
 import { describe, expect, test } from "vite-plus/test";
 
-import {
-  ColorMode,
-  NotificationLevel,
-  SidebarStyle,
-  UserPreferencesSchema,
-} from "#/gen/chat/v1/user_pb";
+import { ColorMode, NotificationLevel, UserPreferencesSchema } from "#/gen/chat/v1/user_pb";
 
 import { preferencesFromProto, preferencesToProto } from "./preferences";
 
@@ -36,13 +31,12 @@ describe("preferences と proto の変換", () => {
 
     expect(proto.colorMode).toBe(ColorMode.SYSTEM);
     expect(proto.notificationLevel).toBe(NotificationLevel.NONE);
-    expect(proto.theme?.sidebar).toBe(SidebarStyle.TINTED);
   });
 
   test("色相は整数に丸めて 0〜359 に収める", () => {
     const proto = preferencesToProto({
       ...defaults,
-      theme: { chroma: 0.1, hue: 359.6, sidebar: "light" },
+      theme: { chroma: 0.1, hue: 359.6 },
     });
 
     expect(proto.theme?.hue).toBe(0);
@@ -57,7 +51,7 @@ describe("preferences と proto の変換", () => {
       locale: "ja",
       mode: "system",
       notificationLevel: "mentions",
-      theme: themePresets.jade,
+      theme: themePresets.ember,
       timezone: "",
       timezoneAutoUpdate: false,
     });

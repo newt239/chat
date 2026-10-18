@@ -115,7 +115,6 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 			SetUserID(userID).
 			SetThemeHue(p.ThemeHue).
 			SetThemeChroma(p.ThemeChroma).
-			SetThemeSidebar(userpreference.ThemeSidebar(p.ThemeSidebar)).
 			SetColorMode(userpreference.ColorMode(p.ColorMode)).
 			SetLocale(p.Locale).
 			SetNotificationLevel(userpreference.NotificationLevel(p.NotificationLevel)).

@@ -1,5 +1,5 @@
 import { create } from "@bufbuild/protobuf";
-import { colorModePreferences, defaultTheme, sidebarStyles } from "@chat/design-tokens/theme";
+import { colorModePreferences, defaultTheme } from "@chat/design-tokens/theme";
 import { resolveLocale } from "@chat/i18n/i18n";
 import { atomWithStorage } from "jotai/utils";
 
@@ -7,24 +7,15 @@ import {
   ChannelSortOrder,
   ColorMode,
   NotificationLevel,
-  SidebarStyle,
   UserPreferencesSchema,
 } from "#/gen/chat/v1/user_pb";
 
 import type { UserPreferences } from "#/gen/chat/v1/user_pb";
 
-import type {
-  ColorModePreference,
-  SidebarStyle as SidebarStyleName,
-} from "@chat/design-tokens/theme";
+import type { ColorModePreference } from "@chat/design-tokens/theme";
 
 export const notificationLevels = ["all", "mentions", "none"] as const;
 export const channelSortOrders = ["default", "recentActivity"] as const;
-
-const sidebarStyleValues: Record<SidebarStyleName, SidebarStyle> = {
-  light: SidebarStyle.LIGHT,
-  tinted: SidebarStyle.TINTED,
-};
 
 const colorModeValues: Record<ColorModePreference, ColorMode> = {
   dark: ColorMode.DARK,
@@ -63,15 +54,7 @@ export const preferencesFromProto = ({
   notificationLevel:
     notificationLevels.find((level) => notificationLevelValues[level] === notificationLevel) ??
     "mentions",
-  theme: theme
-    ? {
-        chroma: theme.chroma,
-        hue: theme.hue,
-        sidebar:
-          sidebarStyles.find((style) => sidebarStyleValues[style] === theme.sidebar) ??
-          defaultTheme.sidebar,
-      }
-    : defaultTheme,
+  theme: theme ? { chroma: theme.chroma, hue: theme.hue } : defaultTheme,
   timezone,
   timezoneAutoUpdate,
 });
@@ -97,7 +80,6 @@ export const preferencesToProto = ({
     theme: {
       chroma: theme.chroma,
       hue: Math.round(theme.hue) % 360,
-      sidebar: sidebarStyleValues[theme.sidebar],
     },
     timezone,
     timezoneAutoUpdate,

@@ -31,18 +31,22 @@ export const RightSidePanel = ({ workspaceId }: RightSidePanelProps) => {
           animate={{ width: "auto" }}
           exit={{ width: 0 }}
           transition={transitions.base}
-          className="relative flex shrink-0 overflow-clip border-l border-border bg-surface"
+          // 開閉で隙間ごと縮むよう、パネルとの間の余白はこの内側に持つ
+          className="flex shrink-0 overflow-clip"
         >
-          <ResizeHandle
-            label={t("shell.rightPanel.resize")}
-            edge="left"
-            value={widths.right}
-            {...sidebarWidthRanges.right}
-            onChange={(right) => {
-              setWidths({ ...widths, right });
-            }}
-          />
-          <div style={{ width: widths.right }} className="flex shrink-0 flex-col">
+          <div
+            style={{ width: widths.right }}
+            className="relative ml-2 flex shrink-0 flex-col rounded-lg bg-surface"
+          >
+            <ResizeHandle
+              label={t("shell.rightPanel.resize")}
+              edge="left"
+              value={widths.right}
+              {...sidebarWidthRanges.right}
+              onChange={(right) => {
+                setWidths({ ...widths, right });
+              }}
+            />
             <header className="flex h-12 shrink-0 items-center gap-1 border-b border-border pr-2 pl-4">
               <h2 className="m-0 min-w-0 flex-1 truncate text-body font-bold">{content.title}</h2>
               {content.extra}
@@ -55,7 +59,7 @@ export const RightSidePanel = ({ workspaceId }: RightSidePanelProps) => {
               initial={{ opacity: 0, x: 14 }}
               animate={{ opacity: 1, x: 0 }}
               transition={transitions.spring}
-              className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+              className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-b-lg"
             >
               {content.body}
             </motion.div>

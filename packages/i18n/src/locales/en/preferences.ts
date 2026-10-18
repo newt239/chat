@@ -30,16 +30,12 @@ export const preferences: Messages["preferences"] = {
     presetsTitle: "Presets",
     presets: {
       cobalt: "Cobalt",
+      ember: "Ember",
       graphite: "Graphite",
       jade: "Jade",
       plum: "Plum",
     },
     preview: "Preview",
-    sidebar: {
-      light: "Light",
-      tinted: "Tinted",
-      title: "Sidebar",
-    },
   },
   timezone: {
     autoUpdate: "Update time zone automatically",

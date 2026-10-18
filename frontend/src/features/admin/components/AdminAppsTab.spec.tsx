@@ -20,7 +20,7 @@ describe("AdminAppsTab", () => {
               description: "リマインダーなど",
               id: "a0",
               isOfficial: true,
-              name: "Chat",
+              name: "Nook",
             }),
             create(AppSchema, { canManage: true, id: "a1", name: "監視" }),
           ],
@@ -29,7 +29,7 @@ describe("AdminAppsTab", () => {
     );
 
     expect(await screen.findByText("公式")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Chat を編集" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Nook を編集" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "監視 を編集" }));
     await waitFor(() => {
       expect(router.state.location.search).toMatchObject({ app: "a1", dialog: "edit-app" });

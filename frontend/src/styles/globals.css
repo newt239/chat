@@ -36,13 +36,6 @@
   --color-overlay: var(--c-overlay);
   --color-media: var(--c-media);
   --color-media-fg: var(--c-media-fg);
-  --color-side: var(--c-side);
-  --color-side-fg: var(--c-side-fg);
-  --color-side-muted: var(--c-side-muted);
-  --color-side-strong: var(--c-side-strong);
-  --color-side-hover: var(--c-side-hover);
-  --color-side-active: var(--c-side-active);
-  --color-side-active-fg: var(--c-side-active-fg);
 
   --radius-xs: var(--r-xs);
   --radius-sm: var(--r-sm);

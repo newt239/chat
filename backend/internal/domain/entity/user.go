@@ -25,13 +25,6 @@ type User struct {
 // DeletedUserDisplayName は退会したユーザーの表示名です
 const DeletedUserDisplayName = "削除されたユーザー"
 
-type SidebarStyle string
-
-const (
-	SidebarStyleTinted SidebarStyle = "tinted"
-	SidebarStyleLight  SidebarStyle = "light"
-)
-
 type ColorMode string
 
 const (
@@ -56,12 +49,11 @@ const (
 	ChannelSortOrderRecentActivity ChannelSortOrder = "recent_activity"
 )
 
-// DefaultPreferences は設定を保存していないユーザーの値です。Jade プリセット・システムに合わせる・日本語
+// DefaultPreferences は設定を保存していないユーザーの値です。Ember プリセット・システムに合わせる・日本語
 func DefaultPreferences() UserPreferences {
 	return UserPreferences{
-		ThemeHue:          168,
-		ThemeChroma:       0.12,
-		ThemeSidebar:      SidebarStyleTinted,
+		ThemeHue:          42,
+		ThemeChroma:       0.15,
 		ColorMode:         ColorModeSystem,
 		Locale:            "ja",
 		NotificationLevel: NotificationLevelMentions,
@@ -73,7 +65,6 @@ func DefaultPreferences() UserPreferences {
 type UserPreferences struct {
 	ThemeHue          int
 	ThemeChroma       float64
-	ThemeSidebar      SidebarStyle
 	ColorMode         ColorMode
 	Locale            string
 	NotificationLevel NotificationLevel

@@ -1,8 +1,4 @@
-// navItemClassName が参照する --nav-* の割り当て。同じ一覧をサイドバーとほかの画面で色だけ変えて使う
-export const sidebarNavTone =
-  "[--dot-ring:var(--c-side)] [--nav-active-fg:var(--c-side-active-fg)] [--nav-active:var(--c-side-active)] [--nav-fg:var(--c-side-fg)] [--nav-hover:var(--c-side-hover)] [--nav-muted:var(--c-side-muted)] [--nav-strong:var(--c-side-strong)] [--tree-line:color-mix(in_srgb,var(--c-side-muted)_65%,transparent)]";
-
-// 本文の面に置く一覧の配色
+// navItemClassName が参照する --nav-* の割り当て。同じ一覧を画面ごとに色だけ変えて使う
 export const surfaceNavTone =
   "[--dot-ring:var(--c-surface)] [--nav-active-fg:var(--c-accent-text)] [--nav-active:var(--c-accent-soft)] [--nav-fg:var(--c-text)] [--nav-hover:var(--c-hover)] [--nav-muted:var(--c-muted)] [--nav-strong:var(--c-text)] [--tree-line:var(--c-border-strong)]";
 

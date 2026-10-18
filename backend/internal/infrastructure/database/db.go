@@ -48,7 +48,8 @@ func InitDB(cfg config.DatabaseConfig) (*ent.Client, *sql.DB, error) {
 // Migrate はスキーマを ent の定義に合わせます。複数のレプリカが同時に起動しても重ならないよう advisory lock を取ります
 func Migrate(ctx context.Context, client *ent.Client, db *sql.DB) error {
 	return withMigrationLock(ctx, db, func(ctx context.Context) error {
-		return client.Schema.Create(ctx, migrate.WithGlobalUniqueID(true), migrate.WithForeignKeys(true))
+		// 定義から消した NOT NULL の列が残ると INSERT が失敗するため、列も落とす
+		return client.Schema.Create(ctx, migrate.WithGlobalUniqueID(true), migrate.WithForeignKeys(true), migrate.WithDropColumn(true))
 	})
 }
 

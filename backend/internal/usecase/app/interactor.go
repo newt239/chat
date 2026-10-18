@@ -24,7 +24,7 @@ import (
 const MaxTextLength = 4000
 
 // OfficialAppName は公式アプリの名前です
-const OfficialAppName = "Chat"
+const OfficialAppName = "Nook"
 
 var (
 	ErrAppNotFound        = domerr.New(domerr.ErrNotFound, "指定されたアプリが見つかりません")
@@ -292,8 +292,11 @@ func (i *Interactor) PostAsOfficial(ctx context.Context, workspaceID, channelID 
 // EnsureOfficial はワークスペースの公式アプリを返し、なければ作ります
 func (i *Interactor) EnsureOfficial(ctx context.Context, workspaceID string) (*entity.App, error) {
 	official, err := i.appRepo.FindOfficial(ctx, workspaceID)
-	if err != nil || official != nil {
-		return official, err
+	if err != nil {
+		return nil, err
+	}
+	if official != nil {
+		return official, i.renameOfficial(ctx, official)
 	}
 	workspace, err := i.workspaceRepo.FindByID(ctx, workspaceID)
 	if err != nil {
@@ -325,6 +328,28 @@ func (i *Interactor) EnsureOfficial(ctx context.Context, workspaceID string) (*e
 		return nil, fmt.Errorf("failed to create official app: %w", err)
 	}
 	return official, nil
+}
+
+// renameOfficial はアプリ名を変える前に作った公式アプリとそのボットの名前を今の名前にそろえます
+func (i *Interactor) renameOfficial(ctx context.Context, official *entity.App) error {
+	if official.Name == OfficialAppName {
+		return nil
+	}
+	official.Name = OfficialAppName
+	return i.txManager.Do(ctx, func(txCtx context.Context) error {
+		if err := i.appRepo.Update(txCtx, official); err != nil {
+			return fmt.Errorf("failed to rename official app: %w", err)
+		}
+		bot, err := i.userRepo.FindByID(txCtx, official.BotUserID)
+		if err != nil {
+			return fmt.Errorf("failed to load bot user: %w", err)
+		}
+		if bot == nil {
+			return nil
+		}
+		bot.DisplayName = OfficialAppName
+		return i.userRepo.Update(txCtx, bot)
+	})
 }
 
 func (i *Interactor) postAs(ctx context.Context, app *entity.App, channelID string, parentID *string, message *entity.Message) (*messageuc.MessageOutput, error) {

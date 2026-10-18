@@ -1484,7 +1484,6 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "theme_hue", Type: field.TypeInt},
 		{Name: "theme_chroma", Type: field.TypeFloat64},
-		{Name: "theme_sidebar", Type: field.TypeEnum, Enums: []string{"tinted", "light"}},
 		{Name: "color_mode", Type: field.TypeEnum, Enums: []string{"light", "dark", "system"}},
 		{Name: "locale", Type: field.TypeString},
 		{Name: "notification_level", Type: field.TypeEnum, Enums: []string{"all", "mentions", "none"}},
@@ -1502,7 +1501,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "user_preference_user_preference",
-				Columns:    []*schema.Column{UserPreferenceColumns[11]},
+				Columns:    []*schema.Column{UserPreferenceColumns[10]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

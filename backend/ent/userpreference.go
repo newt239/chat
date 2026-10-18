@@ -24,8 +24,6 @@ type UserPreference struct {
 	ThemeHue int `json:"theme_hue,omitempty"`
 	// ThemeChroma holds the value of the "theme_chroma" field.
 	ThemeChroma float64 `json:"theme_chroma,omitempty"`
-	// ThemeSidebar holds the value of the "theme_sidebar" field.
-	ThemeSidebar userpreference.ThemeSidebar `json:"theme_sidebar,omitempty"`
 	// ColorMode holds the value of the "color_mode" field.
 	ColorMode userpreference.ColorMode `json:"color_mode,omitempty"`
 	// Locale holds the value of the "locale" field.
@@ -77,7 +75,7 @@ func (*UserPreference) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case userpreference.FieldThemeHue:
 			values[i] = new(sql.NullInt64)
-		case userpreference.FieldThemeSidebar, userpreference.FieldColorMode, userpreference.FieldLocale, userpreference.FieldNotificationLevel, userpreference.FieldTimezone, userpreference.FieldChannelSortOrder:
+		case userpreference.FieldColorMode, userpreference.FieldLocale, userpreference.FieldNotificationLevel, userpreference.FieldTimezone, userpreference.FieldChannelSortOrder:
 			values[i] = new(sql.NullString)
 		case userpreference.FieldID, userpreference.FieldUserID:
 			values[i] = new(uuid.UUID)
@@ -119,12 +117,6 @@ func (_m *UserPreference) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field theme_chroma", values[i])
 			} else if value.Valid {
 				_m.ThemeChroma = value.Float64
-			}
-		case userpreference.FieldThemeSidebar:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field theme_sidebar", values[i])
-			} else if value.Valid {
-				_m.ThemeSidebar = userpreference.ThemeSidebar(value.String)
 			}
 		case userpreference.FieldColorMode:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -217,9 +209,6 @@ func (_m *UserPreference) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("theme_chroma=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ThemeChroma))
-	builder.WriteString(", ")
-	builder.WriteString("theme_sidebar=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ThemeSidebar))
 	builder.WriteString(", ")
 	builder.WriteString("color_mode=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ColorMode))

@@ -34,12 +34,6 @@ message ProfileLinks {
   }];
 }
 
-enum SidebarStyle {
-  SIDEBAR_STYLE_UNSPECIFIED = 0;
-  SIDEBAR_STYLE_TINTED = 1;
-  SIDEBAR_STYLE_LIGHT = 2;
-}
-
 enum ColorMode {
   COLOR_MODE_UNSPECIFIED = 0;
   COLOR_MODE_LIGHT = 1;
@@ -72,10 +66,8 @@ message ThemePreference {
     gte: 0
     lte: 0.37
   }];
-  SidebarStyle sidebar = 3 [(buf.validate.field).enum = {
-    defined_only: true
-    not_in: [0]
-  }];
+  reserved 3;
+  reserved "sidebar";
 }
 
 // 端末をまたいで共有する表示・通知の設定

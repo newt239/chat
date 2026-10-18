@@ -27,16 +27,12 @@ export const preferences = {
     presetsTitle: "プリセット",
     presets: {
       cobalt: "Cobalt",
+      ember: "Ember",
       graphite: "Graphite",
       jade: "Jade",
       plum: "Plum",
     },
     preview: "プレビュー",
-    sidebar: {
-      light: "明るい",
-      tinted: "色付き",
-      title: "サイドバー",
-    },
   },
   timezone: {
     autoUpdate: "タイムゾーンを自動で更新する",

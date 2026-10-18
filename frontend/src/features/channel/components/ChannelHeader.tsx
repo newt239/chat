@@ -173,7 +173,7 @@ export const ChannelHeader = ({ workspaceId, channelId, channel, dm }: ChannelHe
             {members.length}
           </Button>
         )}
-        {nextId !== undefined && (
+        {isMobile && nextId !== undefined && (
           <IconButton label={t("shell.channel.nextUnread")} onPress={goNext}>
             <IconChevronsDown />
           </IconButton>

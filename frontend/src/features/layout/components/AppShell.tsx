@@ -12,13 +12,14 @@ import { useGlobalShortcuts } from "../hooks/useGlobalShortcuts";
 import { MobileShell } from "./MobileShell";
 import { RightSidePanel } from "./RightSidePanel";
 import { Sidebar } from "./Sidebar";
+import { TopBar } from "./TopBar";
 import { WorkspaceDialogs } from "./WorkspaceDialogs";
 
 type AppShellProps = {
   workspaceId: string;
 };
 
-// ワークスペース内の画面の枠。デスクトップは左にサイドバー、中央に各ページ、右にパネルを置く
+// ワークスペース内の画面の枠。デスクトップは上にトップバー、その下の地色の上にサイドバー・各ページ・右パネルを並べる
 export const AppShell = ({ workspaceId }: AppShellProps) => {
   const isMobile = useIsMobile();
   const currentChannelId = useParams({
@@ -38,12 +39,15 @@ export const AppShell = ({ workspaceId }: AppShellProps) => {
       {isMobile ? (
         <MobileShell workspaceId={workspaceId} />
       ) : (
-        <div className="flex h-full overflow-clip bg-bg pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] font-sans text-text">
-          <Sidebar workspaceId={workspaceId} />
-          <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-surface">
-            <Outlet />
-          </main>
-          <RightSidePanel workspaceId={workspaceId} />
+        <div className="flex h-full flex-col overflow-clip bg-bg pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] font-sans text-text">
+          <TopBar workspaceId={workspaceId} />
+          <div className="flex min-h-0 flex-1 px-2 pb-2">
+            <Sidebar workspaceId={workspaceId} />
+            <main className="ml-2 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-lg bg-surface">
+              <Outlet />
+            </main>
+            <RightSidePanel workspaceId={workspaceId} />
+          </div>
         </div>
       )}
       <WorkspaceDialogs workspaceId={workspaceId} />

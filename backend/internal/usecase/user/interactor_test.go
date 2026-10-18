@@ -52,7 +52,6 @@ func (r *stubUserRepo) Update(_ context.Context, u *entity.User) error {
 var cobalt = entity.UserPreferences{
 	ThemeHue:          262,
 	ThemeChroma:       0.17,
-	ThemeSidebar:      entity.SidebarStyleTinted,
 	ColorMode:         entity.ColorModeDark,
 	Locale:            "en",
 	NotificationLevel: entity.NotificationLevelAll,

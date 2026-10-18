@@ -15,11 +15,6 @@ func Me(u *entity.User) *chatv1.User {
 	return &chatv1.User{Id: u.ID, Email: u.Email, DisplayName: u.DisplayName, AvatarUrl: u.AvatarURL, Bio: u.Bio, Links: u.Links, Preferences: Preferences(u.Preferences)}
 }
 
-var SidebarStyles = map[entity.SidebarStyle]chatv1.SidebarStyle{
-	entity.SidebarStyleTinted: chatv1.SidebarStyle_SIDEBAR_STYLE_TINTED,
-	entity.SidebarStyleLight:  chatv1.SidebarStyle_SIDEBAR_STYLE_LIGHT,
-}
-
 var ColorModes = map[entity.ColorMode]chatv1.ColorMode{
 	entity.ColorModeLight:  chatv1.ColorMode_COLOR_MODE_LIGHT,
 	entity.ColorModeDark:   chatv1.ColorMode_COLOR_MODE_DARK,
@@ -40,9 +35,8 @@ var ChannelSortOrders = map[entity.ChannelSortOrder]chatv1.ChannelSortOrder{
 func Preferences(p entity.UserPreferences) *chatv1.UserPreferences {
 	return &chatv1.UserPreferences{
 		Theme: &chatv1.ThemePreference{
-			Hue:     int32(p.ThemeHue),
-			Chroma:  p.ThemeChroma,
-			Sidebar: SidebarStyles[p.ThemeSidebar],
+			Hue:    int32(p.ThemeHue),
+			Chroma: p.ThemeChroma,
 		},
 		ColorMode:          ColorModes[p.ColorMode],
 		Locale:             p.Locale,

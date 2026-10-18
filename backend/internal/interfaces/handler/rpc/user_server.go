@@ -40,7 +40,6 @@ func (s *UserServer) UpdatePreferences(ctx context.Context, req *chatv1.UpdatePr
 	out, err := s.UC.UpdatePreferences(ctx, userIDFrom(ctx), entity.UserPreferences{
 		ThemeHue:           int(p.GetTheme().GetHue()),
 		ThemeChroma:        p.GetTheme().GetChroma(),
-		ThemeSidebar:       fromProto(presenter.SidebarStyles, p.GetTheme().GetSidebar()),
 		ColorMode:          fromProto(presenter.ColorModes, p.GetColorMode()),
 		Locale:             p.GetLocale(),
 		NotificationLevel:  fromProto(presenter.NotificationLevels, p.GetNotificationLevel()),

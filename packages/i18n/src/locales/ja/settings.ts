@@ -51,7 +51,7 @@ export const settings = {
     newTab: "新しいタブで開く",
     newline: "改行",
     nextUnread: "次の未読へ移動",
-    search: "検索",
+    search: "チャンネルや DM に移動",
     send: "送信",
     settings: "設定を開く",
   },

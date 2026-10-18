@@ -10,7 +10,7 @@ configs:
 settingGroups:
   app:
     base:
-      PRODUCT_NAME: Chat
+      PRODUCT_NAME: Nook
       PRODUCT_BUNDLE_IDENTIFIER: dev.newt239.chat
 targetTemplates:
   app:

@@ -117,6 +117,15 @@ func (r *fakeUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*e
 	return found, nil
 }
 
+func (r *fakeUserRepo) FindByID(_ context.Context, id string) (*entity.User, error) {
+	return r.users[id], nil
+}
+
+func (r *fakeUserRepo) Update(_ context.Context, u *entity.User) error {
+	r.users[u.ID] = u
+	return nil
+}
+
 type fakeAppRepo struct {
 	domainrepository.AppRepository
 	apps map[string]*entity.App
@@ -141,6 +150,11 @@ func (r *fakeAppRepo) FindOfficial(_ context.Context, _ string) (*entity.App, er
 
 func (r *fakeAppRepo) Create(_ context.Context, a *entity.App) error {
 	a.ID = "00000000-0000-4000-8000-00000000000" + string(rune('0'+len(r.apps)))
+	r.apps[a.ID] = a
+	return nil
+}
+
+func (r *fakeAppRepo) Update(_ context.Context, a *entity.App) error {
 	r.apps[a.ID] = a
 	return nil
 }
@@ -318,6 +332,27 @@ func TestOfficialAppIsCreatedOnceAndCannotBeManaged(t *testing.T) {
 	// 公式アプリは参加していないチャンネルにも投稿できる
 	if _, err := f.uc.PostAsOfficial(ctx, workspaceID, privateID, nil, "reminder"); err != nil {
 		t.Fatalf("公式アプリで投稿できません: %v", err)
+	}
+}
+
+func TestOfficialAppKeepsCurrentName(t *testing.T) {
+	f := newFixture()
+	ctx := context.Background()
+
+	official, err := f.uc.EnsureOfficial(ctx, workspaceID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// アプリ名を変える前に作られた公式アプリ
+	official.Name = "Chat"
+	f.users.users[official.BotUserID].DisplayName = "Chat"
+
+	again, err := f.uc.EnsureOfficial(ctx, workspaceID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again.Name != OfficialAppName || f.users.users[official.BotUserID].DisplayName != OfficialAppName {
+		t.Fatalf("公式アプリの名前が今の名前にそろっていません: %s", again.Name)
 	}
 }
 

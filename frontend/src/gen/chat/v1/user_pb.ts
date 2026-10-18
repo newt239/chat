@@ -11,7 +11,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/user.proto.
  */
 export const file_chat_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChJjaGF0L3YxL3VzZXIucHJvdG8SB2NoYXQudjEitwEKBFVzZXISCgoCaWQYASABKAkSDQoFZW1haWwYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEhcKCmF2YXRhcl91cmwYBCABKAlIAIgBARIQCgNiaW8YBSABKAlIAYgBARItCgtwcmVmZXJlbmNlcxgGIAEoCzIYLmNoYXQudjEuVXNlclByZWZlcmVuY2VzEg0KBWxpbmtzGAcgAygJQg0KC19hdmF0YXJfdXJsQgYKBF9iaW8ijAEKDFByb2ZpbGVMaW5rcxJ8CgR1cmxzGAEgAygJQm66SGuSAWgQBSJkugFZCghodHRwX3VybBIraHR0cChzKSDjga4gVVJMIOOCkuaMh+WumuOBl+OBpuOBj+OBoOOBleOBhBogdGhpcy5tYXRjaGVzKCdeaHR0cHM/Oi8vW14vPyNdJylyBhiAEIgBASKHAQoPVGhlbWVQcmVmZXJlbmNlEhcKA2h1ZRgBIAEoBUIKukgHGgUQ6AIoABInCgZjaHJvbWEYAiABKAFCF7pIFBISGa5H4XoUrtc/KQAAAAAAAAAAEjIKB3NpZGViYXIYAyABKA4yFS5jaGF0LnYxLlNpZGViYXJTdHlsZUIKukgHggEEEAEgACLxAgoPVXNlclByZWZlcmVuY2VzEi8KBXRoZW1lGAEgASgLMhguY2hhdC52MS5UaGVtZVByZWZlcmVuY2VCBrpIA8gBARIyCgpjb2xvcl9tb2RlGAIgASgOMhIuY2hhdC52MS5Db2xvck1vZGVCCrpIB4IBBBABIAASHQoGbG9jYWxlGAMgASgJQg26SApyCFICamFSAmVuEkIKEm5vdGlmaWNhdGlvbl9sZXZlbBgEIAEoDjIaLmNoYXQudjEuTm90aWZpY2F0aW9uTGV2ZWxCCrpIB4IBBBABIAASGQoIdGltZXpvbmUYBSABKAlCB7pIBHICGEASHAoUdGltZXpvbmVfYXV0b191cGRhdGUYBiABKAgSQQoSY2hhbm5lbF9zb3J0X29yZGVyGAcgASgOMhkuY2hhdC52MS5DaGFubmVsU29ydE9yZGVyQgq6SAeCAQQQASAAEhoKEmhpZGVfam9pbl9tZXNzYWdlcxgIIAEoCCJnCgtVc2VyU3VtbWFyeRIKCgJpZBgBIAEoCRIUCgxkaXNwbGF5X25hbWUYAiABKAkSFwoKYXZhdGFyX3VybBgDIAEoCUgAiAEBEg4KBmlzX2FwcBgEIAEoCEINCgtfYXZhdGFyX3VybCpgCgxTaWRlYmFyU3R5bGUSHQoZU0lERUJBUl9TVFlMRV9VTlNQRUNJRklFRBAAEhgKFFNJREVCQVJfU1RZTEVfVElOVEVEEAESFwoTU0lERUJBUl9TVFlMRV9MSUdIVBACKmkKCUNvbG9yTW9kZRIaChZDT0xPUl9NT0RFX1VOU1BFQ0lGSUVEEAASFAoQQ09MT1JfTU9ERV9MSUdIVBABEhMKD0NPTE9SX01PREVfREFSSxACEhUKEUNPTE9SX01PREVfU1lTVEVNEAMqfgoQQ2hhbm5lbFNvcnRPcmRlchIiCh5DSEFOTkVMX1NPUlRfT1JERVJfVU5TUEVDSUZJRUQQABIeChpDSEFOTkVMX1NPUlRfT1JERVJfREVGQVVMVBABEiYKIkNIQU5ORUxfU09SVF9PUkRFUl9SRUNFTlRfQUNUSVZJVFkQAiqRAQoRTm90aWZpY2F0aW9uTGV2ZWwSIgoeTk9USUZJQ0FUSU9OX0xFVkVMX1VOU1BFQ0lGSUVEEAASGgoWTk9USUZJQ0FUSU9OX0xFVkVMX0FMTBABEh8KG05PVElGSUNBVElPTl9MRVZFTF9NRU5USU9OUxACEhsKF05PVElGSUNBVElPTl9MRVZFTF9OT05FEANCigEKC2NvbS5jaGF0LnYxQglVc2VyUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate]);
+  fileDesc("ChJjaGF0L3YxL3VzZXIucHJvdG8SB2NoYXQudjEitwEKBFVzZXISCgoCaWQYASABKAkSDQoFZW1haWwYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEhcKCmF2YXRhcl91cmwYBCABKAlIAIgBARIQCgNiaW8YBSABKAlIAYgBARItCgtwcmVmZXJlbmNlcxgGIAEoCzIYLmNoYXQudjEuVXNlclByZWZlcmVuY2VzEg0KBWxpbmtzGAcgAygJQg0KC19hdmF0YXJfdXJsQgYKBF9iaW8ijAEKDFByb2ZpbGVMaW5rcxJ8CgR1cmxzGAEgAygJQm66SGuSAWgQBSJkugFZCghodHRwX3VybBIraHR0cChzKSDjga4gVVJMIOOCkuaMh+WumuOBl+OBpuOBj+OBoOOBleOBhBogdGhpcy5tYXRjaGVzKCdeaHR0cHM/Oi8vW14vPyNdJylyBhiAEIgBASJiCg9UaGVtZVByZWZlcmVuY2USFwoDaHVlGAEgASgFQgq6SAcaBRDoAigAEicKBmNocm9tYRgCIAEoAUIXukgUEhIZrkfhehSu1z8pAAAAAAAAAABKBAgDEARSB3NpZGViYXIi8QIKD1VzZXJQcmVmZXJlbmNlcxIvCgV0aGVtZRgBIAEoCzIYLmNoYXQudjEuVGhlbWVQcmVmZXJlbmNlQga6SAPIAQESMgoKY29sb3JfbW9kZRgCIAEoDjISLmNoYXQudjEuQ29sb3JNb2RlQgq6SAeCAQQQASAAEh0KBmxvY2FsZRgDIAEoCUINukgKcghSAmphUgJlbhJCChJub3RpZmljYXRpb25fbGV2ZWwYBCABKA4yGi5jaGF0LnYxLk5vdGlmaWNhdGlvbkxldmVsQgq6SAeCAQQQASAAEhkKCHRpbWV6b25lGAUgASgJQge6SARyAhhAEhwKFHRpbWV6b25lX2F1dG9fdXBkYXRlGAYgASgIEkEKEmNoYW5uZWxfc29ydF9vcmRlchgHIAEoDjIZLmNoYXQudjEuQ2hhbm5lbFNvcnRPcmRlckIKukgHggEEEAEgABIaChJoaWRlX2pvaW5fbWVzc2FnZXMYCCABKAgiZwoLVXNlclN1bW1hcnkSCgoCaWQYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJEhcKCmF2YXRhcl91cmwYAyABKAlIAIgBARIOCgZpc19hcHAYBCABKAhCDQoLX2F2YXRhcl91cmwqaQoJQ29sb3JNb2RlEhoKFkNPTE9SX01PREVfVU5TUEVDSUZJRUQQABIUChBDT0xPUl9NT0RFX0xJR0hUEAESEwoPQ09MT1JfTU9ERV9EQVJLEAISFQoRQ09MT1JfTU9ERV9TWVNURU0QAyp+ChBDaGFubmVsU29ydE9yZGVyEiIKHkNIQU5ORUxfU09SVF9PUkRFUl9VTlNQRUNJRklFRBAAEh4KGkNIQU5ORUxfU09SVF9PUkRFUl9ERUZBVUxUEAESJgoiQ0hBTk5FTF9TT1JUX09SREVSX1JFQ0VOVF9BQ1RJVklUWRACKpEBChFOb3RpZmljYXRpb25MZXZlbBIiCh5OT1RJRklDQVRJT05fTEVWRUxfVU5TUEVDSUZJRUQQABIaChZOT1RJRklDQVRJT05fTEVWRUxfQUxMEAESHwobTk9USUZJQ0FUSU9OX0xFVkVMX01FTlRJT05TEAISGwoXTk9USUZJQ0FUSU9OX0xFVkVMX05PTkUQA0KKAQoLY29tLmNoYXQudjFCCVVzZXJQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate]);
 
 /**
  * ログイン中のユーザー自身の情報
@@ -98,11 +98,6 @@ export type ThemePreference = Message<"chat.v1.ThemePreference"> & {
    * @generated from field: double chroma = 2;
    */
   chroma: number;
-
-  /**
-   * @generated from field: chat.v1.SidebarStyle sidebar = 3;
-   */
-  sidebar: SidebarStyle;
 };
 
 /**
@@ -209,32 +204,6 @@ export const UserSummarySchema: GenMessage<UserSummary> = /*@__PURE__*/
   messageDesc(file_chat_v1_user, 4);
 
 /**
- * @generated from enum chat.v1.SidebarStyle
- */
-export enum SidebarStyle {
-  /**
-   * @generated from enum value: SIDEBAR_STYLE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
-
-  /**
-   * @generated from enum value: SIDEBAR_STYLE_TINTED = 1;
-   */
-  TINTED = 1,
-
-  /**
-   * @generated from enum value: SIDEBAR_STYLE_LIGHT = 2;
-   */
-  LIGHT = 2,
-}
-
-/**
- * Describes the enum chat.v1.SidebarStyle.
- */
-export const SidebarStyleSchema: GenEnum<SidebarStyle> = /*@__PURE__*/
-  enumDesc(file_chat_v1_user, 0);
-
-/**
  * @generated from enum chat.v1.ColorMode
  */
 export enum ColorMode {
@@ -263,7 +232,7 @@ export enum ColorMode {
  * Describes the enum chat.v1.ColorMode.
  */
 export const ColorModeSchema: GenEnum<ColorMode> = /*@__PURE__*/
-  enumDesc(file_chat_v1_user, 1);
+  enumDesc(file_chat_v1_user, 0);
 
 /**
  * サイドバーのチャンネルの並べ方。既定はツリーの名前順、最近は最新メッセージの新しい順でフラットに並べる
@@ -291,7 +260,7 @@ export enum ChannelSortOrder {
  * Describes the enum chat.v1.ChannelSortOrder.
  */
 export const ChannelSortOrderSchema: GenEnum<ChannelSortOrder> = /*@__PURE__*/
-  enumDesc(file_chat_v1_user, 2);
+  enumDesc(file_chat_v1_user, 1);
 
 /**
  * 通知を受け取る範囲。すべて / メンションと DM のみ / なし
@@ -324,5 +293,5 @@ export enum NotificationLevel {
  * Describes the enum chat.v1.NotificationLevel.
  */
 export const NotificationLevelSchema: GenEnum<NotificationLevel> = /*@__PURE__*/
-  enumDesc(file_chat_v1_user, 3);
+  enumDesc(file_chat_v1_user, 2);
 

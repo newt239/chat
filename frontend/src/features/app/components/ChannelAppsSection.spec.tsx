@@ -17,7 +17,7 @@ const deploy = create(AppSchema, {
   id: "a1",
   name: "デプロイ通知",
 });
-const official = create(AppSchema, { id: "a0", isOfficial: true, name: "Chat" });
+const official = create(AppSchema, { id: "a0", isOfficial: true, name: "Nook" });
 const monitor = create(AppSchema, {
   canManage: true,
   createdBy: create(UserSummarySchema, { displayName: "Bob", id: "u2" }),
@@ -56,7 +56,7 @@ describe("ChannelAppsSection", () => {
   test("参加していない管理できるアプリを追加でき、新しいアプリの作成はダイアログで開く", async () => {
     const { add, router } = await setup();
     await userEvent.click(screen.getByRole("button", { name: "アプリを追加" }));
-    expect(screen.queryByRole("menuitem", { name: "Chat を追加" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Nook を追加" })).not.toBeInTheDocument();
     await userEvent.click(await screen.findByRole("menuitem", { name: "監視 を追加" }));
     await waitFor(() => {
       expect(add).toHaveBeenCalledWith(expect.objectContaining({ appId: "a2", channelId: "c1" }));

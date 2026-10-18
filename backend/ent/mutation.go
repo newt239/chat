@@ -29370,7 +29370,6 @@ type UserPreferenceMutation struct {
 	addtheme_hue         *int
 	theme_chroma         *float64
 	addtheme_chroma      *float64
-	theme_sidebar        *userpreference.ThemeSidebar
 	color_mode           *userpreference.ColorMode
 	locale               *string
 	notification_level   *userpreference.NotificationLevel
@@ -29636,42 +29635,6 @@ func (m *UserPreferenceMutation) AddedThemeChroma() (r float64, exists bool) {
 func (m *UserPreferenceMutation) ResetThemeChroma() {
 	m.theme_chroma = nil
 	m.addtheme_chroma = nil
-}
-
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (m *UserPreferenceMutation) SetThemeSidebar(us userpreference.ThemeSidebar) {
-	m.theme_sidebar = &us
-}
-
-// ThemeSidebar returns the value of the "theme_sidebar" field in the mutation.
-func (m *UserPreferenceMutation) ThemeSidebar() (r userpreference.ThemeSidebar, exists bool) {
-	v := m.theme_sidebar
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldThemeSidebar returns the old "theme_sidebar" field's value of the UserPreference entity.
-// If the UserPreference object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserPreferenceMutation) OldThemeSidebar(ctx context.Context) (v userpreference.ThemeSidebar, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldThemeSidebar is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldThemeSidebar requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldThemeSidebar: %w", err)
-	}
-	return oldValue.ThemeSidebar, nil
-}
-
-// ResetThemeSidebar resets all changes to the "theme_sidebar" field.
-func (m *UserPreferenceMutation) ResetThemeSidebar() {
-	m.theme_sidebar = nil
 }
 
 // SetColorMode sets the "color_mode" field.
@@ -29987,7 +29950,7 @@ func (m *UserPreferenceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserPreferenceMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 10)
 	if m.user != nil {
 		fields = append(fields, userpreference.FieldUserID)
 	}
@@ -29996,9 +29959,6 @@ func (m *UserPreferenceMutation) Fields() []string {
 	}
 	if m.theme_chroma != nil {
 		fields = append(fields, userpreference.FieldThemeChroma)
-	}
-	if m.theme_sidebar != nil {
-		fields = append(fields, userpreference.FieldThemeSidebar)
 	}
 	if m.color_mode != nil {
 		fields = append(fields, userpreference.FieldColorMode)
@@ -30035,8 +29995,6 @@ func (m *UserPreferenceMutation) Field(name string) (ent.Value, bool) {
 		return m.ThemeHue()
 	case userpreference.FieldThemeChroma:
 		return m.ThemeChroma()
-	case userpreference.FieldThemeSidebar:
-		return m.ThemeSidebar()
 	case userpreference.FieldColorMode:
 		return m.ColorMode()
 	case userpreference.FieldLocale:
@@ -30066,8 +30024,6 @@ func (m *UserPreferenceMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldThemeHue(ctx)
 	case userpreference.FieldThemeChroma:
 		return m.OldThemeChroma(ctx)
-	case userpreference.FieldThemeSidebar:
-		return m.OldThemeSidebar(ctx)
 	case userpreference.FieldColorMode:
 		return m.OldColorMode(ctx)
 	case userpreference.FieldLocale:
@@ -30111,13 +30067,6 @@ func (m *UserPreferenceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetThemeChroma(v)
-		return nil
-	case userpreference.FieldThemeSidebar:
-		v, ok := value.(userpreference.ThemeSidebar)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetThemeSidebar(v)
 		return nil
 	case userpreference.FieldColorMode:
 		v, ok := value.(userpreference.ColorMode)
@@ -30252,9 +30201,6 @@ func (m *UserPreferenceMutation) ResetField(name string) error {
 		return nil
 	case userpreference.FieldThemeChroma:
 		m.ResetThemeChroma()
-		return nil
-	case userpreference.FieldThemeSidebar:
-		m.ResetThemeSidebar()
 		return nil
 	case userpreference.FieldColorMode:
 		m.ResetColorMode()

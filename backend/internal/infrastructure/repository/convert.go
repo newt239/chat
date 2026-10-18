@@ -137,7 +137,6 @@ func userToEntity(u *ent.User) *entity.User {
 		preferences = entity.UserPreferences{
 			ThemeHue:           p.ThemeHue,
 			ThemeChroma:        p.ThemeChroma,
-			ThemeSidebar:       entity.SidebarStyle(p.ThemeSidebar),
 			ColorMode:          entity.ColorMode(p.ColorMode),
 			Locale:             p.Locale,
 			NotificationLevel:  entity.NotificationLevel(p.NotificationLevel),

@@ -28,8 +28,6 @@ func (UserPreference) Fields() []ent.Field {
 			Immutable(),
 		field.Int("theme_hue"),
 		field.Float("theme_chroma"),
-		field.Enum("theme_sidebar").
-			Values("tinted", "light"),
 		field.Enum("color_mode").
 			Values("light", "dark", "system"),
 		field.String("locale"),

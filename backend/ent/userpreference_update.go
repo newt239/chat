@@ -69,20 +69,6 @@ func (_u *UserPreferenceUpdate) AddThemeChroma(v float64) *UserPreferenceUpdate 
 	return _u
 }
 
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (_u *UserPreferenceUpdate) SetThemeSidebar(v userpreference.ThemeSidebar) *UserPreferenceUpdate {
-	_u.mutation.SetThemeSidebar(v)
-	return _u
-}
-
-// SetNillableThemeSidebar sets the "theme_sidebar" field if the given value is not nil.
-func (_u *UserPreferenceUpdate) SetNillableThemeSidebar(v *userpreference.ThemeSidebar) *UserPreferenceUpdate {
-	if v != nil {
-		_u.SetThemeSidebar(*v)
-	}
-	return _u
-}
-
 // SetColorMode sets the "color_mode" field.
 func (_u *UserPreferenceUpdate) SetColorMode(v userpreference.ColorMode) *UserPreferenceUpdate {
 	_u.mutation.SetColorMode(v)
@@ -215,11 +201,6 @@ func (_u *UserPreferenceUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UserPreferenceUpdate) check() error {
-	if v, ok := _u.mutation.ThemeSidebar(); ok {
-		if err := userpreference.ThemeSidebarValidator(v); err != nil {
-			return &ValidationError{Name: "theme_sidebar", err: fmt.Errorf(`ent: validator failed for field "UserPreference.theme_sidebar": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.ColorMode(); ok {
 		if err := userpreference.ColorModeValidator(v); err != nil {
 			return &ValidationError{Name: "color_mode", err: fmt.Errorf(`ent: validator failed for field "UserPreference.color_mode": %w`, err)}
@@ -264,9 +245,6 @@ func (_u *UserPreferenceUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.AddedThemeChroma(); ok {
 		_spec.AddField(userpreference.FieldThemeChroma, field.TypeFloat64, value)
-	}
-	if value, ok := _u.mutation.ThemeSidebar(); ok {
-		_spec.SetField(userpreference.FieldThemeSidebar, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.ColorMode(); ok {
 		_spec.SetField(userpreference.FieldColorMode, field.TypeEnum, value)
@@ -348,20 +326,6 @@ func (_u *UserPreferenceUpdateOne) SetNillableThemeChroma(v *float64) *UserPrefe
 // AddThemeChroma adds value to the "theme_chroma" field.
 func (_u *UserPreferenceUpdateOne) AddThemeChroma(v float64) *UserPreferenceUpdateOne {
 	_u.mutation.AddThemeChroma(v)
-	return _u
-}
-
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (_u *UserPreferenceUpdateOne) SetThemeSidebar(v userpreference.ThemeSidebar) *UserPreferenceUpdateOne {
-	_u.mutation.SetThemeSidebar(v)
-	return _u
-}
-
-// SetNillableThemeSidebar sets the "theme_sidebar" field if the given value is not nil.
-func (_u *UserPreferenceUpdateOne) SetNillableThemeSidebar(v *userpreference.ThemeSidebar) *UserPreferenceUpdateOne {
-	if v != nil {
-		_u.SetThemeSidebar(*v)
-	}
 	return _u
 }
 
@@ -510,11 +474,6 @@ func (_u *UserPreferenceUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UserPreferenceUpdateOne) check() error {
-	if v, ok := _u.mutation.ThemeSidebar(); ok {
-		if err := userpreference.ThemeSidebarValidator(v); err != nil {
-			return &ValidationError{Name: "theme_sidebar", err: fmt.Errorf(`ent: validator failed for field "UserPreference.theme_sidebar": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.ColorMode(); ok {
 		if err := userpreference.ColorModeValidator(v); err != nil {
 			return &ValidationError{Name: "color_mode", err: fmt.Errorf(`ent: validator failed for field "UserPreference.color_mode": %w`, err)}
@@ -576,9 +535,6 @@ func (_u *UserPreferenceUpdateOne) sqlSave(ctx context.Context) (_node *UserPref
 	}
 	if value, ok := _u.mutation.AddedThemeChroma(); ok {
 		_spec.AddField(userpreference.FieldThemeChroma, field.TypeFloat64, value)
-	}
-	if value, ok := _u.mutation.ThemeSidebar(); ok {
-		_spec.SetField(userpreference.FieldThemeSidebar, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.ColorMode(); ok {
 		_spec.SetField(userpreference.FieldColorMode, field.TypeEnum, value)
