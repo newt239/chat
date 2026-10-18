@@ -23,7 +23,7 @@ export const SidebarNavTabs = ({ workspaceId }: SidebarNavTabsProps) => {
             to={to}
             params={{ workspaceId }}
             aria-label={t(label)}
-            className="flex h-8 items-center justify-center rounded-md text-muted no-underline data-hovered:text-text data-[status=active]:bg-surface data-[status=active]:text-accent-text data-[status=active]:shadow-sm [&_svg]:size-4.5"
+            className="flex h-8 items-center justify-center rounded-md text-muted no-underline data-hovered:bg-surface data-hovered:text-text data-[status=active]:bg-accent data-[status=active]:text-accent-fg data-[status=active]:shadow-sm [&_svg]:size-4.5"
           >
             <Icon aria-hidden />
           </Link>
