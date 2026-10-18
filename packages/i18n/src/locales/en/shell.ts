@@ -6,6 +6,7 @@ export const shell: Messages["shell"] = {
     links: "Channel links",
     muted: "Muted",
     nextUnread: "Next unread (⌥⇧↓ / Alt+Shift+↓)",
+    nextUnreadShort: "Next unread",
     private: "Private channel",
     public: "Public channel",
   },
@@ -28,6 +29,7 @@ export const shell: Messages["shell"] = {
   },
   me: {
     logout: "Log out",
+    menu: "Your menu",
     profile: "Profile",
     settings: "Settings",
   },
@@ -59,8 +61,16 @@ export const shell: Messages["shell"] = {
     noChannels: "You haven't joined any channels",
     noDMs: "No direct messages yet",
     resize: "Sidebar width",
+    shortcuts: "Shortcuts",
     starred: "Starred",
     workspace: "Workspace",
+  },
+  switcher: {
+    empty: "No matching channels or DMs",
+    open: "Jump to a channel or DM",
+    placeholder: "Filter by channel or person",
+    searchMessages: "Search messages for “{{query}}”",
+    title: "Jump to",
   },
   tabs: {
     activity: "Activity",

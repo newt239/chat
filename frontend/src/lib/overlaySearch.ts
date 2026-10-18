@@ -25,6 +25,7 @@ export const workspaceSearchSchema = z.object({
       "edit-link",
       "add-app",
       "edit-app",
+      "switcher",
     ])
     .optional()
     .catch(undefined),

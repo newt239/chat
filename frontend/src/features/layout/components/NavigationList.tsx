@@ -1,11 +1,4 @@
-import {
-  IconAt,
-  IconBookmark,
-  IconFilePencil,
-  IconMessages,
-  IconPlus,
-  IconShieldCheck,
-} from "@tabler/icons-react";
+import { IconPlus, IconShieldCheck } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
@@ -38,24 +31,6 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
 
   return (
     <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-2">
-      <div className="flex flex-col gap-px px-1.5">
-        <Link className={navItemClassName} to="/app/$workspaceId/threads" params={params}>
-          <IconMessages aria-hidden />
-          {t("shell.nav.threads")}
-        </Link>
-        <Link className={navItemClassName} to="/app/$workspaceId/mentions" params={params}>
-          <IconAt aria-hidden />
-          {t("shell.nav.mentions")}
-        </Link>
-        <Link className={navItemClassName} to="/app/$workspaceId/bookmarks" params={params}>
-          <IconBookmark aria-hidden />
-          {t("shell.nav.bookmarks")}
-        </Link>
-        <Link className={navItemClassName} to="/app/$workspaceId/drafts" params={params}>
-          <IconFilePencil aria-hidden />
-          {t("draft.page.title")}
-        </Link>
-      </div>
       <StarredSection workspaceId={workspaceId} />
       {categories.map((category) => (
         <SidebarSection

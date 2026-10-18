@@ -4,6 +4,7 @@ export const shell = {
     links: "関連リンク",
     muted: "ミュート中",
     nextUnread: "次の未読へ（⌥⇧↓ / Alt+Shift+↓）",
+    nextUnreadShort: "次の未読",
     private: "非公開チャンネル",
     public: "公開チャンネル",
   },
@@ -26,6 +27,7 @@ export const shell = {
   },
   me: {
     logout: "ログアウト",
+    menu: "自分のメニュー",
     profile: "プロフィール",
     settings: "設定",
   },
@@ -57,8 +59,16 @@ export const shell = {
     noChannels: "参加しているチャンネルはありません",
     noDMs: "DM はまだありません",
     resize: "サイドバーの幅",
+    shortcuts: "移動先",
     starred: "スター付き",
     workspace: "ワークスペース",
+  },
+  switcher: {
+    empty: "一致するチャンネルや DM はありません",
+    open: "チャンネルや DM に移動",
+    placeholder: "チャンネル名や相手の名前で絞り込む",
+    searchMessages: "「{{query}}」をメッセージで検索",
+    title: "移動",
   },
   tabs: {
     activity: "通知",

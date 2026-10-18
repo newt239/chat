@@ -15,6 +15,8 @@ import { CreateWorkspaceModal } from "#/features/workspace/components/CreateWork
 import { useIsWorkspaceAdmin } from "#/hooks/useIsWorkspaceAdmin";
 import { closeDialog, openPanel, workspaceRoute } from "#/lib/overlaySearch";
 
+import { QuickSwitcher } from "./QuickSwitcher";
+
 type WorkspaceDialogsProps = {
   workspaceId: string;
 };
@@ -62,6 +64,7 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
       )}
       {dialog === "create-dm" && <CreateDMModal workspaceId={workspaceId} onClose={close} />}
       {dialog === "create-workspace" && <CreateWorkspaceModal onClose={close} />}
+      {dialog === "switcher" && <QuickSwitcher workspaceId={workspaceId} onClose={close} />}
       <MarkdownHelpModal isOpen={dialog === "markdown-help"} onOpenChange={close} />
       {canManageGroups &&
         (dialog === "create-group" || (dialog === "edit-group" && editingGroup)) && (

@@ -9,6 +9,7 @@ import { WorkspaceMenu } from "#/features/workspace/components/WorkspaceMenu";
 import { useMe } from "#/hooks/useMe";
 
 import { NavigationList } from "./NavigationList";
+import { NavigationShortcuts } from "./NavigationShortcuts";
 
 type MobileHomeProps = {
   workspaceId: string;
@@ -42,6 +43,7 @@ export const MobileHome = ({ workspaceId }: MobileHomeProps) => {
         <IconSearch aria-hidden />
         {t("shell.nav.search")}
       </Link>
+      <NavigationShortcuts workspaceId={workspaceId} />
       <NavigationList workspaceId={workspaceId} />
     </div>
   );

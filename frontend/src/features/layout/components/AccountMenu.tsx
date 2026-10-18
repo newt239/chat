@@ -16,8 +16,8 @@ import { LogoutConfirmDialog } from "#/features/auth/components/LogoutConfirmDia
 import { useMe } from "#/hooks/useMe";
 import { openPanel } from "#/lib/overlaySearch";
 
-// サイドバー下部の自分の名前。プロフィール・設定・ログアウトを出す
-export const SidebarFooter = () => {
+// トップバー右端の自分のアバター。プロフィール・設定・ログアウトを出す
+export const AccountMenu = () => {
   const { t } = useTranslation();
   const { data: user } = useMe();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
@@ -28,17 +28,15 @@ export const SidebarFooter = () => {
   }
 
   return (
-    <div className="flex shrink-0 items-center gap-1 border-t border-(--nav-hover) px-2 py-1.5">
+    <>
       <Menu
-        placement="top start"
+        placement="bottom end"
         trigger={
           <Button
-            className={`flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-left data-hovered:bg-(--nav-hover) ${focusRing}`}
+            aria-label={t("shell.me.menu")}
+            className={`flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full data-hovered:bg-hover ${focusRing}`}
           >
-            <Avatar name={user.displayName} src={user.avatarUrl} size={28} isOnline />
-            <span className="min-w-0 truncate text-body-sm font-bold text-(--nav-strong)">
-              {user.displayName}
-            </span>
+            <Avatar name={user.displayName} src={user.avatarUrl} size={30} isOnline />
           </Button>
         }
       >
@@ -65,6 +63,6 @@ export const SidebarFooter = () => {
         </MenuItem>
       </Menu>
       <LogoutConfirmDialog isOpen={isLoggingOut} onOpenChange={setIsLoggingOut} />
-    </div>
+    </>
   );
 };

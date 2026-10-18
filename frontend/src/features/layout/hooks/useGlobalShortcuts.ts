@@ -3,8 +3,9 @@ import { useEffect, useEffectEvent } from "react";
 import { useCanGoBack, useMatch, useNavigate, useRouter } from "@tanstack/react-router";
 
 import { useNextUnreadChannel } from "#/features/channel/hooks/useNextUnreadChannel";
+import { openDialog } from "#/lib/overlaySearch";
 
-// ⌘K（Ctrl+K）で検索、⌘,（Ctrl+,）で設定を開く。設定ページで押すと元の画面へ戻る。⌥⇧↓（Alt+Shift+↓）で次の未読へ移る
+// ⌘K（Ctrl+K）で移動先の絞り込み、⌘,（Ctrl+,）で設定を開く。設定ページで押すと元の画面へ戻る。⌥⇧↓（Alt+Shift+↓）で次の未読へ移る
 export const useGlobalShortcuts = (workspaceId: string) => {
   const navigate = useNavigate();
   const router = useRouter();
@@ -30,7 +31,7 @@ export const useGlobalShortcuts = (workspaceId: string) => {
     }
     if (event.key.toLowerCase() === "k") {
       event.preventDefault();
-      void navigate({ params: { workspaceId }, to: "/app/$workspaceId/search" });
+      void navigate({ search: openDialog({ dialog: "switcher" }), to: "." });
     }
     if (event.key === ",") {
       event.preventDefault();

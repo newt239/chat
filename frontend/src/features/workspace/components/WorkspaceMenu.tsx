@@ -17,7 +17,7 @@ type WorkspaceMenuProps = {
   workspaceId: string;
 };
 
-// サイドバー上部のワークスペース名。切り替え・設定と管理画面への移動をまとめる
+// トップバー左端のワークスペース名。切り替え・設定と管理画面への移動をまとめる
 export const WorkspaceMenu = ({ workspaceId }: WorkspaceMenuProps) => {
   const { t } = useTranslation();
   const { data: workspaces = [] } = useWorkspaces();

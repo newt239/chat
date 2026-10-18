@@ -1,16 +1,12 @@
-import { IconSearch } from "@tabler/icons-react";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Link } from "#/components/ui/Link/Link";
-import { navItemClassName, surfaceNavTone } from "#/components/ui/styles/navTone";
-import { cn } from "#/components/ui/styles/styles";
+import { surfaceNavTone } from "#/components/ui/styles/navTone";
 import { sidebarWidthRanges, sidebarWidthsAtom } from "#/features/layout/atoms";
 import { ResizeHandle } from "#/features/layout/components/ResizeHandle";
-import { WorkspaceMenu } from "#/features/workspace/components/WorkspaceMenu";
 
 import { NavigationList } from "./NavigationList";
-import { SidebarFooter } from "./SidebarFooter";
+import { SidebarNavTabs } from "./SidebarNavTabs";
 
 type SidebarProps = {
   workspaceId: string;
@@ -24,24 +20,10 @@ export const Sidebar = ({ workspaceId }: SidebarProps) => {
     <aside
       aria-label={t("shell.sidebar.label")}
       style={{ width: widths.left }}
-      className={`relative flex shrink-0 flex-col bg-surface text-text ${surfaceNavTone}`}
+      className={`relative flex shrink-0 flex-col rounded-lg bg-surface text-text ${surfaceNavTone}`}
     >
-      <div className="flex h-12 shrink-0 items-center gap-1 pr-2 pl-2.5">
-        <WorkspaceMenu workspaceId={workspaceId} />
-      </div>
-      <Link
-        to="/app/$workspaceId/search"
-        params={{ workspaceId }}
-        className={cn(
-          navItemClassName,
-          "mx-2.5 mb-1.5 h-7.5 w-auto bg-(--nav-hover) text-body-sm text-(--nav-muted)",
-        )}
-      >
-        <IconSearch aria-hidden />
-        {t("shell.nav.search")}
-      </Link>
+      <SidebarNavTabs workspaceId={workspaceId} />
       <NavigationList workspaceId={workspaceId} />
-      <SidebarFooter />
       <ResizeHandle
         label={t("shell.sidebar.resize")}
         edge="right"

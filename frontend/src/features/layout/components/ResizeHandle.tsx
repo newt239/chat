@@ -16,7 +16,7 @@ type ResizeHandleProps = {
 
 const keyStep = 16;
 
-// パネルの端に置く幅変更のつまみ。ドラッグと ← → キーで動かす
+// パネルの外側の隙間に置く幅変更のつまみ。ドラッグと ← → キーで動かす
 export const ResizeHandle = ({
   label,
   edge,
@@ -87,8 +87,8 @@ export const ResizeHandle = ({
         }
       }}
       className={cn(
-        "group absolute inset-y-0 z-10 flex w-1.5 cursor-col-resize touch-none outline-none",
-        edge === "right" ? "right-0 justify-end" : "left-0 justify-start",
+        "group absolute inset-y-0 z-10 flex w-2 cursor-col-resize justify-center touch-none outline-none",
+        edge === "right" ? "-right-2" : "-left-2",
       )}
     >
       <span className="w-0.5 bg-transparent transition-colors group-hover:bg-accent group-focus-visible:bg-focus group-data-dragging:bg-accent" />
