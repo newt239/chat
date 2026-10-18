@@ -1,13 +1,9 @@
 import { oklchToHex } from "./color";
 
-export const sidebarStyles = ["tinted", "light"] as const;
-export type SidebarStyle = (typeof sidebarStyles)[number];
-
-// カスタムテーマとして保存するのはこの 3 値だけ
+// カスタムテーマとして保存するのはこの 2 値だけ
 export type ThemeInput = {
   hue: number;
   chroma: number;
-  sidebar: SidebarStyle;
 };
 
 export type ColorMode = "light" | "dark";
@@ -15,19 +11,21 @@ export const colorModePreferences = ["system", "light", "dark"] as const;
 export type ColorModePreference = (typeof colorModePreferences)[number];
 
 export const themePresets = {
-  cobalt: { chroma: 0.17, hue: 262, sidebar: "tinted" },
-  graphite: { chroma: 0.035, hue: 250, sidebar: "light" },
-  jade: { chroma: 0.12, hue: 168, sidebar: "tinted" },
-  plum: { chroma: 0.14, hue: 332, sidebar: "light" },
+  cobalt: { chroma: 0.17, hue: 262 },
+  ember: { chroma: 0.15, hue: 42 },
+  graphite: { chroma: 0.035, hue: 250 },
+  jade: { chroma: 0.12, hue: 168 },
+  plum: { chroma: 0.14, hue: 332 },
 } as const satisfies Record<string, ThemeInput>;
 
 export const themePresetNames = [
+  "ember",
   "jade",
   "cobalt",
   "graphite",
   "plum",
 ] as const satisfies readonly (keyof typeof themePresets)[];
-export const defaultTheme: ThemeInput = themePresets.jade;
+export const defaultTheme: ThemeInput = themePresets.ember;
 
 // proto の検証と同じ範囲。色相は 360 が 0 と同じ色になるため 359 までにする
 export const hueRange = { max: 359, min: 0 } as const;
@@ -36,9 +34,7 @@ export const chromaRange = { max: 0.37, min: 0 } as const;
 export const findThemePreset = (theme: ThemeInput) =>
   themePresetNames.find((name) => {
     const preset = themePresets[name];
-    return (
-      preset.hue === theme.hue && preset.chroma === theme.chroma && preset.sidebar === theme.sidebar
-    );
+    return preset.hue === theme.hue && preset.chroma === theme.chroma;
   });
 
 export const colorTokenNames = [
@@ -74,84 +70,23 @@ export const colorTokenNames = [
   "overlay",
   "media",
   "media-fg",
-  "side",
-  "side-fg",
-  "side-muted",
-  "side-strong",
-  "side-hover",
-  "side-active",
-  "side-active-fg",
 ] as const;
 type ColorTokenName = (typeof colorTokenNames)[number];
 type ColorTokens = Record<ColorTokenName, string>;
-
-type SidebarTokens = Pick<ColorTokens, Extract<ColorTokenName, `side${string}`>>;
 
 const white = "#FFFFFF";
 // 画像ビューアや動画の背景。写真の色を正しく見せるため表示モードによらず暗くする
 const media = "#08090A";
 
-const buildSidebarTokens = (
-  { hue, chroma, sidebar }: ThemeInput,
-  mode: ColorMode,
-): SidebarTokens => {
-  const neutral = (l: number, c = 0.009) => oklchToHex(l, c, hue);
-  const accent = (l: number, k = 1) => oklchToHex(l, chroma * k, hue);
-  const sideChroma = Math.min(chroma * 0.35, 0.04);
-  if (sidebar === "tinted") {
-    return mode === "dark"
-      ? {
-          side: oklchToHex(0.14, sideChroma * 0.8, hue),
-          "side-active": accent(0.4, 0.55),
-          "side-active-fg": neutral(0.99, 0.003),
-          "side-fg": neutral(0.84, 0.012),
-          "side-hover": oklchToHex(0.2, sideChroma, hue),
-          "side-muted": neutral(0.64, 0.014),
-          "side-strong": neutral(0.98, 0.004),
-        }
-      : {
-          side: oklchToHex(0.25, sideChroma, hue),
-          "side-active": accent(0.53),
-          "side-active-fg": white,
-          "side-fg": neutral(0.86, 0.014),
-          "side-hover": oklchToHex(0.3, sideChroma * 1.1, hue),
-          "side-muted": oklchToHex(0.7, sideChroma * 0.8, hue),
-          "side-strong": white,
-        };
-  }
-  return mode === "dark"
-    ? {
-        side: neutral(0.18),
-        "side-active": accent(0.3, 0.38),
-        "side-active-fg": accent(0.84, 0.8),
-        "side-fg": neutral(0.84, 0.01),
-        "side-hover": neutral(0.225),
-        "side-muted": neutral(0.62, 0.01),
-        "side-strong": neutral(0.97, 0.004),
-      }
-    : {
-        side: neutral(0.955, 0.008),
-        "side-active": accent(0.9, 0.35),
-        "side-active-fg": accent(0.4),
-        "side-fg": neutral(0.34, 0.014),
-        "side-hover": neutral(0.92, 0.011),
-        "side-muted": neutral(0.52, 0.014),
-        "side-strong": neutral(0.18, 0.014),
-      };
-};
-
 // テーマ入力から semantic token を hex で計算する。部品はこの semantic token だけを参照する
-export const buildTokens = (theme: ThemeInput, mode: ColorMode): ColorTokens => {
-  const { hue, chroma } = theme;
+export const buildTokens = ({ hue, chroma }: ThemeInput, mode: ColorMode): ColorTokens => {
   const neutral = (l: number, c = 0.009) => oklchToHex(l, c, hue);
   const accent = (l: number, k = 1) => oklchToHex(l, chroma * k, hue);
   const pinChroma = Math.max(chroma, 0.08) * 0.35;
-  const side = buildSidebarTokens(theme, mode);
 
   if (mode === "dark") {
     const danger = oklchToHex(0.68, 0.17, 25);
     return {
-      ...side,
       accent: accent(0.72, 0.95),
       "accent-fg": accent(0.2, 0.3),
       "accent-hover": accent(0.78, 0.9),
@@ -159,7 +94,7 @@ export const buildTokens = (theme: ThemeInput, mode: ColorMode): ColorTokens => 
       "accent-text": accent(0.8, 0.85),
       badge: danger,
       "badge-fg": white,
-      bg: neutral(0.165),
+      bg: neutral(0.13),
       border: neutral(0.285, 0.012),
       "border-strong": neutral(0.37, 0.012),
       danger,
@@ -188,7 +123,6 @@ export const buildTokens = (theme: ThemeInput, mode: ColorMode): ColorTokens => 
   }
   const danger = oklchToHex(0.56, 0.19, 25);
   return {
-    ...side,
     accent: accent(0.53),
     "accent-fg": white,
     "accent-hover": accent(0.47),
@@ -196,7 +130,7 @@ export const buildTokens = (theme: ThemeInput, mode: ColorMode): ColorTokens => 
     "accent-text": accent(0.46),
     badge: danger,
     "badge-fg": white,
-    bg: neutral(0.972, 0.005),
+    bg: neutral(0.94, 0.012),
     border: neutral(0.915, 0.009),
     "border-strong": neutral(0.84, 0.011),
     danger,

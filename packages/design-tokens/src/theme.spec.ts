@@ -40,6 +40,7 @@ describe("buildTokens", () => {
 
   it("プリセットの色が意図せず変わらない", () => {
     expect(buildTokens(themePresets.jade, "light").accent).toBe("#0E7F60");
+    expect(buildTokens(themePresets.ember, "light").accent).toBe("#B04613");
   });
 
   it.each(presets)("%s は本文と補足の文字が読めるコントラストを保つ", (_name, theme) => {
@@ -48,21 +49,19 @@ describe("buildTokens", () => {
       expect(contrastRatio(t.text, t.surface)).toBeGreaterThanOrEqual(7);
       expect(contrastRatio(t.muted, t.surface)).toBeGreaterThanOrEqual(4.5);
       expect(contrastRatio(t["accent-text"], t.surface)).toBeGreaterThanOrEqual(4.5);
-      expect(contrastRatio(t["side-fg"], t.side)).toBeGreaterThanOrEqual(4.5);
-      expect(contrastRatio(t["side-active-fg"], t["side-active"])).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(t.text, t.bg)).toBeGreaterThanOrEqual(7);
+      expect(contrastRatio(t.muted, t.bg)).toBeGreaterThanOrEqual(4.5);
       expect(contrastRatio(t["accent-fg"], t.accent)).toBeGreaterThanOrEqual(4.5);
     }
   });
 
   it("任意の色相でも本文のコントラストを保つ", () => {
     for (let hue = 0; hue < 360; hue += 30) {
-      for (const sidebar of ["tinted", "light"] as const) {
-        const theme: ThemeInput = { chroma: 0.2, hue, sidebar };
-        for (const mode of modes) {
-          const t = buildTokens(theme, mode);
-          expect(contrastRatio(t.text, t.surface)).toBeGreaterThanOrEqual(7);
-          expect(contrastRatio(t["side-fg"], t.side)).toBeGreaterThanOrEqual(4.5);
-        }
+      const theme: ThemeInput = { chroma: 0.2, hue };
+      for (const mode of modes) {
+        const t = buildTokens(theme, mode);
+        expect(contrastRatio(t.text, t.surface)).toBeGreaterThanOrEqual(7);
+        expect(contrastRatio(t.text, t.bg)).toBeGreaterThanOrEqual(7);
       }
     }
   });
@@ -70,10 +69,10 @@ describe("buildTokens", () => {
 
 describe("findThemePreset", () => {
   it("プリセットと一致すれば名前を返す", () => {
-    expect(findThemePreset({ chroma: 0.17, hue: 262, sidebar: "tinted" })).toBe("cobalt");
+    expect(findThemePreset({ chroma: 0.17, hue: 262 })).toBe("cobalt");
   });
 
   it("一致しなければ undefined を返す", () => {
-    expect(findThemePreset({ chroma: 0.17, hue: 100, sidebar: "tinted" })).toBeUndefined();
+    expect(findThemePreset({ chroma: 0.17, hue: 100 })).toBeUndefined();
   });
 });

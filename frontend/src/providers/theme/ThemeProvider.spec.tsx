@@ -54,7 +54,7 @@ describe("ThemeProvider", () => {
 
     const tokens = buildTokens(themePresets.cobalt, "light");
     expect(root.style.getPropertyValue("--c-accent")).toBe(tokens.accent);
-    expect(root.style.getPropertyValue("--c-side")).toBe(tokens.side);
+    expect(root.style.getPropertyValue("--c-bg")).toBe(tokens.bg);
     expect(root.style.getPropertyValue("--r-md")).toBe("8px");
     expect(root.dataset.mode).toBe("light");
   });
@@ -65,7 +65,7 @@ describe("ThemeProvider", () => {
     document.head.append(themeColor);
     renderWithPreferences({ mode: "dark" });
 
-    const { surface } = buildTokens(themePresets.jade, "dark");
+    const { surface } = buildTokens(themePresets.ember, "dark");
     expect(root.dataset.mode).toBe("dark");
     expect(root.style.getPropertyValue("--c-surface")).toBe(surface);
     expect(themeColor.content).toBe(surface);

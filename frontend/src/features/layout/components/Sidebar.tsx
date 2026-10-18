@@ -3,7 +3,7 @@ import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Link } from "#/components/ui/Link/Link";
-import { navItemClassName, sidebarNavTone } from "#/components/ui/styles/navTone";
+import { navItemClassName, surfaceNavTone } from "#/components/ui/styles/navTone";
 import { cn } from "#/components/ui/styles/styles";
 import { sidebarWidthRanges, sidebarWidthsAtom } from "#/features/layout/atoms";
 import { ResizeHandle } from "#/features/layout/components/ResizeHandle";
@@ -24,7 +24,7 @@ export const Sidebar = ({ workspaceId }: SidebarProps) => {
     <aside
       aria-label={t("shell.sidebar.label")}
       style={{ width: widths.left }}
-      className={`relative flex shrink-0 flex-col bg-side text-side-fg ${sidebarNavTone}`}
+      className={`relative flex shrink-0 flex-col bg-surface text-text ${surfaceNavTone}`}
     >
       <div className="flex h-12 shrink-0 items-center gap-1 pr-2 pl-2.5">
         <WorkspaceMenu workspaceId={workspaceId} />

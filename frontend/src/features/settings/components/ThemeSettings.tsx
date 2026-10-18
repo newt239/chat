@@ -3,7 +3,6 @@ import {
   colorModePreferences,
   findThemePreset,
   hueRange,
-  sidebarStyles,
   themePresetNames,
   themePresets,
 } from "@chat/design-tokens/theme";
@@ -94,19 +93,6 @@ export const ThemeSettings = () => {
             }}
           />
         </div>
-        <SettingRow title={t("preferences.theme.sidebar.title")} description={null}>
-          <SegmentedControl
-            label={t("preferences.theme.sidebar.title")}
-            options={sidebarStyles.map((value) => ({
-              label: t(`preferences.theme.sidebar.${value}`),
-              value,
-            }))}
-            value={theme.sidebar}
-            onChange={(sidebar) => {
-              updatePreferences({ theme: { ...theme, sidebar } });
-            }}
-          />
-        </SettingRow>
         <SettingRow title={t("preferences.mode.title")} description={null}>
           <SegmentedControl
             label={t("preferences.mode.title")}

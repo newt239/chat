@@ -22,55 +22,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type SidebarStyle int32
-
-const (
-	SidebarStyle_SIDEBAR_STYLE_UNSPECIFIED SidebarStyle = 0
-	SidebarStyle_SIDEBAR_STYLE_TINTED      SidebarStyle = 1
-	SidebarStyle_SIDEBAR_STYLE_LIGHT       SidebarStyle = 2
-)
-
-// Enum value maps for SidebarStyle.
-var (
-	SidebarStyle_name = map[int32]string{
-		0: "SIDEBAR_STYLE_UNSPECIFIED",
-		1: "SIDEBAR_STYLE_TINTED",
-		2: "SIDEBAR_STYLE_LIGHT",
-	}
-	SidebarStyle_value = map[string]int32{
-		"SIDEBAR_STYLE_UNSPECIFIED": 0,
-		"SIDEBAR_STYLE_TINTED":      1,
-		"SIDEBAR_STYLE_LIGHT":       2,
-	}
-)
-
-func (x SidebarStyle) Enum() *SidebarStyle {
-	p := new(SidebarStyle)
-	*p = x
-	return p
-}
-
-func (x SidebarStyle) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (SidebarStyle) Descriptor() protoreflect.EnumDescriptor {
-	return file_chat_v1_user_proto_enumTypes[0].Descriptor()
-}
-
-func (SidebarStyle) Type() protoreflect.EnumType {
-	return &file_chat_v1_user_proto_enumTypes[0]
-}
-
-func (x SidebarStyle) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use SidebarStyle.Descriptor instead.
-func (SidebarStyle) EnumDescriptor() ([]byte, []int) {
-	return file_chat_v1_user_proto_rawDescGZIP(), []int{0}
-}
-
 type ColorMode int32
 
 const (
@@ -107,11 +58,11 @@ func (x ColorMode) String() string {
 }
 
 func (ColorMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_chat_v1_user_proto_enumTypes[1].Descriptor()
+	return file_chat_v1_user_proto_enumTypes[0].Descriptor()
 }
 
 func (ColorMode) Type() protoreflect.EnumType {
-	return &file_chat_v1_user_proto_enumTypes[1]
+	return &file_chat_v1_user_proto_enumTypes[0]
 }
 
 func (x ColorMode) Number() protoreflect.EnumNumber {
@@ -120,7 +71,7 @@ func (x ColorMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ColorMode.Descriptor instead.
 func (ColorMode) EnumDescriptor() ([]byte, []int) {
-	return file_chat_v1_user_proto_rawDescGZIP(), []int{1}
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{0}
 }
 
 // サイドバーのチャンネルの並べ方。既定はツリーの名前順、最近は最新メッセージの新しい順でフラットに並べる
@@ -157,11 +108,11 @@ func (x ChannelSortOrder) String() string {
 }
 
 func (ChannelSortOrder) Descriptor() protoreflect.EnumDescriptor {
-	return file_chat_v1_user_proto_enumTypes[2].Descriptor()
+	return file_chat_v1_user_proto_enumTypes[1].Descriptor()
 }
 
 func (ChannelSortOrder) Type() protoreflect.EnumType {
-	return &file_chat_v1_user_proto_enumTypes[2]
+	return &file_chat_v1_user_proto_enumTypes[1]
 }
 
 func (x ChannelSortOrder) Number() protoreflect.EnumNumber {
@@ -170,7 +121,7 @@ func (x ChannelSortOrder) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ChannelSortOrder.Descriptor instead.
 func (ChannelSortOrder) EnumDescriptor() ([]byte, []int) {
-	return file_chat_v1_user_proto_rawDescGZIP(), []int{2}
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{1}
 }
 
 // 通知を受け取る範囲。すべて / メンションと DM のみ / なし
@@ -210,11 +161,11 @@ func (x NotificationLevel) String() string {
 }
 
 func (NotificationLevel) Descriptor() protoreflect.EnumDescriptor {
-	return file_chat_v1_user_proto_enumTypes[3].Descriptor()
+	return file_chat_v1_user_proto_enumTypes[2].Descriptor()
 }
 
 func (NotificationLevel) Type() protoreflect.EnumType {
-	return &file_chat_v1_user_proto_enumTypes[3]
+	return &file_chat_v1_user_proto_enumTypes[2]
 }
 
 func (x NotificationLevel) Number() protoreflect.EnumNumber {
@@ -223,7 +174,7 @@ func (x NotificationLevel) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use NotificationLevel.Descriptor instead.
 func (NotificationLevel) EnumDescriptor() ([]byte, []int) {
-	return file_chat_v1_user_proto_rawDescGZIP(), []int{3}
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{2}
 }
 
 // ログイン中のユーザー自身の情報
@@ -370,7 +321,6 @@ type ThemePreference struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Hue           int32                  `protobuf:"varint,1,opt,name=hue,proto3" json:"hue,omitempty"`
 	Chroma        float64                `protobuf:"fixed64,2,opt,name=chroma,proto3" json:"chroma,omitempty"`
-	Sidebar       SidebarStyle           `protobuf:"varint,3,opt,name=sidebar,proto3,enum=chat.v1.SidebarStyle" json:"sidebar,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -417,13 +367,6 @@ func (x *ThemePreference) GetChroma() float64 {
 		return x.Chroma
 	}
 	return 0
-}
-
-func (x *ThemePreference) GetSidebar() SidebarStyle {
-	if x != nil {
-		return x.Sidebar
-	}
-	return SidebarStyle_SIDEBAR_STYLE_UNSPECIFIED
 }
 
 // 端末をまたいで共有する表示・通知の設定
@@ -618,13 +561,11 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\x04_bio\"\x93\x01\n" +
 	"\fProfileLinks\x12\x82\x01\n" +
 	"\x04urls\x18\x01 \x03(\tBn\xbaHk\x92\x01h\x10\x05\"d\xba\x01Y\n" +
-	"\bhttp_url\x12+http(s) の URL を指定してください\x1a this.matches('^https?://[^/?#]')r\x06\x18\x80\x10\x88\x01\x01R\x04urls\"\x9d\x01\n" +
+	"\bhttp_url\x12+http(s) の URL を指定してください\x1a this.matches('^https?://[^/?#]')r\x06\x18\x80\x10\x88\x01\x01R\x04urls\"o\n" +
 	"\x0fThemePreference\x12\x1c\n" +
 	"\x03hue\x18\x01 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x10\xe8\x02(\x00R\x03hue\x12/\n" +
-	"\x06chroma\x18\x02 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\xaeG\xe1z\x14\xae\xd7?)\x00\x00\x00\x00\x00\x00\x00\x00R\x06chroma\x12;\n" +
-	"\asidebar\x18\x03 \x01(\x0e2\x15.chat.v1.SidebarStyleB\n" +
-	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\asidebar\"\xe0\x03\n" +
+	"\x06chroma\x18\x02 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\xaeG\xe1z\x14\xae\xd7?)\x00\x00\x00\x00\x00\x00\x00\x00R\x06chromaJ\x04\b\x03\x10\x04R\asidebar\"\xe0\x03\n" +
 	"\x0fUserPreferences\x126\n" +
 	"\x05theme\x18\x01 \x01(\v2\x18.chat.v1.ThemePreferenceB\x06\xbaH\x03\xc8\x01\x01R\x05theme\x12=\n" +
 	"\n" +
@@ -645,11 +586,7 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x12\x15\n" +
 	"\x06is_app\x18\x04 \x01(\bR\x05isAppB\r\n" +
-	"\v_avatar_url*`\n" +
-	"\fSidebarStyle\x12\x1d\n" +
-	"\x19SIDEBAR_STYLE_UNSPECIFIED\x10\x00\x12\x18\n" +
-	"\x14SIDEBAR_STYLE_TINTED\x10\x01\x12\x17\n" +
-	"\x13SIDEBAR_STYLE_LIGHT\x10\x02*i\n" +
+	"\v_avatar_url*i\n" +
 	"\tColorMode\x12\x1a\n" +
 	"\x16COLOR_MODE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10COLOR_MODE_LIGHT\x10\x01\x12\x13\n" +
@@ -678,31 +615,29 @@ func file_chat_v1_user_proto_rawDescGZIP() []byte {
 	return file_chat_v1_user_proto_rawDescData
 }
 
-var file_chat_v1_user_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_chat_v1_user_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 var file_chat_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_chat_v1_user_proto_goTypes = []any{
-	(SidebarStyle)(0),       // 0: chat.v1.SidebarStyle
-	(ColorMode)(0),          // 1: chat.v1.ColorMode
-	(ChannelSortOrder)(0),   // 2: chat.v1.ChannelSortOrder
-	(NotificationLevel)(0),  // 3: chat.v1.NotificationLevel
-	(*User)(nil),            // 4: chat.v1.User
-	(*ProfileLinks)(nil),    // 5: chat.v1.ProfileLinks
-	(*ThemePreference)(nil), // 6: chat.v1.ThemePreference
-	(*UserPreferences)(nil), // 7: chat.v1.UserPreferences
-	(*UserSummary)(nil),     // 8: chat.v1.UserSummary
+	(ColorMode)(0),          // 0: chat.v1.ColorMode
+	(ChannelSortOrder)(0),   // 1: chat.v1.ChannelSortOrder
+	(NotificationLevel)(0),  // 2: chat.v1.NotificationLevel
+	(*User)(nil),            // 3: chat.v1.User
+	(*ProfileLinks)(nil),    // 4: chat.v1.ProfileLinks
+	(*ThemePreference)(nil), // 5: chat.v1.ThemePreference
+	(*UserPreferences)(nil), // 6: chat.v1.UserPreferences
+	(*UserSummary)(nil),     // 7: chat.v1.UserSummary
 }
 var file_chat_v1_user_proto_depIdxs = []int32{
-	7, // 0: chat.v1.User.preferences:type_name -> chat.v1.UserPreferences
-	0, // 1: chat.v1.ThemePreference.sidebar:type_name -> chat.v1.SidebarStyle
-	6, // 2: chat.v1.UserPreferences.theme:type_name -> chat.v1.ThemePreference
-	1, // 3: chat.v1.UserPreferences.color_mode:type_name -> chat.v1.ColorMode
-	3, // 4: chat.v1.UserPreferences.notification_level:type_name -> chat.v1.NotificationLevel
-	2, // 5: chat.v1.UserPreferences.channel_sort_order:type_name -> chat.v1.ChannelSortOrder
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	6, // 0: chat.v1.User.preferences:type_name -> chat.v1.UserPreferences
+	5, // 1: chat.v1.UserPreferences.theme:type_name -> chat.v1.ThemePreference
+	0, // 2: chat.v1.UserPreferences.color_mode:type_name -> chat.v1.ColorMode
+	2, // 3: chat.v1.UserPreferences.notification_level:type_name -> chat.v1.NotificationLevel
+	1, // 4: chat.v1.UserPreferences.channel_sort_order:type_name -> chat.v1.ChannelSortOrder
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_user_proto_init() }
@@ -717,7 +652,7 @@ func file_chat_v1_user_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_user_proto_rawDesc), len(file_chat_v1_user_proto_rawDesc)),
-			NumEnums:      4,
+			NumEnums:      3,
 			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,

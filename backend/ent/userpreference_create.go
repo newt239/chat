@@ -42,12 +42,6 @@ func (_c *UserPreferenceCreate) SetThemeChroma(v float64) *UserPreferenceCreate 
 	return _c
 }
 
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (_c *UserPreferenceCreate) SetThemeSidebar(v userpreference.ThemeSidebar) *UserPreferenceCreate {
-	_c.mutation.SetThemeSidebar(v)
-	return _c
-}
-
 // SetColorMode sets the "color_mode" field.
 func (_c *UserPreferenceCreate) SetColorMode(v userpreference.ColorMode) *UserPreferenceCreate {
 	_c.mutation.SetColorMode(v)
@@ -161,14 +155,6 @@ func (_c *UserPreferenceCreate) check() error {
 	if _, ok := _c.mutation.ThemeChroma(); !ok {
 		return &ValidationError{Name: "theme_chroma", err: errors.New(`ent: missing required field "UserPreference.theme_chroma"`)}
 	}
-	if _, ok := _c.mutation.ThemeSidebar(); !ok {
-		return &ValidationError{Name: "theme_sidebar", err: errors.New(`ent: missing required field "UserPreference.theme_sidebar"`)}
-	}
-	if v, ok := _c.mutation.ThemeSidebar(); ok {
-		if err := userpreference.ThemeSidebarValidator(v); err != nil {
-			return &ValidationError{Name: "theme_sidebar", err: fmt.Errorf(`ent: validator failed for field "UserPreference.theme_sidebar": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.ColorMode(); !ok {
 		return &ValidationError{Name: "color_mode", err: errors.New(`ent: missing required field "UserPreference.color_mode"`)}
 	}
@@ -251,10 +237,6 @@ func (_c *UserPreferenceCreate) createSpec() (*UserPreference, *sqlgraph.CreateS
 	if value, ok := _c.mutation.ThemeChroma(); ok {
 		_spec.SetField(userpreference.FieldThemeChroma, field.TypeFloat64, value)
 		_node.ThemeChroma = value
-	}
-	if value, ok := _c.mutation.ThemeSidebar(); ok {
-		_spec.SetField(userpreference.FieldThemeSidebar, field.TypeEnum, value)
-		_node.ThemeSidebar = value
 	}
 	if value, ok := _c.mutation.ColorMode(); ok {
 		_spec.SetField(userpreference.FieldColorMode, field.TypeEnum, value)
@@ -386,18 +368,6 @@ func (u *UserPreferenceUpsert) UpdateThemeChroma() *UserPreferenceUpsert {
 // AddThemeChroma adds v to the "theme_chroma" field.
 func (u *UserPreferenceUpsert) AddThemeChroma(v float64) *UserPreferenceUpsert {
 	u.Add(userpreference.FieldThemeChroma, v)
-	return u
-}
-
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (u *UserPreferenceUpsert) SetThemeSidebar(v userpreference.ThemeSidebar) *UserPreferenceUpsert {
-	u.Set(userpreference.FieldThemeSidebar, v)
-	return u
-}
-
-// UpdateThemeSidebar sets the "theme_sidebar" field to the value that was provided on create.
-func (u *UserPreferenceUpsert) UpdateThemeSidebar() *UserPreferenceUpsert {
-	u.SetExcluded(userpreference.FieldThemeSidebar)
 	return u
 }
 
@@ -575,20 +545,6 @@ func (u *UserPreferenceUpsertOne) AddThemeChroma(v float64) *UserPreferenceUpser
 func (u *UserPreferenceUpsertOne) UpdateThemeChroma() *UserPreferenceUpsertOne {
 	return u.Update(func(s *UserPreferenceUpsert) {
 		s.UpdateThemeChroma()
-	})
-}
-
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (u *UserPreferenceUpsertOne) SetThemeSidebar(v userpreference.ThemeSidebar) *UserPreferenceUpsertOne {
-	return u.Update(func(s *UserPreferenceUpsert) {
-		s.SetThemeSidebar(v)
-	})
-}
-
-// UpdateThemeSidebar sets the "theme_sidebar" field to the value that was provided on create.
-func (u *UserPreferenceUpsertOne) UpdateThemeSidebar() *UserPreferenceUpsertOne {
-	return u.Update(func(s *UserPreferenceUpsert) {
-		s.UpdateThemeSidebar()
 	})
 }
 
@@ -947,20 +903,6 @@ func (u *UserPreferenceUpsertBulk) AddThemeChroma(v float64) *UserPreferenceUpse
 func (u *UserPreferenceUpsertBulk) UpdateThemeChroma() *UserPreferenceUpsertBulk {
 	return u.Update(func(s *UserPreferenceUpsert) {
 		s.UpdateThemeChroma()
-	})
-}
-
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (u *UserPreferenceUpsertBulk) SetThemeSidebar(v userpreference.ThemeSidebar) *UserPreferenceUpsertBulk {
-	return u.Update(func(s *UserPreferenceUpsert) {
-		s.SetThemeSidebar(v)
-	})
-}
-
-// UpdateThemeSidebar sets the "theme_sidebar" field to the value that was provided on create.
-func (u *UserPreferenceUpsertBulk) UpdateThemeSidebar() *UserPreferenceUpsertBulk {
-	return u.Update(func(s *UserPreferenceUpsert) {
-		s.UpdateThemeSidebar()
 	})
 }
 

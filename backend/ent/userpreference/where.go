@@ -189,26 +189,6 @@ func ThemeChromaLTE(v float64) predicate.UserPreference {
 	return predicate.UserPreference(sql.FieldLTE(FieldThemeChroma, v))
 }
 
-// ThemeSidebarEQ applies the EQ predicate on the "theme_sidebar" field.
-func ThemeSidebarEQ(v ThemeSidebar) predicate.UserPreference {
-	return predicate.UserPreference(sql.FieldEQ(FieldThemeSidebar, v))
-}
-
-// ThemeSidebarNEQ applies the NEQ predicate on the "theme_sidebar" field.
-func ThemeSidebarNEQ(v ThemeSidebar) predicate.UserPreference {
-	return predicate.UserPreference(sql.FieldNEQ(FieldThemeSidebar, v))
-}
-
-// ThemeSidebarIn applies the In predicate on the "theme_sidebar" field.
-func ThemeSidebarIn(vs ...ThemeSidebar) predicate.UserPreference {
-	return predicate.UserPreference(sql.FieldIn(FieldThemeSidebar, vs...))
-}
-
-// ThemeSidebarNotIn applies the NotIn predicate on the "theme_sidebar" field.
-func ThemeSidebarNotIn(vs ...ThemeSidebar) predicate.UserPreference {
-	return predicate.UserPreference(sql.FieldNotIn(FieldThemeSidebar, vs...))
-}
-
 // ColorModeEQ applies the EQ predicate on the "color_mode" field.
 func ColorModeEQ(v ColorMode) predicate.UserPreference {
 	return predicate.UserPreference(sql.FieldEQ(FieldColorMode, v))
