@@ -53,7 +53,7 @@ export const settings: Messages["settings"] = {
     newTab: "Open in new tab",
     newline: "New line",
     nextUnread: "Go to next unread",
-    search: "Search",
+    search: "Jump to a channel or DM",
     send: "Send",
     settings: "Open settings",
   },
