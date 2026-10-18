@@ -215,9 +215,9 @@ importers:
       '@fontsource/ibm-plex-mono':
         specifier: 5.3.0
         version: 5.3.0
-      '@fontsource/zen-kaku-gothic-new':
-        specifier: 5.3.1
-        version: 5.3.1
+      '@fontsource/ibm-plex-sans-jp':
+        specifier: 5.3.0
+        version: 5.3.0
       '@internationalized/date':
         specifier: 3.12.4
         version: 3.12.4
@@ -1329,8 +1329,8 @@ packages:
   '@fontsource/ibm-plex-mono@5.3.0':
     resolution: {integrity: sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q==}
 
-  '@fontsource/zen-kaku-gothic-new@5.3.1':
-    resolution: {integrity: sha512-L69mE6bkzeVK3UdTenxOmCIWvTwMxohJRNm1dAj+W+UiCULQ91b7M77ENVw+pjGmFL6zKPFYFeH3g8x2ugAJNw==}
+  '@fontsource/ibm-plex-sans-jp@5.3.0':
+    resolution: {integrity: sha512-Eas8EEVkh0UbITQMskrCF5Ha1L24GagNsvjMfrKwhv3KNPFRjbZAt0fLO4lSgfx4U4rHWpX5JeMDJNXF+hcguQ==}
 
   '@grpc/grpc-js@1.9.16':
     resolution: {integrity: sha512-wE4Ut/olIzfKqp631XrG+wbF0v1vWFN4YL9FyXC2LJiG33DsV7PLzURjrCvY/6je2ntdRkeLpPDluzSRGaVltQ==}
@@ -6644,7 +6644,7 @@ snapshots:
 
   '@fontsource/ibm-plex-mono@5.3.0': {}
 
-  '@fontsource/zen-kaku-gothic-new@5.3.1': {}
+  '@fontsource/ibm-plex-sans-jp@5.3.0': {}
 
   '@grpc/grpc-js@1.9.16':
     dependencies:

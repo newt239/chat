@@ -19,7 +19,7 @@ describe("themeVariables", () => {
     expect(variables["--r-lg"]).toBe("12px");
     expect(variables["--t-body-size"]).toBe("14px");
     expect(variables["--sh-lg"]).toBe("0 18px 50px -12px rgb(0 0 0 / 0.35)");
-    expect(variables["--ff-sans"]).toContain('"Zen Kaku Gothic New"');
+    expect(variables["--ff-sans"]).toContain('"IBM Plex Sans JP"');
   });
 
   // globals.css の @theme に書き漏らすと Tailwind のユーティリティが生成されないため
