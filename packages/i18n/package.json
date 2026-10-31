@@ -18,6 +18,6 @@
   },
   "devDependencies": {
     "typescript": "7.0.2",
-    "vite-plus": "0.3.3"
+    "vite-plus": "1.4.0"
   }
 }
